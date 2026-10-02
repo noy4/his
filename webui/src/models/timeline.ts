@@ -15,6 +15,10 @@ export class TimelineModel {
     this.api = api
   }
 
+  subscribe() {
+    void this.start()
+  }
+
   async start(): Promise<void> {
     if (this.started) return
     this.started = true

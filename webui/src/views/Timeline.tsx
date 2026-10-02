@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { HistoryItem } from '../api'
 import { AppModel } from '../models/app'
 import { TimelineModel } from '../models/timeline'
+import { useModel } from '../lib/useModel'
 import { dayKey, dayLabel } from '../lib/dates'
 import { Row } from './Row'
 
@@ -28,12 +29,8 @@ function groupByDay(items: HistoryItem[]): DayGroup[] {
 }
 
 export function Timeline({ app }: { app: AppModel }) {
-  const [m] = useState(() => new TimelineModel(app.api))
+  const m = useModel(() => new TimelineModel(app.api))
   const sentinel = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    m.start()
-  }, [m])
 
   useEffect(() => {
     const el = sentinel.current
