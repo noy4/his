@@ -19,17 +19,32 @@ function tileStyle(host: string): CSSProperties {
 export function Row({ item }: { item: HistoryItem }) {
   const host = hostOf(item.url)
   return (
-    <a className="row" href={item.url} target="_blank" rel="noreferrer">
-      <span className="row-tile" style={tileStyle(host)} aria-hidden="true">
+    <a
+      className="flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-2 text-inherit no-underline hover:bg-surface"
+      href={item.url}
+      target="_blank"
+      rel="noreferrer"
+    >
+      <span
+        className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[7px] text-[0.82rem] font-bold select-none"
+        style={tileStyle(host)}
+        aria-hidden="true"
+      >
         {host.charAt(0).toUpperCase()}
       </span>
-      <span className="row-main">
-        <span className="row-title">{item.title || item.url}</span>
-        <span className="row-url">{item.url}</span>
+      <span className="grid min-w-0 flex-1 leading-[1.45]">
+        <span className="truncate text-[0.88rem] font-medium text-ink-strong">
+          {item.title || item.url}
+        </span>
+        <span className="truncate font-mono text-[0.7rem] text-muted">{item.url}</span>
       </span>
-      <span className="row-side">
-        {item.visitCount > 1 && <span className="row-count">{item.visitCount}</span>}
-        <time className="row-time">{timeLabel(item.lastVisit)}</time>
+      <span className="inline-flex shrink-0 items-center gap-2">
+        {item.visitCount > 1 && (
+          <span className="min-w-5 rounded bg-primary-soft px-1.5 py-px text-center font-mono text-[0.68rem] font-semibold text-primary">
+            {item.visitCount}
+          </span>
+        )}
+        <time className="font-mono text-[0.7rem] text-muted">{timeLabel(item.lastVisit)}</time>
       </span>
     </a>
   )

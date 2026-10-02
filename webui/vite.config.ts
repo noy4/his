@@ -1,6 +1,7 @@
 import babel from '@rolldown/plugin-babel'
 import react from '@vitejs/plugin-react'
 import Icons from 'unplugin-icons/vite'
+import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 
@@ -12,6 +13,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    tailwindcss(),
     react(),
     // Iconify icons inlined at build time (no runtime API)
     // https://github.com/unplugin/unplugin-icons
