@@ -10,7 +10,6 @@ export class TimelineModel {
   readonly loading = signal(false)
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
-  private io: IntersectionObserver | null = null
   private started = false
 
   constructor(api: HisApi) {
@@ -23,24 +22,25 @@ export class TimelineModel {
 
   subscribe(): () => void {
     void this.start()
-    const watchSentinel = effect(() => {
-      this.io?.disconnect()
-      this.io = null
+    const unsubs: (() => void)[] = [this.watchSentinel()]
+    return () => {
+      unsubs.forEach((fn) => fn())
+    }
+  }
+
+  private watchSentinel(): () => void {
+    return effect(() => {
       const el = this.sentinel.value
       if (!el) return
-      this.io = new IntersectionObserver(
+      const io = new IntersectionObserver(
         (entries) => {
           if (entries.some((e) => e.isIntersecting)) void this.loadMore()
         },
         { rootMargin: '240px 0px' },
       )
-      this.io.observe(el)
+      io.observe(el)
+      return () => io.disconnect()
     })
-    return () => {
-      watchSentinel()
-      this.io?.disconnect()
-      this.io = null
-    }
   }
 
   async start(): Promise<void> {
