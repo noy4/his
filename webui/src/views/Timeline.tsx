@@ -29,11 +29,14 @@ function groupByDay(items: HistoryItem[]): DayGroup[] {
 }
 
 export function Timeline({ app }: { app: AppModel }) {
-  const m = useModel(() => new TimelineModel(app.api))
+  const {
+    items,
+    loading,
+    done,
+    setSentinel,
+  } = useModel(() => new TimelineModel(app.api))
 
-  const items = m.items.value
-  const loading = m.loading.value
-  const groups = useMemo(() => groupByDay(items), [items])
+  const groups = useMemo(() => groupByDay(items.value), [items.value])
 
   return (
     <div className="timeline">
@@ -47,9 +50,9 @@ export function Timeline({ app }: { app: AppModel }) {
           </div>
         </section>
       ))}
-      {loading && <p className="status">Loading…</p>}
-      {m.done.value && items.length === 0 && <p className="status">No history</p>}
-      <div ref={(el) => m.setSentinel(el)} aria-hidden="true" />
+      {loading.value && <p className="status">Loading…</p>}
+      {done.value && items.value.length === 0 && <p className="status">No history</p>}
+      <div ref={(el) => setSentinel(el)} aria-hidden="true" />
     </div>
   )
 }
