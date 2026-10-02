@@ -1,0 +1,1087 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="created_at" content="2026-10-02T16:30:00+09:00">
+  <title>his | Spec</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0B0E14;
+      --surface: #151A23;
+      --surface-2: #21252F;
+      --border: #2C313F;
+      --border-strong: #383F50;
+      --text: #C3CDDC;
+      --text-strong: #F7F9FC;
+      --muted: #7E8A9E;
+      --primary: #4465DB;
+      --primary-soft: rgba(68, 101, 219, 0.15);
+      --accent: #F08A59;
+      --accent-soft: rgba(240, 138, 89, 0.15);
+      --mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+      color-scheme: dark;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #F8FAFC;
+        --surface: #FFFFFF;
+        --surface-2: #F1F5F9;
+        --border: #E2E8F0;
+        --border-strong: #CBD5E1;
+        --text: #334155;
+        --text-strong: #0F172A;
+        --muted: #64748B;
+        --primary: #2563EB;
+        --primary-soft: rgba(37, 99, 235, 0.1);
+        --accent: #EA580C;
+        --accent-soft: rgba(234, 88, 12, 0.1);
+        color-scheme: light;
+      }
+    }
+
+    section { scroll-margin-top: 24px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      padding: 0 16px;
+    }
+    .toc {
+      display: none;
+      position: fixed;
+      top: 96px;
+      left: calc(50% + 420px);
+      width: 200px;
+      max-height: calc(100vh - 128px);
+      overflow-y: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    @media (min-width: 1240px) {
+      .toc { display: block; }
+    }
+    .toc-title {
+      padding-left: 14px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: var(--mono);
+    }
+    .toc iconify-icon { font-size: 13px; width: 13px; height: 13px; vertical-align: -2px; margin-right: 5px; }
+    .toc a.active iconify-icon { color: inherit; }
+    .toc a {
+      display: block;
+      padding: 3px 8px 3px 12px;
+      border-left: 2px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .toc a:hover { color: var(--text-strong); }
+    .toc a.active { color: var(--primary); border-left-color: var(--primary); }
+    .toc a.toc-h3 { padding-left: 24px; font-size: 11px; }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 0 80px;
+    }
+
+    /* Hero */
+    .hero {
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-strong);
+    }
+    .badge-top {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-family: var(--mono);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--text-strong);
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    h1 iconify-icon { color: var(--primary); flex-shrink: 0; }
+    .tagline {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      font-family: var(--mono);
+    }
+
+    /* Sections */
+    section { margin-top: 48px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+    h2 iconify-icon { color: var(--primary); flex-shrink: 0; }
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--text-strong);
+      margin: 24px 0 8px;
+    }
+    h3 iconify-icon { color: var(--accent); font-size: 18px; flex-shrink: 0; }
+    p { margin-bottom: 12px; }
+    p strong { color: var(--text); }
+    .section-desc {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+    }
+
+    /* Inline code & blocks */
+    code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      color: var(--text);
+      background: var(--surface-2);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.77rem;
+      line-height: 1.7;
+      color: var(--text);
+      margin: 14px 0;
+    }
+    pre .c { color: var(--muted); }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 14px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    th {
+      text-align: left;
+      padding: 8px 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-strong);
+      white-space: nowrap;
+      background: var(--surface);
+    }
+    td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      background: var(--surface);
+    }
+    tr:last-child td { border-bottom: none; }
+
+    /* Callout */
+    .callout {
+      background: var(--primary-soft);
+      border: 1px solid var(--primary);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.84rem;
+      margin: 16px 0;
+      line-height: 1.65;
+    }
+    .callout iconify-icon {
+      font-size: 18px;
+      margin-right: 6px;
+      vertical-align: -3px;
+      color: var(--primary);
+    }
+
+    /* Figure (theme-aware SVG) */
+    .figure {
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .figure svg { width: 100%; height: auto; display: block; }
+    .figure-caption {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-family: var(--mono);
+      text-align: center;
+    }
+    .figure .fig-zone { fill: none; stroke: var(--border-strong); stroke-dasharray: 4 4; }
+    .figure .fig-label { fill: var(--muted); font-size: 9px; letter-spacing: 0.08em; font-family: var(--mono); }
+    .figure .node { fill: var(--surface-2); stroke: var(--border-strong); }
+    .figure .node-primary { stroke: var(--primary); }
+    .figure .node-accent { fill: var(--accent-soft); stroke: var(--accent); }
+    .figure .tt { fill: var(--text-strong); font-weight: 600; font-size: 11.5px; text-anchor: start; font-family: "Geist", sans-serif; }
+    .figure .tm { fill: var(--muted); font-size: 8.5px; text-anchor: start; font-family: var(--mono); }
+    .figure .edge { fill: none; stroke: var(--muted); stroke-width: 1.2; marker-end: url(#arch-head-muted); }
+    .figure .edge-primary { stroke: var(--primary); stroke-width: 1.5; marker-end: url(#arch-head-primary); }
+    .figure .edge-accent { stroke: var(--accent); stroke-width: 1.4; marker-end: url(#arch-head-accent); }
+    .figure .alabel { fill: var(--muted); font-size: 8.5px; font-family: var(--mono); }
+    .figure .head-muted { fill: var(--muted); }
+    .figure .head-primary { fill: var(--primary); }
+    .figure .head-accent { fill: var(--accent); }
+
+    /* Grid & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    @media (max-width: 620px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .card .card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .card .card-head iconify-icon {
+      font-size: 22px;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .card h4 {
+      font-size: 0.95rem;
+      color: var(--text-strong);
+      font-weight: 600;
+      margin: 0;
+    }
+    .card p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 0;
+    }
+    .card p strong { color: var(--text); }
+    .card ul { margin: 0; padding-left: 16px; }
+    .card li { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+    /* Footer */
+    footer {
+      margin-top: 56px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-strong);
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    footer strong { color: var(--text); }
+    footer ul { list-style: none; }
+    footer li { padding: 2px 0; }
+    footer li iconify-icon { color: var(--muted); font-size: 14px; vertical-align: -2px; margin-right: 6px; }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .f-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .f-title iconify-icon { color: var(--primary); }
+    .colophon {
+      margin-top: 16px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="badge-top">
+      <iconify-icon icon="mdi:file-document-edit-outline" noobserver></iconify-icon>
+      SPECIFICATION
+    </div>
+    <h1><iconify-icon icon="mdi:history" width="30" noobserver></iconify-icon>his Spec</h1>
+    <p class="tagline">Browser history archive &amp; viewer.</p>
+  </header>
+
+  <!-- OVERVIEW -->
+  <section>
+    <h2><iconify-icon icon="mdi:information-outline" width="24" noobserver></iconify-icon>Overview</h2>
+    <p class="section-desc">
+      One SQLite archive for all browser history, browsed with a self-built WebUI.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
+          <h4>Unified archive</h4>
+        </div>
+        <p>One SQLite file (WAL + FTS5), WebExtensions-style model — <code>HistoryItem</code> + <code>VisitItem</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-import-outline" noobserver></iconify-icon>
+          <h4>Incremental sync</h4>
+        </div>
+        <p>Staging snapshots, watermark cursors, append-only. Never opens live browser DBs.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:application-brackets-outline" noobserver></iconify-icon>
+          <h4>Three frontends</h4>
+        </div>
+        <p>One core: CLI, WebUI (React + <code>@preact/signals</code>), Desktop shell.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:shield-lock-outline" noobserver></iconify-icon>
+          <h4>Local only</h4>
+        </div>
+        <p>127.0.0.1 only, no telemetry. Plain files — copy to back up.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRUCTURE -->
+  <section>
+    <h2><iconify-icon icon="mdi:file-tree-outline" width="24" noobserver></iconify-icon>Directory structure</h2>
+    <p class="section-desc">
+      One core, three frontends.
+    </p>
+
+    <pre>his/
+├── 🧠 core/                      <span class="c"># model · sync · db</span>
+│   ├── package.json
+│   └── src/
+│       ├── model.ts              <span class="c"># HistoryItem · VisitItem · Transition enum · epoch ms</span>
+│       ├── db/
+│       │   ├── schema.sql        <span class="c"># urls · visits · sources · profiles · FTS5</span>
+│       │   ├── open.ts           <span class="c"># open · WAL · foreign_keys · migrations</span>
+│       │   └── query.ts          <span class="c"># search · timeline · keyset pagination</span>
+│       └── sync/
+│           ├── run.ts            <span class="c"># snapshot → parse → upsert → watermark</span>
+│           ├── snapshot.ts       <span class="c"># SQLite Backup API → staging · journal fold</span>
+│           ├── watermarks.ts     <span class="c"># per browser/profile cursor · reset detection</span>
+│           └── sources/
+│               ├── chromium.ts   <span class="c"># Chrome / Edge / Brave / Vivaldi / Arc ...</span>
+│               ├── firefox.ts    <span class="c"># places.sqlite · PRTime µs</span>
+│               ├── safari.ts     <span class="c"># History.db · Core Data epoch</span>
+│               └── takeout.ts    <span class="c"># BrowserHistory.json · 3 layouts</span>
+├── 📦 cli/                       <span class="c"># npm package: his</span>
+│   ├── package.json              <span class="c"># "bin": { "his": "./bin.ts" }</span>
+│   ├── bin.ts                    <span class="c"># sync · serve · query · status</span>
+│   └── server/
+│       ├── index.ts              <span class="c"># HTTP server: static dist · binds 127.0.0.1</span>
+│       ├── rpc.ts                <span class="c"># JSON-RPC 2.0 over WS · dispatch to core</span>
+│       └── state.ts              <span class="c"># pid liveness · bound port</span>
+├── 🌐 webui/                     <span class="c"># React + @preact/signals SPA</span>
+│   ├── package.json
+│   ├── vite.config.ts            <span class="c"># dist/ → served by `his serve`</span>
+│   └── src/
+│       ├── main.tsx
+│       ├── signals/              <span class="c"># query · date range · selection</span>
+│       ├── views/                <span class="c"># timeline · list · detail</span>
+│       └── api.ts                <span class="c"># typed RPC client · push → signals</span>
+└── 🖥️ desktop/                   <span class="c"># Electron shell</span>
+    ├── package.json
+    └── src/
+        ├── main.ts               <span class="c"># spawn `his serve` · BrowserWindow(webui)</span>
+        └── tray.ts               <span class="c"># menu bar · Sync Now · Open</span></pre>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section>
+    <h2><iconify-icon icon="mdi:sitemap-outline" width="24" noobserver></iconify-icon>Architecture</h2>
+    <p class="section-desc">
+      <code>his serve</code> owns the archive, the static WebUI, and the RPC socket; the desktop app only spawns it.
+    </p>
+
+    <div class="figure">
+      <svg viewBox="0 0 768 412" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="his architecture">
+        <defs>
+          <marker id="arch-head-muted" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" class="head-muted"/></marker>
+          <marker id="arch-head-primary" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" class="head-primary"/></marker>
+          <marker id="arch-head-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" class="head-accent"/></marker>
+        </defs>
+
+        <!-- Process zone -->
+        <rect class="fig-zone" x="48" y="104" width="460" height="196" rx="8"/>
+        <text class="fig-label" x="60" y="122">HIS SERVE PROCESS — his serve</text>
+
+        <!-- Edges -->
+        <path class="edge edge-primary" d="M 384,64 V 100"/>
+        <path class="edge" d="M 258,196 V 216 H 644 V 200"/>
+        <path class="edge edge-accent" d="M 492,168 H 556"/>
+        <path class="edge edge-primary" d="M 368,262 H 556"/>
+        <path class="edge" d="M 455,340 V 290"/>
+        <path class="edge edge-primary" d="M 148,340 V 304"/>
+        <text class="alabel" x="396" y="210">GET / · static</text>
+        <text class="alabel" x="500" y="158">WS /rpc</text>
+        <text class="alabel" x="396" y="254">upsert · append-only</text>
+        <text class="alabel" x="463" y="318">staging snapshot</text>
+        <text class="alabel" x="156" y="324">spawn · stop</text>
+
+        <!-- Entry -->
+        <rect class="node node-primary" x="258" y="20" width="250" height="44" rx="6"/>
+        <image href="https://api.iconify.design/mdi/console.svg?height=18&color=%237E8A9E" x="272" y="33" height="18"/>
+        <text class="tt" x="296" y="38" style="font-family: var(--mono);">his &lt;command&gt;</text>
+        <text class="tm" x="296" y="54">bin.ts · sync · serve · query</text>
+
+        <!-- Inside the process -->
+        <rect class="node" x="68" y="140" width="190" height="56" rx="6"/>
+        <image href="https://api.iconify.design/mdi/server.svg?height=18&color=%237E8A9E" x="80" y="159" width="18" height="18"/>
+        <text class="tt" x="104" y="162">HTTP server</text>
+        <text class="tm" x="104" y="178">static dist · /f/&lt;domain&gt;</text>
+
+        <rect class="node" x="298" y="140" width="190" height="56" rx="6"/>
+        <image href="https://api.iconify.design/mdi/broadcast.svg?height=18&color=%237E8A9E" x="310" y="159" width="18" height="18"/>
+        <text class="tt" x="334" y="162">RPC server</text>
+        <text class="tm" x="334" y="178">JSON-RPC 2.0 · WS /rpc</text>
+
+        <rect class="node" x="68" y="238" width="300" height="48" rx="6"/>
+        <image href="https://api.iconify.design/mdi/database-import-outline.svg?height=18&color=%237E8A9E" x="80" y="253" width="18" height="18"/>
+        <text class="tt" x="104" y="256">Sync</text>
+        <text class="tm" x="104" y="272">snapshot → parse → upsert</text>
+
+        <!-- Archive -->
+        <rect class="node" x="560" y="238" width="184" height="48" rx="6"/>
+        <image href="https://api.iconify.design/mdi/database-outline.svg?height=18&color=%237E8A9E" x="572" y="253" width="18" height="18"/>
+        <text class="tt" x="596" y="256" style="font-family: var(--mono); font-size: 11px;">history.db</text>
+        <text class="tm" x="596" y="272">WAL · FTS5 · append-only</text>
+
+        <!-- WebUI -->
+        <rect class="node node-accent" x="560" y="140" width="184" height="56" rx="6"/>
+        <image href="https://api.iconify.design/logos/react-icon.svg?height=18" x="572" y="159" height="18"/>
+        <text class="tt" x="596" y="162">WebUI</text>
+        <text class="tm" x="596" y="178">React · @preact/signals</text>
+
+        <!-- Desktop -->
+        <rect class="node" x="48" y="340" width="200" height="52" rx="6"/>
+        <image href="https://api.iconify.design/logos/electron.svg?height=18" x="60" y="357" height="18"/>
+        <text class="tt" x="84" y="362">Desktop (Electron)</text>
+        <text class="tm" x="84" y="378">spawn · stop · BrowserWindow</text>
+
+        <!-- Sources -->
+        <rect class="node" x="330" y="340" width="250" height="52" rx="6"/>
+        <image href="https://api.iconify.design/mdi/web.svg?height=18&color=%237E8A9E" x="342" y="357" width="18" height="18"/>
+        <text class="tt" x="366" y="362">Browser sources</text>
+        <text class="tm" x="366" y="378">Chromium · Firefox · Safari · Takeout</text>
+      </svg>
+    </div>
+
+    <h3><iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>RPC surface</h3>
+    <p class="section-desc">
+      JSON-RPC 2.0 over WS at <code>/rpc</code> — methods mirror the WebExtensions history API, notifications push on the same socket. Same-origin + state-file token only.
+    </p>
+
+    <pre><span class="c"># request / response — id-matched</span>
+history.search    { query?, from?, to?, cursor?, limit? } → { items, nextCursor }
+history.getVisits { urlId, limit? }                       → VisitItem[]
+history.getItem   { id }                                  → { item, visits }
+history.deleteUrl { url }                                 → { }              <span class="c"># soft hide · restoreUrl reverts</span>
+sources.list                                              → Source[]         <span class="c"># + watermarks</span>
+sync.run          { source? }                             → RunHandle        <span class="c"># progress via push</span>
+sync.status                                               → LastRun
+
+<span class="c"># notifications — same socket, no id</span>
+sync.progress     { source, phase, parsed, upserted }
+db.changed        { }                                     <span class="c"># clients refetch open views</span></pre>
+
+    <h3><iconify-icon icon="mdi:file-cog-outline" noobserver></iconify-icon>Runtime state</h3>
+    <p class="section-desc">
+      The running instance keeps <code>~/.his/state.json</code>; one home = one archive = one instance.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:file-check-outline" noobserver></iconify-icon>
+          <h4>Lifecycle</h4>
+        </div>
+        <p>Written once the port is bound, removed on clean shutdown.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:heart-pulse" noobserver></iconify-icon>
+          <h4>Liveness</h4>
+        </div>
+        <p>Readers verify the PID is alive (<code>kill(pid, 0)</code>) and prune dead-PID files in place.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:map-marker-path" noobserver></iconify-icon>
+          <h4>Location</h4>
+        </div>
+        <p><code>~/.his/state.json</code> — pid, port, url, db path, /rpc token. A second <code>his serve</code> just reports the running URL. The home also holds <code>history.db</code> and staging copies; distinct archives = distinct homes (<code>HIS_HOME</code>).</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
+          <h4>Write path</h4>
+        </div>
+        <p>One writer per process (WAL + <code>busy_timeout</code>); sync runs via <code>his sync</code> or <code>sync.run</code> RPC. WebUI has no direct DB access.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:code-json" noobserver></iconify-icon>State file</h3>
+
+    <pre>{
+  "pid": 12345,                      <span class="c">// serve process — stop sends SIGTERM, liveness-checked</span>
+  "port": 4477,                      <span class="c">// actually bound port (starts at 4477, +1 on conflict)</span>
+  "url": "http://localhost:4477/",
+  "db": "/Users/me/.his/history.db",  <span class="c">// absolute path of the archive</span>
+  "token": "9f2c…"                   <span class="c">// /rpc requires it · webui injected · desktop reads file</span>
+}</pre>
+  </section>
+
+  <!-- DATA MODEL -->
+  <section>
+    <h2><iconify-icon icon="mdi:database-cog-outline" width="24" noobserver></iconify-icon>Data model</h2>
+    <p class="section-desc">
+      WebExtensions-leaning shapes in SQLite — <code>urls</code> = <code>HistoryItem</code> aggregate, <code>visits</code> = <code>VisitItem</code> events. Epoch ms, Chromium transition enums.
+    </p>
+
+    <h3><iconify-icon icon="mdi:code-braces" noobserver></iconify-icon>Schema</h3>
+
+    <div class="figure">
+      <svg viewBox="0 0 768 536" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="his schema diagram">
+        <defs>
+          <marker id="er-head" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" class="head-muted"/></marker>
+        </defs>
+
+        <!-- File zones -->
+        <rect class="fig-zone" x="36" y="44" width="552" height="486" rx="8"/>
+        <text class="fig-label" x="48" y="62">HISTORY.DB — WAL · foreign_keys=ON · append-only</text>
+        <rect class="fig-zone" x="604" y="44" width="148" height="170" rx="8"/>
+        <text class="fig-label" x="616" y="62">FAVICONS.DB</text>
+
+        <!-- Edges -->
+        <path class="edge" style="marker-end: url(#er-head)" d="M 340,160 H 272"/>
+        <text class="alabel" x="274" y="150">url_id · N:1</text>
+        <path class="edge" style="marker-end: url(#er-head)" d="M 464,263 V 296"/>
+        <text class="alabel" x="472" y="284">source_profile_id</text>
+        <path class="edge" style="marker-end: url(#er-head)" d="M 400,424 V 409"/>
+        <text class="alabel" x="408" y="421">1:1</text>
+        <path class="edge" style="stroke-dasharray:4 4; marker-end: url(#er-head)" d="M 158,292 V 250"/>
+        <text class="alabel" x="166" y="270">external content · triggers</text>
+        <path class="edge" style="stroke-dasharray:4 4; marker-end: url(#er-head)" d="M 668,90 V 76 H 160 V 86"/>
+        <text class="alabel" x="470" y="70">eTLD+1</text>
+
+        <!-- urls -->
+        <rect class="node" x="48" y="90" width="220" height="156" rx="6"/>
+        <text class="tt" x="60" y="108">urls</text>
+        <text class="tm" x="92" y="108">HistoryItem · URL aggregate</text>
+        <text class="tm" x="60" y="126">id · PK</text>
+        <text class="tm" x="60" y="139">url · UNIQUE</text>
+        <text class="tm" x="60" y="152">title</text>
+        <text class="tm" x="60" y="165">visit_count</text>
+        <text class="tm" x="60" y="178">typed_count</text>
+        <text class="tm" x="60" y="191">first_visit_time · ms</text>
+        <text class="tm" x="60" y="204">last_visit_time · ms</text>
+        <text class="tm" x="60" y="217">hidden_at · soft delete</text>
+        <line x1="60" y1="222" x2="256" y2="222" style="stroke: var(--border); stroke-width: 1"/>
+        <text class="tm" x="60" y="235" style="font-style: italic">idx: last_visit_time DESC</text>
+
+        <!-- urls_fts -->
+        <rect class="node" x="48" y="296" width="220" height="88" rx="6" style="stroke-dasharray:5 4"/>
+        <text class="tt" x="60" y="314">urls_fts</text>
+        <text class="tm" x="118" y="314">FTS5 · trigram</text>
+        <text class="tm" x="60" y="332">title / url — indexed</text>
+        <text class="tm" x="60" y="345">content='urls' · rowid=id</text>
+        <text class="tm" x="60" y="358">trigger-maintained</text>
+        <text class="tm" x="60" y="371">&lt; 3 chars → LIKE fallback</text>
+
+        <!-- visits -->
+        <rect class="node" x="340" y="90" width="240" height="169" rx="6"/>
+        <text class="tt" x="352" y="108">visits</text>
+        <text class="tm" x="404" y="108">VisitItem · events</text>
+        <text class="tm" x="352" y="126">id · PK</text>
+        <text class="tm" x="352" y="139">url_id · FK</text>
+        <text class="tm" x="352" y="152">visit_time · ms</text>
+        <text class="tm" x="352" y="165">transition · Chromium enum</text>
+        <text class="tm" x="352" y="178">source_profile_id · FK</text>
+        <text class="tm" x="352" y="191">source_visit_id · native</text>
+        <text class="tm" x="352" y="204">source_transition · raw</text>
+        <text class="tm" x="352" y="217">UNIQUE(source_profile_id, source_visit_id)</text>
+        <line x1="352" y1="222" x2="568" y2="222" style="stroke: var(--border); stroke-width: 1"/>
+        <text class="tm" x="352" y="235" style="font-style: italic">idx: visit_time DESC</text>
+        <text class="tm" x="352" y="248" style="font-style: italic">idx: (url_id, visit_time DESC)</text>
+
+        <!-- source_profiles -->
+        <rect class="node" x="340" y="300" width="240" height="105" rx="6"/>
+        <text class="tt" x="352" y="318">source_profiles</text>
+        <text class="tm" x="467" y="318">registry</text>
+        <text class="tm" x="352" y="336">id · PK</text>
+        <text class="tm" x="352" y="349">kind · chromium | firefox | safari | takeout</text>
+        <text class="tm" x="352" y="362">display_name</text>
+        <text class="tm" x="352" y="375">profile_path</text>
+        <text class="tm" x="352" y="388">UNIQUE(kind, profile_path)</text>
+
+        <!-- profile_watermarks -->
+        <rect class="node" x="340" y="428" width="240" height="90" rx="6"/>
+        <text class="tt" x="352" y="446">profile_watermarks</text>
+        <text class="tm" x="486" y="446">cursors</text>
+        <text class="tm" x="352" y="462">source_profile_id · PK · FK</text>
+        <text class="tm" x="352" y="475">last_source_visit_id</text>
+        <text class="tm" x="352" y="488">source_id_offset · reset offset</text>
+        <text class="tm" x="352" y="501">last_run_at</text>
+
+        <!-- favicon_cache -->
+        <rect class="node" x="616" y="90" width="132" height="114" rx="6"/>
+        <text class="tt" x="628" y="108">favicon_cache</text>
+        <text class="tm" x="628" y="122">separate · rebuildable</text>
+        <text class="tm" x="628" y="140">domain · PK (eTLD+1)</text>
+        <text class="tm" x="628" y="153">data · BLOB</text>
+        <text class="tm" x="628" y="166">data_type · png|svg|ico</text>
+        <text class="tm" x="628" y="179">width · best wins</text>
+        <text class="tm" x="628" y="192">updated_at · TTL 30d</text>
+      </svg>
+    </div>
+
+    <pre><span class="c">-- history.db · WAL · foreign_keys=ON · append-only (+ soft delete)</span>
+CREATE TABLE source_profiles (          <span class="c">-- registered browser profiles</span>
+  id            INTEGER PRIMARY KEY,
+  kind          TEXT    NOT NULL,       <span class="c">-- chromium | firefox | safari | takeout</span>
+  display_name  TEXT,
+  profile_path  TEXT    NOT NULL,
+  UNIQUE(kind, profile_path)
+);
+
+CREATE TABLE urls (                     <span class="c">-- HistoryItem · URL aggregate</span>
+  id               INTEGER PRIMARY KEY,
+  url              TEXT    NOT NULL UNIQUE,
+  title            TEXT,                <span class="c">-- last seen</span>
+  visit_count      INTEGER NOT NULL DEFAULT 0,
+  typed_count      INTEGER NOT NULL DEFAULT 0,
+  first_visit_time INTEGER,             <span class="c">-- epoch ms</span>
+  last_visit_time  INTEGER,             <span class="c">-- epoch ms</span>
+  hidden_at        INTEGER              <span class="c">-- soft delete · NULL = visible</span>
+);
+
+CREATE TABLE visits (                   <span class="c">-- VisitItem · one row per visit</span>
+  id                INTEGER PRIMARY KEY,
+  url_id            INTEGER NOT NULL REFERENCES urls(id),
+  visit_time        INTEGER NOT NULL,   <span class="c">-- epoch ms</span>
+  transition        TEXT    NOT NULL,   <span class="c">-- Chromium enum · LINK / TYPED / ...</span>
+  source_profile_id INTEGER NOT NULL REFERENCES source_profiles(id),
+  source_visit_id   INTEGER NOT NULL,   <span class="c">-- native visit id · takeout: stable hash</span>
+  source_transition TEXT,               <span class="c">-- raw value before normalization</span>
+  UNIQUE(source_profile_id, source_visit_id)
+);
+CREATE INDEX visits_time ON visits(visit_time DESC);
+CREATE INDEX visits_url  ON visits(url_id, visit_time DESC);
+CREATE INDEX urls_last   ON urls(last_visit_time DESC);      <span class="c">-- timeline sort</span>
+
+CREATE TABLE profile_watermarks (       <span class="c">-- incremental cursors per profile</span>
+  source_profile_id    INTEGER PRIMARY KEY REFERENCES source_profiles(id),
+  last_source_visit_id INTEGER NOT NULL DEFAULT 0,
+  source_id_offset     INTEGER NOT NULL DEFAULT 0,  <span class="c">-- += last_raw_id on clear</span>
+  last_run_at          INTEGER
+);
+
+CREATE VIRTUAL TABLE urls_fts USING fts5(
+  title, url,
+  content='urls', content_rowid='id',
+  tokenize='trigram'                    <span class="c">-- SQLite >= 3.34 · trigger-maintained</span>
+);</pre>
+
+    <h3><iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>Design notes</h3>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:call-split" noobserver></iconify-icon>
+          <h4>HistoryItem / VisitItem split</h4>
+        </div>
+        <p><code>urls</code> = URL aggregate, <code>visits</code> = events — WebExtensions shape 1:1, RPC responses need no reshaping.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:content-duplicate" noobserver></iconify-icon>
+          <h4>Dedup &amp; reset detection</h4>
+        </div>
+        <p>Source <code>MAX(id)</code> shrinking = history cleared → <code>source_id_offset += last_raw_id</code> (Gateway 式). Takeout has no native ids — stable hash of (url, time). Watermarks advance only after a successful commit.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:clock-outline" noobserver></iconify-icon>
+          <h4>Time = epoch ms</h4>
+        </div>
+        <p>Adapters convert WebKit µs / PRTime µs / Cocoa s / Takeout µs on the way in. Alt: Unix seconds — WebExtensions unit wins.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:directions-fork" noobserver></iconify-icon>
+          <h4>Transitions normalized</h4>
+        </div>
+        <p>Chromium enums (<code>LINK</code> / <code>TYPED</code> / ...) are the axis; Firefox / Safari map at sync, raw kept in <code>source_transition</code>. Alt: native as-is.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:delete-outline" noobserver></iconify-icon>
+          <h4>Soft delete</h4>
+        </div>
+        <p><code>urls.hidden_at</code> — reads filter <code>hidden_at IS NULL</code>; <code>history.deleteUrl</code> / <code>restoreUrl</code> flip it. Alt: tombstone + compact / immutable.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:table-search" noobserver></iconify-icon>
+          <h4>Search: trigram</h4>
+        </div>
+        <p>External content on <code>urls</code> (title, url), trigger-maintained; &lt;3 chars → LIKE; hits join <code>hidden_at IS NULL</code>. Alt: unicode61 / contentless.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:image-multiple-outline" noobserver></iconify-icon>Favicons — favicons.db</h3>
+
+    <pre><span class="c">-- separate file · rebuildable at any time</span>
+CREATE TABLE favicon_cache (
+  domain      TEXT    PRIMARY KEY,        <span class="c">-- eTLD+1 · domain unit (HistorySync 式)</span>
+  data        BLOB    NOT NULL,
+  data_type   TEXT    NOT NULL,           <span class="c">-- png | svg | ico</span>
+  width       INTEGER,                    <span class="c">-- best quality wins · never downgraded</span>
+  updated_at  INTEGER NOT NULL            <span class="c">-- epoch ms · TTL 30 days</span>
+);</pre>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
+          <h4>Quality upsert</h4>
+        </div>
+        <p>Overwrite only when better (larger width, SVG preferred); 30-day TTL swept after each sync.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
+          <h4>Why separate</h4>
+        </div>
+        <p>Rebuildable — dropping it never loses history, keeps <code>history.db</code> lean. Alt: same-DB blobs (PathKeep 式) / no storage.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SYNC / SOURCES -->
+  <section>
+    <h2><iconify-icon icon="mdi:database-import-outline" width="24" noobserver></iconify-icon>Sync</h2>
+    <p class="section-desc">
+      File-watch triggered; snapshots only — live browser DBs are never opened.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:radar" noobserver></iconify-icon>
+          <h4>Trigger</h4>
+        </div>
+        <p>File watch on profile DBs — FSEvents / mtime poll, 5 s debounce. Alt: manual / OS scheduler / desktop-resident.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:workflow" noobserver></iconify-icon>
+          <h4>Pipeline</h4>
+        </div>
+        <p>snapshot → parse → upsert → watermark. One transaction per profile; <code>INSERT OR IGNORE</code> keeps re-sync idempotent.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:content-copy" noobserver></iconify-icon>
+          <h4>Snapshot</h4>
+        </div>
+        <p>SQLite Backup API → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code>; journal folded on the copy. Fallback: copy main + <code>-wal</code> + <code>-shm</code>, open immutable.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:map-marker-path" noobserver></iconify-icon>
+          <h4>Watermarks</h4>
+        </div>
+        <p>Advance only after a successful commit. Source <code>MAX(id)</code> shrinking = history cleared → <code>source_id_offset += last_raw_id</code>.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:web" noobserver></iconify-icon>Sources</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Kind</th><th>Source</th><th>Time → ms</th><th>Transition</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>chromium</code></td><td>History DB — Chrome / Edge / Brave / Vivaldi / Arc ...</td><td>WebKit µs (1601) → ms</td><td>Native enum</td></tr>
+          <tr><td><code>firefox</code></td><td><code>places.sqlite</code></td><td>PRTime µs ÷ 1000</td><td>Places 1–8 → enum (below)</td></tr>
+          <tr><td><code>safari</code></td><td><code>History.db</code></td><td>Core Data s (2001) + 978307200</td><td>Conservative → <code>LINK</code>, raw kept</td></tr>
+          <tr><td><code>takeout</code></td><td><code>BrowserHistory.json</code> — 3 layouts</td><td><code>time_usec</code> ÷ 1000</td><td><code>page_transition</code> as-is</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><iconify-icon icon="mdi:directions-fork" noobserver></iconify-icon>Transition mapping</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Visit kind</th><th>Chromium (stored)</th><th>Firefox Places</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Link</td><td><code>LINK</code></td><td>1</td></tr>
+          <tr><td>Address bar</td><td><code>TYPED</code></td><td>2</td></tr>
+          <tr><td>Bookmark</td><td><code>AUTO_BOOKMARK</code></td><td>3</td></tr>
+          <tr><td>Subframe</td><td><code>AUTO_SUBFRAME</code> / <code>MANUAL_SUBFRAME</code></td><td>4 / 8</td></tr>
+          <tr><td>Form / generated</td><td><code>FORM_SUBMIT</code> / <code>GENERATED</code></td><td>—</td></tr>
+          <tr><td>Reload / start</td><td><code>RELOAD</code> / <code>START_PAGE</code></td><td>—</td></tr>
+          <tr><td>Redirect</td><td>— (chain)</td><td>5 / 6</td></tr>
+          <tr><td>Download</td><td>—</td><td>7</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="section-desc">
+      Unmappable values keep the raw string in <code>source_transition</code>.
+    </p>
+  </section>
+
+  <!-- CLI -->
+  <section>
+    <h2><iconify-icon icon="mdi:console" width="24" noobserver></iconify-icon>CLI</h2>
+    <p class="section-desc">Syntax: <code>his [command] [options]</code></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Command / Option</th><th>Behavior</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>sync</code></td><td>Run sync once — writes <code>history.db</code> directly. Prints per-source counts; errors exit 1</td></tr>
+          <tr><td><code>sync --source &lt;kind&gt;</code></td><td>Limit to <code>chromium</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code> (default: all)</td></tr>
+          <tr><td><code>sync --full</code></td><td>Ignore watermarks and re-read everything (idempotent)</td></tr>
+          <tr><td><code>serve</code></td><td>Foreground — HTTP + RPC + file-watch loop. <code>Ctrl+C</code> stops and removes the state file</td></tr>
+          <tr><td><code>serve --port &lt;n&gt;</code></td><td>Port to bind (default <code>4477</code>); +1 on conflict, recorded in the state file</td></tr>
+          <tr><td><code>serve --open</code></td><td>Open the WebUI once the port is bound</td></tr>
+          <tr><td><code>query [text]</code></td><td>Read-only — runs <code>history.search</code> against <code>history.db</code>, prints JSON. <code>--url</code>, <code>--from</code>, <code>--to</code>, <code>--limit</code></td></tr>
+          <tr><td><code>status</code></td><td>Print the running instance (url + archive); exit 1 when none. Stale state is pruned silently</td></tr>
+          <tr><td><code>stop</code></td><td>SIGTERM the running instance and remove its state file</td></tr>
+          <tr><td><code>--home &lt;dir&gt;</code></td><td>Override <code>~/.his</code> (env: <code>HIS_HOME</code>)</td></tr>
+          <tr><td><code>-h</code> / <code>-v</code></td><td>Show help / version</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- WEBUI -->
+  <section>
+    <h2><iconify-icon icon="mdi:web" width="24" noobserver></iconify-icon>WebUI</h2>
+    <p class="section-desc">
+      React + <code>@preact/signals</code> SPA — built to <code>dist/</code>, served by <code>his serve</code>; talks to core only via RPC.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:format-list-bulleted" noobserver></iconify-icon>
+          <h4>Views</h4>
+        </div>
+        <p>Timeline — date-grouped, last-visit DESC, cursor scroll. List — flat. Detail — <code>HistoryItem</code> + visits, delete / restore.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:chart-box-outline" noobserver></iconify-icon>
+          <h4>State</h4>
+        </div>
+        <p>Signals: query · date range · selection. <code>db.changed</code> push triggers a refetch.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:magnify" noobserver></iconify-icon>
+          <h4>Search</h4>
+        </div>
+        <p>FTS trigram, server-side; under 3 chars falls back to LIKE. Hidden rows are never returned.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
+          <h4>Favicons</h4>
+        </div>
+        <p><code>GET /f/&lt;eTLD+1&gt;</code> — served from <code>favicons.db</code>; 404 falls back to a letter tile.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESKTOP -->
+  <section>
+    <h2><iconify-icon icon="mdi:apple" width="24" noobserver></iconify-icon>Desktop app</h2>
+    <p class="section-desc">
+      A macOS menu bar client with one window — spawns <code>his serve</code>, talks RPC.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:cog-outline" noobserver></iconify-icon>
+          <h4>Process</h4>
+        </div>
+        <p>Single instance lock; spawns <code>his serve</code> at launch, stops it on quit.</p>      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:window-restore" noobserver></iconify-icon>
+          <h4>Window</h4>
+        </div>
+        <p>One BrowserWindow — loads the serve URL; port and token come from the state file.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:flash-outline" noobserver></iconify-icon>
+          <h4>Sync Now</h4>
+        </div>
+        <p><code>sync.run</code> over RPC; <code>sync.progress</code> shows in the tray tooltip.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:tray" noobserver></iconify-icon>
+          <h4>Watch</h4>
+        </div>
+        <p>The file-watch loop lives in <code>his serve</code> — the tray only triggers and reports.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:menu" noobserver></iconify-icon>Tray menu</h3>
+
+    <pre>Sync Now                       <span class="c"># sync.run over RPC</span>
+Open                           <span class="c"># BrowserWindow → serve URL</span>
+─────────────────────────────
+Quit his                       <span class="c"># stop serve · quit</span></pre>
+
+    <p class="section-desc">
+      Tray actions respawn <code>his serve</code> when down.
+    </p>
+  </section>
+
+  <!-- CONSIDERATIONS -->
+  <section>
+    <h2><iconify-icon icon="mdi:clipboard-list-outline" width="24" noobserver></iconify-icon>Considerations</h2>
+    <p class="section-desc">
+      Everything settled — alternatives live in their sections. Decision log and deferred minor items below.
+    </p>
+
+    <h3><iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>Decisions</h3>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:check-decagram" noobserver></iconify-icon>
+          <h4>Settled</h4>
+        </div>
+        <ul>
+          <li>Sync runs both ways — standalone <code>his sync</code> writes directly, <code>sync.run</code> over RPC runs in-process; accidental overlap covered by WAL + <code>busy_timeout</code></li>
+          <li><code>/rpc</code> accepts same-origin + state-file token only</li>
+          <li>Page bodies out of scope — metadata only, no WARC / WACZ</li>
+          <li>Dedup key = <code>(source_profile_id, source_visit_id)</code> — watermark incremental with reset detection</li>
+          <li>Sync trigger = file watch — FSEvents / mtime on profile DBs, 5 s debounce</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:alarm-snooze" noobserver></iconify-icon>
+          <h4>Deferred</h4>
+        </div>
+        <ul>
+          <li>CLI <code>query</code> output formats — JSON / CSV / table</li>
+          <li>Desktop webui bundling — shipped dist vs dev vite proxy</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="colophon">his SPEC · created 2026-10-02</div>
+  </footer>
+</div>
+
+<nav id="toc" class="toc" aria-label="On this page">
+  <div class="toc-title">On this page</div>
+</nav>
+
+<script>
+(() => {
+  const toc = document.getElementById("toc")
+  const headings = [...document.querySelectorAll(".container h2, .container h3")]
+  const seen = {}
+  for (const h of headings) {
+    const text = h.textContent.trim()
+    if (!h.id) {
+      const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+      seen[base] = (seen[base] ?? 0) + 1
+      h.id = seen[base] > 1 ? `${base}-${seen[base]}` : base
+    }
+    const a = document.createElement("a")
+    a.href = `#${h.id}`
+    a.innerHTML = h.innerHTML
+    a.querySelector("iconify-icon")?.removeAttribute("width")
+    if (h.tagName === "H3") a.className = "toc-h3"
+    a.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+      e.preventDefault()
+      h.scrollIntoView({ behavior: "smooth" })
+      history.replaceState(null, "", `#${h.id}`)
+    })
+    toc.append(a)
+  }
+  const links = new Map([...toc.querySelectorAll("a")].map((a) => [a.getAttribute("href").slice(1), a]))
+  const update = () => {
+    let current = headings[0]
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= 96) current = h
+    }
+    for (const a of links.values()) a.classList.remove("active")
+    links.get(current.id)?.classList.add("active")
+  }
+  addEventListener("scroll", update, { passive: true })
+  update()
+})()
+</script>
+</body>
+</html>
