@@ -1,7 +1,30 @@
-import { effect, signal } from '@preact/signals-react'
+import { computed, effect, signal } from '@preact/signals-react'
 import type { HisApi, HistoryItem } from '../api'
+import { dayKey, dayLabel } from '../lib/dates'
 
 const PAGE_SIZE = 60
+
+interface DayGroup {
+  key: string
+  label: string
+  items: HistoryItem[]
+}
+
+function groupByDay(items: HistoryItem[]): DayGroup[] {
+  const groups: DayGroup[] = []
+  const byKey = new Map<string, DayGroup>()
+  for (const item of items) {
+    const key = dayKey(item.lastVisit)
+    let g = byKey.get(key)
+    if (!g) {
+      g = { key, label: dayLabel(item.lastVisit), items: [] }
+      byKey.set(key, g)
+      groups.push(g)
+    }
+    g.items.push(item)
+  }
+  return groups
+}
 
 export class TimelineModel {
   readonly api: HisApi
@@ -10,13 +33,14 @@ export class TimelineModel {
   readonly loading = signal(false)
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
+  readonly groups = computed(() => groupByDay(this.items.value))
   private loaded = false
 
   constructor(api: HisApi) {
     this.api = api
   }
 
-  setSentinel(el: Element | null): void {
+  setSentinel = (el: Element | null): void => {
     this.sentinel.value = el
   }
 
