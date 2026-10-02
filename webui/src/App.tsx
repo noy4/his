@@ -1,13 +1,14 @@
-import IconMdiFormatListBulleted from '~icons/mdi/format-list-bulleted'
-import IconMdiHistory from '~icons/mdi/history'
-import IconMdiMagnify from '~icons/mdi/magnify'
+import FormatListBulleted from '~icons/mdi/format-list-bulleted'
+import History from '~icons/mdi/history'
+import Magnify from '~icons/mdi/magnify'
+import type { IconComponent } from './components/icons'
 import { query, view, type View } from './signals/ui'
 import { Timeline } from './views/Timeline'
 import { List } from './views/List'
 
-const VIEWS: { id: View; label: string; icon: typeof IconMdiHistory }[] = [
-  { id: 'timeline', label: 'Timeline', icon: IconMdiHistory },
-  { id: 'list', label: 'List', icon: IconMdiFormatListBulleted },
+const VIEWS: { id: View; label: string; icon: IconComponent }[] = [
+  { id: 'timeline', label: 'Timeline', icon: History },
+  { id: 'list', label: 'List', icon: FormatListBulleted },
 ]
 
 export default function App() {
@@ -16,7 +17,7 @@ export default function App() {
       <header className="topbar">
         <div className="topbar-row">
           <span className="brand">
-            <IconMdiHistory width={22} height={22} />
+            <History width={22} height={22} />
             his
           </span>
           <nav className="switcher" aria-label="View">
@@ -38,7 +39,7 @@ export default function App() {
           </nav>
         </div>
         <label className="search">
-          <IconMdiMagnify width={16} height={16} />
+          <Magnify width={16} height={16} />
           <input
             type="search"
             placeholder="Search history…"
