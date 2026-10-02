@@ -4,7 +4,7 @@ import Magnify from '~icons/mdi/magnify'
 import { useState, type ComponentType } from 'react'
 import type { IconComponent } from './components/icons'
 import { AppModel } from './models/app'
-import { Timeline } from './views/Timeline'
+import { Timeline } from './views/timeline/Timeline'
 import { List } from './views/List'
 
 const VIEWS: {
@@ -13,9 +13,9 @@ const VIEWS: {
   icon: IconComponent
   content: ComponentType<{ app: AppModel }>
 }[] = [
-  { id: 'timeline', label: 'Timeline', icon: History, content: Timeline },
-  { id: 'list', label: 'List', icon: FormatListBulleted, content: List },
-]
+    { id: 'timeline', label: 'Timeline', icon: History, content: Timeline },
+    { id: 'list', label: 'List', icon: FormatListBulleted, content: List },
+  ]
 
 export default function App() {
   const [app] = useState(() => new AppModel())

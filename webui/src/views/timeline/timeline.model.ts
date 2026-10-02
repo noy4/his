@@ -1,6 +1,6 @@
 import { computed, effect, signal } from '@preact/signals-react'
-import type { HisApi, HistoryItem } from '../api'
-import { dayKey, dayLabel } from '../lib/dates'
+import type { HisApi, HistoryItem } from '../../api'
+import { dayKey, dayLabel } from '../../lib/dates'
 
 const PAGE_SIZE = 60
 
