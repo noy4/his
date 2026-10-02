@@ -1,19 +1,25 @@
 import FormatListBulleted from '~icons/mdi/format-list-bulleted'
 import History from '~icons/mdi/history'
 import Magnify from '~icons/mdi/magnify'
-import { useState } from 'react'
+import { useState, type ComponentType } from 'react'
 import type { IconComponent } from './components/icons'
 import { AppModel } from './models/app'
 import { Timeline } from './views/Timeline'
 import { List } from './views/List'
 
-const VIEWS: { id: string; label: string; icon: IconComponent }[] = [
-  { id: 'timeline', label: 'Timeline', icon: History },
-  { id: 'list', label: 'List', icon: FormatListBulleted },
+const VIEWS: {
+  id: string
+  label: string
+  icon: IconComponent
+  content: ComponentType<{ app: AppModel }>
+}[] = [
+  { id: 'timeline', label: 'Timeline', icon: History, content: Timeline },
+  { id: 'list', label: 'List', icon: FormatListBulleted, content: List },
 ]
 
 export default function App() {
   const [app] = useState(() => new AppModel())
+  const Current = (VIEWS.find((v) => v.id === app.view.value) ?? VIEWS[0]).content
   return (
     <div className="app">
       <header className="topbar">
@@ -51,7 +57,7 @@ export default function App() {
         </label>
       </header>
       <main className="content">
-        {app.view.value === 'timeline' ? <Timeline /> : <List />}
+        <Current app={app} />
       </main>
     </div>
   )
