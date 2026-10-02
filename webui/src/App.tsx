@@ -2,10 +2,10 @@ import FormatListBulleted from '~icons/mdi/format-list-bulleted'
 import History from '~icons/mdi/history'
 import Magnify from '~icons/mdi/magnify'
 import { useState, type ComponentType } from 'react'
-import type { IconComponent } from './components/icons'
-import { AppModel } from './models/app'
-import { Timeline } from './views/timeline/Timeline'
-import { List } from './views/List'
+import type { IconComponent } from '@/components/icons'
+import { AppModel } from '@/models/app'
+import { List } from '@/views/List'
+import { Timeline } from '@/views/timeline/Timeline'
 
 const VIEWS: {
   id: string

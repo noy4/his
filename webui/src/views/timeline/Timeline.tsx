@@ -1,7 +1,7 @@
-import { AppModel } from '../../models/app'
+import { useModel } from '@/lib/useModel'
+import { AppModel } from '@/models/app'
+import { Row } from '@/views/Row'
 import { TimelineModel } from './timeline.model'
-import { useModel } from '../../lib/useModel'
-import { Row } from '../Row'
 
 export function Timeline({ app }: { app: AppModel }) {
   const {

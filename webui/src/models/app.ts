@@ -1,6 +1,6 @@
 import { signal } from '@preact/signals-react'
-import type { HisApi } from '../api'
-import { mockApi } from '../mock/api'
+import type { HisApi } from '@/api'
+import { mockApi } from '@/mock/api'
 
 export class AppModel {
   readonly api: HisApi

@@ -1,4 +1,4 @@
-import type { HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, VisitItem } from '../api'
+import type { HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, VisitItem } from '@/api'
 import { MOCK_ITEMS, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
