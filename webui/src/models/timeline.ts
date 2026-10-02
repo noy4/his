@@ -4,28 +4,6 @@ import { dayKey, dayLabel } from '../lib/dates'
 
 const PAGE_SIZE = 60
 
-interface DayGroup {
-  key: string
-  label: string
-  items: HistoryItem[]
-}
-
-function groupByDay(items: HistoryItem[]): DayGroup[] {
-  const groups: DayGroup[] = []
-  const byKey = new Map<string, DayGroup>()
-  for (const item of items) {
-    const key = dayKey(item.lastVisit)
-    let g = byKey.get(key)
-    if (!g) {
-      g = { key, label: dayLabel(item.lastVisit), items: [] }
-      byKey.set(key, g)
-      groups.push(g)
-    }
-    g.items.push(item)
-  }
-  return groups
-}
-
 export class TimelineModel {
   readonly api: HisApi
   readonly items = signal<HistoryItem[]>([])
@@ -92,4 +70,26 @@ export class TimelineModel {
       this.loading.value = false
     }
   }
+}
+
+interface DayGroup {
+  key: string
+  label: string
+  items: HistoryItem[]
+}
+
+function groupByDay(items: HistoryItem[]): DayGroup[] {
+  const groups: DayGroup[] = []
+  const byKey = new Map<string, DayGroup>()
+  for (const item of items) {
+    const key = dayKey(item.lastVisit)
+    let g = byKey.get(key)
+    if (!g) {
+      g = { key, label: dayLabel(item.lastVisit), items: [] }
+      byKey.set(key, g)
+      groups.push(g)
+    }
+    g.items.push(item)
+  }
+  return groups
 }
