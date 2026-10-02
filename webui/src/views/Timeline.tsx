@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import type { HistoryItem } from '../api'
 import { AppModel } from '../models/app'
 import { TimelineModel } from '../models/timeline'
@@ -30,20 +30,6 @@ function groupByDay(items: HistoryItem[]): DayGroup[] {
 
 export function Timeline({ app }: { app: AppModel }) {
   const m = useModel(() => new TimelineModel(app.api))
-  const sentinel = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    const el = sentinel.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) m.loadMore()
-      },
-      { rootMargin: '240px 0px' },
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [m])
 
   const items = m.items.value
   const loading = m.loading.value
@@ -63,7 +49,7 @@ export function Timeline({ app }: { app: AppModel }) {
       ))}
       {loading && <p className="status">Loading…</p>}
       {m.done.value && items.length === 0 && <p className="status">No history</p>}
-      <div ref={sentinel} aria-hidden="true" />
+      <div ref={(el) => m.setSentinel(el)} aria-hidden="true" />
     </div>
   )
 }

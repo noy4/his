@@ -7,9 +7,9 @@ export interface Subscribable {
 export function useModel<T extends object>(create: () => T): T {
   const [model] = useState(create)
   useEffect(() => {
-    const subscribe = (model as Partial<Subscribable>).subscribe
-    if (typeof subscribe !== 'function') return
-    const unsubscribe = (subscribe as () => void | (() => void))()
+    const m = model as Partial<Subscribable>
+    if (typeof m.subscribe !== 'function') return
+    const unsubscribe = m.subscribe()
     return typeof unsubscribe === 'function' ? unsubscribe : undefined
   }, [model])
   return model

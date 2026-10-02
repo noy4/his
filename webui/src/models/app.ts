@@ -3,9 +3,9 @@ import type { HisApi } from '../api'
 import { mockApi } from '../mock/api'
 
 export class AppModel {
-  api: HisApi
-  view = signal('timeline')
-  query = signal('')
+  readonly api: HisApi
+  readonly view = signal('timeline')
+  readonly query = signal('')
 
   constructor(api: HisApi = mockApi) {
     this.api = api
