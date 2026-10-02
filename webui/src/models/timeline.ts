@@ -10,7 +10,7 @@ export class TimelineModel {
   readonly loading = signal(false)
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
-  private started = false
+  private loaded = false
 
   constructor(api: HisApi) {
     this.api = api
@@ -21,7 +21,7 @@ export class TimelineModel {
   }
 
   subscribe(): () => void {
-    void this.start()
+    void this.load()
     const unsubs: (() => void)[] = [this.watchSentinel()]
     return () => {
       unsubs.forEach((fn) => fn())
@@ -43,14 +43,14 @@ export class TimelineModel {
     })
   }
 
-  async start(): Promise<void> {
-    if (this.started) return
-    this.started = true
+  async load(): Promise<void> {
+    if (this.loaded) return
+    this.loaded = true
     await this.fetchNext()
   }
 
   async loadMore(): Promise<void> {
-    if (!this.started || this.done.value || this.loading.value) return
+    if (!this.loaded || this.done.value || this.loading.value) return
     await this.fetchNext()
   }
 
