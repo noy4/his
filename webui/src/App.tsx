@@ -1,17 +1,19 @@
 import FormatListBulleted from '~icons/mdi/format-list-bulleted'
 import History from '~icons/mdi/history'
 import Magnify from '~icons/mdi/magnify'
+import { useState } from 'react'
 import type { IconComponent } from './components/icons'
-import { query, view, type View } from './signals/ui'
+import { AppModel } from './models/app'
 import { Timeline } from './views/Timeline'
 import { List } from './views/List'
 
-const VIEWS: { id: View; label: string; icon: IconComponent }[] = [
+const VIEWS: { id: string; label: string; icon: IconComponent }[] = [
   { id: 'timeline', label: 'Timeline', icon: History },
   { id: 'list', label: 'List', icon: FormatListBulleted },
 ]
 
 export default function App() {
+  const [app] = useState(() => new AppModel())
   return (
     <div className="app">
       <header className="topbar">
@@ -27,9 +29,9 @@ export default function App() {
                 <button
                   key={v.id}
                   type="button"
-                  className={view.value === v.id ? 'switch-item active' : 'switch-item'}
-                  aria-pressed={view.value === v.id}
-                  onClick={() => (view.value = v.id)}
+                  className={app.view.value === v.id ? 'switch-item active' : 'switch-item'}
+                  aria-pressed={app.view.value === v.id}
+                  onClick={() => app.setView(v.id)}
                 >
                   <Icon width={15} height={15} />
                   {v.label}
@@ -43,13 +45,13 @@ export default function App() {
           <input
             type="search"
             placeholder="Search history…"
-            value={query.value}
-            onInput={(e) => (query.value = e.currentTarget.value)}
+            value={app.query.value}
+            onInput={(e) => app.setQuery(e.currentTarget.value)}
           />
         </label>
       </header>
       <main className="content">
-        {view.value === 'timeline' ? <Timeline /> : <List />}
+        {app.view.value === 'timeline' ? <Timeline /> : <List />}
       </main>
     </div>
   )
