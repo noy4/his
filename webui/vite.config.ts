@@ -1,10 +1,16 @@
 import babel from '@rolldown/plugin-babel'
 import react from '@vitejs/plugin-react'
 import Icons from 'unplugin-icons/vite'
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   plugins: [
     react(),
     // Iconify icons inlined at build time (no runtime API)
