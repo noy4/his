@@ -1,7 +1,11 @@
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
-import { historyDbPath } from '../home.ts'
+import { faviconsDbPath, historyDbPath } from '../home.ts'
+import { createApp } from './app.ts'
+import { createFaviconStore } from './favicon.ts'
+import { createNodeHandler } from './node.ts'
+import { resolveDistRoot } from './static.ts'
 import { clearState, readState, writeState, type InstanceState } from './state.ts'
 
 const HOST = '127.0.0.1'
@@ -11,6 +15,7 @@ export interface ServeOptions {
   home: string
   port: number
   open?: boolean
+  dist?: string
 }
 
 export interface ServeHandle {
@@ -30,10 +35,15 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
 
   fs.mkdirSync(home, { recursive: true })
 
-  const server = http.createServer((_req, res) => {
-    res.writeHead(501, { 'content-type': 'text/plain; charset=utf-8' })
-    res.end('his serve: static + rpc land in later phases\n')
+  const distRoot = resolveDistRoot(options.dist ?? process.env.HIS_DIST)
+  if (distRoot === null)
+    console.error('his: webui dist not found — static routes will 503 (build webui or set HIS_DIST)')
+
+  const app = createApp({
+    favicon: createFaviconStore(faviconsDbPath(home)),
+    dist: distRoot,
   })
+  const server = http.createServer(createNodeHandler(app))
 
   const port = await bind(server, options.port)
   const info: InstanceState = {
@@ -68,6 +78,8 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
 
   return { kind: 'started', handle: { info, done } }
 }
+
+// --- bind & lifecycle ---
 
 async function bind(server: http.Server, startPort: number): Promise<number> {
   for (let offset = 0; offset < PORT_ATTEMPTS; offset += 1) {

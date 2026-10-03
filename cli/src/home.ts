@@ -9,6 +9,10 @@ export function historyDbPath(home: string): string {
   return path.join(home, 'history.db')
 }
 
+export function faviconsDbPath(home: string): string {
+  return path.join(home, 'favicons.db')
+}
+
 export function takeoutDir(home: string): string {
   return path.join(home, 'takeout')
 }
