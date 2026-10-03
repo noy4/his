@@ -1,0 +1,20 @@
+{
+  "name": "his",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "bin": {
+    "his": "./bin.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "his": "tsx bin.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "oxlint": "^1.81.0",
+    "tsx": "^4.19.0",
+    "typescript": "~6.0.2"
+  }
+}

@@ -51,6 +51,7 @@ export function discoverChromiumProfiles(platform: NodeJS.Platform = process.pla
       targets.push({
         source: 'chromium',
         profile: profileKey(app.slug, dir.name),
+        displayName: `${app.displayName} (${dir.name})`,
         dbPath,
       })
     }

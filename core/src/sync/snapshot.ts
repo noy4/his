@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite'
 export interface SnapshotTarget {
   source: string
   profile: string
+  displayName?: string
   dbPath: string
 }
 

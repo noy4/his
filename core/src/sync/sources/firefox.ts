@@ -21,6 +21,7 @@ export function discoverFirefoxProfiles(platform: NodeJS.Platform = process.plat
       targets.push({
         source: 'firefox',
         profile: profileKey(dir.name),
+        displayName: `Firefox (${dir.name.replace(/^[^.]*\./, '')})`,
         dbPath,
       })
     }

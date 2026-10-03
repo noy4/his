@@ -5,6 +5,7 @@ import type { EpochMs, HistoryItem, Transition, VisitItem } from '../model.js'
 
 export interface SearchFilter {
   query?: string
+  url?: string
   from?: EpochMs
   to?: EpochMs
   cursor?: string
@@ -53,6 +54,12 @@ export function search(db: DatabaseSync, filter: SearchFilter = {}): SearchPage 
   const joinParams: (string | number)[] = []
   const whereParams: (string | number)[] = []
   const conditions: string[] = ['hidden_at IS NULL']
+
+  const url = filter.url
+  if (url !== undefined) {
+    conditions.push('url = ?')
+    whereParams.push(url)
+  }
 
   const from = filter.from
   if (from !== undefined) {
