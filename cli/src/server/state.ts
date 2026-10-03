@@ -18,18 +18,18 @@ function processAlive(pid: number): boolean {
   }
 }
 
-export function readState(home: string): InstanceState | undefined {
+export function readState(home: string): InstanceState | null {
   const file = stateFilePath(home)
   let raw: string
   try {
     raw = fs.readFileSync(file, 'utf8')
   } catch {
-    return undefined
+    return null
   }
   const state = parseState(raw)
-  if (state === undefined || !processAlive(state.pid)) {
+  if (state === null || !processAlive(state.pid)) {
     clearState(home)
-    return undefined
+    return null
   }
   return state
 }
@@ -45,17 +45,17 @@ export function clearState(home: string): void {
   fs.rmSync(stateFilePath(home), { force: true })
 }
 
-function parseState(raw: string): InstanceState | undefined {
+function parseState(raw: string): InstanceState | null {
   let parsed: unknown
   try {
     parsed = JSON.parse(raw)
   } catch {
-    return undefined
+    return null
   }
-  if (typeof parsed !== 'object' || parsed === null) return undefined
+  if (typeof parsed !== 'object' || parsed === null) return null
   const { pid, port, url, db, token } = parsed as Record<string, unknown>
   if (typeof pid !== 'number' || typeof port !== 'number' || typeof url !== 'string' || typeof db !== 'string') {
-    return undefined
+    return null
   }
   return { pid, port, url, db, token: typeof token === 'string' ? token : undefined }
 }

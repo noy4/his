@@ -25,7 +25,7 @@ export type ServeResult =
 export async function serve(options: ServeOptions): Promise<ServeResult> {
   const { home } = options
   const running = readState(home)
-  if (running !== undefined)
+  if (running !== null)
     return { kind: 'already-running', info: running }
 
   fs.mkdirSync(home, { recursive: true })
