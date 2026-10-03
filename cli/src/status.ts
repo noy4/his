@@ -1,4 +1,4 @@
-import { readState } from './server/state.ts'
+import { readState } from '@his/core/state'
 
 export function status(home: string): void {
   const state = readState(home)

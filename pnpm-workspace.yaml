@@ -1,3 +1,8 @@
 packages:
   - core
   - cli
+  - desktop
+
+allowBuilds:
+  electron: true
+  esbuild: true

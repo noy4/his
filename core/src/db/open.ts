@@ -2,12 +2,14 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 
-const MIGRATIONS: readonly string[] = [
-  fs.readFileSync(path.join(import.meta.dirname, 'schema.sql'), 'utf8'),
-]
-
 export interface OpenOptions {
   busyTimeout?: number
+}
+
+// Loaded per call — open() runs once per process, and keeping this free of
+// load-time effects lets bundlers drop the module when unused.
+function getMigrations(): readonly string[] {
+  return [fs.readFileSync(path.join(import.meta.dirname, 'schema.sql'), 'utf8')]
 }
 
 export function open(dbPath: string, options: OpenOptions = {}): DatabaseSync {
@@ -23,10 +25,11 @@ export function open(dbPath: string, options: OpenOptions = {}): DatabaseSync {
 function migrate(db: DatabaseSync): void {
   const row = db.prepare('PRAGMA user_version').get()
   let version = row === undefined ? 0 : Number(row.user_version)
-  while (version < MIGRATIONS.length) {
+  const migrations = getMigrations()
+  while (version < migrations.length) {
     db.exec('BEGIN')
     try {
-      db.exec(MIGRATIONS[version])
+      db.exec(migrations[version])
       version += 1
       db.exec(`PRAGMA user_version = ${version}`)
       db.exec('COMMIT')

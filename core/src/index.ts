@@ -1,4 +1,5 @@
 export * from './model.ts'
+export * from './state.ts'
 export * from './db/open.ts'
 export * from './db/mutate.ts'
 export * from './db/query.ts'

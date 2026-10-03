@@ -10,7 +10,7 @@ import { createNodeHandler } from './node.ts'
 import { attachRpc, type RpcHandle } from './rpc.ts'
 import { startWatchLoop, type WatchHandle } from './watch.ts'
 import { resolveDistRoot } from './static.ts'
-import { clearState, readState, writeState, type InstanceState } from './state.ts'
+import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
 
 const HOST = '127.0.0.1'
 const PORT_ATTEMPTS = 20

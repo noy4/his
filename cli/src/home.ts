@@ -1,8 +1,8 @@
-import os from 'node:os'
 import path from 'node:path'
+import { defaultHome } from '@his/core'
 
 export function resolveHome(homeArg: string | undefined): string {
-  return homeArg ?? process.env.HIS_HOME ?? path.join(os.homedir(), '.his')
+  return homeArg ?? defaultHome()
 }
 
 export function historyDbPath(home: string): string {
