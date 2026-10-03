@@ -72,19 +72,19 @@ cli.addEventListener('command:*', () => {
   console.error(`unknown command: ${cli.args.join(' ')}`)
 })
 
-async function main(): Promise<number> {
-  try {
-    cli.parse(process.argv, { run: false })
-    if (cli.options.help === true || cli.options.version === true) return 0
-    if (cli.matchedCommandName === undefined) {
-      cli.outputHelp()
-      return 1
-    }
-    return (await cli.runMatchedCommand()) as number
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error))
-    return 1
+async function main(): Promise<void> {
+  cli.parse(process.argv, { run: false })
+  if (cli.options.help === true || cli.options.version === true) return
+  if (cli.matchedCommandName === undefined) {
+    cli.outputHelp()
+    process.exitCode = 1
+    return
   }
+  const code = (await cli.runMatchedCommand()) as number
+  process.exitCode = code
 }
 
-process.exitCode = await main()
+await main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exitCode = 1
+})
