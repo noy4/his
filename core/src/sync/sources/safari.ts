@@ -1,0 +1,56 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
+import type { EpochMs } from '../../model.js'
+import type { NativeVisit } from '../run.js'
+import type { SnapshotTarget } from '../snapshot.js'
+
+// --- discovery ---
+
+export function discoverSafariProfiles(platform: NodeJS.Platform = process.platform, home: string | null = os.homedir()): SnapshotTarget[] {
+  if (platform !== 'darwin' || home === null) return []
+  const dbPath = path.join(home, 'Library', 'Safari', 'History.db')
+  if (!fs.existsSync(dbPath)) return []
+  return [{ source: 'safari', profile: 'default', dbPath }]
+}
+
+// --- parse ---
+
+interface SafariRow {
+  visitId: number
+  visitTime: number
+  title: string | null
+  url: string
+}
+
+export function parseSafariStaging(stagingHistoryPath: string): NativeVisit[] {
+  const db = new DatabaseSync(stagingHistoryPath, { readOnly: true })
+  try {
+    const rows = db.prepare(
+      'SELECT v.id AS visitId, v.visit_time AS visitTime, v.title AS title, i.url AS url FROM history_visits v JOIN history_items i ON i.id = v.history_item ORDER BY v.id',
+    ).all() as unknown as SafariRow[]
+    return rows.map(toNativeVisit)
+  } finally {
+    db.close()
+  }
+}
+
+function toNativeVisit(row: SafariRow): NativeVisit {
+  return {
+    sourceVisitId: row.visitId,
+    url: row.url,
+    title: row.title ?? null,
+    visitTime: coreDataToMs(row.visitTime),
+    transition: 'LINK',
+    sourceTransition: null,
+  }
+}
+
+// --- helpers ---
+
+const CORE_DATA_OFFSET_MS = 978307200000
+
+export function coreDataToMs(coreDataSeconds: number): EpochMs {
+  return Math.round(coreDataSeconds * 1000) + CORE_DATA_OFFSET_MS
+}
