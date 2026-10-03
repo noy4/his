@@ -31,3 +31,18 @@ export interface VisitItem {
   transition: Transition
   visitTime: EpochMs
 }
+
+export interface NormalizedTransition {
+  transition: Transition
+  sourceTransition: string | null
+}
+
+export function normalizeTransition<K extends string | number>(
+  native: K,
+  map: ReadonlyMap<K, Transition>,
+): NormalizedTransition {
+  const hit = map.get(native)
+  return hit === undefined
+    ? { transition: 'LINK', sourceTransition: String(native) }
+    : { transition: hit, sourceTransition: null }
+}
