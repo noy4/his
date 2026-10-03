@@ -1,17 +1,14 @@
-import { BrowserWindow, type App } from 'electron'
+import { BrowserWindow, Tray, type App } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import path from 'node:path'
 import { defaultHome, readState, type InstanceState } from '@his/core/state'
 import { createTray } from './tray.ts'
 
-// --- context ---
-
-// The application context: the desktop shell owns no logic — it spawns
-// `his serve` and attaches through the state file (pid / port / url / token)
-// that serve publishes. Window and tray hang on this context.
+// App context: spawns `his serve`, owns the window and tray.
 export class HisApp {
   readonly app: App
   #win: BrowserWindow | null = null
+  #tray: Tray | null = null
   #quitting = false
   #serveProc: ChildProcess | undefined
 
@@ -23,14 +20,15 @@ export class HisApp {
 
   start(): void {
     this.app.dock?.hide()
-    createTray(this)
+    this.#tray = createTray(this)
     void this.openWindow()
   }
 
-  // Quitting goes only through here: stop serve first, then exit for real
-  // (app.exit bypasses before-quit, so the external preventDefault fires once).
+  // Quit funnel: destroy tray, stop serve, exit (app.exit bypasses before-quit).
   quit(): void {
     this.#quitting = true
+    this.#tray?.destroy()
+    this.#tray = null
     void this.#stopServe().finally(() => this.app.exit(0))
   }
 
@@ -61,10 +59,6 @@ export class HisApp {
   }
 
   // --- host surface for the tray ---
-
-  getState(): InstanceState | null {
-    return readState(defaultHome())
-  }
 
   // Tray actions respawn serve when it is down (spec).
   async ensureServe(timeoutMs = 10_000): Promise<InstanceState> {
