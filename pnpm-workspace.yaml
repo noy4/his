@@ -1,6 +1,3 @@
 packages:
   - core
   - cli
-
-allowBuilds:
-  esbuild: set this to true or false

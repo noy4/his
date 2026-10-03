@@ -1,5 +1,6 @@
 export * from './model.ts'
 export * from './db/open.ts'
+export * from './db/mutate.ts'
 export * from './db/query.ts'
 export * from './sync/snapshot.ts'
 export * from './sync/watermarks.ts'

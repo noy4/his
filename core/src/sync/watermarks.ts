@@ -1,11 +1,20 @@
 import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs } from '../model.ts'
+import type { SourceKind } from './run.ts'
 
 export interface Watermark {
   sourceProfileId: number
   lastSourceVisitId: number
   sourceIdOffset: number
   lastRunAt: EpochMs | null
+}
+
+export interface RegisteredSource {
+  id: number
+  kind: SourceKind
+  displayName: string | null
+  profilePath: string
+  watermark: Watermark
 }
 
 export interface WatermarkPatch {
@@ -39,6 +48,34 @@ export function setWatermark(db: DatabaseSync, sourceProfileId: number, patch: W
   db.prepare(
     'INSERT INTO profile_watermarks (source_profile_id, last_source_visit_id, source_id_offset, last_run_at) VALUES (?, ?, ?, ?) ON CONFLICT(source_profile_id) DO UPDATE SET last_source_visit_id = excluded.last_source_visit_id, source_id_offset = excluded.source_id_offset, last_run_at = excluded.last_run_at',
   ).run(sourceProfileId, patch.lastSourceVisitId, patch.sourceIdOffset, patch.lastRunAt ?? null)
+}
+
+export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
+  const rows = db
+    .prepare('SELECT sp.id, sp.kind, sp.display_name, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at FROM source_profiles sp LEFT JOIN profile_watermarks pw ON pw.source_profile_id = sp.id ORDER BY sp.kind, sp.profile_path')
+    .all() as unknown as SourceProfileJoinRow[]
+  return rows.map((row) => ({
+    id: row.id,
+    kind: row.kind as SourceKind,
+    displayName: row.display_name,
+    profilePath: row.profile_path,
+    watermark: {
+      sourceProfileId: row.id,
+      lastSourceVisitId: row.last_source_visit_id ?? 0,
+      sourceIdOffset: row.source_id_offset ?? 0,
+      lastRunAt: row.last_run_at,
+    },
+  }))
+}
+
+interface SourceProfileJoinRow {
+  id: number
+  kind: string
+  display_name: string | null
+  profile_path: string
+  last_source_visit_id: number | null
+  source_id_offset: number | null
+  last_run_at: number | null
 }
 
 export function detectCleared(watermark: Watermark, sourceMaxVisitId: number): boolean {

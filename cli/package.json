@@ -13,10 +13,12 @@
   },
   "dependencies": {
     "@his/core": "workspace:*",
-    "cac": "^7.0.0"
+    "cac": "^7.0.0",
+    "ws": "^8.22.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
+    "@types/ws": "^8.18.2",
     "oxlint": "^1.81.0",
     "typescript": "~6.0.2"
   }

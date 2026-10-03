@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import type { DatabaseSync } from 'node:sqlite'
 import {
   discoverChromiumProfiles,
   discoverFirefoxProfiles,
@@ -18,48 +19,121 @@ import {
 } from '@his/core'
 import { historyDbPath, takeoutDir } from './home.ts'
 
-const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
+// --- contract ---
+
+export const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
+
+export function isSourceKind(value: string): value is SourceKind {
+  return SYNC_KINDS.includes(value as SourceKind)
+}
 
 export interface SyncOptions {
   source?: string
   full?: boolean
 }
 
-export function sync(home: string, opts: SyncOptions): void {
-  const source = opts.source?.toLowerCase()
-  if (source !== undefined && !SYNC_KINDS.includes(source as SourceKind)) {
-    throw new Error(`unknown source: ${source} (kinds: ${SYNC_KINDS.join(' ')})`)
+export interface SyncProgressEvent {
+  source: string
+  phase: 'snapshot' | 'upsert' | 'done'
+  parsed: number | null
+  upserted: number | null
+}
+
+export interface SyncHooks {
+  onProgress?(event: SyncProgressEvent): void
+  onLog?(line: string): void
+  onError?(line: string): void
+}
+
+export interface SyncSummary {
+  attempted: number
+  failures: number
+  insertedVisits: number
+  touchedUrls: number
+}
+
+// snapshot → parse → upsert per discovered target. Runs against one writer
+// connection; when the caller owns one (the serve process) it is reused,
+// otherwise this opens and closes its own.
+export function runSync(home: string, options: SyncOptions = {}, hooks: SyncHooks = {}, externalDb?: DatabaseSync): SyncSummary {
+  if (options.source !== undefined && !isSourceKind(options.source)) {
+    throw new Error(`unknown source: ${options.source} (kinds: ${SYNC_KINDS.join(' ')})`)
   }
-  const db = open(historyDbPath(home))
-  const kinds: SourceKind[] = source === undefined ? SYNC_KINDS : [source as SourceKind]
-  let attempted = 0
-  let failures = 0
-  for (const kind of kinds) {
-    for (const target of discoverTargets(kind, home)) {
-      attempted += 1
-      try {
-        const snap = snapshot(target, home)
-        const visits = parseForKind(kind, snap.path)
-        const result: RunResult = run({
-          db,
-          profile: {
-            kind: target.source as SourceKind,
-            displayName: target.displayName ?? null,
-            profilePath: target.dbPath,
-          },
-          visits,
-          options: { full: opts.full ?? false, now: Date.now() },
-        })
-        console.log(`${kindLabel(target)}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
-      } catch (error) {
-        failures += 1
-        console.error(`${kindLabel(target)}: ${error instanceof Error ? error.message : String(error)}`)
+  const owned = externalDb === undefined
+  const db = externalDb ?? open(historyDbPath(home))
+  try {
+    const kinds: SourceKind[] = options.source === undefined ? SYNC_KINDS : [options.source as SourceKind]
+    const summary: SyncSummary = { attempted: 0, failures: 0, insertedVisits: 0, touchedUrls: 0 }
+    for (const kind of kinds) {
+      for (const target of discoverTargets(kind, home)) {
+        const outcome = runTarget({ db, home, target, options, hooks })
+        summary.attempted += 1
+        if (outcome.failureLine !== null) summary.failures += 1
+        summary.insertedVisits += outcome.insertedVisits
+        summary.touchedUrls += outcome.touchedUrls
       }
     }
+    return summary
+  } finally {
+    if (owned) db.close()
   }
-  db.close()
-  if (failures > 0) throw new Error(`sync failed for ${failures} of ${attempted} targets`)
 }
+
+// CLI entry — runs once and reports; failures make it exit 1 via the throw.
+export function sync(home: string, opts: SyncOptions): void {
+  const summary = runSync(home, opts, {
+    onLog: (line) => console.log(line),
+    onError: (line) => console.error(line),
+  })
+  if (summary.failures > 0) {
+    throw new Error(`sync failed for ${summary.failures} of ${summary.attempted} targets`)
+  }
+}
+
+// --- one target ---
+
+interface RunTargetParams {
+  db: DatabaseSync
+  home: string
+  target: SnapshotTarget
+  options: SyncOptions
+  hooks: SyncHooks
+}
+
+interface TargetOutcome {
+  failureLine: string | null
+  insertedVisits: number
+  touchedUrls: number
+}
+
+function runTarget(params: RunTargetParams): TargetOutcome {
+  const { db, home, target, options, hooks } = params
+  const label = kindLabel(target)
+  try {
+    hooks.onProgress?.({ source: label, phase: 'snapshot', parsed: null, upserted: null })
+    const snap = snapshot(target, home)
+    const visits = parseForKind(target.source as SourceKind, snap.path)
+    hooks.onProgress?.({ source: label, phase: 'upsert', parsed: visits.length, upserted: null })
+    const result: RunResult = run({
+      db,
+      profile: {
+        kind: target.source as SourceKind,
+        displayName: target.displayName ?? null,
+        profilePath: target.dbPath,
+      },
+      visits,
+      options: { full: options.full ?? false, now: Date.now() },
+    })
+    hooks.onProgress?.({ source: label, phase: 'done', parsed: visits.length, upserted: result.insertedVisits })
+    hooks.onLog?.(`${label}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
+    return { failureLine: null, insertedVisits: result.insertedVisits, touchedUrls: result.touchedUrls }
+  } catch (error) {
+    hooks.onError?.(`${label}: ${error instanceof Error ? error.message : String(error)}`)
+    return { failureLine: label, insertedVisits: 0, touchedUrls: 0 }
+  }
+}
+
+// --- discovery ---
 
 function discoverTargets(kind: SourceKind, home: string): SnapshotTarget[] {
   switch (kind) {

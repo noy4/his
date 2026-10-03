@@ -7,6 +7,9 @@ export interface StaticFile {
   data: Buffer
   contentType: string
   cacheControl: string
+  // true when this response is the app entry (index.html) — the host injects
+  // the WebUI bootstrap state there.
+  isEntry: boolean
 }
 
 // --- dist resolution ---
@@ -55,17 +58,17 @@ export function readStaticFile(root: string, pathname: string): StaticFile | nul
   const segments = pathname.split('/').filter((segment) => segment !== '' && segment !== '.')
   if (segments.some((segment) => segment === '..')) return null
   const relative = segments.join('/')
-  if (relative === '') return readFile(path.join(root, 'index.html'), ENTRY_CACHE_CONTROL)
+  if (relative === '') return readFile(path.join(root, 'index.html'), ENTRY_CACHE_CONTROL, true)
 
   const absolute = path.join(root, ...relative.split('/'))
   const stats = fs.statSync(absolute, { throwIfNoEntry: false })
   if (stats === undefined) {
     if (path.extname(relative) !== '') return null
-    return readFile(path.join(root, 'index.html'), ENTRY_CACHE_CONTROL) // SPA fallback
+    return readFile(path.join(root, 'index.html'), ENTRY_CACHE_CONTROL, true) // SPA fallback
   }
-  if (stats.isDirectory()) return readFile(path.join(absolute, 'index.html'), ENTRY_CACHE_CONTROL)
+  if (stats.isDirectory()) return readFile(path.join(absolute, 'index.html'), ENTRY_CACHE_CONTROL, true)
   if (!stats.isFile()) return null
-  return readFile(absolute, cacheControlFor(segments))
+  return readFile(absolute, cacheControlFor(segments), false)
 }
 
 // --- helpers ---
@@ -78,7 +81,7 @@ function hasIndex(candidate: string): boolean {
   }
 }
 
-function readFile(file: string, cacheControl: string): StaticFile | null {
+function readFile(file: string, cacheControl: string, isEntry: boolean): StaticFile | null {
   let data: Buffer
   try {
     data = fs.readFileSync(file)
@@ -89,6 +92,7 @@ function readFile(file: string, cacheControl: string): StaticFile | null {
     data,
     contentType: MIME_TYPES[path.extname(file)] ?? 'application/octet-stream',
     cacheControl,
+    isEntry,
   }
 }
 

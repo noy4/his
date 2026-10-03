@@ -1,10 +1,13 @@
 import { spawn } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
 import fs from 'node:fs'
 import http from 'node:http'
+import { open } from '@his/core'
 import { faviconsDbPath, historyDbPath } from '../home.ts'
 import { createApp } from './app.ts'
 import { createFaviconStore } from './favicon.ts'
 import { createNodeHandler } from './node.ts'
+import { attachRpc, type RpcHandle } from './rpc.ts'
 import { resolveDistRoot } from './static.ts'
 import { clearState, readState, writeState, type InstanceState } from './state.ts'
 
@@ -35,6 +38,9 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
 
   fs.mkdirSync(home, { recursive: true })
 
+  const db = open(historyDbPath(home))
+  const token = randomBytes(24).toString('base64url')
+
   const distRoot = resolveDistRoot(options.dist ?? process.env.HIS_DIST)
   if (distRoot === null)
     console.error('his: webui dist not found — static routes will 503 (build webui or set HIS_DIST)')
@@ -42,8 +48,10 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const app = createApp({
     favicon: createFaviconStore(faviconsDbPath(home)),
     dist: distRoot,
+    pageState: () => ({ url: info.url, token }),
   })
   const server = http.createServer(createNodeHandler(app))
+  const rpc: RpcHandle = attachRpc(server, { db, home, token })
 
   const port = await bind(server, options.port)
   const info: InstanceState = {
@@ -51,6 +59,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     port,
     url: `http://${HOST}:${port}/`,
     db: historyDbPath(home),
+    token,
   }
   writeState(home, info)
 
@@ -67,8 +76,10 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     closing = true
     process.removeListener('SIGINT', shutdown)
     process.removeListener('SIGTERM', shutdown)
+    rpc.stop()
     server.closeAllConnections()
     server.close(() => {
+      db.close()
       clearState(home)
       finish()
     })
