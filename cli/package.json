@@ -1,5 +1,5 @@
 {
-  "name": "his",
+  "name": "@his/cli",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,6 +12,7 @@
     "his": "node bin.ts"
   },
   "dependencies": {
+    "@his/core": "workspace:*",
     "cac": "^7.0.0"
   },
   "devDependencies": {

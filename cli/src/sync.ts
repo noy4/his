@@ -15,7 +15,7 @@ import {
   type RunResult,
   type SnapshotTarget,
   type SourceKind,
-} from '../../core/src/index.ts'
+} from '@his/core'
 import { historyDbPath, takeoutDir } from './home.ts'
 
 const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']

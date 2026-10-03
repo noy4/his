@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
-import { search, type EpochMs, type SearchFilter } from '../../core/src/index.ts'
+import { search, type EpochMs, type SearchFilter } from '@his/core'
 import { historyDbPath } from './home.ts'
 
 export interface QueryOptions {
