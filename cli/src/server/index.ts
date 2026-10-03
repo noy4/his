@@ -2,12 +2,7 @@ import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
 import { historyDbPath } from '../home.ts'
-import {
-  clearInstanceState,
-  readInstanceState,
-  writeInstanceState,
-  type InstanceState,
-} from './state.ts'
+import { clearState, readState, writeState, type InstanceState } from './state.ts'
 
 const HOST = '127.0.0.1'
 const PORT_ATTEMPTS = 20
@@ -29,8 +24,9 @@ export type ServeResult =
 
 export async function serve(options: ServeOptions): Promise<ServeResult> {
   const { home } = options
-  const running = readInstanceState(home)
-  if (running !== undefined) return { kind: 'already-running', info: running }
+  const running = readState(home)
+  if (running !== undefined)
+    return { kind: 'already-running', info: running }
 
   fs.mkdirSync(home, { recursive: true })
 
@@ -46,11 +42,11 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     url: `http://${HOST}:${port}/`,
     db: historyDbPath(home),
   }
-  writeInstanceState(home, info)
+  writeState(home, info)
 
   if (options.open === true) openUrl(info.url)
 
-  let finish: () => void = () => {}
+  let finish: () => void = () => { }
   const done = new Promise<void>((resolve) => {
     finish = resolve
   })
@@ -63,7 +59,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     process.removeListener('SIGTERM', shutdown)
     server.closeAllConnections()
     server.close(() => {
-      clearInstanceState(home)
+      clearState(home)
       finish()
     })
   }

@@ -9,7 +9,7 @@ export interface InstanceState {
   token?: string
 }
 
-export function processAlive(pid: number): boolean {
+function processAlive(pid: number): boolean {
   try {
     process.kill(pid, 0)
     return true
@@ -18,7 +18,7 @@ export function processAlive(pid: number): boolean {
   }
 }
 
-export function readInstanceState(home: string): InstanceState | undefined {
+export function readState(home: string): InstanceState | undefined {
   const file = stateFilePath(home)
   let raw: string
   try {
@@ -28,20 +28,20 @@ export function readInstanceState(home: string): InstanceState | undefined {
   }
   const state = parseState(raw)
   if (state === undefined || !processAlive(state.pid)) {
-    clearInstanceState(home)
+    clearState(home)
     return undefined
   }
   return state
 }
 
-export function writeInstanceState(home: string, state: InstanceState): void {
+export function writeState(home: string, state: InstanceState): void {
   const file = stateFilePath(home)
   const tmp = `${file}.${process.pid}.tmp`
   fs.writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`)
   fs.renameSync(tmp, file)
 }
 
-export function clearInstanceState(home: string): void {
+export function clearState(home: string): void {
   fs.rmSync(stateFilePath(home), { force: true })
 }
 
