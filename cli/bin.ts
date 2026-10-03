@@ -2,8 +2,8 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { parseArgs } from 'node:util'
 import { DatabaseSync } from 'node:sqlite'
+import { cac } from 'cac'
 import {
   discoverChromiumProfiles,
   discoverFirefoxProfiles,
@@ -28,130 +28,70 @@ import {
 
 const VERSION = '0.0.0'
 
-const HELP = `his — browser history archive
-
-Usage: his <command> [options]
-
-  sync    [--source <kind>] [--full]
-                                  run sync once (kinds: chromium firefox safari takeout)
-  query   [text] [--url <url>] [--from <ms|date>] [--to <ms|date>] [--limit <n>]
-                                  read-only search against history.db, prints JSON
-  status                          print the running instance (url + archive)
-  stop                            SIGTERM the running instance
-  serve   [--port <n>] [--open]   start http + rpc (not implemented yet)
-
-  --home <dir>                    archive home (env: HIS_HOME, default ~/.his)
-  -h                              show help
-  -v                              show version
-`
-
-interface OptionSpec {
-  type: 'string' | 'boolean'
-  short?: string
+interface CommandOptions {
+  home?: string
+  source?: string
+  full?: boolean
+  url?: string
+  from?: string
+  to?: string
+  limit?: string
 }
 
-const COMMAND_OPTIONS = {
-  sync: {
-    home: { type: 'string' },
-    source: { type: 'string' },
-    full: { type: 'boolean' },
-  },
-  query: {
-    home: { type: 'string' },
-    url: { type: 'string' },
-    from: { type: 'string' },
-    to: { type: 'string' },
-    limit: { type: 'string' },
-  },
-  status: { home: { type: 'string' } },
-  stop: { home: { type: 'string' } },
-  serve: {
-    home: { type: 'string' },
-    port: { type: 'string' },
-    open: { type: 'boolean' },
-  },
-} as const satisfies Record<string, Record<string, OptionSpec>>
+const cli = cac('his')
 
-type CommandName = keyof typeof COMMAND_OPTIONS
+cli.option('--home <dir>', 'archive home (env: HIS_HOME, default ~/.his)')
 
-function isCommandName(value: string): value is CommandName {
-  return value in COMMAND_OPTIONS
-}
+cli
+  .command('sync', 'run sync once (kinds: chromium firefox safari takeout)')
+  .option('--source <kind>', 'limit to one source instead of all')
+  .option('--full', 'ignore watermarks and re-read everything (idempotent)')
+  .action((options: CommandOptions) => commandSync(options.home, { source: options.source, full: options.full }))
+
+cli
+  .command('query [...text]', 'read-only search against history.db, prints JSON')
+  .option('--url <url>', 'match url')
+  .option('--from <ms|date>', 'from timestamp')
+  .option('--to <ms|date>', 'to timestamp')
+  .option('--limit <n>', 'max results')
+  .action((text: string[], options: CommandOptions) =>
+    commandQuery(options.home, { text, url: options.url, from: options.from, to: options.to, limit: options.limit }))
+
+cli
+  .command('status', 'print the running instance (url + archive)')
+  .action((options: CommandOptions) => commandStatus(options.home))
+
+cli
+  .command('stop', 'SIGTERM the running instance')
+  .action((options: CommandOptions) => commandStop(options.home))
+
+cli
+  .command('serve', 'start http + rpc')
+  .option('--port <n>', 'port to bind (default 4477); +1 on conflict')
+  .option('--open', 'open the WebUI once the port is bound')
+  .action(() => {
+    console.error('serve is not implemented yet')
+    return 1
+  })
+
+cli.help()
+cli.version(VERSION)
+
+cli.addEventListener('command:*', () => {
+  console.error(`unknown command: ${cli.args.join(' ')}`)
+})
 
 // --- entry ---
 
-function main(): number {
-  const argv = process.argv.slice(2)
-  if (argv.includes('-h') || argv.includes('--help')) {
-    console.log(HELP)
-    return 0
-  }
-  if (argv.includes('-v') || argv.includes('--version')) {
-    console.log(`his ${VERSION}`)
-    return 0
-  }
-  const command = argv[0]
-  if (command === undefined) {
-    console.log(HELP)
-    return 1
-  }
-  if (!isCommandName(command)) {
-    console.error(`unknown command: ${command}`)
-    console.log(HELP)
-    return 1
-  }
+async function main(): Promise<number> {
   try {
-    switch (command) {
-      case 'sync': {
-        const { values } = parseArgs({
-          args: argv.slice(1),
-          options: COMMAND_OPTIONS.sync,
-          strict: true,
-        })
-        return commandSync(values.home, { source: values.source, full: values.full })
-      }
-      case 'query': {
-        const { values, positionals } = parseArgs({
-          args: argv.slice(1),
-          options: COMMAND_OPTIONS.query,
-          allowPositionals: true,
-          strict: true,
-        })
-        return commandQuery(values.home, {
-          text: positionals,
-          url: values.url,
-          from: values.from,
-          to: values.to,
-          limit: values.limit,
-        })
-      }
-      case 'status': {
-        const { values } = parseArgs({
-          args: argv.slice(1),
-          options: COMMAND_OPTIONS.status,
-          strict: true,
-        })
-        return commandStatus(values.home)
-      }
-      case 'stop': {
-        const { values } = parseArgs({
-          args: argv.slice(1),
-          options: COMMAND_OPTIONS.stop,
-          strict: true,
-        })
-        return commandStop(values.home)
-      }
-      case 'serve': {
-        parseArgs({
-          args: argv.slice(1),
-          options: COMMAND_OPTIONS.serve,
-          strict: true,
-        })
-        console.error('serve is not implemented yet')
-        return 1
-      }
+    cli.parse(process.argv, { run: false })
+    if (cli.options.help === true || cli.options.version === true) return 0
+    if (cli.matchedCommandName === undefined) {
+      cli.outputHelp()
+      return 1
     }
-    return 1
+    return (await cli.runMatchedCommand()) as number
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error))
     return 1
@@ -367,4 +307,4 @@ function resolveHome(homeArg: string | undefined): string {
   return homeArg ?? process.env.HIS_HOME ?? path.join(os.homedir(), '.his')
 }
 
-process.exitCode = main()
+process.exitCode = await main()

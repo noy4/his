@@ -11,6 +11,9 @@
     "lint": "oxlint",
     "his": "node bin.ts"
   },
+  "dependencies": {
+    "cac": "^7.0.0"
+  },
   "devDependencies": {
     "@types/node": "^24.13.3",
     "oxlint": "^1.81.0",
