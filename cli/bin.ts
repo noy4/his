@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 import { cac } from 'cac'
+import pkg from './package.json' with { type: 'json' }
 import { resolveHome } from './src/home.ts'
 import { status, stop } from './src/instance.ts'
 import { query } from './src/query.ts'
 import { sync } from './src/sync.ts'
-
-const VERSION = '0.0.0'
 
 interface CommandOptions {
   home?: string
@@ -63,7 +62,7 @@ cli
   })
 
 cli.help()
-cli.version(VERSION)
+cli.version(pkg.version)
 
 cli.addEventListener('command:*', () => {
   console.error(`unknown command: ${cli.args.join(' ')}`)
