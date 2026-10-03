@@ -29,8 +29,8 @@ async function route(request: Request, options: AppOptions): Promise<Response> {
     return textResponse(400, 'invalid request target')
   }
 
-  if (pathname.startsWith('/f/'))
-    return faviconResponse(request, options.favicon, pathname.slice(3))
+  if (pathname.startsWith('/favicon/'))
+    return faviconResponse(request, options.favicon, pathname.slice(9))
 
   return staticResponse(request, options.dist, pathname)
 }
