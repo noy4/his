@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="created_at" content="2026-10-03T14:20:00+09:00">
-<title>his | Core/CLI/Desktop plan</title>
+<title>his | Plan</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -427,16 +427,18 @@
       <iconify-icon icon="mdi:rocket-launch-outline" noobserver></iconify-icon>
       IMPLEMENTATION PLAN
     </div>
-    <h1><iconify-icon icon="mdi:server-network" width="30" noobserver></iconify-icon>his core · cli · desktop plan</h1>
-    <p class="tagline">Plan for the his archive core, CLI, and desktop shell — the WebUI mock-first plan lives in PLAN.web.</p>
+    <h1><iconify-icon icon="mdi:server-network" width="30" noobserver></iconify-icon>his plan</h1>
+    <p class="tagline">Plan for the his core, CLI, and desktop shell — PLAN.web covers the WebUI.</p>
   </header>
 
   <!-- ROADMAP -->
   <section>
     <h2><iconify-icon icon="mdi:format-list-numbered" width="24" noobserver></iconify-icon>Roadmap</h2>
     <p class="section-desc">
-      Order follows the dependency chain — model contracts → SQLite layer → sync engine → sources → CLI commands → serve/RPC → desktop shell.
-      Core ships before its consumers: the WebUI (PLAN.web) keeps running on mocks until Phase 6 here lands, when its <code>api.ts</code> swaps mock for the real WS client.
+      Phases follow the dependency chain: model → DB → sync → sources → CLI → serve/RPC → desktop.
+      Core ships before its consumers.
+      The WebUI stays on mocks until Phase 6 lands.
+      PLAN.web then swaps its mock <code>api.ts</code> for a real WS client.
     </p>
 
     <div class="timeline">
@@ -452,7 +454,7 @@
             <span class="step-meta">P1 · core</span>
           </div>
           <div class="step-body">
-            The shared vocabulary — every package and the WebUI type against these shapes.
+            The shared vocabulary. Every package and the WebUI type against these shapes.
           </div>
           <div class="tasks">
             <div class="task">
@@ -491,7 +493,7 @@
             <span class="step-meta">P1 · core</span>
           </div>
           <div class="step-body">
-            <code>history.db</code> + rebuildable <code>favicons.db</code> land here — one writer, WAL, FTS5.
+            <code>history.db</code> and <code>favicons.db</code> live here. One writer per process.
           </div>
           <div class="tasks">
             <div class="task">
@@ -530,7 +532,7 @@
             <span class="step-meta">P1 · core</span>
           </div>
           <div class="step-body">
-            Snapshot-only, file-safe incremental pipeline — live browser DBs are never opened.
+            Incremental, snapshot-only. Live browser DBs are never opened.
           </div>
           <div class="tasks">
             <div class="task">
@@ -569,7 +571,7 @@
             <span class="step-meta">P2 · core</span>
           </div>
           <div class="step-body">
-            One adapter per vendor shape — all normalizing onto epoch ms + Chromium transitions; unmappable values keep the raw string in <code>source_transition</code>.
+            One adapter per vendor. All normalize onto epoch ms + Chromium transitions. Unmappable values keep the raw string in <code>source_transition</code>.
           </div>
           <div class="tasks">
             <div class="task">
@@ -615,7 +617,7 @@
             <span class="step-meta">P2 · cli</span>
           </div>
           <div class="step-body">
-            The <code>his</code> npm package — thin arg parsing over core; <code>query</code> is a read-only walk through <code>query.ts</code>.
+            The <code>his</code> binary. Thin arg parsing over core. <code>sync</code> writes the archive directly. <code>query</code> is a read-only walk.
           </div>
           <div class="tasks">
             <div class="task">
@@ -654,7 +656,7 @@
             <span class="step-meta">P2 · cli</span>
           </div>
           <div class="step-body">
-            One process owns the archive, the static WebUI, and <code>/rpc</code>; the desktop only spawns it. Finishing here unblocks PLAN.web's Phase 6 RPC wiring.
+            One process owns the archive, the static WebUI, and <code>/rpc</code>. Desktop only spawns it.
           </div>
           <div class="tasks">
             <div class="task">
@@ -700,7 +702,7 @@
             <span class="step-meta">P3 · desktop</span>
           </div>
           <div class="step-body">
-            A macOS menu bar client with one window — spawns <code>his serve</code>, loads the URL, stops it on quit. No embedded logic.
+            A macOS menu bar client. One window. Spawns <code>his serve</code>; stops it on quit. No embedded logic.
           </div>
           <div class="tasks">
             <div class="task">
@@ -735,7 +737,7 @@
   <section>
     <h2><iconify-icon icon="mdi:swap-horizontal-circle-outline" width="24" noobserver></iconify-icon>Contracts &amp; seams</h2>
     <p class="section-desc">
-      What each package promises its consumers — kept small and stable so frontends never reach past them.
+      Small, stable contracts between packages. Frontends never reach past them.
     </p>
 
     <div class="grid-2">
@@ -744,39 +746,39 @@
           <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
           <h4>RPC surface = core's contract</h4>
         </div>
-        <p><code>core</code> implements <code>history.search / getVisits / getItem / deleteUrl / restoreUrl</code> + <code>sources.list</code> / <code>sync.run</code> / <code>sync.status</code>; <code>cli/server/rpc.ts</code> is a thin dispatcher.</p>
+        <p><code>core</code> implements <code>history.* / sources.* / sync.*</code>. <code>cli/server/rpc.ts</code> is a thin dispatcher.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:file-cog-outline" noobserver></iconify-icon>
           <h4>state.json — serve ↔ desktop</h4>
         </div>
-        <p>Written once the port is bound, pruned at shutdown. Desktop spawns when absent, reports when present — one home = one archive = one instance (<code>HIS_HOME</code>).</p>
+        <p>Written once the port is bound, removed at shutdown. Desktop spawns when absent, reports when present. One home = one archive = one instance (<code>HIS_HOME</code>).</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:link-variant" noobserver></iconify-icon>
           <h4>WebUI seam lands here</h4>
         </div>
-        <p>PLAN.web's mock <code>api.ts</code> swaps for the real WS client with zero view changes once Phase 6 ships — push handlers (<code>db.changed</code>) drive its refetch signals.</p>
+        <p>One import swap at the <code>api.ts</code> seam. Views don't change. Push (<code>db.changed</code>) drives the refetch signals.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
           <h4>favicons.db — rebuildable</h4>
         </div>
-        <p>Domain-keyed (eTLD+1), best-width upsert, 30-day TTL swept after sync. Served at <code>/f/&lt;eTLD+1&gt;</code>; 404 → letter tile.</p>
+        <p>Rebuildable at any time. Domain-keyed by eTLD+1; best-width upsert; 30-day TTL swept after sync. Served at <code>/f/&lt;eTLD+1&gt;</code>; 404 → letter tile.</p>
       </div>
     </div>
 
     <blockquote>
       <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
-      P1 (model → sync engine) can land before the WebUI RPC work converges; the CLI's <code>serve</code> is the last prerequisite before PLAN.web Phase 6 (RPC wiring) and Phase 7 (Polish) go real.
+      P1 lands independently of the WebUI. Phase 6 <code>serve</code> is the WebUI's last prerequisite — PLAN.web Phases 6–7 go real after it.
     </blockquote>
   </section>
 
   <footer>
-    <div class="colophon">his core · cli · desktop plan · created 2026-10-03</div>
+    <div class="colophon">his plan · created 2026-10-03</div>
   </footer>
 </div>
 
