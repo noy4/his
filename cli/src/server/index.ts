@@ -8,6 +8,7 @@ import { createApp } from './app.ts'
 import { createFaviconStore } from './favicon.ts'
 import { createNodeHandler } from './node.ts'
 import { attachRpc, type RpcHandle } from './rpc.ts'
+import { startWatchLoop, type WatchHandle } from './watch.ts'
 import { resolveDistRoot } from './static.ts'
 import { clearState, readState, writeState, type InstanceState } from './state.ts'
 
@@ -62,6 +63,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     token,
   }
   writeState(home, info)
+  const watch: WatchHandle = startWatchLoop({ home, runner: rpc.runner() })
 
   if (options.open === true) openUrl(info.url)
 
@@ -76,6 +78,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     closing = true
     process.removeListener('SIGINT', shutdown)
     process.removeListener('SIGTERM', shutdown)
+    watch.stop()
     rpc.stop()
     server.closeAllConnections()
     server.close(() => {

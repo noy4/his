@@ -135,7 +135,7 @@ function runTarget(params: RunTargetParams): TargetOutcome {
 
 // --- discovery ---
 
-function discoverTargets(kind: SourceKind, home: string): SnapshotTarget[] {
+export function discoverTargets(kind: SourceKind, home: string): SnapshotTarget[] {
   switch (kind) {
     case 'chromium':
       return discoverChromiumProfiles()
