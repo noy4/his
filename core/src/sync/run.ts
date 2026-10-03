@@ -39,9 +39,17 @@ export interface RunResult {
   lastRunAt: EpochMs
 }
 
+export interface RunParams {
+  db: DatabaseSync
+  profile: SourceProfileRef
+  visits: NativeVisit[]
+  options: RunOptions
+}
+
 // --- run ---
 
-export function run(db: DatabaseSync, profile: SourceProfileRef, visits: NativeVisit[], options: RunOptions = {}): RunResult {
+export function run(params: RunParams): RunResult {
+  const { db, profile, visits, options } = params
   const now = options.now ?? Date.now()
   const sourceProfileId = ensureSourceProfile(db, profile)
   const watermark = getWatermark(db, sourceProfileId)
