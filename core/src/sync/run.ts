@@ -1,6 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, Transition } from '../model.js'
-import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.js'
+import type { EpochMs, Transition } from '../model.ts'
+import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
 
 // --- contract ---
 

@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
-import type { EpochMs, Transition } from '../../model.js'
-import type { NativeVisit } from '../run.js'
+import type { EpochMs, Transition } from '../../model.ts'
+import type { NativeVisit } from '../run.ts'
 
 // --- parse ---
 

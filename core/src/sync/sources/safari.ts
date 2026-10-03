@@ -2,9 +2,9 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import type { EpochMs } from '../../model.js'
-import type { NativeVisit } from '../run.js'
-import type { SnapshotTarget } from '../snapshot.js'
+import type { EpochMs } from '../../model.ts'
+import type { NativeVisit } from '../run.ts'
+import type { SnapshotTarget } from '../snapshot.ts'
 
 // --- discovery ---
 

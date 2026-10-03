@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, HistoryItem, Transition, VisitItem } from '../model.js'
+import type { EpochMs, HistoryItem, Transition, VisitItem } from '../model.ts'
 
 // --- contract ---
 

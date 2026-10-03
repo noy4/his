@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --import tsx
+#!/usr/bin/env node
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -22,7 +22,7 @@ import {
   type SearchFilter,
   type SnapshotTarget,
   type SourceKind,
-} from '../core/src/index.js'
+} from '../core/src/index.ts'
 
 // --- cli shape ---
 

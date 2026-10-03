@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { EpochMs } from '../model.js'
+import type { EpochMs } from '../model.ts'
 
 export interface Watermark {
   sourceProfileId: number
