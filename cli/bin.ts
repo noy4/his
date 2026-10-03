@@ -2,8 +2,9 @@
 import { cac } from 'cac'
 import pkg from './package.json' with { type: 'json' }
 import { resolveHome } from './src/home.ts'
-import { status, stop } from './src/instance.ts'
 import { query } from './src/query.ts'
+import { serveCommand } from './src/serve.ts'
+import { status, stop } from './src/status.ts'
 import { sync } from './src/sync.ts'
 
 interface CommandOptions {
@@ -14,6 +15,8 @@ interface CommandOptions {
   from?: string
   to?: string
   limit?: string
+  port?: string
+  open?: boolean
 }
 
 const cli = cac('his')
@@ -56,10 +59,11 @@ cli
   .command('serve', 'start http + rpc')
   .option('--port <n>', 'port to bind (default 4477); +1 on conflict')
   .option('--open', 'open the WebUI once the port is bound')
-  .action(() => {
-    console.error('serve is not implemented yet')
-    return 1
-  })
+  .action((opts: CommandOptions) => serveCommand({
+    home: resolveHome(opts.home),
+    port: opts.port,
+    open: opts.open,
+  }))
 
 cli.help()
 cli.version(pkg.version)
