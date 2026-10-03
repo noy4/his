@@ -50,37 +50,32 @@ interface OptionSpec {
   short?: string
 }
 
-const GLOBAL_OPTIONS: Record<string, OptionSpec> = {
-  home: { type: 'string' },
-}
-
-const COMMAND_OPTIONS: Record<string, Record<string, OptionSpec>> = {
+const COMMAND_OPTIONS = {
   sync: {
-    ...GLOBAL_OPTIONS,
+    home: { type: 'string' },
     source: { type: 'string' },
     full: { type: 'boolean' },
   },
   query: {
-    ...GLOBAL_OPTIONS,
+    home: { type: 'string' },
     url: { type: 'string' },
     from: { type: 'string' },
     to: { type: 'string' },
     limit: { type: 'string' },
   },
-  status: { ...GLOBAL_OPTIONS },
-  stop: { ...GLOBAL_OPTIONS },
+  status: { home: { type: 'string' } },
+  stop: { home: { type: 'string' } },
   serve: {
-    ...GLOBAL_OPTIONS,
+    home: { type: 'string' },
     port: { type: 'string' },
     open: { type: 'boolean' },
   },
-}
+} as const satisfies Record<string, Record<string, OptionSpec>>
 
-type OptionValues = Record<string, string | boolean | (string | boolean)[] | undefined>
+type CommandName = keyof typeof COMMAND_OPTIONS
 
-function str(values: OptionValues, key: string): string | undefined {
-  const value = values[key]
-  return typeof value === 'string' ? value : undefined
+function isCommandName(value: string): value is CommandName {
+  return value in COMMAND_OPTIONS
 }
 
 // --- entry ---
@@ -100,37 +95,61 @@ function main(): number {
     console.log(HELP)
     return 1
   }
-  const specs = COMMAND_OPTIONS[command]
-  if (specs === undefined) {
+  if (!isCommandName(command)) {
     console.error(`unknown command: ${command}`)
     console.log(HELP)
     return 1
   }
   try {
-    const { values, positionals } = parseArgs({
-      args: argv.slice(1),
-      options: specs,
-      allowPositionals: true,
-      strict: true,
-    })
     switch (command) {
-      case 'sync':
-        return commandSync(str(values, 'home'), { source: str(values, 'source'), full: values.full === true })
-      case 'query':
-        return commandQuery(str(values, 'home'), {
-          text: positionals.filter((p): p is string => typeof p === 'string'),
-          url: str(values, 'url'),
-          from: str(values, 'from'),
-          to: str(values, 'to'),
-          limit: str(values, 'limit'),
+      case 'sync': {
+        const { values } = parseArgs({
+          args: argv.slice(1),
+          options: COMMAND_OPTIONS.sync,
+          strict: true,
         })
-      case 'status':
-        return commandStatus(str(values, 'home'))
-      case 'stop':
-        return commandStop(str(values, 'home'))
-      case 'serve':
+        return commandSync(values.home, { source: values.source, full: values.full })
+      }
+      case 'query': {
+        const { values, positionals } = parseArgs({
+          args: argv.slice(1),
+          options: COMMAND_OPTIONS.query,
+          allowPositionals: true,
+          strict: true,
+        })
+        return commandQuery(values.home, {
+          text: positionals,
+          url: values.url,
+          from: values.from,
+          to: values.to,
+          limit: values.limit,
+        })
+      }
+      case 'status': {
+        const { values } = parseArgs({
+          args: argv.slice(1),
+          options: COMMAND_OPTIONS.status,
+          strict: true,
+        })
+        return commandStatus(values.home)
+      }
+      case 'stop': {
+        const { values } = parseArgs({
+          args: argv.slice(1),
+          options: COMMAND_OPTIONS.stop,
+          strict: true,
+        })
+        return commandStop(values.home)
+      }
+      case 'serve': {
+        parseArgs({
+          args: argv.slice(1),
+          options: COMMAND_OPTIONS.serve,
+          strict: true,
+        })
         console.error('serve is not implemented yet')
         return 1
+      }
     }
     return 1
   } catch (error) {
@@ -167,7 +186,7 @@ function commandSync(homeArg: string | undefined, opts: { source?: string; full?
           archive,
           { kind: target.source as SourceKind, displayName: target.displayName ?? null, profilePath: target.dbPath },
           visits,
-          { full: opts.full === true, now: Date.now() },
+          { full: opts.full ?? false, now: Date.now() },
         )
         console.log(`${kindLabel(target)}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
       } catch (error) {
