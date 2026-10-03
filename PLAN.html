@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="created_at" content="2026-10-03T14:20:00+09:00">
+<title>his | Core/CLI/Desktop plan</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0B0E14;
+    --surface: #151A23;
+    --surface-2: #21252F;
+    --border: #2C313F;
+    --border-strong: #383F50;
+    --text: #C3CDDC;
+    --text-strong: #F7F9FC;
+    --muted: #7E8A9E;
+    --primary: #4465DB;
+    --primary-soft: rgba(68, 101, 219, 0.15);
+    --accent: #F08A59;
+    --accent-soft: rgba(240, 138, 89, 0.15);
+    --green: #4ADE80;
+    --green-soft: rgba(74, 222, 128, 0.15);
+    --cyan: #38BDF8;
+    --purple: #A78BFA;
+    --mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface-2: #F1F5F9;
+      --border: #E2E8F0;
+      --border-strong: #CBD5E1;
+      --text: #334155;
+      --text-strong: #0F172A;
+      --muted: #64748B;
+      --primary: #2563EB;
+      --primary-soft: rgba(37, 99, 235, 0.1);
+      --accent: #EA580C;
+      --accent-soft: rgba(234, 88, 12, 0.1);
+      --green: #16A34A;
+      --green-soft: rgba(22, 163, 74, 0.1);
+      --cyan: #0284C7;
+      --purple: #7C3AED;
+      color-scheme: light;
+    }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    padding: 0 16px;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 0 80px;
+  }
+
+  section { scroll-margin-top: 24px; }
+  .toc {
+    display: none;
+    position: fixed;
+    top: 96px;
+    left: calc(50% + 420px);
+    width: 200px;
+    max-height: calc(100vh - 128px);
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  @media (min-width: 1240px) {
+    .toc { display: block; }
+  }
+  .toc-title {
+    padding-left: 14px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .toc iconify-icon { font-size: 13px; width: 13px; height: 13px; vertical-align: -2px; margin-right: 5px; }
+  .toc a.active iconify-icon { color: inherit; }
+  .toc a {
+    display: block;
+    padding: 3px 8px 3px 12px;
+    border-left: 2px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .toc a:hover { color: var(--text-strong); }
+  .toc a.active { color: var(--primary); border-left-color: var(--primary); }
+  .toc a.toc-h3 { padding-left: 24px; font-size: 11px; }
+
+  /* Hero */
+  .hero {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .badge-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  h1 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  .tagline {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-family: var(--mono);
+  }
+
+  /* Sections */
+  section { margin-top: 48px; }
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  h2 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin: 24px 0 8px;
+  }
+  h3 iconify-icon { color: var(--accent); font-size: 18px; flex-shrink: 0; }
+  p { margin-bottom: 12px; }
+  p strong { color: var(--text); }
+  .section-desc {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+  }
+
+  /* Inline code & blocks */
+  code {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    color: var(--text);
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.77rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin: 14px 0;
+  }
+  pre .c { color: var(--muted); }
+  blockquote {
+    margin: 10px 0;
+    padding: 8px 14px;
+    border-left: 2px solid var(--primary);
+    background: var(--surface-2);
+    border-radius: 0 8px 8px 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.65;
+  }
+  blockquote a { color: var(--primary); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 14px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    text-align: left;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+    background: var(--surface);
+  }
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    background: var(--surface);
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* Grid & Cards */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .grid-2 > * { min-width: 0; }
+  @media (max-width: 620px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card .card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .card .card-head iconify-icon {
+    font-size: 22px;
+    color: var(--primary);
+    flex-shrink: 0;
+  }
+  .card h4 {
+    font-size: 0.95rem;
+    color: var(--text-strong);
+    font-weight: 600;
+    margin: 0;
+  }
+  .card p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.65;
+    margin: 0;
+  }
+  .card p strong { color: var(--text); }
+  .card p code { font-size: 0.74rem; }
+  .card ul { margin: 0; padding-left: 16px; }
+  .card li { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+
+  /* Timeline (phase cards) */
+  .timeline { position: relative; padding-left: 28px; margin: 20px 0; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: 2px;
+    background: var(--border-strong);
+  }
+  .timeline-step { position: relative; margin-bottom: 20px; }
+  .timeline-step:last-child { margin-bottom: 0; }
+  .step-check {
+    position: absolute;
+    left: -30px;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 50%;
+  }
+  .step-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .step-head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .step-title {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-title iconify-icon { font-size: 22px; }
+  .step-meta {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface-2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    margin-left: auto;
+  }
+  .step-body {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .tasks {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .task {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .task > iconify-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--muted);
+  }
+  .task.done { background: transparent; }
+  .task.done > iconify-icon { color: var(--green); }
+  .task.done::after {
+    content: '✓';
+    position: absolute;
+    top: 0px;
+    right: 8px;
+    font-family: var(--mono);
+    color: var(--green);
+  }
+  .task-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    line-height: 1.4;
+  }
+  .task-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  @media (max-width: 620px) {
+    .tasks { grid-template-columns: 1fr; }
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-strong);
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  footer strong { color: var(--text); }
+  footer ul { list-style: none; }
+  footer li { padding: 2px 0; }
+  footer li iconify-icon { color: var(--muted); font-size: 14px; vertical-align: -2px; margin-right: 6px; }
+  footer a { color: var(--primary); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .f-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .f-title iconify-icon { color: var(--primary); }
+  .colophon {
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="badge-top">
+      <iconify-icon icon="mdi:rocket-launch-outline" noobserver></iconify-icon>
+      IMPLEMENTATION PLAN
+    </div>
+    <h1><iconify-icon icon="mdi:server-network" width="30" noobserver></iconify-icon>his core · cli · desktop plan</h1>
+    <p class="tagline">Plan for the his archive core, CLI, and desktop shell — the WebUI mock-first plan lives in PLAN.web.</p>
+  </header>
+
+  <!-- ROADMAP -->
+  <section>
+    <h2><iconify-icon icon="mdi:format-list-numbered" width="24" noobserver></iconify-icon>Roadmap</h2>
+    <p class="section-desc">
+      Order follows the dependency chain — model contracts → SQLite layer → sync engine → sources → CLI commands → serve/RPC → desktop shell.
+      Core ships before its consumers: the WebUI (PLAN.web) keeps running on mocks until Phase 6 here lands, when its <code>api.ts</code> swaps mock for the real WS client.
+    </p>
+
+    <div class="timeline">
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:code-braces" style="color:var(--primary)" noobserver></iconify-icon>
+              Phase 1 — Model
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            The shared vocabulary — every package and the WebUI type against these shapes.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:package-variant-closed" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">core/ scaffold</div>
+                <div class="task-desc">package.json · tsconfig · strict TS — no frontends imported</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:code-braces" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">model.ts</div>
+                <div class="task-desc">HistoryItem · VisitItem — WebExtensions shape 1:1 · epoch ms everywhere</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:call-split" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Transition axis</div>
+                <div class="task-desc">Chromium enums (<code>LINK</code> / <code>TYPED</code> / ...) — natives map onto it at sync</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:database-outline" style="color:var(--purple)" noobserver></iconify-icon>
+              Phase 2 — DB layer
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            <code>history.db</code> + rebuildable <code>favicons.db</code> land here — one writer, WAL, FTS5.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:file-code-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">schema.sql</div>
+                <div class="task-desc">urls · visits · source_profiles · profile_watermarks · urls_fts trigram — favicon_cache in <code>favicons.db</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:cog-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">open.ts</div>
+                <div class="task-desc">open · WAL · <code>busy_timeout</code> · foreign_keys · migrations</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:table-search" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">query.ts</div>
+                <div class="task-desc">search (trigram, &lt;3 chars → LIKE) · timeline · keyset pagination · <code>hidden_at IS NULL</code> filter</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:database-import-outline" style="color:var(--green)" noobserver></iconify-icon>
+              Phase 3 — Sync engine
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            Snapshot-only, file-safe incremental pipeline — live browser DBs are never opened.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:content-copy" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">snapshot.ts</div>
+                <div class="task-desc">SQLite Backup API → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code> · journal folded on the copy</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:map-marker-path" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">watermarks.ts</div>
+                <div class="task-desc">per-profile cursor · <code>MAX(id)</code> shrink = cleared → <code>source_id_offset += last_raw_id</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:workflow" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">run.ts</div>
+                <div class="task-desc">snapshot → parse → upsert → watermark · one tx per profile · <code>INSERT OR IGNORE</code> · watermark advances only after commit</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:web" style="color:var(--cyan)" noobserver></iconify-icon>
+              Phase 4 — Sources
+            </span>
+            <span class="step-meta">P2 · core</span>
+          </div>
+          <div class="step-body">
+            One adapter per vendor shape — all normalizing onto epoch ms + Chromium transitions; unmappable values keep the raw string in <code>source_transition</code>.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:google-chrome" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">chromium.ts</div>
+                <div class="task-desc">Chrome / Edge / Brave / Vivaldi / Arc · WebKit µs (1601) → ms · native enum</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:firefox" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">firefox.ts</div>
+                <div class="task-desc">places.sqlite · PRTime µs ÷ 1000 · Places 1–8 → enum</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:apple-safari" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">safari.ts</div>
+                <div class="task-desc">History.db · Core Data s (2001) → conservative <code>LINK</code>, raw kept</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:file-import-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">takeout.ts</div>
+                <div class="task-desc">BrowserHistory.json · 3 layouts · <code>time_usec</code> ÷ 1000 · (url, time) stable hash ids</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:console" style="color:var(--primary)" noobserver></iconify-icon>
+              Phase 5 — CLI commands
+            </span>
+            <span class="step-meta">P2 · cli</span>
+          </div>
+          <div class="step-body">
+            The <code>his</code> npm package — thin arg parsing over core; <code>query</code> is a read-only walk through <code>query.ts</code>.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:console" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">bin.ts</div>
+                <div class="task-desc">arg parsing · <code>his [sync|serve|query|status|stop]</code> · <code>--home</code> (env <code>HIS_HOME</code>)</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:sync" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">sync paths</div>
+                <div class="task-desc">per-source counts · errors exit 1 · <code>--source &lt;kind&gt;</code> · <code>--full</code> ignores watermarks (idempotent)</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:code-json" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">query command</div>
+                <div class="task-desc">history.search against <code>history.db</code> → JSON · <code>--url --from --to --limit</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:broadcast" style="color:var(--accent)" noobserver></iconify-icon>
+              Phase 6 — Serve &amp; RPC
+            </span>
+            <span class="step-meta">P2 · cli</span>
+          </div>
+          <div class="step-body">
+            One process owns the archive, the static WebUI, and <code>/rpc</code>; the desktop only spawns it. Finishing here unblocks PLAN.web's Phase 6 RPC wiring.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:server" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">server/index.ts</div>
+                <div class="task-desc">static dist · binds 127.0.0.1 · <code>GET /f/&lt;eTLD+1&gt;</code> from <code>favicons.db</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">server/rpc.ts</div>
+                <div class="task-desc">JSON-RPC 2.0 over WS <code>/rpc</code> · dispatch to core · same-origin + token only · pushes <code>db.changed</code> / <code>sync.progress</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:file-check-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">server/state.ts</div>
+                <div class="task-desc">writes <code>~/.his/state.json</code> · pid liveness <code>kill(pid, 0)</code> · stale prune · port +1 on conflict</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:radar" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Watch loop</div>
+                <div class="task-desc">file watch on profile DBs · FSEvents / mtime poll · 5 s debounce → sync</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:apple" style="color:var(--purple)" noobserver></iconify-icon>
+              Phase 7 — Desktop shell
+            </span>
+            <span class="step-meta">P3 · desktop</span>
+          </div>
+          <div class="step-body">
+            A macOS menu bar client with one window — spawns <code>his serve</code>, loads the URL, stops it on quit. No embedded logic.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:launch" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">src/main.ts</div>
+                <div class="task-desc">single-instance lock · spawn / stop serve · BrowserWindow → serve URL</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:tray" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">src/tray.ts</div>
+                <div class="task-desc">Sync Now · Open · Quit his — <code>sync.progress</code> shown in the tooltip</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:heart-pulse" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Lifecycle</div>
+                <div class="task-desc">reads state.json for port / token · tray actions respawn serve when down</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONTRACTS -->
+  <section>
+    <h2><iconify-icon icon="mdi:swap-horizontal-circle-outline" width="24" noobserver></iconify-icon>Contracts &amp; seams</h2>
+    <p class="section-desc">
+      What each package promises its consumers — kept small and stable so frontends never reach past them.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
+          <h4>RPC surface = core's contract</h4>
+        </div>
+        <p><code>core</code> implements <code>history.search / getVisits / getItem / deleteUrl / restoreUrl</code> + <code>sources.list</code> / <code>sync.run</code> / <code>sync.status</code>; <code>cli/server/rpc.ts</code> is a thin dispatcher.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:file-cog-outline" noobserver></iconify-icon>
+          <h4>state.json — serve ↔ desktop</h4>
+        </div>
+        <p>Written once the port is bound, pruned at shutdown. Desktop spawns when absent, reports when present — one home = one archive = one instance (<code>HIS_HOME</code>).</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:link-variant" noobserver></iconify-icon>
+          <h4>WebUI seam lands here</h4>
+        </div>
+        <p>PLAN.web's mock <code>api.ts</code> swaps for the real WS client with zero view changes once Phase 6 ships — push handlers (<code>db.changed</code>) drive its refetch signals.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
+          <h4>favicons.db — rebuildable</h4>
+        </div>
+        <p>Domain-keyed (eTLD+1), best-width upsert, 30-day TTL swept after sync. Served at <code>/f/&lt;eTLD+1&gt;</code>; 404 → letter tile.</p>
+      </div>
+    </div>
+
+    <blockquote>
+      <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
+      P1 (model → sync engine) can land before the WebUI RPC work converges; the CLI's <code>serve</code> is the last prerequisite before PLAN.web Phase 6 (RPC wiring) and Phase 7 (Polish) go real.
+    </blockquote>
+  </section>
+
+  <footer>
+    <div class="colophon">his core · cli · desktop plan · created 2026-10-03</div>
+  </footer>
+</div>
+
+<nav id="toc" class="toc" aria-label="On this page">
+  <div class="toc-title">On this page</div>
+</nav>
+
+<script>
+(() => {
+  const toc = document.getElementById("toc")
+  const headings = [...document.querySelectorAll(".container h2, .container h3")]
+  const seen = {}
+  for (const h of headings) {
+    const text = h.textContent.trim()
+    if (!h.id) {
+      const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+      seen[base] = (seen[base] ?? 0) + 1
+      h.id = seen[base] > 1 ? `${base}-${seen[base]}` : base
+    }
+    const a = document.createElement("a")
+    a.href = `#${h.id}`
+    a.innerHTML = h.innerHTML
+    a.querySelector("iconify-icon")?.removeAttribute("width")
+    if (h.tagName === "H3") a.className = "toc-h3"
+    a.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+      e.preventDefault()
+      h.scrollIntoView({ behavior: "smooth" })
+      history.replaceState(null, "", `#${h.id}`)
+    })
+    toc.append(a)
+  }
+  const links = new Map([...toc.querySelectorAll("a")].map((a) => [a.getAttribute("href").slice(1), a]))
+  const update = () => {
+    let current = headings[0]
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= 96) current = h
+    }
+    for (const a of links.values()) a.classList.remove("active")
+    links.get(current.id)?.classList.add("active")
+  }
+  addEventListener("scroll", update, { passive: true })
+  update()
+})()
+</script>
+</body>
+</html>
