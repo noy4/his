@@ -1,7 +1,7 @@
 import { BrowserWindow, Tray, type App } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import path from 'node:path'
-import { defaultHome, readState, type InstanceState } from '@his/core/state'
+import { defaultHome, processAlive, readState, type InstanceState } from '@his/core/state'
 import { createTray } from './tray.ts'
 
 // App context: spawns `his serve`, owns the window and tray.
@@ -92,10 +92,11 @@ export class HisApp {
     this.#serveProc = undefined
     if (proc === undefined && pid === undefined) return
     if (pid !== undefined) process.kill(pid, 'SIGTERM')
+    // post-SIGTERM the state file is gone, so probe liveness directly
     await new Promise<void>((resolve) => {
       const deadline = Date.now() + 3_000
       const check = (): void => {
-        if (pid === undefined || !isAliveish(pid)) return resolve()
+        if (pid === undefined || !processAlive(pid)) return resolve()
         if (Date.now() > deadline) {
           process.kill(pid, 'SIGKILL')
           return resolve()
@@ -104,15 +105,5 @@ export class HisApp {
       }
       check()
     })
-  }
-}
-
-// post-SIGTERM the state file is gone, so liveness needs a raw probe here
-function isAliveish(pid: number): boolean {
-  try {
-    process.kill(pid, 0)
-    return true
-  } catch {
-    return false
   }
 }
