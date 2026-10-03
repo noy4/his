@@ -80,8 +80,7 @@ async function main(): Promise<void> {
     process.exitCode = 1
     return
   }
-  const code = (await cli.runMatchedCommand()) as number
-  process.exitCode = code
+  await cli.runMatchedCommand()
 }
 
 await main().catch((error) => {

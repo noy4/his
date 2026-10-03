@@ -11,7 +11,7 @@ export interface QueryOptions {
   limit?: string
 }
 
-export function query(home: string, opts: QueryOptions): number {
+export function query(home: string, opts: QueryOptions): void {
   const dbPath = historyDbPath(home)
   if (!fs.existsSync(dbPath)) {
     throw new Error(`no archive at ${dbPath} — run "his sync" first`)
@@ -42,7 +42,6 @@ export function query(home: string, opts: QueryOptions): number {
   } finally {
     db.close()
   }
-  return 0
 }
 
 function parseTimeArg(raw: string): EpochMs | null {

@@ -25,7 +25,7 @@ export interface SyncOptions {
   full?: boolean
 }
 
-export function sync(home: string, opts: SyncOptions): number {
+export function sync(home: string, opts: SyncOptions): void {
   const source = opts.source?.toLowerCase()
   if (source !== undefined && !SYNC_KINDS.includes(source as SourceKind)) {
     throw new Error(`unknown source: ${source} (kinds: ${SYNC_KINDS.join(' ')})`)
@@ -59,7 +59,6 @@ export function sync(home: string, opts: SyncOptions): number {
   }
   db.close()
   if (failures > 0) throw new Error(`sync failed for ${failures} of ${attempted} targets`)
-  return 0
 }
 
 function discoverTargets(kind: SourceKind, home: string): SnapshotTarget[] {
