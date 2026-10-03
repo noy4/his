@@ -10,10 +10,7 @@ export interface ServeOptions {
 
 export async function serveCommand(opts: ServeOptions): Promise<number> {
   const port = parsePortArg(opts.port)
-  if (port === null) {
-    console.error(`invalid --port: ${opts.port} (integer 1-65535)`)
-    return 1
-  }
+  if (port === null) throw new Error(`invalid --port: ${opts.port} (integer 1-65535)`)
   const result = await serve({ home: opts.home, port, open: opts.open })
   if (result.kind === 'already-running') {
     console.log(result.info.url)

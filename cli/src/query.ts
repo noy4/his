@@ -14,8 +14,7 @@ export interface QueryOptions {
 export function query(home: string, opts: QueryOptions): number {
   const dbPath = historyDbPath(home)
   if (!fs.existsSync(dbPath)) {
-    console.error(`no archive at ${dbPath} — run "his sync" first`)
-    return 1
+    throw new Error(`no archive at ${dbPath} — run "his sync" first`)
   }
   const filter: SearchFilter = {
     query: opts.text.length > 0 ? opts.text.join(' ') : undefined,
@@ -23,26 +22,17 @@ export function query(home: string, opts: QueryOptions): number {
   }
   if (opts.from !== undefined) {
     const from = parseTimeArg(opts.from)
-    if (from === null) {
-      console.error(`invalid --from: ${opts.from} (epoch ms or date)`)
-      return 1
-    }
+    if (from === null) throw new Error(`invalid --from: ${opts.from} (epoch ms or date)`)
     filter.from = from
   }
   if (opts.to !== undefined) {
     const to = parseTimeArg(opts.to)
-    if (to === null) {
-      console.error(`invalid --to: ${opts.to} (epoch ms or date)`)
-      return 1
-    }
+    if (to === null) throw new Error(`invalid --to: ${opts.to} (epoch ms or date)`)
     filter.to = to
   }
   if (opts.limit !== undefined) {
     const limit = parseLimitArg(opts.limit)
-    if (limit === null) {
-      console.error(`invalid --limit: ${opts.limit} (positive integer)`)
-      return 1
-    }
+    if (limit === null) throw new Error(`invalid --limit: ${opts.limit} (positive integer)`)
     filter.limit = limit
   }
   const db = new DatabaseSync(dbPath, { readOnly: true })

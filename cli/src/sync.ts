@@ -28,14 +28,15 @@ export interface SyncOptions {
 export function sync(home: string, opts: SyncOptions): number {
   const source = opts.source?.toLowerCase()
   if (source !== undefined && !SYNC_KINDS.includes(source as SourceKind)) {
-    console.error(`unknown source: ${source} (kinds: ${SYNC_KINDS.join(' ')})`)
-    return 1
+    throw new Error(`unknown source: ${source} (kinds: ${SYNC_KINDS.join(' ')})`)
   }
   const db = open(historyDbPath(home))
   const kinds: SourceKind[] = source === undefined ? SYNC_KINDS : [source as SourceKind]
+  let attempted = 0
   let failures = 0
   for (const kind of kinds) {
     for (const target of discoverTargets(kind, home)) {
+      attempted += 1
       try {
         const snap = snapshot(target, home)
         const visits = parseForKind(kind, snap.path)
@@ -57,7 +58,8 @@ export function sync(home: string, opts: SyncOptions): number {
     }
   }
   db.close()
-  return failures === 0 ? 0 : 1
+  if (failures > 0) throw new Error(`sync failed for ${failures} of ${attempted} targets`)
+  return 0
 }
 
 function discoverTargets(kind: SourceKind, home: string): SnapshotTarget[] {
