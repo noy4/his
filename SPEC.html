@@ -406,7 +406,7 @@
 │       │   └── query.ts          <span class="c"># search · timeline · keyset pagination</span>
 │       └── sync/
 │           ├── run.ts            <span class="c"># snapshot → parse → upsert → watermark</span>
-│           ├── snapshot.ts       <span class="c"># SQLite Backup API → staging · journal fold</span>
+│           ├── snapshot.ts       <span class="c"># copy main + sidecars → staging · fold on open</span>
 │           ├── watermarks.ts     <span class="c"># per browser/profile cursor · reset detection</span>
 │           └── sources/
 │               ├── chromium.ts   <span class="c"># Chrome / Edge / Brave / Vivaldi / Arc ...</span>
@@ -847,7 +847,7 @@ CREATE TABLE favicon_cache (
           <iconify-icon icon="mdi:content-copy" noobserver></iconify-icon>
           <h4>Snapshot</h4>
         </div>
-        <p>SQLite Backup API → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code>; journal folded on the copy. Fallback: copy main + <code>-wal</code> + <code>-shm</code>, open immutable.</p>
+        <p>Copy main + sidecars (<code>-wal</code> / <code>-shm</code> / <code>-journal</code>) → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code>. Opening the copy folds the journals into one file — the live DB is never opened.</p>
       </div>
       <div class="card">
         <div class="card-head">
