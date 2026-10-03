@@ -45,23 +45,35 @@ Usage: his <command> [options]
   -v                              show version
 `
 
-interface Spec {
+interface OptionSpec {
   type: 'string' | 'boolean'
   short?: string
 }
 
-const COMMON: Record<string, Spec> = {
+const GLOBAL_OPTIONS: Record<string, OptionSpec> = {
   home: { type: 'string' },
-  help: { short: 'h', type: 'boolean' },
-  version: { short: 'v', type: 'boolean' },
 }
 
-const OPTIONS: Record<string, Record<string, Spec>> = {
-  sync: { ...COMMON, source: { type: 'string' }, full: { type: 'boolean' } },
-  query: { ...COMMON, url: { type: 'string' }, from: { type: 'string' }, to: { type: 'string' }, limit: { type: 'string' } },
-  status: { ...COMMON },
-  stop: { ...COMMON },
-  serve: { ...COMMON, port: { type: 'string' }, open: { type: 'boolean' } },
+const COMMAND_OPTIONS: Record<string, Record<string, OptionSpec>> = {
+  sync: {
+    ...GLOBAL_OPTIONS,
+    source: { type: 'string' },
+    full: { type: 'boolean' },
+  },
+  query: {
+    ...GLOBAL_OPTIONS,
+    url: { type: 'string' },
+    from: { type: 'string' },
+    to: { type: 'string' },
+    limit: { type: 'string' },
+  },
+  status: { ...GLOBAL_OPTIONS },
+  stop: { ...GLOBAL_OPTIONS },
+  serve: {
+    ...GLOBAL_OPTIONS,
+    port: { type: 'string' },
+    open: { type: 'boolean' },
+  },
 }
 
 type OptionValues = Record<string, string | boolean | (string | boolean)[] | undefined>
@@ -71,89 +83,63 @@ function str(values: OptionValues, key: string): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
-function resolveHome(homeArg: string | undefined): string {
-  return homeArg ?? process.env.HIS_HOME ?? path.join(os.homedir(), '.his')
-}
+// --- entry ---
 
-function processAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0)
-    return true
-  } catch {
-    return false
+function main(): number {
+  const argv = process.argv.slice(2)
+  if (argv.includes('-h') || argv.includes('--help')) {
+    console.log(HELP)
+    return 0
   }
-}
-
-interface InstanceState {
-  pid: number
-  port: number
-  url: string
-  db: string
-  token?: string
-}
-
-function stateFile(home: string): string {
-  return path.join(home, 'state.json')
-}
-
-function readInstanceState(home: string): InstanceState | undefined {
-  const file = stateFile(home)
-  if (!fs.existsSync(file)) return undefined
+  if (argv.includes('-v') || argv.includes('--version')) {
+    console.log(`his ${VERSION}`)
+    return 0
+  }
+  const command = argv[0]
+  if (command === undefined) {
+    console.log(HELP)
+    return 1
+  }
+  const specs = COMMAND_OPTIONS[command]
+  if (specs === undefined) {
+    console.error(`unknown command: ${command}`)
+    console.log(HELP)
+    return 1
+  }
   try {
-    const state = JSON.parse(fs.readFileSync(file, 'utf8')) as Partial<InstanceState>
-    if (typeof state.pid !== 'number' || typeof state.port !== 'number' || typeof state.url !== 'string' || typeof state.db !== 'string') {
-      throw new Error('incomplete state')
+    const { values, positionals } = parseArgs({
+      args: argv.slice(1),
+      options: specs,
+      allowPositionals: true,
+      strict: true,
+    })
+    switch (command) {
+      case 'sync':
+        return commandSync(str(values, 'home'), { source: str(values, 'source'), full: values.full === true })
+      case 'query':
+        return commandQuery(str(values, 'home'), {
+          text: positionals.filter((p): p is string => typeof p === 'string'),
+          url: str(values, 'url'),
+          from: str(values, 'from'),
+          to: str(values, 'to'),
+          limit: str(values, 'limit'),
+        })
+      case 'status':
+        return commandStatus(str(values, 'home'))
+      case 'stop':
+        return commandStop(str(values, 'home'))
+      case 'serve':
+        console.error('serve is not implemented yet')
+        return 1
     }
-    return state as InstanceState
-  } catch {
-    fs.rmSync(file, { force: true })
-    return undefined
+    return 1
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error))
+    return 1
   }
-}
-
-function parseTimeArg(raw: string): EpochMs | null {
-  if (/^-?\d+$/.test(raw)) return Number(raw)
-  const parsed = Date.parse(raw)
-  return Number.isNaN(parsed) ? null : parsed
-}
-
-function parseLimitArg(raw: string): number | null {
-  if (/^\d+$/.test(raw)) return Number(raw)
-  return null
 }
 
 // --- sync ---
-
-const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
-
-function takeoutTargets(home: string): SnapshotTarget[] {
-  const dir = path.join(home, 'takeout')
-  if (!fs.existsSync(dir)) return []
-  return fs.readdirSync(dir)
-    .filter((name) => name.endsWith('.json'))
-    .sort()
-    .map((name) => {
-      const dbPath = path.join(dir, name)
-      return { source: 'takeout' as const, profile: takeoutProfileKey(dbPath), displayName: `Takeout (${name})`, dbPath }
-    })
-}
-
-function parseForKind(kind: SourceKind, snapshotPath: string) {
-  switch (kind) {
-    case 'chromium':
-      return parseChromiumStaging(snapshotPath)
-    case 'firefox':
-      return parseFirefoxStaging(snapshotPath)
-    case 'safari':
-      return parseSafariStaging(snapshotPath)
-    case 'takeout':
-      return parseTakeoutStaging(snapshotPath)
-  }
-}
-
-function kindLabel(target: SnapshotTarget): string {
-  return `${target.source} · ${target.displayName ?? target.profile}`
-}
 
 function commandSync(homeArg: string | undefined, opts: { source?: string; full?: boolean }): number {
   const home = resolveHome(homeArg)
@@ -194,9 +180,51 @@ function commandSync(homeArg: string | undefined, opts: { source?: string; full?
   return failures === 0 ? 0 : 1
 }
 
+const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
+
+function takeoutTargets(home: string): SnapshotTarget[] {
+  const dir = path.join(home, 'takeout')
+  if (!fs.existsSync(dir)) return []
+  return fs.readdirSync(dir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+    .map((name) => {
+      const dbPath = path.join(dir, name)
+      return {
+        source: 'takeout' as const,
+        profile: takeoutProfileKey(dbPath),
+        displayName: `Takeout (${name})`,
+        dbPath,
+      }
+    })
+}
+
+function parseForKind(kind: SourceKind, snapshotPath: string) {
+  switch (kind) {
+    case 'chromium':
+      return parseChromiumStaging(snapshotPath)
+    case 'firefox':
+      return parseFirefoxStaging(snapshotPath)
+    case 'safari':
+      return parseSafariStaging(snapshotPath)
+    case 'takeout':
+      return parseTakeoutStaging(snapshotPath)
+  }
+}
+
+function kindLabel(target: SnapshotTarget): string {
+  return `${target.source} · ${target.displayName ?? target.profile}`
+}
+
 // --- query ---
 
-function commandQuery(homeArg: string | undefined, opts: { text: string[]; url?: string; from?: string; to?: string; limit?: string }): number {
+function commandQuery(homeArg: string | undefined, opts: {
+  text: string[];
+  url?: string;
+  from?: string;
+  to?: string;
+  limit?: string;
+}): number {
   const dbPath = path.join(resolveHome(homeArg), 'history.db')
   if (!fs.existsSync(dbPath)) {
     console.error(`no archive at ${dbPath} — run "his sync" first`)
@@ -240,6 +268,17 @@ function commandQuery(homeArg: string | undefined, opts: { text: string[]; url?:
   return 0
 }
 
+function parseTimeArg(raw: string): EpochMs | null {
+  if (/^-?\d+$/.test(raw)) return Number(raw)
+  const parsed = Date.parse(raw)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+function parseLimitArg(raw: string): number | null {
+  if (/^\d+$/.test(raw)) return Number(raw)
+  return null
+}
+
 // --- status / stop ---
 
 function commandStatus(homeArg: string | undefined): number {
@@ -267,68 +306,46 @@ function commandStop(homeArg: string | undefined): number {
   return 0
 }
 
-// --- main ---
+interface InstanceState {
+  pid: number
+  port: number
+  url: string
+  db: string
+  token?: string
+}
 
-function main(): number {
-  const argv = process.argv.slice(2)
-  const command = argv[0]
-  if (command === undefined) {
-    console.log(HELP)
-    return 1
-  }
-  if (command === '-v' || command === '--version') {
-    console.log(`his ${VERSION}`)
-    return 0
-  }
-  if (command === '-h' || command === '--help') {
-    console.log(HELP)
-    return 0
-  }
-  const specs = OPTIONS[command]
-  if (specs === undefined) {
-    console.error(`unknown command: ${command}`)
-    console.log(HELP)
-    return 1
-  }
+function stateFile(home: string): string {
+  return path.join(home, 'state.json')
+}
+
+function readInstanceState(home: string): InstanceState | undefined {
+  const file = stateFile(home)
+  if (!fs.existsSync(file)) return undefined
   try {
-    const { values, positionals } = parseArgs({
-      args: argv.slice(1),
-      options: specs,
-      allowPositionals: true,
-      strict: true,
-    })
-    if (values.version === true) {
-      console.log(`his ${VERSION}`)
-      return 0
+    const state = JSON.parse(fs.readFileSync(file, 'utf8')) as Partial<InstanceState>
+    if (typeof state.pid !== 'number' || typeof state.port !== 'number' || typeof state.url !== 'string' || typeof state.db !== 'string') {
+      throw new Error('incomplete state')
     }
-    if (values.help === true) {
-      console.log(HELP)
-      return 0
-    }
-    switch (command) {
-      case 'sync':
-        return commandSync(str(values, 'home'), { source: str(values, 'source'), full: values.full === true })
-      case 'query':
-        return commandQuery(str(values, 'home'), {
-          text: positionals.filter((p): p is string => typeof p === 'string'),
-          url: str(values, 'url'),
-          from: str(values, 'from'),
-          to: str(values, 'to'),
-          limit: str(values, 'limit'),
-        })
-      case 'status':
-        return commandStatus(str(values, 'home'))
-      case 'stop':
-        return commandStop(str(values, 'home'))
-      case 'serve':
-        console.error('serve is not implemented yet')
-        return 1
-    }
-    return 1
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error))
-    return 1
+    return state as InstanceState
+  } catch {
+    fs.rmSync(file, { force: true })
+    return undefined
   }
+}
+
+function processAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0)
+    return true
+  } catch {
+    return false
+  }
+}
+
+// --- shared ---
+
+function resolveHome(homeArg: string | undefined): string {
+  return homeArg ?? process.env.HIS_HOME ?? path.join(os.homedir(), '.his')
 }
 
 process.exitCode = main()
