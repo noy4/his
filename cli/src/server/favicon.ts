@@ -17,6 +17,8 @@ const CONTENT_TYPES: Record<string, string> = {
   png: 'image/png',
   svg: 'image/svg+xml',
   ico: 'image/x-icon',
+  webp: 'image/webp',
+  jpeg: 'image/jpeg',
 }
 
 interface FaviconRow {
@@ -31,7 +33,7 @@ export function createFaviconStore(dbPath: string): FaviconLookup {
     if (db === null) return null
     try {
       const row = db
-        .prepare('SELECT data, data_type FROM favicon_cache WHERE domain = ?')
+        .prepare('SELECT data, data_type FROM favicons WHERE domain = ?')
         .get(domain) as unknown as FaviconRow | undefined
       if (row === undefined) return null
       const contentType = CONTENT_TYPES[row.data_type]
@@ -43,8 +45,8 @@ export function createFaviconStore(dbPath: string): FaviconLookup {
   }
 }
 
-// The archive is rebuildable — a missing or empty favicons.db is just an
-// empty lookup, never an error. The connection is opened lazily (read-only)
+// favicons.db is permanent data (no TTL), but a missing or empty file is just
+// an empty lookup, never an error. The connection is opened lazily (read-only)
 // because sync may create the file after this server started.
 function openDb(dbPath: string): DatabaseSync | null {
   try {
