@@ -52,12 +52,6 @@
   --font-mono: var(--mono);
 }
 
-/* Sticky top bar scrim */
-@utility glass {
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(8px);
-}
-
 @layer base {
   body {
     background: var(--bg);

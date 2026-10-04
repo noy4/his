@@ -1,5 +1,6 @@
 import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/models/app'
+import { SearchBar } from '@/components/SearchBar'
 import { Row } from '@/views/Row'
 
 export function List({ app }: { app: AppModel }) {
@@ -11,17 +12,22 @@ export function List({ app }: { app: AppModel }) {
   } = useModel(() => app.history)
 
   return (
-    <div>
-      <div className="grid">
-        {items.value.map((it) => (
-          <Row key={it.id} item={it} />
-        ))}
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="shrink-0 px-4 pt-4 pb-3">
+        <SearchBar app={app} />
       </div>
-      {loading.value && <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>}
-      {done.value && items.value.length === 0 && (
-        <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
-      )}
-      <div ref={(el) => setSentinel(el)} aria-hidden="true" />
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-10">
+        <div className="grid">
+          {items.value.map((it) => (
+            <Row key={it.id} item={it} />
+          ))}
+        </div>
+        {loading.value && <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>}
+        {done.value && items.value.length === 0 && (
+          <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
+        )}
+        <div ref={(el) => setSentinel(el)} aria-hidden="true" />
+      </div>
     </div>
   )
 }

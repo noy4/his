@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
 import type { Stats } from '@/api'
 import { dateLabel } from '@/lib/date'
 import type { AppModel } from '@/models/app'
+import { useEffect, useState } from 'react'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DAY = 86_400_000
@@ -20,13 +20,14 @@ export function Dashboard({ app }: { app: AppModel }) {
   }, [app.history])
 
   if (!stats) {
-    return <p className="py-12 text-center font-mono text-[0.8rem] text-muted">Loading…</p>
+    return <p className="h-full overflow-y-auto py-12 text-center font-mono text-[0.8rem] text-muted">Loading…</p>
   }
 
   const { totals } = stats
   const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY)
 
   return (
+    <div className="h-full overflow-y-auto px-4 pt-4 pb-10">
       <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
         <Card title="Overview">
           <div className="grid grid-cols-2 gap-4">
@@ -52,27 +53,28 @@ export function Dashboard({ app }: { app: AppModel }) {
           </Card>
         </div>
 
-      <Card title="Top domains">
-        <ol className="space-y-1 text-sm">
-          {stats.topDomains.map((d) => (
-            <li key={d.domain} className="flex items-center gap-2">
-              <span className="min-w-0 flex-1 truncate text-ink">{d.domain}</span>
-              <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
-            </li>
-          ))}
-        </ol>
-      </Card>
+        <Card title="Top domains">
+          <ol className="space-y-1 text-sm">
+            {stats.topDomains.map((d) => (
+              <li key={d.domain} className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-ink">{d.domain}</span>
+                <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
+              </li>
+            ))}
+          </ol>
+        </Card>
 
-      <Card title="Busiest days">
-        <ol className="space-y-1 text-sm">
-          {stats.busiestDays.map((d) => (
-            <li key={d.day} className="flex items-center justify-between gap-2">
-              <span className="truncate text-ink">{d.day}</span>
-              <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
-            </li>
-          ))}
-        </ol>
-      </Card>
+        <Card title="Busiest days">
+          <ol className="space-y-1 text-sm">
+            {stats.busiestDays.map((d) => (
+              <li key={d.day} className="flex items-center justify-between gap-2">
+                <span className="truncate text-ink">{d.day}</span>
+                <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      </div>
     </div>
   )
 }
