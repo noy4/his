@@ -42,14 +42,14 @@ export function Row({ item }: { item: HistoryItem }) {
           }}
           onLoad={(e) => {
             const img = e.currentTarget
+            if (img.naturalWidth === 0) {
+              img.style.display = 'none'
+              return
+            }
             const tile = img.parentElement as HTMLElement
             const letter = img.previousElementSibling as HTMLElement
-            if (img.naturalWidth > 0) {
-              tile.style.background = 'transparent'
-              letter.style.display = 'none'
-            } else {
-              img.style.display = 'none'
-            }
+            tile.style.background = 'transparent'
+            letter.style.display = 'none'
           }}
         />
       </span>
