@@ -642,11 +642,11 @@
             The mock comes out — one import swap, views untouched.
           </div>
           <div class="tasks">
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:lan-connect" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">JSON-RPC client</div>
-                <div class="task-desc">WS <code>/rpc</code> · id-matched requests · token from injected state · auto-reconnect</div>
+                <div class="task-desc">WS <code>/rpc</code> · id-matched · lazy connect · auto-reconnect</div>
               </div>
             </div>
             <div class="task">
@@ -696,7 +696,7 @@
 
     <blockquote>
       <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
-      A Dashboard view landed mid-Phase-4 on a <code>history.stats()</code> mock extension (<code>Dashboard / Timeline / List</code> header buttons) — Phase 6 must grow the matching stats method core-side. Deferred: date-range UI, delete/restore entry points on rows, the detail view (its <code>selection</code> signal rides along), and subscribe placement (<code>useModel</code> per view vs one app-level subscription).
+      A Dashboard view landed mid-Phase-4 on a <code>history.stats()</code> mock extension (<code>Dashboard / Timeline / List</code> header buttons) — the matching stats method is now core-side. Auth (token / Host pin / page-token injection) is temporarily removed and <code>db.changed</code> is temporarily unwired — see <code>local.md</code>. Dev mock/rpc toggles via <code>VITE_USE_MOCK_API</code> (real data goes through the vite <code>/rpc</code> proxy). Deferred: date-range UI, delete/restore entry points on rows, the detail view (<code>selection</code> rides along).
     </blockquote>
   </section>
 
