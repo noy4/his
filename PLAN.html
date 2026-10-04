@@ -556,6 +556,13 @@
                 <div class="task-desc">snapshot → parse → upsert → watermark · one tx per profile · <code>INSERT OR IGNORE</code> · watermark advances only after commit</div>
               </div>
             </div>
+            <div class="task">
+              <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">favicons.ts</div>
+                <div class="task-desc">Favicon harvest phase — Δvisits hosts ∪ hosts missing from favicon_cache → prefix scan → quality upsert (permanent · no cursor)</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -663,7 +670,7 @@
               <iconify-icon icon="mdi:server" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">server/index.ts</div>
-                <div class="task-desc">static dist · binds 127.0.0.1 · <code>GET /favicon/&lt;eTLD+1&gt;</code> from <code>favicons.db</code></div>
+                <div class="task-desc">static dist · binds 127.0.0.1 · <code>GET /favicon/&lt;host&gt;</code> (root fallback) from <code>favicons.db</code></div>
               </div>
             </div>
             <div class="task done">
@@ -765,9 +772,9 @@
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
-          <h4>favicons.db — rebuildable</h4>
+          <h4>favicons.db — permanent</h4>
         </div>
-        <p>Rebuildable at any time. Domain-keyed by eTLD+1; best-width upsert; 30-day TTL swept after sync. Served at <code>/favicon/&lt;eTLD+1&gt;</code>; 404 → letter tile.</p>
+        <p>Permanent store (no TTL). Host-keyed (www-stripped) with root-domain fallback at read; quality upsert (SVG &gt; width &gt; newer) fed by the history-delta harvest. Served at <code>/favicon/&lt;host&gt;</code>; 404 → letter tile. Back up with <code>history.db</code>.</p>
       </div>
     </div>
 

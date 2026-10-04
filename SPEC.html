@@ -617,7 +617,7 @@ db.changed        { }                                     <span class="c"># clie
         <path class="edge" style="stroke-dasharray:4 4; marker-end: url(#er-head)" d="M 158,292 V 250"/>
         <text class="alabel" x="166" y="270">external content · triggers</text>
         <path class="edge" style="stroke-dasharray:4 4; marker-end: url(#er-head)" d="M 668,90 V 76 H 160 V 86"/>
-        <text class="alabel" x="470" y="70">eTLD+1</text>
+        <text class="alabel" x="470" y="70">host</text>
 
         <!-- urls -->
         <rect class="node" x="48" y="90" width="220" height="156" rx="6"/>
@@ -681,12 +681,12 @@ db.changed        { }                                     <span class="c"># clie
         <!-- favicon_cache -->
         <rect class="node" x="616" y="90" width="132" height="114" rx="6"/>
         <text class="tt" x="628" y="108">favicon_cache</text>
-        <text class="tm" x="628" y="122">separate · rebuildable</text>
-        <text class="tm" x="628" y="140">domain · PK (eTLD+1)</text>
+        <text class="tm" x="628" y="122">separate · permanent</text>
+        <text class="tm" x="628" y="140">host · PK (www-stripped)</text>
         <text class="tm" x="628" y="153">data · BLOB</text>
         <text class="tm" x="628" y="166">data_type · png|svg|ico</text>
         <text class="tm" x="628" y="179">width · best wins</text>
-        <text class="tm" x="628" y="192">updated_at · TTL 30d</text>
+        <text class="tm" x="628" y="192">updated_at · harvest time</text>
       </svg>
     </div>
 
@@ -799,13 +799,13 @@ END;</pre>
 
     <h3><iconify-icon icon="mdi:image-multiple-outline" noobserver></iconify-icon>Favicons — favicons.db</h3>
 
-    <pre><span class="c">-- separate file · rebuildable at any time</span>
+    <pre><span class="c">-- separate file · permanent store · no TTL</span>
 CREATE TABLE favicon_cache (
-  domain      TEXT    PRIMARY KEY,        <span class="c">-- eTLD+1 · domain unit (HistorySync 式)</span>
+  domain      TEXT    PRIMARY KEY,        <span class="c">-- host · www-stripped (+ root fallback)</span>
   data        BLOB    NOT NULL,
-  data_type   TEXT    NOT NULL,           <span class="c">-- png | svg | ico</span>
-  width       INTEGER,                    <span class="c">-- best quality wins · never downgraded</span>
-  updated_at  INTEGER NOT NULL            <span class="c">-- epoch ms · TTL 30 days</span>
+  data_type   TEXT    NOT NULL,           <span class="c">-- png | svg | ico | webp | jpeg | gif</span>
+  width       INTEGER,                    <span class="c">-- best quality wins · never downgraded (svg = 0)</span>
+  updated_at  INTEGER NOT NULL            <span class="c">-- epoch ms · harvest time = diff baseline</span>
 );</pre>
 
     <div class="grid-2">
@@ -814,14 +814,14 @@ CREATE TABLE favicon_cache (
           <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
           <h4>Quality upsert</h4>
         </div>
-        <p>Overwrite only when better (larger width, SVG preferred); 30-day TTL swept after each sync.</p>
+        <p>Overwrite only when better (SVG &gt; width &gt; newer) — no downgrade, no TTL; refresh rides the history-delta harvest phase.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
           <h4>Why separate</h4>
         </div>
-        <p>Rebuildable — dropping it never loses history, keeps <code>history.db</code> lean. Alt: same-DB blobs (PathKeep 式) / no storage.</p>
+        <p>Not rebuildable — dropping the file loses icons (recent slice only); back up with <code>history.db</code>. Keeps it lean. Alt: page-level rows (Chrome 式) / same-DB blobs.</p>
       </div>
     </div>
   </section>
@@ -966,7 +966,7 @@ CREATE TABLE favicon_cache (
           <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
           <h4>Favicons</h4>
         </div>
-        <p><code>GET /favicon/&lt;eTLD+1&gt;</code> — served from <code>favicons.db</code>; 404 falls back to a letter tile.</p>
+        <p><code>GET /favicon/&lt;host&gt;</code> — served from <code>favicons.db</code>; root-domain fallback, then a letter tile.</p>
       </div>
     </div>
   </section>
@@ -1040,6 +1040,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <li>Page bodies out of scope — metadata only, no WARC / WACZ</li>
           <li>Dedup key = <code>(source_profile_id, source_visit_id)</code> — watermark incremental with reset detection</li>
           <li>Sync trigger = file watch — FSEvents / mtime on profile DBs, 5 s debounce</li>
+          <li>Favicon store = permanent harvest — one best icon per host (SVG &gt; width &gt; newer), history-delta driven, no TTL / no favicon cursor</li>
         </ul>
       </div>
       <div class="card">
@@ -1050,6 +1051,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
         <ul>
           <li>CLI <code>query</code> output formats — JSON / CSV / table</li>
           <li>Desktop webui bundling — shipped dist vs dev vite proxy</li>
+          <li>Online favicon fetch — Google S2 / origin <code>/favicon.ico</code> as fallback collection (privacy policy pending)</li>
         </ul>
       </div>
     </div>
