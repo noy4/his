@@ -7,6 +7,13 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // dev も same-origin(`/rpc` → his serve) — prod(dist + his serve)と同一経路
+  server: {
+    proxy: {
+      '/rpc': { target: 'http://127.0.0.1:4477', ws: true, changeOrigin: true },
+      '/favicon': { target: 'http://127.0.0.1:4477', changeOrigin: true },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

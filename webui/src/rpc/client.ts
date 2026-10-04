@@ -3,7 +3,7 @@ import { mockApi } from '@/mock/api'
 import { RpcTransport } from '@/rpc/transport'
 
 export function createApi(): HisApi {
-  if (import.meta.env.DEV) return mockApi
+  if (import.meta.env.VITE_USE_MOCK_API === 'true') return mockApi
   const transport = new RpcTransport<HisEvents>()
   return {
     search: (params: SearchParams) => transport.call<SearchPage>('history.search', params),
