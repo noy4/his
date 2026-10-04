@@ -682,11 +682,12 @@ db.changed        { }                                     <span class="c"># clie
         <rect class="node" x="616" y="90" width="132" height="114" rx="6"/>
         <text class="tt" x="628" y="108">favicons</text>
         <text class="tm" x="628" y="122">separate · permanent</text>
-        <text class="tm" x="628" y="140">host · PK (www-stripped)</text>
-        <text class="tm" x="628" y="153">data · BLOB</text>
-        <text class="tm" x="628" y="166">data_type · png|svg|ico</text>
-        <text class="tm" x="628" y="179">width · best wins</text>
-        <text class="tm" x="628" y="192">updated_at · harvest time</text>
+        <text class="tm" x="628" y="134">id · PK</text>
+        <text class="tm" x="628" y="147">host · UNIQUE · www-str.</text>
+        <text class="tm" x="628" y="160">data · BLOB</text>
+        <text class="tm" x="628" y="173">data_type · 6 formats</text>
+        <text class="tm" x="628" y="186">width · best (svg=0)</text>
+        <text class="tm" x="628" y="199">updated_at · harvest time</text>
       </svg>
     </div>
 
@@ -801,10 +802,11 @@ END;</pre>
 
     <pre><span class="c">-- separate file · permanent store · no TTL</span>
 CREATE TABLE favicons (
-  domain      TEXT    PRIMARY KEY,        <span class="c">-- host · www-stripped (+ root fallback)</span>
+  id          INTEGER PRIMARY KEY,
+  host        TEXT    NOT NULL UNIQUE,    <span class="c">-- www-stripped (+ root fallback at read)</span>
   data        BLOB    NOT NULL,
   data_type   TEXT    NOT NULL,           <span class="c">-- png | svg | ico | webp | jpeg | gif</span>
-  width       INTEGER,                    <span class="c">-- best quality wins · never downgraded (svg = 0)</span>
+  width       INTEGER NOT NULL DEFAULT 0, <span class="c">-- best quality wins · never downgraded (svg = 0)</span>
   updated_at  INTEGER NOT NULL            <span class="c">-- epoch ms · harvest time = diff baseline</span>
 );</pre>
 

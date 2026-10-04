@@ -33,7 +33,7 @@ export function createFaviconStore(dbPath: string): FaviconLookup {
     if (db === null) return null
     try {
       const row = db
-        .prepare('SELECT data, data_type FROM favicons WHERE domain = ?')
+        .prepare('SELECT data, data_type FROM favicons WHERE host = ?')
         .get(domain) as unknown as FaviconRow | undefined
       if (row === undefined) return null
       const contentType = CONTENT_TYPES[row.data_type]
