@@ -55,8 +55,8 @@ export default function App() {
             type="search"
             placeholder="Search history…"
             className="min-w-0 flex-1 border-0 bg-transparent outline-0 text-ink-strong placeholder:text-muted [&::-webkit-search-cancel-button]:appearance-none"
-            value={app.query.value}
-            onInput={(e) => app.setQuery(e.currentTarget.value)}
+            value={app.filters.input.value}
+            onInput={(e) => app.filters.setInput(e.currentTarget.value)}
           />
         </label>
       </header>
