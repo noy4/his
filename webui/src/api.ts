@@ -48,10 +48,27 @@ export interface SearchPage {
   nextCursor: string | null
 }
 
+export interface StatTotals {
+  items: number
+  visits: number
+  domains: number
+  firstVisit: number
+  lastVisit: number
+}
+
+export interface Stats {
+  totals: StatTotals
+  byHour: { hour: number; visits: number }[]
+  byDow: { dow: number; visits: number }[]
+  topDomains: { domain: string; visits: number }[]
+  busiestDays: { day: string; visits: number }[]
+}
+
 export interface HisApi {
   search(params: SearchParams): Promise<SearchPage>
   getVisits(urlId: number, limit?: number): Promise<VisitItem[]>
   getItem(id: number): Promise<ItemDetail | null>
   deleteUrl(url: string): Promise<void>
   restoreUrl(url: string): Promise<void>
+  stats(): Promise<Stats>
 }

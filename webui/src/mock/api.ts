@@ -1,4 +1,5 @@
-import type { HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, VisitItem } from '@/api'
+import type { HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, Stats, VisitItem } from '@/api'
+import { isoDay } from '@/lib/date'
 import { MOCK_ITEMS, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -6,6 +7,57 @@ const DEFAULT_LIMIT = 50
 function byLastVisitDesc(a: HistoryItem, b: HistoryItem): number {
   return b.lastVisit - a.lastVisit || b.id - a.id
 }
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return url
+  }
+}
+
+function topN(map: Map<string, number>, n: number): { key: string; visits: number }[] {
+  return [...map]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, n)
+    .map(([key, visits]) => ({ key, visits }))
+}
+
+function computeStats(): Stats {
+  const visible = MOCK_ITEMS.filter((it) => it.hiddenAt === null)
+  const byHour = new Array<number>(24).fill(0)
+  const byDow = new Array<number>(7).fill(0)
+  const byDay = new Map<string, number>()
+  const byDomain = new Map<string, number>()
+  let visits = 0
+  let firstVisit = Number.POSITIVE_INFINITY
+  let lastVisit = 0
+
+  for (const it of visible) {
+    visits += it.visitCount
+    firstVisit = Math.min(firstVisit, it.firstVisit)
+    lastVisit = Math.max(lastVisit, it.lastVisit)
+    const host = hostOf(it.url)
+    byDomain.set(host, (byDomain.get(host) ?? 0) + it.visitCount)
+    for (const v of MOCK_VISITS.get(it.id) ?? []) {
+      const d = new Date(v.visitTime)
+      byHour[d.getHours()] += 1
+      byDow[d.getDay()] += 1
+      const day = isoDay(v.visitTime)
+      byDay.set(day, (byDay.get(day) ?? 0) + 1)
+    }
+  }
+
+  return {
+    totals: { items: visible.length, visits, domains: byDomain.size, firstVisit, lastVisit },
+    byHour: byHour.map((v, hour) => ({ hour, visits: v })),
+    byDow: byDow.map((v, dow) => ({ dow, visits: v })),
+    topDomains: topN(byDomain, 8).map(({ key, visits }) => ({ domain: key, visits })),
+    busiestDays: topN(byDay, 5).map(({ key, visits }) => ({ day: key, visits })),
+  }
+}
+
+const stats = computeStats()
 
 function encodeCursor(item: HistoryItem): string {
   return btoa(`v1.${item.lastVisit}.${item.id}`)
@@ -68,5 +120,9 @@ export const mockApi: HisApi = {
   async restoreUrl(url: string): Promise<void> {
     const item = MOCK_ITEMS.find((it) => it.url === url)
     if (item) item.hiddenAt = null
+  },
+
+  async stats(): Promise<Stats> {
+    return stats
   },
 }

@@ -1,6 +1,6 @@
 import { effect, signal } from '@preact/signals-react'
 import type { Signal } from '@preact/signals-react'
-import type { HisApi, HistoryItem } from '@/api'
+import type { HisApi, HistoryItem, Stats } from '@/api'
 
 const PAGE_SIZE = 60
 
@@ -69,6 +69,10 @@ export class HistoryModel {
   async delete(item: HistoryItem): Promise<void> {
     await this.api.deleteUrl(item.url)
     this.remove(item.id)
+  }
+
+  stats(): Promise<Stats> {
+    return this.api.stats()
   }
 
   private remove(id: number): void {
