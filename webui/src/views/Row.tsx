@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { HistoryItem } from '@/api'
-import { timeLabel } from '@/lib/dates'
+import { timeLabel } from '@/lib/date'
 
 function hostOf(url: string): string {
   try {

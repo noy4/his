@@ -1,6 +1,6 @@
 import { computed, effect, signal } from '@preact/signals-react'
 import type { HisApi, HistoryItem } from '@/api'
-import { dayKey, dayLabel } from '@/lib/dates'
+import { isoDay, relativeDateLabel } from '@/lib/date'
 
 const PAGE_SIZE = 60
 
@@ -82,10 +82,10 @@ function groupByDay(items: HistoryItem[]): DayGroup[] {
   const groups: DayGroup[] = []
   const byKey = new Map<string, DayGroup>()
   for (const item of items) {
-    const key = dayKey(item.lastVisit)
+    const key = isoDay(item.lastVisit)
     let g = byKey.get(key)
     if (!g) {
-      g = { key, label: dayLabel(item.lastVisit), items: [] }
+      g = { key, label: relativeDateLabel(item.lastVisit), items: [] }
       byKey.set(key, g)
       groups.push(g)
     }
