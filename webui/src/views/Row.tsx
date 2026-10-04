@@ -26,11 +26,24 @@ export function Row({ item }: { item: HistoryItem }) {
       rel="noreferrer"
     >
       <span
-        className="inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[7px] text-[0.82rem] font-bold select-none"
+        className="relative inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center overflow-hidden rounded-[7px] text-[0.82rem] font-bold select-none"
         style={tileStyle(host)}
         aria-hidden="true"
       >
         {host.charAt(0).toUpperCase()}
+        <img
+          className="absolute inset-0 h-full w-full object-contain p-1"
+          src={`https://${host}/favicon.ico`}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none'
+          }}
+          onLoad={(e) => {
+            if (e.currentTarget.naturalWidth === 0) e.currentTarget.style.display = 'none'
+          }}
+        />
       </span>
       <span className="grid min-w-0 flex-1 leading-[1.45]">
         <span className="truncate text-[0.88rem] font-medium text-ink-strong">
