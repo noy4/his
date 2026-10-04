@@ -1,7 +1,8 @@
 packages:
-  - core
   - cli
+  - core
   - desktop
+  - webui
 
 allowBuilds:
   electron: true
