@@ -1,7 +1,7 @@
 import type { HisApi } from '@/api'
-import { mockApi } from '@/mock/api'
-import { HistoryModel } from '@/models/history'
 import { signal } from '@preact/signals-react'
+import { HistoryModel } from '@/models/history'
+import { createApi } from '@/rpc/client'
 
 export class AppModel {
   readonly api: HisApi
@@ -9,7 +9,7 @@ export class AppModel {
   readonly filters: FilterModel
   readonly history: HistoryModel
 
-  constructor(api: HisApi = mockApi) {
+  constructor(api = createApi()) {
     this.api = api
     this.filters = new FilterModel()
     this.history = new HistoryModel(api, {
@@ -17,6 +17,7 @@ export class AppModel {
       from: this.filters.from,
       to: this.filters.to,
     })
+    this.api.on('db.changed', () => void this.history.reload())
   }
 
   setView(next: string): void {

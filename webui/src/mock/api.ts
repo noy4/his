@@ -125,4 +125,6 @@ export const mockApi: HisApi = {
   async stats(): Promise<Stats> {
     return stats
   },
+
+  on: () => () => {},
 }

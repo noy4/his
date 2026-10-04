@@ -64,6 +64,18 @@ export interface Stats {
   busiestDays: { day: string; visits: number }[]
 }
 
+export interface SyncProgressEvent {
+  source: string
+  phase: 'snapshot' | 'upsert' | 'done'
+  parsed: number | null
+  upserted: number | null
+}
+
+export type HisEvents = {
+  'db.changed': () => void
+  'sync.progress': (event: SyncProgressEvent) => void
+}
+
 export interface HisApi {
   search(params: SearchParams): Promise<SearchPage>
   getVisits(urlId: number, limit?: number): Promise<VisitItem[]>
@@ -71,4 +83,5 @@ export interface HisApi {
   deleteUrl(url: string): Promise<void>
   restoreUrl(url: string): Promise<void>
   stats(): Promise<Stats>
+  on<K extends keyof HisEvents & string>(event: K, handler: HisEvents[K]): () => void
 }
