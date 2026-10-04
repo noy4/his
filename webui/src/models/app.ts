@@ -17,7 +17,6 @@ export class AppModel {
       from: this.filters.from,
       to: this.filters.to,
     })
-    this.api.on('db.changed', () => void this.history.reload())
   }
 
   setView(next: string): void {

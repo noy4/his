@@ -72,7 +72,6 @@ export interface SyncProgressEvent {
 }
 
 export type HisEvents = {
-  'db.changed': () => void
   'sync.progress': (event: SyncProgressEvent) => void
 }
 
