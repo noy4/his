@@ -30,7 +30,7 @@ export function Row({ item }: { item: HistoryItem }) {
         style={tileStyle(host)}
         aria-hidden="true"
       >
-        {host.charAt(0).toUpperCase()}
+        <span className="tile-letter">{host.charAt(0).toUpperCase()}</span>
         <img
           className="absolute inset-0 h-full w-full object-contain p-1"
           src={`https://${host}/favicon.ico`}
@@ -41,7 +41,15 @@ export function Row({ item }: { item: HistoryItem }) {
             e.currentTarget.style.display = 'none'
           }}
           onLoad={(e) => {
-            if (e.currentTarget.naturalWidth === 0) e.currentTarget.style.display = 'none'
+            const img = e.currentTarget
+            const tile = img.parentElement as HTMLElement
+            const letter = img.previousElementSibling as HTMLElement
+            if (img.naturalWidth > 0) {
+              tile.style.background = 'transparent'
+              letter.style.display = 'none'
+            } else {
+              img.style.display = 'none'
+            }
           }}
         />
       </span>
