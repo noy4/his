@@ -7,6 +7,7 @@ import {
   listSourceProfiles,
   restoreUrl,
   search,
+  stats,
   type SearchFilter,
 } from '@his/core'
 import { WebSocketServer } from 'ws'
@@ -18,7 +19,9 @@ import { createSyncRunner, type SyncRunner } from './runner.ts'
 
 // JSON-RPC 2.0 over WS at /rpc — methods mirror the WebExtensions history
 // API; notifications (sync.progress, db.changed) push on the same socket.
-// Access requires the state-file token; browser clients must be same-origin.
+// Access control (token + loopback Host pin + same-origin) is intentionally
+// absent for now — see local.md before exposing beyond the loopback.
+// history.stats is a WebUI extension (Dashboard) beyond the WebExtensions surface.
 export interface RpcOptions {
   db: DatabaseSync
   home: string
@@ -52,18 +55,13 @@ const SERVER_ERROR = -32000
 // --- attach ---
 
 export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
-  const { db, home, token } = options
+  const { db, home } = options
   const runner = createSyncRunner({ home, broadcast })
   const clients = new Set<WebSocket>()
   const alive = new WeakMap<WebSocket, boolean>()
   const wss = new WebSocketServer({ noServer: true })
 
   server.on('upgrade', (req, socket, head) => {
-    if (!authorized(req, token)) {
-      socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n')
-      socket.destroy()
-      return
-    }
     wss.handleUpgrade(req, socket, head, (ws) => {
       clients.add(ws)
       alive.set(ws, true)
@@ -91,6 +89,8 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
         return hideUrl(params, true)
       case 'history.restoreUrl':
         return hideUrl(params, false)
+      case 'history.stats':
+        return stats(db)
       case 'sources.list':
         return listSourceProfiles(db)
       case 'sync.run':
@@ -200,27 +200,6 @@ function asRpcRequest(message: unknown): JsonRpcRequest | null {
 
 function isRpcId(id: unknown): boolean {
   return typeof id === 'string' || typeof id === 'number' || id === null
-}
-
-// --- access ---
-
-function authorized(req: http.IncomingMessage, token: string): boolean {
-  if (queryToken(req) !== token) return false
-  const origin = req.headers.origin
-  if (origin === undefined) return true
-  try {
-    return new URL(origin).host === req.headers.host
-  } catch {
-    return false
-  }
-}
-
-function queryToken(req: http.IncomingMessage): string | null {
-  try {
-    return new URL(req.url ?? '/', 'http://localhost').searchParams.get('token')
-  } catch {
-    return null
-  }
 }
 
 // --- params ---

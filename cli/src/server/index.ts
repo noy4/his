@@ -49,7 +49,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const app = createApp({
     favicon: createFaviconStore(faviconsDbPath(home)),
     dist: distRoot,
-    pageState: () => ({ url: info.url, token }),
   })
   const server = http.createServer(createNodeHandler(app))
   const rpc: RpcHandle = attachRpc(server, { db, home, token })
