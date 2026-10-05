@@ -48,9 +48,11 @@ const NAME_TO_TRANSITION = new Map<string, Transition>([
   ['AUTO_SUBFRAME', 'AUTO_SUBFRAME'],
   ['MANUAL_SUBFRAME', 'MANUAL_SUBFRAME'],
   ['GENERATED', 'GENERATED'],
-  ['AUTO_TOPLEVEL', 'START_PAGE'],
+  ['AUTO_TOPLEVEL', 'AUTO_TOPLEVEL'],
   ['FORM_SUBMIT', 'FORM_SUBMIT'],
   ['RELOAD', 'RELOAD'],
+  ['KEYWORD', 'KEYWORD'],
+  ['KEYWORD_GENERATED', 'KEYWORD_GENERATED'],
 ])
 
 function extractVisitArray(raw: unknown): unknown[] | null {

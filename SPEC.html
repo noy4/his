@@ -890,7 +890,7 @@ CREATE TABLE favicons (
         </thead>
         <tbody>
           <tr><td><code>chromium</code></td><td>History DB — Chrome / Chromium / Edge / Brave / Vivaldi / Arc / Opera ...</td><td>WebKit µs (1601) → ms</td><td>Native enum</td></tr>
-          <tr><td><code>firefox</code></td><td><code>places.sqlite</code></td><td>PRTime µs ÷ 1000</td><td>Places 1–8 → enum (below)</td></tr>
+          <tr><td><code>firefox</code></td><td><code>places.sqlite</code></td><td>PRTime µs ÷ 1000</td><td>Places visit_type → enum (below)</td></tr>
           <tr><td><code>safari</code></td><td><code>History.db</code></td><td>Core Data s (2001) + 978307200</td><td>Conservative → <code>LINK</code>, raw kept</td></tr>
           <tr><td><code>takeout</code></td><td><code>BrowserHistory.json</code> — 3 layouts</td><td><code>time_usec</code> ÷ 1000</td><td><code>page_transition</code> as-is</td></tr>
         </tbody>
@@ -910,9 +910,9 @@ CREATE TABLE favicons (
           <tr><td>Bookmark</td><td><code>AUTO_BOOKMARK</code></td><td>3</td></tr>
           <tr><td>Subframe</td><td><code>AUTO_SUBFRAME</code> / <code>MANUAL_SUBFRAME</code></td><td>4 / 8</td></tr>
           <tr><td>Form / generated</td><td><code>FORM_SUBMIT</code> / <code>GENERATED</code></td><td>—</td></tr>
-          <tr><td>Reload / start</td><td><code>RELOAD</code> / <code>START_PAGE</code></td><td>—</td></tr>
-          <tr><td>Redirect</td><td>— (chain)</td><td>5 / 6</td></tr>
-          <tr><td>Download</td><td>—</td><td>7</td></tr>
+          <tr><td>Reload / start / keyword</td><td><code>RELOAD</code> / <code>AUTO_TOPLEVEL</code> / <code>KEYWORD</code> · <code>KEYWORD_GENERATED</code></td><td>9 / —</td></tr>
+          <tr><td>Redirect</td><td>— (chain)</td><td>5 / 6 → <code>LINK</code></td></tr>
+          <tr><td>Download</td><td>—</td><td>7 → <code>LINK</code></td></tr>
         </tbody>
       </table>
     </div>

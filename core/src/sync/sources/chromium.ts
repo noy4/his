@@ -100,9 +100,11 @@ const CORE_TO_TRANSITION = new Map<number, Transition>([
   [3, 'AUTO_SUBFRAME'],
   [4, 'MANUAL_SUBFRAME'],
   [5, 'GENERATED'],
-  [6, 'START_PAGE'],
+  [6, 'AUTO_TOPLEVEL'],
   [7, 'FORM_SUBMIT'],
   [8, 'RELOAD'],
+  [9, 'KEYWORD'],
+  [10, 'KEYWORD_GENERATED'],
 ])
 
 function toNativeVisit(row: ChromiumRow): NativeVisit | null {

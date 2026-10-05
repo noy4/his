@@ -1,13 +1,16 @@
+// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/TransitionType
 export const TRANSITIONS = [
   'LINK',
   'TYPED',
   'AUTO_BOOKMARK',
   'AUTO_SUBFRAME',
   'MANUAL_SUBFRAME',
-  'FORM_SUBMIT',
   'GENERATED',
+  'AUTO_TOPLEVEL',
+  'FORM_SUBMIT',
   'RELOAD',
-  'START_PAGE',
+  'KEYWORD',
+  'KEYWORD_GENERATED',
 ] as const
 
 export type Transition = (typeof TRANSITIONS)[number]
