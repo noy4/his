@@ -1,6 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../model.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
+import type { Watermark } from './watermarks.ts'
 
 export type SourceKind = 'chromium' | 'firefox' | 'safari' | 'takeout'
 
@@ -44,6 +45,13 @@ export interface ApplyVisitsParams {
   options: ApplyVisitsOptions
 }
 
+// flow policy for one batch, decided before touching any rows
+export interface SkipState {
+  cleared: boolean
+  offset: number
+  skipBelow: number
+}
+
 // --- applyVisits ---
 
 // merge one profile's visits into the archive
@@ -68,8 +76,6 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       lastRunAt: now,
     }
 
-  const opaque = options.idPolicy === 'opaque' // opaque ids can't be compared — bypass watermark logic
-
   // highest source id in this batch
   let maxSeen = 0
   for (const visit of visits)
@@ -77,9 +83,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       maxSeen = visit.sourceVisitId
 
   // ids shrank vs the watermark → browser history was cleared → realign
-  const cleared = !opaque && detectCleared(watermark, maxSeen)
-  const offset = cleared ? resetOffset(watermark) : watermark.sourceIdOffset
-  const skipBelow = (opaque || options.full === true || cleared) ? -1 : watermark.lastSourceVisitId
+  const { cleared, offset, skipBelow } = computeSkip(watermark, maxSeen, options)
   let pending = 0
   for (const visit of visits)
     if (visit.sourceVisitId > skipBelow)
@@ -168,6 +172,18 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
 }
 
 // --- helpers ---
+
+// decide cleared / offset / skipBelow from the watermark and this batch's ids
+export function computeSkip(watermark: Watermark, maxSeen: number, options: ApplyVisitsOptions): SkipState {
+  const opaque = options.idPolicy === 'opaque' // opaque ids can't be compared — bypass watermark logic
+  const cleared = !opaque && detectCleared(watermark, maxSeen)
+  const all = opaque || options.full === true || cleared
+  return {
+    cleared,
+    offset: cleared ? resetOffset(watermark) : watermark.sourceIdOffset,
+    skipBelow: all ? -1 : watermark.lastSourceVisitId,
+  }
+}
 
 export function ensureSourceProfile(db: DatabaseSync, profile: SourceProfileRef): number {
   db.prepare('INSERT OR IGNORE INTO source_profiles (kind, display_name, profile_path) VALUES (?, ?, ?)').run(
