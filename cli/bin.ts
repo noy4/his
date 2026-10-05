@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { cac } from 'cac'
 import pkg from './package.json' with { type: 'json' }
-import { resolveHome } from './src/home.ts'
+import { withCtx } from './src/context.ts'
 import { query } from './src/query.ts'
 import { serveCommand } from './src/serve.ts'
 import { status, stop } from './src/status.ts'
@@ -15,10 +15,10 @@ cli
   .command('sync', 'run sync once (kinds: chromium firefox safari takeout)')
   .option('--source <kind>', 'limit to one source instead of all')
   .option('--full', 'ignore watermarks and re-read everything (idempotent)')
-  .action((opts) => sync(resolveHome(opts.home), {
+  .action(withCtx((ctx, opts) => sync(ctx, {
     source: opts.source,
     full: opts.full
-  }))
+  })))
 
 cli
   .command('query [...text]', 'read-only search against history.db, prints JSON')
@@ -26,32 +26,31 @@ cli
   .option('--from <ms|date>', 'from timestamp')
   .option('--to <ms|date>', 'to timestamp')
   .option('--limit <n>', 'max results')
-  .action((text: string[], opts) =>
-    query(resolveHome(opts.home), {
+  .action(withCtx((ctx, text: string[], opts) =>
+    query(ctx, {
       text,
       url: opts.url,
       from: opts.from,
       to: opts.to,
       limit: opts.limit,
-    }))
+    })))
 
 cli
   .command('status', 'print the running instance (url + archive)')
-  .action((opts) => status(resolveHome(opts.home)))
+  .action(withCtx((ctx) => status(ctx)))
 
 cli
   .command('stop', 'SIGTERM the running instance')
-  .action((opts) => stop(resolveHome(opts.home)))
+  .action(withCtx((ctx) => stop(ctx)))
 
 cli
   .command('serve', 'start http + rpc')
   .option('--port <n>', 'port to bind (default 4477); +1 on conflict')
   .option('--open', 'open the WebUI once the port is bound')
-  .action((opts) => serveCommand({
-    home: resolveHome(opts.home),
+  .action(withCtx((ctx, opts) => serveCommand(ctx, {
     port: opts.port,
     open: opts.open,
-  }))
+  })))
 
 cli.help()
 cli.version(pkg.version)

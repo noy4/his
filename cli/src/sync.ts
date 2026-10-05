@@ -19,6 +19,7 @@ import {
   type SnapshotTarget,
   type SourceKind,
 } from '@his/core'
+import type { Context } from './context.ts'
 import { historyDbPath, takeoutDir } from './home.ts'
 
 // --- contract ---
@@ -84,8 +85,8 @@ export function runSync(home: string, options: SyncOptions = {}, hooks: SyncHook
 }
 
 // CLI entry — runs once and reports; failures make it exit 1 via the throw.
-export function sync(home: string, opts: SyncOptions): void {
-  const summary = runSync(home, opts, {
+export function sync(ctx: Context, opts: SyncOptions): void {
+  const summary = runSync(ctx.home, opts, {
     onLog: (line) => console.log(line),
     onError: (line) => console.error(line),
   })

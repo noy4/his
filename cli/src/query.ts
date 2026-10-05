@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
 import { search, type EpochMs, type SearchFilter } from '@his/core'
+import type { Context } from './context.ts'
 import { historyDbPath } from './home.ts'
 
 export interface QueryOptions {
@@ -11,8 +12,8 @@ export interface QueryOptions {
   limit?: string
 }
 
-export function query(home: string, opts: QueryOptions): void {
-  const dbPath = historyDbPath(home)
+export function query(ctx: Context, opts: QueryOptions): void {
+  const dbPath = historyDbPath(ctx.home)
   if (!fs.existsSync(dbPath)) {
     throw new Error(`no archive at ${dbPath} — run "his sync" first`)
   }

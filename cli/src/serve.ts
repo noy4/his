@@ -1,17 +1,17 @@
 import { serve } from './server/index.ts'
+import type { Context } from './context.ts'
 
 const DEFAULT_PORT = 4477
 
 export interface ServeOptions {
-  home: string
   port?: string
   open?: boolean
 }
 
-export async function serveCommand(opts: ServeOptions): Promise<void> {
+export async function serveCommand(ctx: Context, opts: ServeOptions): Promise<void> {
   const port = parsePortArg(opts.port)
   if (port === null) throw new Error(`invalid --port: ${opts.port} (integer 1-65535)`)
-  const result = await serve({ home: opts.home, port, open: opts.open })
+  const result = await serve({ home: ctx.home, port, open: opts.open })
   if (result.kind === 'already-running') {
     console.log(result.info.url)
     return
