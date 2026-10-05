@@ -793,7 +793,7 @@ END;</pre>
           <iconify-icon icon="mdi:directions-fork" noobserver></iconify-icon>
           <h4>Transitions normalized</h4>
         </div>
-        <p>Chromium enums (<code>LINK</code> / <code>TYPED</code> / ...) are the axis; Firefox / Safari map at sync. Alt: native as-is.</p>
+        <p>WebExtensions <code>history.TransitionType</code> (lowercase: <code>link</code> / <code>typed</code> / ...) is the axis; Firefox / Safari / Takeout map at sync.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -891,8 +891,8 @@ CREATE TABLE favicons (
         <tbody>
           <tr><td><code>chromium</code></td><td>History DB — Chrome / Chromium / Edge / Brave / Vivaldi / Arc / Opera ...</td><td>WebKit µs (1601) → ms</td><td>Native enum</td></tr>
           <tr><td><code>firefox</code></td><td><code>places.sqlite</code></td><td>PRTime µs ÷ 1000</td><td>Places visit_type → enum (below)</td></tr>
-          <tr><td><code>safari</code></td><td><code>History.db</code></td><td>Core Data s (2001) + 978307200</td><td>Conservative → <code>LINK</code>, raw kept</td></tr>
-          <tr><td><code>takeout</code></td><td><code>BrowserHistory.json</code> — 3 layouts</td><td><code>time_usec</code> ÷ 1000</td><td><code>page_transition</code> as-is</td></tr>
+          <tr><td><code>safari</code></td><td><code>History.db</code></td><td>Core Data s (2001) + 978307200</td><td>Conservative → <code>link</code>, raw kept</td></tr>
+          <tr><td><code>takeout</code></td><td><code>BrowserHistory.json</code> — 3 layouts</td><td><code>time_usec</code> ÷ 1000</td><td><code>page_transition</code> → lowercase enum</td></tr>
         </tbody>
       </table>
     </div>
@@ -905,14 +905,14 @@ CREATE TABLE favicons (
           <tr><th>Visit kind</th><th>Chromium (stored)</th><th>Firefox Places</th></tr>
         </thead>
         <tbody>
-          <tr><td>Link</td><td><code>LINK</code></td><td>1</td></tr>
-          <tr><td>Address bar</td><td><code>TYPED</code></td><td>2</td></tr>
-          <tr><td>Bookmark</td><td><code>AUTO_BOOKMARK</code></td><td>3</td></tr>
-          <tr><td>Subframe</td><td><code>AUTO_SUBFRAME</code> / <code>MANUAL_SUBFRAME</code></td><td>4 / 8</td></tr>
-          <tr><td>Form / generated</td><td><code>FORM_SUBMIT</code> / <code>GENERATED</code></td><td>—</td></tr>
-          <tr><td>Reload / start / keyword</td><td><code>RELOAD</code> / <code>AUTO_TOPLEVEL</code> / <code>KEYWORD</code> · <code>KEYWORD_GENERATED</code></td><td>9 / —</td></tr>
-          <tr><td>Redirect</td><td>— (chain)</td><td>5 / 6 → <code>LINK</code></td></tr>
-          <tr><td>Download</td><td>—</td><td>7 → <code>LINK</code></td></tr>
+          <tr><td>Link</td><td><code>link</code></td><td>1</td></tr>
+          <tr><td>Address bar</td><td><code>typed</code></td><td>2</td></tr>
+          <tr><td>Bookmark</td><td><code>auto_bookmark</code></td><td>3</td></tr>
+          <tr><td>Subframe</td><td><code>auto_subframe</code> / <code>manual_subframe</code></td><td>4 / 8</td></tr>
+          <tr><td>Form / generated</td><td><code>form_submit</code> / <code>generated</code></td><td>—</td></tr>
+          <tr><td>Reload / start / keyword</td><td><code>reload</code> / <code>auto_toplevel</code> / <code>keyword</code> · <code>keyword_generated</code></td><td>9 / —</td></tr>
+          <tr><td>Redirect</td><td>— (chain)</td><td>5 / 6 → <code>link</code></td></tr>
+          <tr><td>Download</td><td>—</td><td>7 → <code>link</code></td></tr>
         </tbody>
       </table>
     </div>

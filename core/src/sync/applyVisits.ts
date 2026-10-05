@@ -132,7 +132,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       insertedVisits += 1
       touched.add(urlId)
       stmts.touchUrl.run(
-        visit.transition === 'TYPED' ? 1 : 0,
+        visit.transition === 'typed' ? 1 : 0,
         visit.visitTime,
         visit.visitTime,
         visit.visitTime,

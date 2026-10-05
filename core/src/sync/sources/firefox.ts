@@ -56,14 +56,14 @@ export function parseFirefoxStaging(stagingPlacesPath: string): NativeVisit[] {
 
 // places visit_type → TransitionType. 5/6 (redirects) and 7 (download) have no
 // enum value — chrome.history reports redirect chains as link, so they fall
-// through to the LINK default
+// through to the link default
 const PLACES_TO_TRANSITION = new Map<number, Transition>([
-  [1, 'LINK'],
-  [2, 'TYPED'],
-  [3, 'AUTO_BOOKMARK'],
-  [4, 'AUTO_SUBFRAME'],
-  [8, 'MANUAL_SUBFRAME'],
-  [9, 'RELOAD'],
+  [1, 'link'],
+  [2, 'typed'],
+  [3, 'auto_bookmark'],
+  [4, 'auto_subframe'],
+  [8, 'manual_subframe'],
+  [9, 'reload'],
 ])
 
 function toNativeVisit(row: PlacesRow): NativeVisit | null {
@@ -75,7 +75,7 @@ function toNativeVisit(row: PlacesRow): NativeVisit | null {
     url: row.url,
     title: row.title || null,
     visitTime: prTimeToMs(row.visitDate),
-    transition: mapped ?? 'LINK',
+    transition: mapped ?? 'link',
   }
 }
 

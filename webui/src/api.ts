@@ -1,16 +1,16 @@
 // mirrors @his/core model.ts — https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/TransitionType
 export const TRANSITIONS = [
-  'LINK',
-  'TYPED',
-  'AUTO_BOOKMARK',
-  'AUTO_SUBFRAME',
-  'MANUAL_SUBFRAME',
-  'GENERATED',
-  'AUTO_TOPLEVEL',
-  'FORM_SUBMIT',
-  'RELOAD',
-  'KEYWORD',
-  'KEYWORD_GENERATED',
+  'link',
+  'typed',
+  'auto_bookmark',
+  'auto_subframe',
+  'manual_subframe',
+  'generated',
+  'auto_toplevel',
+  'form_submit',
+  'reload',
+  'keyword',
+  'keyword_generated',
 ] as const
 
 export type Transition = (typeof TRANSITIONS)[number]

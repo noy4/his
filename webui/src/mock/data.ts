@@ -62,8 +62,8 @@ const SUBREDDITS = ['typescript', 'reactjs', 'webdev', 'sqlite', 'commandline']
 const MDN_APIS = ['IntersectionObserver', 'WebSocket', 'crypto.randomUUID', 'structuredClone', 'Intl.DateTimeFormat']
 
 const TRANSITION_POOL: readonly Transition[] = [
-  'LINK', 'LINK', 'LINK', 'LINK', 'LINK', 'LINK', 'LINK',
-  'TYPED', 'TYPED', 'RELOAD', 'AUTO_SUBFRAME', 'AUTO_BOOKMARK', 'FORM_SUBMIT', 'GENERATED',
+  'link', 'link', 'link', 'link', 'link', 'link', 'link',
+  'typed', 'typed', 'reload', 'auto_subframe', 'auto_bookmark', 'form_submit', 'generated',
 ]
 
 interface Site {
@@ -206,7 +206,7 @@ function build(): { items: HistoryItem[]; visits: Map<number, VisitItem[]> } {
       url,
       title,
       visitCount: vs.length,
-      typedCount: vs.filter((v) => v.transition === 'TYPED').length,
+      typedCount: vs.filter((v) => v.transition === 'typed').length,
       firstVisit: vs[vs.length - 1].visitTime,
       lastVisit,
       hiddenAt: hidden ? lastVisit + int(r, 10, 240) * MINUTE : null,

@@ -94,17 +94,17 @@ export function parseChromiumStaging(stagingHistoryPath: string): NativeVisit[] 
 const CORE_MASK = 0xff
 
 const CORE_TO_TRANSITION = new Map<number, Transition>([
-  [0, 'LINK'],
-  [1, 'TYPED'],
-  [2, 'AUTO_BOOKMARK'],
-  [3, 'AUTO_SUBFRAME'],
-  [4, 'MANUAL_SUBFRAME'],
-  [5, 'GENERATED'],
-  [6, 'AUTO_TOPLEVEL'],
-  [7, 'FORM_SUBMIT'],
-  [8, 'RELOAD'],
-  [9, 'KEYWORD'],
-  [10, 'KEYWORD_GENERATED'],
+  [0, 'link'],
+  [1, 'typed'],
+  [2, 'auto_bookmark'],
+  [3, 'auto_subframe'],
+  [4, 'manual_subframe'],
+  [5, 'generated'],
+  [6, 'auto_toplevel'],
+  [7, 'form_submit'],
+  [8, 'reload'],
+  [9, 'keyword'],
+  [10, 'keyword_generated'],
 ])
 
 function toNativeVisit(row: ChromiumRow): NativeVisit | null {
@@ -118,7 +118,7 @@ function toNativeVisit(row: ChromiumRow): NativeVisit | null {
     url: row.url,
     title: row.title || null,
     visitTime,
-    transition: mapped ?? 'LINK',
+    transition: mapped ?? 'link',
   }
 }
 

@@ -41,18 +41,20 @@ export function parseTakeoutTime(text: string): EpochMs | null {
   return Number.isNaN(parsed) ? null : parsed
 }
 
+// takeout's page_transition strings are uppercase — map to the lowercase
+// WebExtensions values we store
 const NAME_TO_TRANSITION = new Map<string, Transition>([
-  ['LINK', 'LINK'],
-  ['TYPED', 'TYPED'],
-  ['AUTO_BOOKMARK', 'AUTO_BOOKMARK'],
-  ['AUTO_SUBFRAME', 'AUTO_SUBFRAME'],
-  ['MANUAL_SUBFRAME', 'MANUAL_SUBFRAME'],
-  ['GENERATED', 'GENERATED'],
-  ['AUTO_TOPLEVEL', 'AUTO_TOPLEVEL'],
-  ['FORM_SUBMIT', 'FORM_SUBMIT'],
-  ['RELOAD', 'RELOAD'],
-  ['KEYWORD', 'KEYWORD'],
-  ['KEYWORD_GENERATED', 'KEYWORD_GENERATED'],
+  ['LINK', 'link'],
+  ['TYPED', 'typed'],
+  ['AUTO_BOOKMARK', 'auto_bookmark'],
+  ['AUTO_SUBFRAME', 'auto_subframe'],
+  ['MANUAL_SUBFRAME', 'manual_subframe'],
+  ['GENERATED', 'generated'],
+  ['AUTO_TOPLEVEL', 'auto_toplevel'],
+  ['FORM_SUBMIT', 'form_submit'],
+  ['RELOAD', 'reload'],
+  ['KEYWORD', 'keyword'],
+  ['KEYWORD_GENERATED', 'keyword_generated'],
 ])
 
 function extractVisitArray(raw: unknown): unknown[] | null {
@@ -99,6 +101,6 @@ function entryTimeMs(entry: Record<string, unknown>): EpochMs | null {
 }
 
 function entryTransition(raw: unknown): Transition {
-  if (typeof raw !== 'string' || raw === '') return 'LINK'
-  return NAME_TO_TRANSITION.get(raw) ?? 'LINK'
+  if (typeof raw !== 'string' || raw === '') return 'link'
+  return NAME_TO_TRANSITION.get(raw) ?? 'link'
 }

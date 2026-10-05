@@ -13,6 +13,7 @@ function getMigrations(): readonly string[] {
     fs.readFileSync(path.join(import.meta.dirname, 'schema.sql'), 'utf8'),
     fs.readFileSync(path.join(import.meta.dirname, '001_target_fingerprints.sql'), 'utf8'),
     fs.readFileSync(path.join(import.meta.dirname, '002_transition_auto_toplevel.sql'), 'utf8'),
+    fs.readFileSync(path.join(import.meta.dirname, '003_transition_lowercase.sql'), 'utf8'),
   ]
 }
 
