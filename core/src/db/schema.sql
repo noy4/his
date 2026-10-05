@@ -32,9 +32,9 @@ CREATE TABLE visits (
   UNIQUE(source_profile_id, source_visit_id)
 );
 
-CREATE INDEX visits_time ON visits(visit_time DESC);
-CREATE INDEX visits_url  ON visits(url_id, visit_time DESC);
-CREATE INDEX urls_last   ON urls(last_visit_time DESC);
+CREATE INDEX idx_visits_visit_time        ON visits(visit_time DESC);
+CREATE INDEX idx_visits_url_id_visit_time ON visits(url_id, visit_time DESC);
+CREATE INDEX idx_urls_last_visit_time     ON urls(last_visit_time DESC);
 
 CREATE TABLE profile_watermarks (
   source_profile_id    INTEGER PRIMARY KEY REFERENCES source_profiles(id),
