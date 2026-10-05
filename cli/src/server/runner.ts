@@ -1,5 +1,6 @@
 import type { EpochMs } from '@his/core'
-import { runSync, type SyncOptions, type SyncSummary } from '../sync.ts'
+import type { SyncOptions, SyncSummary } from '../sync/types.ts'
+import { runSync } from '../sync/runSync.ts'
 
 // --- contract ---
 

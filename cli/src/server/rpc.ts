@@ -12,7 +12,7 @@ import {
 } from '@his/core'
 import { WebSocketServer } from 'ws'
 import type { WebSocket } from 'ws'
-import { SYNC_KINDS, isSourceKind } from '../sync.ts'
+import { SYNC_KINDS, isSourceKind } from '../sync/types.ts'
 import { createSyncRunner, type SyncRunner } from './runner.ts'
 
 // --- contract ---

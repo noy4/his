@@ -5,7 +5,7 @@ import { withCtx } from './src/context.ts'
 import { query } from './src/query.ts'
 import { serveCommand } from './src/serve.ts'
 import { status, stop } from './src/status.ts'
-import { sync } from './src/sync.ts'
+import { sync } from './src/sync/sync.ts'
 
 const cli = cac('his')
 
