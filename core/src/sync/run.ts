@@ -12,7 +12,6 @@ export interface NativeVisit {
   title: string | null
   visitTime: EpochMs
   transition: Transition
-  sourceTransition: string | null
 }
 
 export interface SourceProfileRef {
@@ -76,7 +75,7 @@ export function run(params: RunParams): RunResult {
     'UPDATE urls SET visit_count = visit_count + 1, typed_count = typed_count + ?, first_visit_time = MIN(first_visit_time, ?), last_visit_time = MAX(last_visit_time, ?), title = CASE WHEN ? >= last_visit_time THEN COALESCE(?, title) ELSE title END WHERE id = ?',
   )
   const insertVisit = db.prepare(
-    'INSERT OR IGNORE INTO visits (url_id, visit_time, transition, source_profile_id, source_visit_id, source_transition) VALUES (?, ?, ?, ?, ?, ?)',
+    'INSERT OR IGNORE INTO visits (url_id, visit_time, transition, source_profile_id, source_visit_id) VALUES (?, ?, ?, ?, ?)',
   )
 
   const urlIds = new Map<string, number>()
@@ -103,7 +102,6 @@ export function run(params: RunParams): RunResult {
         visit.transition,
         sourceProfileId,
         visit.sourceVisitId + offset,
-        visit.sourceTransition,
       )
       if (Number(inserted.changes) === 0) continue
       insertedVisits += 1

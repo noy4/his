@@ -43,7 +43,6 @@ function toNativeVisit(row: SafariRow): NativeVisit {
     title: row.title ?? null,
     visitTime: coreDataToMs(row.visitTime),
     transition: 'LINK',
-    sourceTransition: null,
   }
 }
 

@@ -28,7 +28,6 @@ CREATE TABLE visits (
   transition        TEXT    NOT NULL,
   source_profile_id INTEGER NOT NULL REFERENCES source_profiles(id), -- not in VisitItem
   source_visit_id   INTEGER NOT NULL,                                -- not in VisitItem
-  source_transition TEXT,                                            -- not in VisitItem
   UNIQUE(source_profile_id, source_visit_id)
 );
 

@@ -653,7 +653,6 @@ db.changed        { }                                     <span class="c"># clie
         <text class="tm" x="352" y="165">transition · Chromium enum</text>
         <text class="tm" x="352" y="178">source_profile_id · FK</text>
         <text class="tm" x="352" y="191">source_visit_id · native</text>
-        <text class="tm" x="352" y="204">source_transition · raw</text>
         <text class="tm" x="352" y="217">UNIQUE(source_profile_id, source_visit_id)</text>
         <line x1="352" y1="222" x2="568" y2="222" style="stroke: var(--border); stroke-width: 1"/>
         <text class="tm" x="352" y="235" style="font-style: italic">idx: visit_time DESC</text>
@@ -718,12 +717,11 @@ CREATE TABLE visits (                   <span class="c">-- VisitItem · one row 
   transition        TEXT    NOT NULL,   <span class="c">-- Chromium enum · LINK / TYPED / ...</span>
   source_profile_id INTEGER NOT NULL REFERENCES source_profiles(id),
   source_visit_id   INTEGER NOT NULL,   <span class="c">-- native visit id · takeout: stable hash</span>
-  source_transition TEXT,               <span class="c">-- raw value before normalization</span>
   UNIQUE(source_profile_id, source_visit_id)
 );
-CREATE INDEX visits_time ON visits(visit_time DESC);
-CREATE INDEX visits_url  ON visits(url_id, visit_time DESC);
-CREATE INDEX urls_last   ON urls(last_visit_time DESC);      <span class="c">-- timeline sort</span>
+CREATE INDEX idx_visits_visit_time        ON visits(visit_time DESC);
+CREATE INDEX idx_visits_url_id_visit_time ON visits(url_id, visit_time DESC);
+CREATE INDEX idx_urls_last_visit_time     ON urls(last_visit_time DESC);      <span class="c">-- timeline sort</span>
 
 CREATE TABLE profile_watermarks (       <span class="c">-- incremental cursors per profile</span>
   source_profile_id    INTEGER PRIMARY KEY REFERENCES source_profiles(id),
@@ -780,7 +778,7 @@ END;</pre>
           <iconify-icon icon="mdi:directions-fork" noobserver></iconify-icon>
           <h4>Transitions normalized</h4>
         </div>
-        <p>Chromium enums (<code>LINK</code> / <code>TYPED</code> / ...) are the axis; Firefox / Safari map at sync, raw kept in <code>source_transition</code>. Alt: native as-is.</p>
+        <p>Chromium enums (<code>LINK</code> / <code>TYPED</code> / ...) are the axis; Firefox / Safari map at sync. Alt: native as-is.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -902,9 +900,6 @@ CREATE TABLE favicons (
       </table>
     </div>
 
-    <p class="section-desc">
-      Unmappable values keep the raw string in <code>source_transition</code>.
-    </p>
   </section>
 
   <!-- CLI -->

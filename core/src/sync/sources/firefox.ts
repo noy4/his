@@ -63,15 +63,13 @@ const PLACES_TO_TRANSITION = new Map<number, Transition>([
 ])
 
 function toNativeVisit(row: PlacesRow): NativeVisit {
-  const visitType = Number(row.visitType)
-  const mapped = PLACES_TO_TRANSITION.get(visitType)
+  const mapped = PLACES_TO_TRANSITION.get(Number(row.visitType))
   return {
     sourceVisitId: Number(row.visitId),
     url: row.url,
     title: row.title ?? null,
     visitTime: prTimeToMs(row.visitDate),
     transition: mapped ?? 'LINK',
-    sourceTransition: mapped === undefined ? String(visitType) : null,
   }
 }
 

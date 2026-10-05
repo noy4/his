@@ -103,14 +103,12 @@ const CORE_TO_TRANSITION = new Map<number, Transition>([
 function toNativeVisit(row: ChromiumRow): NativeVisit {
   const core = Number(row.transition) & CORE_MASK
   const mapped = CORE_TO_TRANSITION.get(core)
-  const hasQualifiers = row.transition !== BigInt(core)
   return {
     sourceVisitId: Number(row.visitId),
     url: row.url,
     title: row.title ?? null,
     visitTime: webkitTimeToMs(row.visitTime),
     transition: mapped ?? 'LINK',
-    sourceTransition: mapped === undefined || hasQualifiers ? String(row.transition) : null,
   }
 }
 

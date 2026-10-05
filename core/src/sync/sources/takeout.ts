@@ -79,8 +79,7 @@ function toNativeVisit(item: unknown): NativeVisit | null {
     url,
     title: typeof title === 'string' ? title : null,
     visitTime: visitTimeMs,
-    transition: transition.axis,
-    sourceTransition: transition.raw,
+    transition,
   }
 }
 
@@ -97,9 +96,7 @@ function entryTimeMs(entry: Record<string, unknown>): EpochMs | null {
   return null
 }
 
-function entryTransition(raw: unknown): { axis: Transition; raw: string | null } {
-  if (typeof raw !== 'string' || raw === '') return { axis: 'LINK', raw: null }
-  const mapped = NAME_TO_TRANSITION.get(raw)
-  if (mapped === undefined) return { axis: 'LINK', raw }
-  return { axis: mapped, raw: null }
+function entryTransition(raw: unknown): Transition {
+  if (typeof raw !== 'string' || raw === '') return 'LINK'
+  return NAME_TO_TRANSITION.get(raw) ?? 'LINK'
 }
