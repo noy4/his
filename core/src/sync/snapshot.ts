@@ -12,7 +12,7 @@ export interface SnapshotTarget {
 export interface SnapshotResult {
   path: string
   bytes: number
-  via: 'copy-trio' | 'file-copy'
+  via: 'vacuum-into' | 'copy-trio' | 'file-copy'
 }
 
 const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
@@ -27,13 +27,8 @@ export function snapshot(target: SnapshotTarget, home: string): SnapshotResult {
     return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via: 'file-copy' }
   }
 
-  for (const ext of SQLITE_SIDECARS) {
-    const sidecar = target.dbPath + ext
-    if (fs.existsSync(sidecar)) fs.copyFileSync(sidecar, snapshotPath + ext)
-  }
-  fs.copyFileSync(target.dbPath, snapshotPath)
-  foldJournals(snapshotPath)
-  return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via: 'copy-trio' }
+  const via = vacuumInto(target.dbPath, snapshotPath) ?? copyTrio(target.dbPath, snapshotPath)
+  return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via }
 }
 
 export function stagingPath(home: string, source: string, profile: string): string {
@@ -42,6 +37,40 @@ export function stagingPath(home: string, source: string, profile: string): stri
 
 function isJson(dbPath: string): boolean {
   return dbPath.endsWith('.json')
+}
+
+// Primary route: read the source through SQLite itself and serialize the
+// current content — used pages only, WAL folded, no torn copy. Null means
+// "fall back to the file trio" (missing file, permissions, version skew,
+// read-only shm init failing on a hot WAL).
+function vacuumInto(source: string, dest: string): SnapshotResult['via'] | null {
+  if (!fs.existsSync(source)) return null
+  const tmp = dest + '.vacuum-tmp'
+  try {
+    fs.rmSync(tmp, { force: true })
+    const db = new DatabaseSync(source, { readOnly: true })
+    try {
+      db.exec(`VACUUM INTO '${tmp.replaceAll("'", "''")}'`)
+    } finally {
+      db.close()
+    }
+  } catch {
+    fs.rmSync(tmp, { force: true })
+    return null
+  }
+  fs.renameSync(tmp, dest)
+  for (const ext of SQLITE_SIDECARS) fs.rmSync(dest + ext, { force: true })
+  return 'vacuum-into'
+}
+
+function copyTrio(source: string, dest: string): SnapshotResult['via'] {
+  for (const ext of SQLITE_SIDECARS) {
+    const sidecar = source + ext
+    if (fs.existsSync(sidecar)) fs.copyFileSync(sidecar, dest + ext)
+  }
+  fs.copyFileSync(source, dest)
+  foldJournals(dest)
+  return 'copy-trio'
 }
 
 function foldJournals(copyPath: string): void {

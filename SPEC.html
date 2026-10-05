@@ -853,7 +853,7 @@ CREATE TABLE favicons (
           <iconify-icon icon="mdi:content-copy" noobserver></iconify-icon>
           <h4>Snapshot</h4>
         </div>
-        <p>Copy main + sidecars (<code>-wal</code> / <code>-shm</code> / <code>-journal</code>) → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code>. Opening the copy folds the journals into one file — the live DB is never opened.</p>
+        <p>SQLite <code>VACUUM INTO</code> from a read-only source handle → staging — used pages only, WAL folded, page-atomic. Fallback (hot journal / open failure): copy main + sidecars → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code> and fold on open. The live DB is never written.</p>
       </div>
       <div class="card">
         <div class="card-head">
