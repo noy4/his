@@ -20,13 +20,13 @@ export interface SourceProfileRef {
   profilePath: string
 }
 
-export interface RunOptions {
+export interface ApplyVisitsOptions {
   full?: boolean
   idPolicy?: 'monotonic' | 'opaque'
   now?: EpochMs
 }
 
-export interface RunResult {
+export interface ApplyVisitsResult {
   sourceProfileId: number
   seenVisits: number
   processedVisits: number
@@ -38,16 +38,16 @@ export interface RunResult {
   lastRunAt: EpochMs
 }
 
-export interface RunParams {
+export interface ApplyVisitsParams {
   db: DatabaseSync
   profile: SourceProfileRef
   visits: NativeVisit[]
-  options: RunOptions
+  options: ApplyVisitsOptions
 }
 
 // --- run ---
 
-export function run(params: RunParams): RunResult {
+export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
   const { db, profile, visits, options } = params
   const now = options.now ?? Date.now()
   const sourceProfileId = ensureSourceProfile(db, profile)

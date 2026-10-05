@@ -1,15 +1,15 @@
 import type { DatabaseSync } from 'node:sqlite'
 import {
+  applyVisits,
   getTargetFingerprint,
   parseChromiumStaging,
   parseFirefoxStaging,
   parseSafariStaging,
   parseTakeoutStaging,
-  run,
   setTargetFingerprint,
   snapshot,
 } from '@his/core'
-import type { RunResult, SnapshotTarget, SourceKind } from '@his/core'
+import type { ApplyVisitsResult, SnapshotTarget, SourceKind } from '@his/core'
 import type { SyncHooks, SyncOptions } from './types.ts'
 import { probeFingerprint } from './fingerprint.ts'
 
@@ -54,7 +54,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
       displayName: target.displayName ?? null,
       profilePath: target.dbPath,
     }
-    const result: RunResult = run({
+    const result: ApplyVisitsResult = applyVisits({
       db,
       profile,
       visits,

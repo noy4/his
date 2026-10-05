@@ -1,6 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs } from '../model.ts'
-import type { SourceKind } from './run.ts'
+import type { SourceKind } from './applyVisits.ts'
 
 export interface Watermark {
   sourceProfileId: number

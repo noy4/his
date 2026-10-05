@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
-import type { NativeVisit } from '../run.ts'
+import type { NativeVisit } from '../applyVisits.ts'
 import type { SnapshotTarget } from '../snapshot.ts'
 
 // --- discovery ---
