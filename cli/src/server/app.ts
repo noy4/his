@@ -1,4 +1,3 @@
-import { FAVICON_CACHE_CONTROL, normalizeDomain, type FaviconLookup } from './favicon.ts'
 import { readStaticFile } from './static.ts'
 
 // --- contract ---
@@ -7,7 +6,6 @@ import { readStaticFile } from './static.ts'
 // is runner-agnostic — the Node adapter in node.ts is the only runner glue.
 // WebSocket upgrade handling is not part of the request path (rpc.ts).
 export interface AppOptions {
-  favicon: FaviconLookup
   dist: string | null
 }
 
@@ -30,20 +28,7 @@ async function route(request: Request, options: AppOptions): Promise<Response> {
     return textResponse(400, 'invalid request target')
   }
 
-  if (pathname.startsWith('/favicon/'))
-    return faviconResponse(request, options.favicon, pathname.slice(9))
-
   return staticResponse(request, options.dist, pathname)
-}
-
-function faviconResponse(request: Request, favicon: FaviconLookup, rawDomain: string): Response {
-  const domain = normalizeDomain(rawDomain)
-  const entry = domain === null ? null : favicon(domain)
-  if (entry === null) {
-    // Web clients fall back to a letter tile on 404.
-    return textResponse(404, 'not found')
-  }
-  return fileResponse(request, entry.data, entry.contentType, FAVICON_CACHE_CONTROL)
 }
 
 function staticResponse(request: Request, distRoot: string | null, pathname: string): Response {
@@ -61,17 +46,6 @@ function staticResponse(request: Request, distRoot: string | null, pathname: str
 }
 
 // --- helpers ---
-
-function fileResponse(request: Request, data: Buffer, contentType: string, cacheControl: string): Response {
-  return new Response(request.method === 'HEAD' ? undefined : data, {
-    headers: {
-      'content-type': contentType,
-      'content-length': String(data.length),
-      'cache-control': cacheControl,
-      'x-content-type-options': 'nosniff',
-    },
-  })
-}
 
 function textResponse(status: number, text: string, extra: Record<string, string> = {}): Response {
   return new Response(text, { status, headers: { 'content-type': 'text/plain; charset=utf-8', ...extra } })

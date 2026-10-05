@@ -11,7 +11,6 @@ export default defineConfig({
   server: {
     proxy: {
       '/rpc': { target: 'http://127.0.0.1:4477', ws: true, changeOrigin: true },
-      '/favicon': { target: 'http://127.0.0.1:4477', changeOrigin: true },
     },
   },
   resolve: {

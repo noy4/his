@@ -3,9 +3,8 @@ import { randomBytes } from 'node:crypto'
 import fs from 'node:fs'
 import http from 'node:http'
 import { open } from '@his/core'
-import { faviconsDbPath, historyDbPath } from '../home.ts'
+import { historyDbPath } from '../home.ts'
 import { createApp } from './app.ts'
-import { createFaviconStore } from './favicon.ts'
 import { createNodeHandler } from './node.ts'
 import { attachRpc, type RpcHandle } from './rpc.ts'
 import { startPeriodicSync, type PeriodicSyncHandle } from './watch.ts'
@@ -47,7 +46,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     console.error('his: webui dist not found — static routes will 503 (build webui or set HIS_DIST)')
 
   const app = createApp({
-    favicon: createFaviconStore(faviconsDbPath(home)),
     dist: distRoot,
   })
   const server = http.createServer(createNodeHandler(app))
