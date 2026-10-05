@@ -69,7 +69,7 @@ function toNativeVisit(row: PlacesRow): NativeVisit | null {
   return {
     sourceVisitId: Number(row.visitId),
     url: row.url,
-    title: row.title ?? null,
+    title: row.title || null,
     visitTime: prTimeToMs(row.visitDate),
     transition: mapped ?? 'LINK',
   }

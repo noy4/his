@@ -114,7 +114,7 @@ function toNativeVisit(row: ChromiumRow): NativeVisit | null {
   return {
     sourceVisitId: Number(row.visitId),
     url: row.url,
-    title: row.title ?? null,
+    title: row.title || null,
     visitTime,
     transition: mapped ?? 'LINK',
   }

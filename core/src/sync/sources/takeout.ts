@@ -77,7 +77,7 @@ function toNativeVisit(item: unknown): NativeVisit | null {
   return {
     sourceVisitId: stableVisitHash(url, visitTimeMs),
     url,
-    title: typeof title === 'string' ? title : null,
+    title: typeof title === 'string' && title !== '' ? title : null,
     visitTime: visitTimeMs,
     transition,
   }
