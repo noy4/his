@@ -1,4 +1,4 @@
-import type { DatabaseSync } from 'node:sqlite'
+import type { DatabaseSync, StatementSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../model.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
 import type { Watermark } from './watermarks.ts'
@@ -102,16 +102,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
   const pending = processAll ? visits.length : aboveWatermark
 
   // sql
-  const insertUrl = db.prepare(
-    'INSERT OR IGNORE INTO urls (url, title, visit_count, typed_count, first_visit_time, last_visit_time) VALUES (?, ?, 0, 0, ?, ?)',
-  )
-  const urlIdOf = db.prepare('SELECT id FROM urls WHERE url = ?')
-  const touchUrl = db.prepare(
-    'UPDATE urls SET visit_count = visit_count + 1, typed_count = typed_count + ?, first_visit_time = MIN(first_visit_time, ?), last_visit_time = MAX(last_visit_time, ?), title = CASE WHEN ? >= last_visit_time THEN COALESCE(?, title) ELSE title END WHERE id = ?',
-  )
-  const insertVisit = db.prepare(
-    'INSERT OR IGNORE INTO visits (url_id, visit_time, transition, source_profile_id, source_visit_id) VALUES (?, ?, ?, ?, ?)',
-  )
+  const stmts = prepareApplyStatements(db)
 
   const urlIds = new Map<string, number>()
   const touched = new Set<number>()
@@ -125,19 +116,10 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       if (visit.sourceVisitId <= skipBelow) continue
 
       // find or create the url row
-      let urlId = urlIds.get(visit.url)
-      if (urlId === undefined) {
-        const row = urlIdOf.get(visit.url) as { id: number } | undefined
-        urlId = row === undefined ? undefined : Number(row.id)
-      }
-      if (urlId === undefined) {
-        const created = insertUrl.run(visit.url, visit.title, visit.visitTime, visit.visitTime)
-        urlId = Number(created.changes) === 1 ? Number(created.lastInsertRowid) : Number((urlIdOf.get(visit.url) as { id: number }).id)
-      }
-      urlIds.set(visit.url, urlId)
+      const urlId = resolveUrlId(stmts, urlIds, visit)
 
       // insert visits
-      const inserted = insertVisit.run(
+      const inserted = stmts.insertVisit.run(
         urlId,
         visit.visitTime,
         visit.transition,
@@ -149,7 +131,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       if (Number(inserted.changes) === 0) continue
       insertedVisits += 1
       touched.add(urlId)
-      touchUrl.run(
+      stmts.touchUrl.run(
         visit.transition === 'TYPED' ? 1 : 0,
         visit.visitTime,
         visit.visitTime,
@@ -211,6 +193,50 @@ export function computeSkip({ watermark, maxSeen, idMode, full }: ComputeSkipPar
     offset: cleared ? resetOffset(watermark) : watermark.sourceIdOffset,
     skipBelow: processAll ? -1 : watermark.lastSourceVisitId,
   }
+}
+
+// prepared sql for one apply run
+export interface ApplyStatements {
+  insertUrl: StatementSync
+  urlIdOf: StatementSync
+  touchUrl: StatementSync
+  insertVisit: StatementSync
+}
+
+export function prepareApplyStatements(db: DatabaseSync): ApplyStatements {
+  return {
+    insertUrl: db.prepare(
+      'INSERT OR IGNORE INTO urls (url, title, visit_count, typed_count, first_visit_time, last_visit_time) VALUES (?, ?, 0, 0, ?, ?)',
+    ),
+    urlIdOf: db.prepare('SELECT id FROM urls WHERE url = ?'),
+    touchUrl: db.prepare(
+      'UPDATE urls SET visit_count = visit_count + 1, typed_count = typed_count + ?, first_visit_time = MIN(first_visit_time, ?), last_visit_time = MAX(last_visit_time, ?), title = CASE WHEN ? >= last_visit_time THEN COALESCE(?, title) ELSE title END WHERE id = ?',
+    ),
+    insertVisit: db.prepare(
+      'INSERT OR IGNORE INTO visits (url_id, visit_time, transition, source_profile_id, source_visit_id) VALUES (?, ?, ?, ?, ?)',
+    ),
+  }
+}
+
+// find or create the url row for the visit, remembering resolved ids for the batch
+export function resolveUrlId(stmts: ApplyStatements, urlIds: Map<string, number>, visit: NativeVisit): number {
+  const cached = urlIds.get(visit.url)
+  if (cached !== undefined)
+    return cached
+
+  const existing = stmts.urlIdOf.get(visit.url) as { id: number } | undefined
+  if (existing !== undefined) {
+    const id = Number(existing.id)
+    urlIds.set(visit.url, id)
+    return id
+  }
+
+  const created = stmts.insertUrl.run(visit.url, visit.title, visit.visitTime, visit.visitTime)
+  const id = Number(created.changes) === 1
+    ? Number(created.lastInsertRowid)
+    : Number((stmts.urlIdOf.get(visit.url) as { id: number }).id)
+  urlIds.set(visit.url, id)
+  return id
 }
 
 export function ensureSourceProfile(db: DatabaseSync, profile: SourceProfileRef): number {
