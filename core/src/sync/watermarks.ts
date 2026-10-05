@@ -85,3 +85,20 @@ export function detectCleared(watermark: Watermark, sourceMaxVisitId: number): b
 export function resetOffset(watermark: Watermark): number {
   return watermark.sourceIdOffset + watermark.lastSourceVisitId
 }
+
+// --- target fingerprint (change gate) ---
+
+// Read the change-gate fingerprint for a source profile (kind + path).
+export function getTargetFingerprint(db: DatabaseSync, kind: SourceKind, profilePath: string): string | null {
+  const row = db
+    .prepare(
+      'SELECT pw.last_fingerprint AS fingerprint FROM source_profiles sp JOIN profile_watermarks pw ON pw.source_profile_id = sp.id WHERE sp.kind = ? AND sp.profile_path = ?',
+    )
+    .get(kind, profilePath) as unknown as { fingerprint: string | null } | undefined
+  return row?.fingerprint ?? null
+}
+
+// Store the change-gate fingerprint for a source profile.
+export function setTargetFingerprint(db: DatabaseSync, sourceProfileId: number, fingerprint: string): void {
+  db.prepare('UPDATE profile_watermarks SET last_fingerprint = ? WHERE source_profile_id = ?').run(fingerprint, sourceProfileId)
+}

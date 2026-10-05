@@ -8,7 +8,7 @@ import { createApp } from './app.ts'
 import { createFaviconStore } from './favicon.ts'
 import { createNodeHandler } from './node.ts'
 import { attachRpc, type RpcHandle } from './rpc.ts'
-import { startWatchLoop, type WatchHandle } from './watch.ts'
+import { startPeriodicSync, type PeriodicSyncHandle } from './watch.ts'
 import { resolveDistRoot } from './static.ts'
 import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
 
@@ -73,7 +73,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
       // the 6h interval check picks the backlog up anyway
     }
   }
-  const watch: WatchHandle = startWatchLoop({ home, runner })
+  const watch: PeriodicSyncHandle = startPeriodicSync({ runner })
 
   if (options.open === true) openUrl(info.url)
 

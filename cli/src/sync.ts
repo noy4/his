@@ -5,12 +5,14 @@ import {
   discoverChromiumProfiles,
   discoverFirefoxProfiles,
   discoverSafariProfiles,
+  getTargetFingerprint,
   open,
   parseChromiumStaging,
   parseFirefoxStaging,
   parseSafariStaging,
   parseTakeoutStaging,
   run,
+  setTargetFingerprint,
   snapshot,
   takeoutProfileKey,
   type RunResult,
@@ -48,6 +50,7 @@ export interface SyncHooks {
 export interface SyncSummary {
   attempted: number
   failures: number
+  skipped: number
   insertedVisits: number
   touchedUrls: number
 }
@@ -63,12 +66,13 @@ export function runSync(home: string, options: SyncOptions = {}, hooks: SyncHook
   const db = externalDb ?? open(historyDbPath(home))
   try {
     const kinds: SourceKind[] = options.source === undefined ? SYNC_KINDS : [options.source as SourceKind]
-    const summary: SyncSummary = { attempted: 0, failures: 0, insertedVisits: 0, touchedUrls: 0 }
+    const summary: SyncSummary = { attempted: 0, failures: 0, skipped: 0, insertedVisits: 0, touchedUrls: 0 }
     for (const kind of kinds) {
       for (const target of discoverTargets(kind, home)) {
         const outcome = runTarget({ db, home, target, options, hooks })
         summary.attempted += 1
         if (outcome.failureLine !== null) summary.failures += 1
+        if (outcome.skipped) summary.skipped += 1
         summary.insertedVisits += outcome.insertedVisits
         summary.touchedUrls += outcome.touchedUrls
       }
@@ -102,6 +106,7 @@ interface RunTargetParams {
 
 interface TargetOutcome {
   failureLine: string | null
+  skipped: boolean
   insertedVisits: number
   touchedUrls: number
 }
@@ -110,6 +115,14 @@ function runTarget(params: RunTargetParams): TargetOutcome {
   const { db, home, target, options, hooks } = params
   const label = kindLabel(target)
   try {
+    const fingerprint = probeFingerprint(target.dbPath)
+    if (options.full !== true) {
+      const stored = getTargetFingerprint(db, target.source as SourceKind, target.dbPath)
+      if (stored === fingerprint) {
+        hooks.onLog?.(`${label}: unchanged — skipped`)
+        return { failureLine: null, skipped: true, insertedVisits: 0, touchedUrls: 0 }
+      }
+    }
     hooks.onProgress?.({ source: label, phase: 'snapshot', parsed: null, upserted: null })
     const snap = snapshot(target, home)
     const visits = parseForKind(target.source as SourceKind, snap.path)
@@ -124,12 +137,34 @@ function runTarget(params: RunTargetParams): TargetOutcome {
       visits,
       options: { full: options.full ?? false, now: Date.now() },
     })
+    // after the run's commit — a failed run leaves the fingerprint behind
+    setTargetFingerprint(db, result.sourceProfileId, fingerprint)
     hooks.onProgress?.({ source: label, phase: 'done', parsed: visits.length, upserted: result.insertedVisits })
     hooks.onLog?.(`${label}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
-    return { failureLine: null, insertedVisits: result.insertedVisits, touchedUrls: result.touchedUrls }
+    return { failureLine: null, skipped: false, insertedVisits: result.insertedVisits, touchedUrls: result.touchedUrls }
   } catch (error) {
     hooks.onError?.(`${label}: ${error instanceof Error ? error.message : String(error)}`)
-    return { failureLine: label, insertedVisits: 0, touchedUrls: 0 }
+    return { failureLine: label, skipped: false, insertedVisits: 0, touchedUrls: 0 }
+  }
+}
+
+const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
+
+// mtime/size probe of the target's source files (main + sidecars, or the
+// takeout json) serialized for cross-run comparison.
+function probeFingerprint(dbPath: string): string {
+  const files = dbPath.endsWith('.json')
+    ? [dbPath]
+    : [dbPath, ...SQLITE_SIDECARS.map((ext) => dbPath + ext)]
+  return JSON.stringify(files.map(statEntry))
+}
+
+function statEntry(file: string): [number, number] {
+  try {
+    const stats = fs.statSync(file, { throwIfNoEntry: false })
+    return stats === undefined ? [0, -1] : [stats.mtimeMs, stats.size]
+  } catch {
+    return [0, -1]
   }
 }
 

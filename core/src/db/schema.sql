@@ -1,4 +1,4 @@
--- One row per browser profile this archive imports from.
+-- Browser profiles
 CREATE TABLE source_profiles (
   id            INTEGER PRIMARY KEY,
   kind          TEXT    NOT NULL,
@@ -36,12 +36,11 @@ CREATE INDEX idx_visits_visit_time        ON visits(visit_time DESC);
 CREATE INDEX idx_visits_url_id_visit_time ON visits(url_id, visit_time DESC);
 CREATE INDEX idx_urls_last_visit_time     ON urls(last_visit_time DESC);
 
--- Incremental sync cursor per source profile: last imported source visit id
--- and an id offset that keeps archive ids unique across history clears.
+-- Sync cursor per profile
 CREATE TABLE profile_watermarks (
   source_profile_id    INTEGER PRIMARY KEY REFERENCES source_profiles(id),
-  last_source_visit_id INTEGER NOT NULL DEFAULT 0,
-  source_id_offset     INTEGER NOT NULL DEFAULT 0,
+  last_source_visit_id INTEGER NOT NULL DEFAULT 0,     -- last imported source visit id
+  source_id_offset     INTEGER NOT NULL DEFAULT 0,     -- keeps ids unique across history clears
   last_run_at          INTEGER
 );
 

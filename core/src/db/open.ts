@@ -9,7 +9,10 @@ export interface OpenOptions {
 // Loaded per call — open() runs once per process, and keeping this free of
 // load-time effects lets bundlers drop the module when unused.
 function getMigrations(): readonly string[] {
-  return [fs.readFileSync(path.join(import.meta.dirname, 'schema.sql'), 'utf8')]
+  return [
+    fs.readFileSync(path.join(import.meta.dirname, 'schema.sql'), 'utf8'),
+    fs.readFileSync(path.join(import.meta.dirname, '001_target_fingerprints.sql'), 'utf8'),
+  ]
 }
 
 export function open(dbPath: string, options: OpenOptions = {}): DatabaseSync {

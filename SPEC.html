@@ -493,7 +493,7 @@
         <rect class="node" x="68" y="238" width="300" height="48" rx="6"/>
         <image href="https://api.iconify.design/mdi/database-import-outline.svg?height=18&color=%237E8A9E" x="80" y="253" width="18" height="18"/>
         <text class="tt" x="104" y="256">Sync</text>
-        <text class="tm" x="104" y="272">snapshot → parse → upsert</text>
+        <text class="tm" x="104" y="272">gate → snapshot → parse → upsert</text>
 
         <!-- Archive -->
         <rect class="node" x="560" y="238" width="184" height="48" rx="6"/>
@@ -839,14 +839,14 @@ CREATE TABLE favicons (
           <iconify-icon icon="mdi:radar" noobserver></iconify-icon>
           <h4>Trigger</h4>
         </div>
-        <p>6h periodic fingerprint check (mtime/size + sidecars) — sync only when changed; catch-up sync at startup. Alt: file events / OS scheduler.</p>
+        <p>6h periodic; per-target fingerprint gate (mtime/size + sidecars, persisted in the DB) — unchanged targets skip snapshot; catch-up sync at startup. Alt: file events / OS scheduler.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:workflow" noobserver></iconify-icon>
           <h4>Pipeline</h4>
         </div>
-        <p>snapshot → parse → upsert → watermark. One transaction per profile; <code>INSERT OR IGNORE</code> keeps re-sync idempotent.</p>
+        <p>fingerprint gate → snapshot → parse → upsert → watermark. One transaction per profile; <code>INSERT OR IGNORE</code> keeps re-sync idempotent.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -1036,7 +1036,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <li><code>/rpc</code> accepts same-origin + state-file token only</li>
           <li>Page bodies out of scope — metadata only, no WARC / WACZ</li>
           <li>Dedup key = <code>(source_profile_id, source_visit_id)</code> — watermark incremental with reset detection</li>
-          <li>Sync cadence = 6h periodic fingerprint check — sync only when changed — plus a startup catch-up sync</li>
+          <li>Sync cadence = 6h periodic + per-target fingerprint gate (unchanged targets skip snapshot) + a startup catch-up sync</li>
           <li>Favicon store = permanent harvest — one best icon per host (SVG &gt; width &gt; newer), history-delta driven, no TTL / no favicon cursor</li>
         </ul>
       </div>
