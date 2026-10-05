@@ -4,9 +4,11 @@ import type { SyncRunner } from './runner.ts'
 
 // --- contract ---
 
-// Watches the discovered browser profile DBs (mtime/size poll, sidecars
-// included) and triggers a debounced full sync through the runner. The live
-// DBs are never opened — only stat'ed.
+// Periodically (default every 6h) fingerprints the discovered browser
+// profile DBs (mtime/size, sidecars included) and triggers a debounced full
+// sync through the runner only when something changed since the previous
+// check. The live DBs are never opened — only stat'ed. Startup catch-up is
+// the runner's job at serve spawn (see index.ts).
 export interface WatchOptions {
   home: string
   runner: SyncRunner
@@ -18,7 +20,7 @@ export interface WatchHandle {
   stop(): void
 }
 
-const POLL_INTERVAL = 2_000
+const POLL_INTERVAL = 6 * 60 * 60 * 1000
 const DEBOUNCE = 5_000
 const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
 

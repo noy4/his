@@ -62,7 +62,18 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     token,
   }
   writeState(home, info)
-  const watch: WatchHandle = startWatchLoop({ home, runner: rpc.runner() })
+
+  // Startup catch-up — recover what accumulated while serve was closed
+  // (sources keep ~90 days, so nothing is lost in between).
+  const runner = rpc.runner()
+  if (!runner.isRunning()) {
+    try {
+      runner.run({})
+    } catch {
+      // the 6h interval check picks the backlog up anyway
+    }
+  }
+  const watch: WatchHandle = startWatchLoop({ home, runner })
 
   if (options.open === true) openUrl(info.url)
 

@@ -830,7 +830,7 @@ CREATE TABLE favicons (
   <section>
     <h2><iconify-icon icon="mdi:database-import-outline" width="24" noobserver></iconify-icon>Sync</h2>
     <p class="section-desc">
-      File-watch triggered; snapshots only — live browser DBs are never opened.
+      Periodic (6h) change-check triggered; snapshots only — live browser DBs are never opened.
     </p>
 
     <div class="grid-2">
@@ -839,7 +839,7 @@ CREATE TABLE favicons (
           <iconify-icon icon="mdi:radar" noobserver></iconify-icon>
           <h4>Trigger</h4>
         </div>
-        <p>File watch on profile DBs — FSEvents / mtime poll, 5 s debounce. Alt: manual / OS scheduler / desktop-resident.</p>
+        <p>6h periodic fingerprint check (mtime/size + sidecars) — sync only when changed; catch-up sync at startup. Alt: file events / OS scheduler.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -916,7 +916,7 @@ CREATE TABLE favicons (
           <tr><td><code>sync</code></td><td>Run sync once — writes <code>history.db</code> directly. Prints per-source counts; errors exit 1</td></tr>
           <tr><td><code>sync --source &lt;kind&gt;</code></td><td>Limit to <code>chromium</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code> (default: all)</td></tr>
           <tr><td><code>sync --full</code></td><td>Ignore watermarks and re-read everything (idempotent)</td></tr>
-          <tr><td><code>serve</code></td><td>Foreground — HTTP + RPC + file-watch loop. <code>Ctrl+C</code> stops and removes the state file</td></tr>
+          <tr><td><code>serve</code></td><td>Foreground — HTTP + RPC + 6h sync loop with startup catch-up. <code>Ctrl+C</code> stops and removes the state file</td></tr>
           <tr><td><code>serve --port &lt;n&gt;</code></td><td>Port to bind (default <code>4477</code>); +1 on conflict, recorded in the state file</td></tr>
           <tr><td><code>serve --open</code></td><td>Open the WebUI once the port is bound</td></tr>
           <tr><td><code>query [text]</code></td><td>Read-only — runs <code>history.search</code> against <code>history.db</code>, prints JSON. <code>--url</code>, <code>--from</code>, <code>--to</code>, <code>--limit</code></td></tr>
@@ -1001,7 +1001,7 @@ CREATE TABLE favicons (
           <iconify-icon icon="mdi:tray" noobserver></iconify-icon>
           <h4>Watch</h4>
         </div>
-        <p>The file-watch loop lives in <code>his serve</code> — the tray only triggers and reports.</p>
+        <p>The sync loop (6h check + startup catch-up) lives in <code>his serve</code> — the tray only triggers and reports.</p>
       </div>
     </div>
 
@@ -1036,7 +1036,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <li><code>/rpc</code> accepts same-origin + state-file token only</li>
           <li>Page bodies out of scope — metadata only, no WARC / WACZ</li>
           <li>Dedup key = <code>(source_profile_id, source_visit_id)</code> — watermark incremental with reset detection</li>
-          <li>Sync trigger = file watch — FSEvents / mtime on profile DBs, 5 s debounce</li>
+          <li>Sync cadence = 6h periodic fingerprint check — sync only when changed — plus a startup catch-up sync</li>
           <li>Favicon store = permanent harvest — one best icon per host (SVG &gt; width &gt; newer), history-delta driven, no TTL / no favicon cursor</li>
         </ul>
       </div>
