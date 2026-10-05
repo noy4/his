@@ -2,10 +2,9 @@ import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../model.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
 
-// --- contract ---
-
 export type SourceKind = 'chromium' | 'firefox' | 'safari' | 'takeout'
 
+// one visit as parsed from a browser source
 export interface NativeVisit {
   sourceVisitId: number
   url: string
@@ -45,20 +44,23 @@ export interface ApplyVisitsParams {
   options: ApplyVisitsOptions
 }
 
-// --- run ---
+// --- applyVisits ---
 
+// merge one profile's visits into the archive
 export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
   const { db, profile, visits, options } = params
   const now = options.now ?? Date.now()
-  const sourceProfileId = ensureSourceProfile(db, profile)
-  const watermark = getWatermark(db, sourceProfileId)
-  const opaque = options.idPolicy === 'opaque'
+  const sourceProfileId = ensureSourceProfile(db, profile) // find-or-create the profile row
+  const watermark = getWatermark(db, sourceProfileId) // last ingested source id
+  const opaque = options.idPolicy === 'opaque' // opaque ids can't be compared — bypass watermark logic
 
+  // highest source id in this batch
   let maxSeen = 0
   for (const visit of visits)
     if (visit.sourceVisitId > maxSeen)
       maxSeen = visit.sourceVisitId
 
+  // ids shrank vs the watermark → browser history was cleared → realign
   const cleared = !opaque && detectCleared(watermark, maxSeen)
   const offset = cleared ? resetOffset(watermark) : watermark.sourceIdOffset
   const skipBelow = (opaque || options.full === true || cleared) ? -1 : watermark.lastSourceVisitId
@@ -67,6 +69,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
     if (visit.sourceVisitId > skipBelow)
       pending += 1
 
+  // sql
   const insertUrl = db.prepare(
     'INSERT OR IGNORE INTO urls (url, title, visit_count, typed_count, first_visit_time, last_visit_time) VALUES (?, ?, 0, 0, ?, ?)',
   )
@@ -82,10 +85,14 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
   const touched = new Set<number>()
   let insertedVisits = 0
 
+  // all-or-nothing
   db.exec('BEGIN')
   try {
     for (const visit of visits) {
+      // skip if visitId is below the threshold
       if (visit.sourceVisitId <= skipBelow) continue
+
+      // find or create the url row
       let urlId = urlIds.get(visit.url)
       if (urlId === undefined) {
         const row = urlIdOf.get(visit.url) as { id: number } | undefined
@@ -96,6 +103,8 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
         urlId = Number(created.changes) === 1 ? Number(created.lastInsertRowid) : Number((urlIdOf.get(visit.url) as { id: number }).id)
       }
       urlIds.set(visit.url, urlId)
+
+      // insert visits
       const inserted = insertVisit.run(
         urlId,
         visit.visitTime,
@@ -103,6 +112,8 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
         sourceProfileId,
         visit.sourceVisitId + offset,
       )
+
+      // skip if not inserted
       if (Number(inserted.changes) === 0) continue
       insertedVisits += 1
       touched.add(urlId)
@@ -115,6 +126,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
         urlId,
       )
     }
+    // the watermark advances with the commit
     setWatermark(db, sourceProfileId, {
       lastSourceVisitId: maxSeen,
       sourceIdOffset: offset,
@@ -151,6 +163,7 @@ export function ensureSourceProfile(db: DatabaseSync, profile: SourceProfileRef)
     profile.kind,
     profile.profilePath,
   ) as { id: number } | undefined
-  if (row === undefined) throw new Error(`failed to register source profile ${profile.kind}:${profile.profilePath}`)
+  if (row === undefined)
+    throw new Error(`failed to register source profile ${profile.kind}:${profile.profilePath}`)
   return Number(row.id)
 }
