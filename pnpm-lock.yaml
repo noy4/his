@@ -67,6 +67,9 @@ importers:
 
   webui:
     dependencies:
+      '@his/core':
+        specifier: workspace:*
+        version: link:../core
       '@preact/signals-react':
         specifier: ^3.12.0
         version: 3.12.0(react@19.3.0)
