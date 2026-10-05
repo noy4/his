@@ -6,25 +6,29 @@ CREATE TABLE source_profiles (
   UNIQUE(kind, profile_path)
 );
 
+-- WebExtensions history API HistoryItem:
+-- https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/HistoryItem
 CREATE TABLE urls (
   id               INTEGER PRIMARY KEY,
   url              TEXT    NOT NULL UNIQUE,
   title            TEXT,
+  first_visit_time INTEGER NOT NULL, -- not in HistoryItem
+  last_visit_time  INTEGER NOT NULL,
   visit_count      INTEGER NOT NULL DEFAULT 0,
   typed_count      INTEGER NOT NULL DEFAULT 0,
-  first_visit_time INTEGER NOT NULL,
-  last_visit_time  INTEGER NOT NULL,
-  hidden_at        INTEGER
+  hidden_at        INTEGER           -- not in HistoryItem
 );
 
+-- WebExtensions history API VisitItem:
+-- https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/VisitItem
 CREATE TABLE visits (
-  id                INTEGER PRIMARY KEY,
-  url_id            INTEGER NOT NULL REFERENCES urls(id),
+  id                INTEGER PRIMARY KEY,                  -- = VisitItem.visitId
+  url_id            INTEGER NOT NULL REFERENCES urls(id), -- = VisitItem.id (= HistoryItem.id)
   visit_time        INTEGER NOT NULL,
   transition        TEXT    NOT NULL,
-  source_profile_id INTEGER NOT NULL REFERENCES source_profiles(id),
-  source_visit_id   INTEGER NOT NULL,
-  source_transition TEXT,
+  source_profile_id INTEGER NOT NULL REFERENCES source_profiles(id), -- not in VisitItem
+  source_visit_id   INTEGER NOT NULL,                                -- not in VisitItem
+  source_transition TEXT,                                            -- not in VisitItem
   UNIQUE(source_profile_id, source_visit_id)
 );
 

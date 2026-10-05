@@ -25,7 +25,7 @@ export interface ItemDetail {
 const DEFAULT_LIMIT = 50
 const MAX_LIMIT = 200
 const CURSOR_VERSION = 'v1'
-const URL_COLUMNS = 'id, url, title, visit_count, typed_count, first_visit_time, last_visit_time, hidden_at'
+const URL_COLUMNS = 'id, url, title, last_visit_time, visit_count, typed_count, first_visit_time, hidden_at'
 const VISIT_COLUMNS = 'id, url_id, visit_time, transition'
 
 interface UrlRow {
