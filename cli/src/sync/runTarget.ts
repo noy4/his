@@ -35,42 +35,63 @@ export function runTarget(params: RunTargetParams): TargetOutcome {
   const label = kindLabel(target)
 
   try {
-    // unchanged gate (--full bypasses)
+    // check fingerprint (--full bypasses)
     const fingerprint = probeFingerprint(target.dbPath)
+
     if (options.full !== true) {
       const stored = getTargetFingerprint(db, target.source as SourceKind, target.dbPath)
       if (stored === fingerprint) {
         hooks.onLog?.(`${label}: unchanged — skipped`)
-        return { failureLine: null, skipped: true, insertedVisits: 0, touchedUrls: 0 }
+        return {
+          failureLine: null,
+          skipped: true,
+          insertedVisits: 0,
+          touchedUrls: 0,
+        }
       }
     }
 
-    // snapshot into staging, then parse the copy — never the live file
+    // snapshot and parse
     const snap = snapshot(target, home)
     const visits = parseForKind(target.source as SourceKind, snap.path)
 
-    // upsert visits (watermark dedup, cleared-history realign)
+    // upsert visits
+    const profile = {
+      kind: target.source as SourceKind,
+      displayName: target.displayName ?? null,
+      profilePath: target.dbPath,
+    }
     const result: RunResult = run({
       db,
-      profile: {
-        kind: target.source as SourceKind,
-        displayName: target.displayName ?? null,
-        profilePath: target.dbPath,
-      },
+      profile,
       visits,
-      options: { full: options.full ?? false, now: Date.now() },
+      options: {
+        full: options.full ?? false,
+        now: Date.now(),
+      },
     })
 
-    // fingerprint saved after commit — a failed run retries next time
+    // save fingerprint
     setTargetFingerprint(db, result.sourceProfileId, fingerprint)
 
     hooks.onLog?.(`${label}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
 
-    return { failureLine: null, skipped: false, insertedVisits: result.insertedVisits, touchedUrls: result.touchedUrls }
+    return {
+      failureLine: null,
+      skipped: false,
+      insertedVisits: result.insertedVisits,
+      touchedUrls: result.touchedUrls,
+    }
   } catch (error) {
     // one error line, then the loop carries on with the next target
     hooks.onError?.(`${label}: ${error instanceof Error ? error.message : String(error)}`)
-    return { failureLine: label, skipped: false, insertedVisits: 0, touchedUrls: 0 }
+
+    return {
+      failureLine: label,
+      skipped: false,
+      insertedVisits: 0,
+      touchedUrls: 0,
+    }
   }
 }
 
