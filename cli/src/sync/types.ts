@@ -1,12 +1,9 @@
 import type { SourceKind } from '@his/core'
 export const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
 
-export function isSourceKind(value: string): value is SourceKind {
-  return SYNC_KINDS.includes(value as SourceKind)
-}
-
 export interface SyncOptions {
-  source?: string
+  browser?: string
+  profile?: string
   full?: boolean
 }
 

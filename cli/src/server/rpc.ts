@@ -12,7 +12,6 @@ import {
 } from '@his/core'
 import { WebSocketServer } from 'ws'
 import type { WebSocket } from 'ws'
-import { SYNC_KINDS, isSourceKind } from '../sync/types.ts'
 import { createSyncRunner, type SyncRunner } from './runner.ts'
 
 // --- contract ---
@@ -110,12 +109,8 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
     return { changed }
   }
 
-  function syncOptions(params: unknown): { source?: string; full?: boolean } {
-    const source = optionalString(params, 'source')
-    if (source !== undefined && !isSourceKind(source)) {
-      throw rpcError(INVALID_PARAMS, `unknown source: ${source} (kinds: ${SYNC_KINDS.join(' ')})`)
-    }
-    return { source, full: optionalBoolean(params, 'full') ?? false }
+  function syncOptions(params: unknown): { full?: boolean } {
+    return { full: optionalBoolean(params, 'full') ?? false }
   }
 
   function broadcast(method: string, params: unknown): void {
@@ -231,13 +226,6 @@ function optionalNumber(params: unknown, key: string): number | undefined {
   const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)[key] : undefined
   if (raw === undefined) return undefined
   if (typeof raw !== 'number' || !Number.isFinite(raw)) throw rpcError(INVALID_PARAMS, `params.${key}: number required`)
-  return raw
-}
-
-function optionalString(params: unknown, key: string): string | undefined {
-  const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)[key] : undefined
-  if (raw === undefined) return undefined
-  if (typeof raw !== 'string') throw rpcError(INVALID_PARAMS, `params.${key}: string required`)
   return raw
 }
 

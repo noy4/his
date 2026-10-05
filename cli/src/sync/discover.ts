@@ -9,7 +9,16 @@ import {
 import type { SnapshotTarget, SourceKind } from '@his/core'
 import { takeoutDir } from '../home.ts'
 
-export function discoverTargets(kind: SourceKind, home: string): SnapshotTarget[] {
+export interface TargetFilter {
+  browser?: string
+  profile?: string
+}
+
+export function discoverTargets(kind: SourceKind, home: string, filter: TargetFilter = {}): SnapshotTarget[] {
+  return discoverForKind(kind, home).filter((target) => targetMatches(target, filter))
+}
+
+function discoverForKind(kind: SourceKind, home: string): SnapshotTarget[] {
   switch (kind) {
     case 'chromium':
       return discoverChromiumProfiles()
@@ -20,6 +29,31 @@ export function discoverTargets(kind: SourceKind, home: string): SnapshotTarget[
     case 'takeout':
       return takeoutTargets(home)
   }
+}
+
+// browser/profile as surfaced by the profile key:
+// '<browser>-<dir>' for chromium/firefox/takeout (chromium carries the app slug, e.g. brave),
+// bare 'default' for safari
+function selector(target: SnapshotTarget): { browser: string, profile: string } {
+  const prefix = `${target.source}-`
+  if (target.profile.startsWith(prefix))
+    return { browser: target.source, profile: target.profile.slice(prefix.length) }
+  const cut = target.profile.indexOf('-')
+  if (cut === -1)
+    return { browser: target.source, profile: target.profile }
+  return { browser: target.profile.slice(0, cut), profile: target.profile.slice(cut + 1) }
+}
+
+// dir parts are slugified at discovery — normalize the filter the same way before comparing
+const DIR_PATTERN = /[^A-Za-z0-9._-]+/g
+
+function targetMatches(target: SnapshotTarget, filter: TargetFilter): boolean {
+  const sel = selector(target)
+  if (filter.browser !== undefined && sel.browser !== filter.browser)
+    return false
+  if (filter.profile !== undefined && sel.profile !== filter.profile.replace(DIR_PATTERN, '-'))
+    return false
+  return true
 }
 
 function takeoutTargets(home: string): SnapshotTarget[] {

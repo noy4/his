@@ -13,10 +13,12 @@ cli.option('--home <dir>', 'archive home (env: HIS_HOME, default ~/.his)')
 
 cli
   .command('sync', 'run sync once (kinds: chromium firefox safari takeout)')
-  .option('--source <kind>', 'limit to one source instead of all')
+  .option('--browser <slug>', 'limit to one browser (chrome edge brave vivaldi arc firefox safari takeout)')
+  .option('--profile <dir>', 'limit to one profile dir (e.g. Default)')
   .option('--full', 'ignore watermarks and re-read everything (idempotent)')
   .action(withCtx((ctx, opts) => sync(ctx, {
-    source: opts.source,
+    browser: opts.browser,
+    profile: opts.profile,
     full: opts.full
   })))
 
