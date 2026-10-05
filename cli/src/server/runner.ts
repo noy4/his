@@ -5,8 +5,8 @@ import { runSync } from '../sync/runSync.ts'
 // --- contract ---
 
 // Owns the in-process sync execution state: single-flight guard, last-run
-// record, and fan-out of sync.progress / db.changed over the broadcast
-// channel. The watch loop (Task 4) drives this from outside the RPC layer.
+// record, and fan-out of db.changed over the broadcast channel. The watch
+// loop (Task 4) drives this from outside the RPC layer.
 export interface RunnerOptions {
   home: string
   broadcast(method: string, params: unknown): void
@@ -43,7 +43,6 @@ export function createSyncRunner(options: RunnerOptions): SyncRunner {
     const failureLines: string[] = []
     try {
       const summary = runSync(home, runOptions, {
-        onProgress: (event) => options.broadcast('sync.progress', event),
         onError: (line) => failureLines.push(line),
       })
       if (summary.insertedVisits > 0) options.broadcast('db.changed', {})

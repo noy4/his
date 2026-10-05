@@ -546,11 +546,11 @@ history.getVisits { urlId, limit? }                       → VisitItem[]
 history.getItem   { id }                                  → { item, visits }
 history.deleteUrl { url }                                 → { }              <span class="c"># soft hide · restoreUrl reverts</span>
 sources.list                                              → Source[]         <span class="c"># + watermarks</span>
-sync.run          { source? }                             → RunHandle        <span class="c"># progress via push</span>
+sync.run          { source? }                             → RunHandle        <span class="c"># progress push on hold</span>
 sync.status                                               → LastRun
 
 <span class="c"># notifications — same socket, no id</span>
-sync.progress     { source, phase, parsed, upserted }
+sync.progress     { source, phase, parsed, upserted }     <span class="c"># on hold — not implemented</span>
 db.changed        { }                                     <span class="c"># clients refetch open views</span></pre>
 
     <h3><iconify-icon icon="mdi:file-cog-outline" noobserver></iconify-icon>Runtime state</h3>
@@ -1011,7 +1011,7 @@ CREATE TABLE favicons (
           <iconify-icon icon="mdi:flash-outline" noobserver></iconify-icon>
           <h4>Sync Now</h4>
         </div>
-        <p><code>sync.run</code> over RPC; <code>sync.progress</code> shows in the tray tooltip.</p>
+        <p><code>sync.run</code> over RPC; <code>sync.progress</code> shows in the tray tooltip <span class="on-hold-tag">(on hold — notification not implemented)</span>.</p>
       </div>
       <div class="card">
         <div class="card-head">

@@ -64,16 +64,8 @@ export interface Stats {
   busiestDays: { day: string; visits: number }[]
 }
 
-export interface SyncProgressEvent {
-  source: string
-  phase: 'snapshot' | 'upsert' | 'done'
-  parsed: number | null
-  upserted: number | null
-}
-
-export type HisEvents = {
-  'sync.progress': (event: SyncProgressEvent) => void
-}
+// notifications — sync.progress is on hold (see SPEC); db.changed pending
+export interface HisEvents {}
 
 export interface HisApi {
   search(params: SearchParams): Promise<SearchPage>

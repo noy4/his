@@ -18,7 +18,8 @@ import { createSyncRunner, type SyncRunner } from './runner.ts'
 // --- contract ---
 
 // JSON-RPC 2.0 over WS at /rpc — methods mirror the WebExtensions history
-// API; notifications (sync.progress, db.changed) push on the same socket.
+// API; notification db.changed pushes on the same socket (sync.progress on
+// hold — see SPEC).
 // Access control (token + loopback Host pin + same-origin) is intentionally
 // absent for now — see local.md before exposing beyond the loopback.
 // history.stats is a WebUI extension (Dashboard) beyond the WebExtensions surface.

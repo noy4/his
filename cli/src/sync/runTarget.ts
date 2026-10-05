@@ -46,10 +46,8 @@ export function runTarget(params: RunTargetParams): TargetOutcome {
     }
 
     // snapshot into staging, then parse the copy — never the live file
-    hooks.onProgress?.({ source: label, phase: 'snapshot', parsed: null, upserted: null })
     const snap = snapshot(target, home)
     const visits = parseForKind(target.source as SourceKind, snap.path)
-    hooks.onProgress?.({ source: label, phase: 'upsert', parsed: visits.length, upserted: null })
 
     // upsert visits (watermark dedup, cleared-history realign)
     const result: RunResult = run({
@@ -66,7 +64,6 @@ export function runTarget(params: RunTargetParams): TargetOutcome {
     // fingerprint saved after commit — a failed run retries next time
     setTargetFingerprint(db, result.sourceProfileId, fingerprint)
 
-    hooks.onProgress?.({ source: label, phase: 'done', parsed: visits.length, upserted: result.insertedVisits })
     hooks.onLog?.(`${label}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
 
     return { failureLine: null, skipped: false, insertedVisits: result.insertedVisits, touchedUrls: result.touchedUrls }

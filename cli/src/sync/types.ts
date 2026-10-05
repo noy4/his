@@ -10,15 +10,7 @@ export interface SyncOptions {
   full?: boolean
 }
 
-export interface SyncProgressEvent {
-  source: string
-  phase: 'snapshot' | 'upsert' | 'done'
-  parsed: number | null
-  upserted: number | null
-}
-
 export interface SyncHooks {
-  onProgress?(event: SyncProgressEvent): void
   onLog?(line: string): void
   onError?(line: string): void
 }
