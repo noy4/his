@@ -52,6 +52,22 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
   const now = options.now ?? Date.now()
   const sourceProfileId = ensureSourceProfile(db, profile) // find-or-create the profile row
   const watermark = getWatermark(db, sourceProfileId) // last ingested source id
+
+  // empty batch — don't touch the watermark; a real clear is detected on the next non-empty batch
+  // (with maxSeen = 0, detectCleared would falsely fire and reset the offset)
+  if (visits.length === 0)
+    return {
+      sourceProfileId,
+      seenVisits: 0,
+      processedVisits: 0,
+      insertedVisits: 0,
+      touchedUrls: 0,
+      cleared: false,
+      lastSourceVisitId: watermark.lastSourceVisitId,
+      sourceIdOffset: watermark.sourceIdOffset,
+      lastRunAt: now,
+    }
+
   const opaque = options.idPolicy === 'opaque' // opaque ids can't be compared — bypass watermark logic
 
   // highest source id in this batch
