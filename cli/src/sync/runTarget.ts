@@ -2,6 +2,7 @@ import type { DatabaseSync } from 'node:sqlite'
 import {
   applyVisits,
   getTargetFingerprint,
+  ID_MODES,
   parseChromiumStaging,
   parseFirefoxStaging,
   parseSafariStaging,
@@ -53,6 +54,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
       kind: target.source as SourceKind,
       displayName: target.displayName ?? null,
       profilePath: target.dbPath,
+      idMode: ID_MODES[target.source as SourceKind],
     }
     const result: ApplyVisitsResult = applyVisits({
       db,

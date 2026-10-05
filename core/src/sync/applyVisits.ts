@@ -5,6 +5,18 @@ import type { Watermark } from './watermarks.ts'
 
 export type SourceKind = 'chromium' | 'firefox' | 'safari' | 'takeout'
 
+// what a source's visit ids are — decides whether watermark logic may compare them
+// rowid: live browser dbs number visits with ordered rowids
+// hash: takeout synthesizes ids as content hashes, so magnitudes mean nothing
+export type IdMode = 'rowid' | 'hash'
+
+export const ID_MODES: Record<SourceKind, IdMode> = {
+  chromium: 'rowid',
+  firefox: 'rowid',
+  safari: 'rowid',
+  takeout: 'hash',
+}
+
 // one visit as parsed from a browser source
 export interface NativeVisit {
   sourceVisitId: number
@@ -18,11 +30,11 @@ export interface SourceProfileRef {
   kind: SourceKind
   displayName: string | null
   profilePath: string
+  idMode: IdMode
 }
 
 export interface ApplyVisitsOptions {
   full?: boolean
-  idPolicy?: 'monotonic' | 'opaque'
   now?: EpochMs
 }
 
@@ -43,13 +55,6 @@ export interface ApplyVisitsParams {
   profile: SourceProfileRef
   visits: NativeVisit[]
   options: ApplyVisitsOptions
-}
-
-// flow policy for one batch, decided before touching any rows
-export interface SkipState {
-  cleared: boolean
-  offset: number
-  skipBelow: number
 }
 
 // --- applyVisits ---
@@ -83,7 +88,12 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       maxSeen = visit.sourceVisitId
 
   // ids shrank vs the watermark → browser history was cleared → realign
-  const { cleared, offset, skipBelow } = computeSkip(watermark, maxSeen, options)
+  const { cleared, offset, skipBelow } = computeSkip({
+    watermark,
+    maxSeen,
+    idMode: profile.idMode,
+    full: options.full === true,
+  })
   let pending = 0
   for (const visit of visits)
     if (visit.sourceVisitId > skipBelow)
@@ -173,15 +183,29 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
 
 // --- helpers ---
 
+// flow policy for one batch, decided before touching any rows
+export interface SkipState {
+  cleared: boolean
+  offset: number
+  skipBelow: number
+}
+
+export interface ComputeSkipParams {
+  watermark: Watermark
+  maxSeen: number
+  idMode: IdMode
+  full: boolean
+}
+
 // decide cleared / offset / skipBelow from the watermark and this batch's ids
-export function computeSkip(watermark: Watermark, maxSeen: number, options: ApplyVisitsOptions): SkipState {
-  const opaque = options.idPolicy === 'opaque' // opaque ids can't be compared — bypass watermark logic
-  const cleared = !opaque && detectCleared(watermark, maxSeen)
-  const all = opaque || options.full === true || cleared
+export function computeSkip({ watermark, maxSeen, idMode, full }: ComputeSkipParams): SkipState {
+  const hashIds = idMode === 'hash' // hash ids carry no order — bypass watermark logic
+  const cleared = !hashIds && detectCleared(watermark, maxSeen)
+  const processAll = hashIds || full || cleared
   return {
     cleared,
     offset: cleared ? resetOffset(watermark) : watermark.sourceIdOffset,
-    skipBelow: all ? -1 : watermark.lastSourceVisitId,
+    skipBelow: processAll ? -1 : watermark.lastSourceVisitId,
   }
 }
 
