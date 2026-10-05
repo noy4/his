@@ -3,13 +3,14 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
+import { listDirs } from './dirs.ts'
 import type { NativeVisit } from '../applyVisits.ts'
 import type { SnapshotTarget } from '../snapshot.ts'
 
 // --- discovery ---
 
 export interface ChromiumApp {
-  slug: 'chrome' | 'edge' | 'brave' | 'vivaldi' | 'arc'
+  slug: 'chrome' | 'chromium' | 'edge' | 'brave' | 'vivaldi' | 'arc' | 'opera' | 'opera-gx'
   displayName: string
   userDir: string
 }
@@ -21,19 +22,24 @@ const CHROMIUM_APPS: Partial<Record<NodeJS.Platform, ChromiumApp[]>> = {
     { slug: 'brave', displayName: 'Brave', userDir: 'BraveSoftware/Brave-Browser' },
     { slug: 'vivaldi', displayName: 'Vivaldi', userDir: 'Vivaldi' },
     { slug: 'arc', displayName: 'Arc', userDir: 'Arc' },
+    { slug: 'opera', displayName: 'Opera', userDir: 'com.operasoftware.Opera' },
   ],
   win32: [
     { slug: 'chrome', displayName: 'Google Chrome', userDir: 'Google/Chrome' },
     { slug: 'edge', displayName: 'Microsoft Edge', userDir: 'Microsoft/Edge' },
     { slug: 'brave', displayName: 'Brave', userDir: 'BraveSoftware/Brave-Browser' },
     { slug: 'vivaldi', displayName: 'Vivaldi', userDir: 'Vivaldi' },
+    { slug: 'opera', displayName: 'Opera', userDir: 'Opera Software/Opera Stable' },
+    { slug: 'opera-gx', displayName: 'Opera GX', userDir: 'Opera Software/Opera GX Stable' },
   ],
   linux: [
     { slug: 'chrome', displayName: 'Google Chrome', userDir: 'google-chrome' },
+    { slug: 'chromium', displayName: 'Chromium', userDir: 'chromium' },
     { slug: 'edge', displayName: 'Microsoft Edge', userDir: 'microsoft-edge' },
     { slug: 'brave', displayName: 'Brave', userDir: 'BraveSoftware/Brave-Browser' },
     { slug: 'vivaldi', displayName: 'Vivaldi', userDir: 'vivaldi' },
     { slug: 'arc', displayName: 'Arc', userDir: 'Arc' },
+    { slug: 'opera', displayName: 'Opera', userDir: 'opera' },
   ],
 }
 
@@ -43,15 +49,14 @@ export function discoverChromiumProfiles(platform: NodeJS.Platform = process.pla
   for (const app of CHROMIUM_APPS[platform] ?? []) {
     const root = path.join(dataRoot, app.userDir)
     if (!fs.existsSync(root)) continue
-    for (const dir of fs.readdirSync(root, { withFileTypes: true })) {
-      if (!dir.isDirectory()) continue
-      if (NOISE_PROFILE_DIRS.has(dir.name)) continue
-      const dbPath = path.join(root, dir.name, 'History')
+    for (const dir of listDirs(root)) {
+      if (NOISE_PROFILE_DIRS.has(dir)) continue
+      const dbPath = path.join(root, dir, 'History')
       if (!fs.existsSync(dbPath)) continue
       targets.push({
         source: 'chromium',
-        profile: profileKey(app.slug, dir.name),
-        displayName: `${app.displayName} (${dir.name})`,
+        profile: profileKey(app.slug, dir),
+        displayName: `${app.displayName} (${dir})`,
         dbPath,
       })
     }
@@ -80,7 +85,7 @@ export function parseChromiumStaging(stagingHistoryPath: string): NativeVisit[] 
     )
     statement.setReadBigInts(true)
     const rows = statement.all() as unknown as ChromiumRow[]
-    return rows.map(toNativeVisit)
+    return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
   } finally {
     db.close()
   }
@@ -100,14 +105,17 @@ const CORE_TO_TRANSITION = new Map<number, Transition>([
   [8, 'RELOAD'],
 ])
 
-function toNativeVisit(row: ChromiumRow): NativeVisit {
+function toNativeVisit(row: ChromiumRow): NativeVisit | null {
+  const visitTime = webkitTimeToMs(row.visitTime)
+  // unset timestamps (0 or pre-Webkit garbage) would pollute first/last_visit_time
+  if (visitTime <= 0) return null
   const core = Number(row.transition) & CORE_MASK
   const mapped = CORE_TO_TRANSITION.get(core)
   return {
     sourceVisitId: Number(row.visitId),
     url: row.url,
     title: row.title ?? null,
-    visitTime: webkitTimeToMs(row.visitTime),
+    visitTime,
     transition: mapped ?? 'LINK',
   }
 }

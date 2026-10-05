@@ -3,6 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
+import { listDirs } from './dirs.ts'
 import type { NativeVisit } from '../applyVisits.ts'
 import type { SnapshotTarget } from '../snapshot.ts'
 
@@ -14,14 +15,13 @@ export function discoverFirefoxProfiles(platform: NodeJS.Platform = process.plat
   const roots = [dataRoot, path.join(dataRoot, 'Profiles')]
   for (const root of roots) {
     if (!fs.existsSync(root)) continue
-    for (const dir of fs.readdirSync(root, { withFileTypes: true })) {
-      if (!dir.isDirectory()) continue
-      const dbPath = path.join(root, dir.name, 'places.sqlite')
+    for (const dir of listDirs(root)) {
+      const dbPath = path.join(root, dir, 'places.sqlite')
       if (!fs.existsSync(dbPath)) continue
       targets.push({
         source: 'firefox',
-        profile: profileKey(dir.name),
-        displayName: `Firefox (${dir.name.replace(/^[^.]*\./, '')})`,
+        profile: profileKey(dir),
+        displayName: `Firefox (${dir.replace(/^[^.]*\./, '')})`,
         dbPath,
       })
     }
@@ -48,7 +48,7 @@ export function parseFirefoxStaging(stagingPlacesPath: string): NativeVisit[] {
     )
     statement.setReadBigInts(true)
     const rows = statement.all() as unknown as PlacesRow[]
-    return rows.map(toNativeVisit)
+    return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
   } finally {
     db.close()
   }
@@ -62,7 +62,9 @@ const PLACES_TO_TRANSITION = new Map<number, Transition>([
   [8, 'MANUAL_SUBFRAME'],
 ])
 
-function toNativeVisit(row: PlacesRow): NativeVisit {
+function toNativeVisit(row: PlacesRow): NativeVisit | null {
+  // unset visit_date (0 = epoch) would pollute first/last_visit_time
+  if (row.visitDate === 0n) return null
   const mapped = PLACES_TO_TRANSITION.get(Number(row.visitType))
   return {
     sourceVisitId: Number(row.visitId),

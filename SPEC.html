@@ -889,7 +889,7 @@ CREATE TABLE favicons (
           <tr><th>Kind</th><th>Source</th><th>Time → ms</th><th>Transition</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>chromium</code></td><td>History DB — Chrome / Edge / Brave / Vivaldi / Arc ...</td><td>WebKit µs (1601) → ms</td><td>Native enum</td></tr>
+          <tr><td><code>chromium</code></td><td>History DB — Chrome / Chromium / Edge / Brave / Vivaldi / Arc / Opera ...</td><td>WebKit µs (1601) → ms</td><td>Native enum</td></tr>
           <tr><td><code>firefox</code></td><td><code>places.sqlite</code></td><td>PRTime µs ÷ 1000</td><td>Places 1–8 → enum (below)</td></tr>
           <tr><td><code>safari</code></td><td><code>History.db</code></td><td>Core Data s (2001) + 978307200</td><td>Conservative → <code>LINK</code>, raw kept</td></tr>
           <tr><td><code>takeout</code></td><td><code>BrowserHistory.json</code> — 3 layouts</td><td><code>time_usec</code> ÷ 1000</td><td><code>page_transition</code> as-is</td></tr>
@@ -931,7 +931,7 @@ CREATE TABLE favicons (
         </thead>
         <tbody>
           <tr><td><code>sync</code></td><td>Run sync once — writes <code>history.db</code> directly. Prints per-source counts; errors exit 1</td></tr>
-          <tr><td><code>sync --browser &lt;slug&gt;</code></td><td>Limit to one browser — <code>chrome</code> / <code>edge</code> / <code>brave</code> / <code>vivaldi</code> / <code>arc</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code></td></tr>
+          <tr><td><code>sync --browser &lt;slug&gt;</code></td><td>Limit to one browser — <code>chrome</code> / <code>chromium</code> / <code>edge</code> / <code>brave</code> / <code>vivaldi</code> / <code>arc</code> / <code>opera</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code></td></tr>
           <tr><td><code>sync --profile &lt;dir&gt;</code></td><td>Limit to one profile dir (e.g. <code>Default</code>); combines with <code>--browser</code></td></tr>
           <tr><td><code>sync --full</code></td><td>Ignore watermarks and re-read everything (idempotent)</td></tr>
           <tr><td><code>serve</code></td><td>Foreground — HTTP + RPC + 6h sync loop with startup catch-up. <code>Ctrl+C</code> stops and removes the state file</td></tr>

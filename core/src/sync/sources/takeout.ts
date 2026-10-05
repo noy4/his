@@ -10,7 +10,7 @@ export function parseTakeoutStaging(stagingJsonPath: string): NativeVisit[] {
   const raw: unknown = JSON.parse(fs.readFileSync(stagingJsonPath, 'utf8'))
   const items = extractVisitArray(raw)
   if (items === null) throw new Error(`no visit array found in ${stagingJsonPath}`)
-  return items.flatMap(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+  return items.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
 }
 
 // --- helpers ---
