@@ -27,12 +27,20 @@ export function runSync(
     }
     for (const kind of kinds) {
       for (const target of discoverTargets(kind, home)) {
-        const outcome = runTarget({ db, home, target, options, hooks })
+        const result = runTarget({ db, home, target, options, hooks })
         summary.attempted += 1
-        if (outcome.failureLine !== null) summary.failures += 1
-        if (outcome.skipped) summary.skipped += 1
-        summary.insertedVisits += outcome.insertedVisits
-        summary.touchedUrls += outcome.touchedUrls
+        switch (result.status) {
+          case 'failure':
+            summary.failures += 1
+            break
+          case 'skipped':
+            summary.skipped += 1
+            break
+          case 'success':
+            summary.insertedVisits += result.insertedVisits
+            summary.touchedUrls += result.touchedUrls
+            break
+        }
       }
     }
     return summary

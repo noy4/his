@@ -21,16 +21,14 @@ interface RunTargetParams {
   hooks: SyncHooks
 }
 
-// failureLine = this target's label on failure; null = ok
-interface TargetOutcome {
-  failureLine: string | null
-  skipped: boolean
-  insertedVisits: number
-  touchedUrls: number
-}
+// status per target
+type RunTargetResult =
+  | { status: 'success'; insertedVisits: number; touchedUrls: number }
+  | { status: 'skipped' }
+  | { status: 'failure' }
 
 // One target's pipeline: gate → snapshot → parse → upsert. Never throws.
-export function runTarget(params: RunTargetParams): TargetOutcome {
+export function runTarget(params: RunTargetParams): RunTargetResult {
   const { db, home, target, options, hooks } = params
   const label = kindLabel(target)
 
@@ -42,12 +40,7 @@ export function runTarget(params: RunTargetParams): TargetOutcome {
       const stored = getTargetFingerprint(db, target.source as SourceKind, target.dbPath)
       if (stored === fingerprint) {
         hooks.onLog?.(`${label}: unchanged — skipped`)
-        return {
-          failureLine: null,
-          skipped: true,
-          insertedVisits: 0,
-          touchedUrls: 0,
-        }
+        return { status: 'skipped' }
       }
     }
 
@@ -77,8 +70,7 @@ export function runTarget(params: RunTargetParams): TargetOutcome {
     hooks.onLog?.(`${label}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
 
     return {
-      failureLine: null,
-      skipped: false,
+      status: 'success',
       insertedVisits: result.insertedVisits,
       touchedUrls: result.touchedUrls,
     }
@@ -86,12 +78,7 @@ export function runTarget(params: RunTargetParams): TargetOutcome {
     // one error line, then the loop carries on with the next target
     hooks.onError?.(`${label}: ${error instanceof Error ? error.message : String(error)}`)
 
-    return {
-      failureLine: label,
-      skipped: false,
-      insertedVisits: 0,
-      touchedUrls: 0,
-    }
+    return { status: 'failure' }
   }
 }
 
