@@ -7,18 +7,6 @@ import { serveCommand } from './src/serve.ts'
 import { status, stop } from './src/status.ts'
 import { sync } from './src/sync.ts'
 
-interface CommandOptions {
-  home?: string
-  source?: string
-  full?: boolean
-  url?: string
-  from?: string
-  to?: string
-  limit?: string
-  port?: string
-  open?: boolean
-}
-
 const cli = cac('his')
 
 cli.option('--home <dir>', 'archive home (env: HIS_HOME, default ~/.his)')
@@ -27,7 +15,7 @@ cli
   .command('sync', 'run sync once (kinds: chromium firefox safari takeout)')
   .option('--source <kind>', 'limit to one source instead of all')
   .option('--full', 'ignore watermarks and re-read everything (idempotent)')
-  .action((opts: CommandOptions) => sync(resolveHome(opts.home), {
+  .action((opts) => sync(resolveHome(opts.home), {
     source: opts.source,
     full: opts.full
   }))
@@ -38,7 +26,7 @@ cli
   .option('--from <ms|date>', 'from timestamp')
   .option('--to <ms|date>', 'to timestamp')
   .option('--limit <n>', 'max results')
-  .action((text: string[], opts: CommandOptions) =>
+  .action((text: string[], opts) =>
     query(resolveHome(opts.home), {
       text,
       url: opts.url,
@@ -49,17 +37,17 @@ cli
 
 cli
   .command('status', 'print the running instance (url + archive)')
-  .action((opts: CommandOptions) => status(resolveHome(opts.home)))
+  .action((opts) => status(resolveHome(opts.home)))
 
 cli
   .command('stop', 'SIGTERM the running instance')
-  .action((opts: CommandOptions) => stop(resolveHome(opts.home)))
+  .action((opts) => stop(resolveHome(opts.home)))
 
 cli
   .command('serve', 'start http + rpc')
   .option('--port <n>', 'port to bind (default 4477); +1 on conflict')
   .option('--open', 'open the WebUI once the port is bound')
-  .action((opts: CommandOptions) => serveCommand({
+  .action((opts) => serveCommand({
     home: resolveHome(opts.home),
     port: opts.port,
     open: opts.open,
