@@ -97,7 +97,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
     watermark,
     maxSeen,
     idMode: profile.idMode,
-    full: options.full === true,
+    full: options.full,
   })
   const pending = processAll ? visits.length : aboveWatermark
 
@@ -179,7 +179,7 @@ export interface ComputeSkipParams {
   watermark: Watermark
   maxSeen: number
   idMode: IdMode
-  full: boolean
+  full?: boolean
 }
 
 // decide cleared / offset / skipBelow from the watermark and this batch's ids
@@ -239,16 +239,13 @@ export function resolveUrlId(stmts: ApplyStatements, urlIds: Map<string, number>
   return id
 }
 
+// upsert the profile row and return its id
 export function ensureSourceProfile(db: DatabaseSync, profile: SourceProfileRef): number {
-  db.prepare('INSERT OR IGNORE INTO source_profiles (kind, display_name, profile_path) VALUES (?, ?, ?)').run(
-    profile.kind,
-    profile.displayName,
-    profile.profilePath,
-  )
-  const row = db.prepare('SELECT id FROM source_profiles WHERE kind = ? AND profile_path = ?').get(
-    profile.kind,
-    profile.profilePath,
-  ) as { id: number } | undefined
+  const row = db
+    .prepare(
+      'INSERT INTO source_profiles (kind, display_name, profile_path) VALUES (?, ?, ?) ON CONFLICT(kind, profile_path) DO UPDATE SET display_name = COALESCE(excluded.display_name, display_name) RETURNING id',
+    )
+    .get(profile.kind, profile.displayName, profile.profilePath) as { id: number } | undefined
   if (row === undefined)
     throw new Error(`failed to register source profile ${profile.kind}:${profile.profilePath}`)
   return Number(row.id)

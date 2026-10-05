@@ -37,7 +37,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     // check fingerprint (--full bypasses)
     const fingerprint = probeFingerprint(target.dbPath)
 
-    if (options.full !== true) {
+    if (!options.full) {
       const stored = getTargetFingerprint(db, target.source as SourceKind, target.dbPath)
       if (stored === fingerprint) {
         hooks.onLog?.(`${label}: unchanged — skipped`)
@@ -61,7 +61,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
       profile,
       visits,
       options: {
-        full: options.full ?? false,
+        full: options.full,
         now: Date.now(),
       },
     })
