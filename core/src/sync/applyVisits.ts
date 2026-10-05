@@ -81,23 +81,25 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       lastRunAt: now,
     }
 
-  // highest source id in this batch
+  // one pre-pass: highest source id in this batch, plus how many are past the ingested watermark
   let maxSeen = 0
-  for (const visit of visits)
-    if (visit.sourceVisitId > maxSeen)
-      maxSeen = visit.sourceVisitId
+  let aboveWatermark = 0
+  for (const visit of visits) {
+    const id = visit.sourceVisitId
+    if (id > maxSeen)
+      maxSeen = id
+    if (id > watermark.lastSourceVisitId)
+      aboveWatermark += 1
+  }
 
   // ids shrank vs the watermark → browser history was cleared → realign
-  const { cleared, offset, skipBelow } = computeSkip({
+  const { cleared, offset, skipBelow, processAll } = computeSkip({
     watermark,
     maxSeen,
     idMode: profile.idMode,
     full: options.full === true,
   })
-  let pending = 0
-  for (const visit of visits)
-    if (visit.sourceVisitId > skipBelow)
-      pending += 1
+  const pending = processAll ? visits.length : aboveWatermark
 
   // sql
   const insertUrl = db.prepare(
@@ -186,6 +188,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
 // flow policy for one batch, decided before touching any rows
 export interface SkipState {
   cleared: boolean
+  processAll: boolean
   offset: number
   skipBelow: number
 }
@@ -204,6 +207,7 @@ export function computeSkip({ watermark, maxSeen, idMode, full }: ComputeSkipPar
   const processAll = hashIds || full || cleared
   return {
     cleared,
+    processAll,
     offset: cleared ? resetOffset(watermark) : watermark.sourceIdOffset,
     skipBelow: processAll ? -1 : watermark.lastSourceVisitId,
   }
