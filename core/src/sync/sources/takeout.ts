@@ -49,10 +49,11 @@ export function stableVisitHash(url: string, visitTimeMs: EpochMs): number {
   return Number(digest.readBigUInt64BE(0) & MAX_SAFE_HASH)
 }
 
+// profile key; 'takeout' lives in SnapshotTarget.browser
 export function takeoutProfileKey(jsonPath: string): string {
   const stem = path.basename(jsonPath).replace(/\.json$/i, '')
   const slug = stem.replace(/[^A-Za-z0-9._-]+/g, '-')
-  return `takeout-${slug}-${createHash('sha256').update(path.resolve(jsonPath)).digest('hex').slice(0, 8)}`
+  return `${slug}-${createHash('sha256').update(path.resolve(jsonPath)).digest('hex').slice(0, 8)}`
 }
 
 const TAKEOUT_TIME_UTC = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?) UTC$/

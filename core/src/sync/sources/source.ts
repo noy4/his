@@ -30,9 +30,30 @@ export const SOURCES: Record<SourceKind, new (target: SnapshotTarget, home: stri
   takeout: TakeoutSource,
 }
 
-// dispatch by kind
+// slug to engine; keep in sync with CHROMIUM_APPS
+const KIND_OF_BROWSER: Record<string, SourceKind> = {
+  chrome: 'chromium',
+  chromium: 'chromium',
+  edge: 'chromium',
+  brave: 'chromium',
+  vivaldi: 'chromium',
+  arc: 'chromium',
+  opera: 'chromium',
+  'opera-gx': 'chromium',
+  firefox: 'firefox',
+  safari: 'safari',
+  takeout: 'takeout',
+}
+
+// parse engine for a browser slug
+export function kindOfBrowser(browser: string): SourceKind {
+  const kind = KIND_OF_BROWSER[browser]
+  if (kind === undefined) throw new Error(`unknown browser: ${browser}`)
+  return kind
+}
+
+// dispatch by browser
 export function createSource(target: SnapshotTarget, home: string): ProfileSource {
-  const Class = SOURCES[target.source as SourceKind]
-  if (Class === undefined) throw new Error(`unknown source: ${target.source}`)
+  const Class = SOURCES[kindOfBrowser(target.browser)]
   return new Class(target, home)
 }

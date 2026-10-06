@@ -35,27 +35,13 @@ function discoverForKind(kind: SourceKind, home: string): SnapshotTarget[] {
   }
 }
 
-// browser/profile as surfaced by the profile key:
-// '<browser>-<dir>' for chromium/firefox/takeout (chromium carries the app slug, e.g. brave),
-// bare 'default' for safari
-function selector(target: SnapshotTarget): { browser: string, profile: string } {
-  const prefix = `${target.source}-`
-  if (target.profile.startsWith(prefix))
-    return { browser: target.source, profile: target.profile.slice(prefix.length) }
-  const cut = target.profile.indexOf('-')
-  if (cut === -1)
-    return { browser: target.source, profile: target.profile }
-  return { browser: target.profile.slice(0, cut), profile: target.profile.slice(cut + 1) }
-}
-
-// normalize the filter the same way discovery slugified its dirs
+// normalize user input the way discovery slugified its dirs
 const DIR_PATTERN = /[^A-Za-z0-9._-]+/g
 
 function targetMatches(target: SnapshotTarget, filter: TargetFilter): boolean {
-  const sel = selector(target)
-  if (filter.browser !== undefined && sel.browser !== filter.browser)
+  if (filter.browser !== undefined && target.browser !== filter.browser)
     return false
-  if (filter.profile !== undefined && sel.profile !== filter.profile.replace(DIR_PATTERN, '-'))
+  if (filter.profile !== undefined && target.profile !== filter.profile.replace(DIR_PATTERN, '-'))
     return false
   return true
 }
@@ -69,7 +55,7 @@ function takeoutTargets(home: string): SnapshotTarget[] {
     .map((name) => {
       const dbPath = path.join(dir, name)
       return {
-        source: 'takeout' as const,
+        browser: 'takeout' as const,
         profile: takeoutProfileKey(dbPath),
         displayName: `Takeout (${name})`,
         dbPath,

@@ -14,7 +14,7 @@ export function discoverSafariProfiles(platform: NodeJS.Platform = process.platf
   if (platform !== 'darwin' || home === null) return []
   const dbPath = path.join(home, 'Library', 'Safari', 'History.db')
   if (!fs.existsSync(dbPath)) return []
-  return [{ source: 'safari', profile: 'default', dbPath }]
+  return [{ browser: 'safari', profile: 'default', dbPath }]
 }
 
 // --- parse ---

@@ -21,8 +21,8 @@ export function discoverFirefoxProfiles(platform: NodeJS.Platform = process.plat
       const dbPath = path.join(root, dir, 'places.sqlite')
       if (!fs.existsSync(dbPath)) continue
       targets.push({
-        source: 'firefox',
-        profile: profileKey(dir),
+        browser: 'firefox',
+        profile: slugifyDir(dir),
         displayName: `Firefox (${dir.replace(/^[^.]*\./, '')})`,
         dbPath,
       })
@@ -117,6 +117,6 @@ function firefoxDataRoot(platform: NodeJS.Platform): string | null {
   return null
 }
 
-function profileKey(dir: string): string {
-  return `firefox-${dir.replace(/[^A-Za-z0-9._-]+/g, '-')}`
+function slugifyDir(dir: string): string {
+  return dir.replace(/[^A-Za-z0-9._-]+/g, '-')
 }

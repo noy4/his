@@ -56,14 +56,14 @@ export function discoverChromiumProfiles(platform: NodeJS.Platform = process.pla
       const dbPath = path.join(root, dir, 'History')
       if (!fs.existsSync(dbPath)) continue
       targets.push({
-        source: 'chromium',
-        profile: profileKey(app.slug, dir),
+        browser: app.slug,
+        profile: slugifyDir(dir),
         displayName: `${app.displayName} (${dir})`,
         dbPath,
       })
     }
   }
-  targets.sort((x, y) => x.profile.localeCompare(y.profile))
+  targets.sort((x, y) => x.browser.localeCompare(y.browser) || x.profile.localeCompare(y.profile))
   return targets
 }
 
@@ -162,6 +162,6 @@ function platformDataRoot(platform: NodeJS.Platform): string | null {
   return null
 }
 
-function profileKey(slug: string, dir: string): string {
-  return `${slug}-${dir.replace(/[^A-Za-z0-9._-]+/g, '-')}`
+function slugifyDir(dir: string): string {
+  return dir.replace(/[^A-Za-z0-9._-]+/g, '-')
 }

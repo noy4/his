@@ -3,7 +3,8 @@ import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 
 export interface SnapshotTarget {
-  source: string
+  // browser slug
+  browser: string
   profile: string
   displayName?: string
   dbPath: string
@@ -18,7 +19,7 @@ export interface SnapshotResult {
 const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
 
 export function snapshot(target: SnapshotTarget, home: string): SnapshotResult {
-  const staging = stagingPath(home, target.source, target.profile)
+  const staging = stagingPath(home, target.browser, target.profile)
   fs.mkdirSync(staging, { recursive: true })
   const snapshotPath = path.join(staging, path.basename(target.dbPath))
 
@@ -31,8 +32,8 @@ export function snapshot(target: SnapshotTarget, home: string): SnapshotResult {
   return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via }
 }
 
-export function stagingPath(home: string, source: string, profile: string): string {
-  return path.join(home, 'staging', source, profile)
+export function stagingPath(home: string, browser: string, profile: string): string {
+  return path.join(home, 'staging', browser, profile)
 }
 
 function isJson(dbPath: string): boolean {
