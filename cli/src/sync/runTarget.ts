@@ -1,16 +1,11 @@
 import type { DatabaseSync } from 'node:sqlite'
 import {
   applyVisits,
+  createSource,
   getTargetFingerprint,
-  ID_MODES,
-  parseChromiumStaging,
-  parseFirefoxStaging,
-  parseSafariStaging,
-  parseTakeoutStaging,
   setTargetFingerprint,
-  snapshot,
 } from '@his/core'
-import type { ApplyVisitsResult, SnapshotTarget, SourceKind } from '@his/core'
+import type { ApplyVisitsResult, SnapshotTarget } from '@his/core'
 import type { SyncHooks, SyncOptions } from './types.ts'
 import { probeFingerprint } from './fingerprint.ts'
 
@@ -22,23 +17,23 @@ interface RunTargetParams {
   hooks: SyncHooks
 }
 
-// status per target
 type RunTargetResult =
   | { status: 'success'; insertedVisits: number; touchedUrls: number }
   | { status: 'skipped' }
   | { status: 'failure' }
 
-// One target's pipeline: gate → snapshot → parse → upsert. Never throws.
 export function runTarget(params: RunTargetParams): RunTargetResult {
   const { db, home, target, options, hooks } = params
   const label = kindLabel(target)
 
   try {
+    const source = createSource(target)
+
     // check fingerprint (--full bypasses)
-    const fingerprint = probeFingerprint(target.dbPath)
+    const fingerprint = probeFingerprint(source.profilePath)
 
     if (!options.full) {
-      const stored = getTargetFingerprint(db, target.source as SourceKind, target.dbPath)
+      const stored = getTargetFingerprint(db, source.kind, source.profilePath)
       if (stored === fingerprint) {
         hooks.onLog?.(`${label}: unchanged — skipped`)
         return { status: 'skipped' }
@@ -46,19 +41,13 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     }
 
     // snapshot and parse
-    const snap = snapshot(target, home)
-    const visits = parseForKind(target.source as SourceKind, snap.path)
+    const snap = source.snapshot(home)
+    const visits = source.parse(snap.path)
 
     // upsert visits
-    const profile = {
-      kind: target.source as SourceKind,
-      displayName: target.displayName ?? null,
-      profilePath: target.dbPath,
-      idMode: ID_MODES[target.source as SourceKind],
-    }
     const result: ApplyVisitsResult = applyVisits({
       db,
-      profile,
+      profile: source,
       visits,
       options: {
         full: options.full,
@@ -81,20 +70,6 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     hooks.onError?.(`${label}: ${error instanceof Error ? error.message : String(error)}`)
 
     return { status: 'failure' }
-  }
-}
-
-// staging file → visits, by source kind
-function parseForKind(kind: SourceKind, snapshotPath: string) {
-  switch (kind) {
-    case 'chromium':
-      return parseChromiumStaging(snapshotPath)
-    case 'firefox':
-      return parseFirefoxStaging(snapshotPath)
-    case 'safari':
-      return parseSafariStaging(snapshotPath)
-    case 'takeout':
-      return parseTakeoutStaging(snapshotPath)
   }
 }
 

@@ -5,17 +5,10 @@ import type { Watermark } from './watermarks.ts'
 
 export type SourceKind = 'chromium' | 'firefox' | 'safari' | 'takeout'
 
-// what a source's visit ids are — decides whether watermark logic may compare them
+// id semantics: rowid is comparable, hash is not
 // rowid: live browser dbs number visits with ordered rowids
 // hash: takeout synthesizes ids as content hashes, so magnitudes mean nothing
 export type IdMode = 'rowid' | 'hash'
-
-export const ID_MODES: Record<SourceKind, IdMode> = {
-  chromium: 'rowid',
-  firefox: 'rowid',
-  safari: 'rowid',
-  takeout: 'hash',
-}
 
 // one visit as parsed from a browser source
 export interface NativeVisit {
@@ -66,8 +59,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
   const sourceProfileId = ensureSourceProfile(db, profile) // find-or-create the profile row
   const watermark = getWatermark(db, sourceProfileId) // last ingested source id
 
-  // empty batch — don't touch the watermark; a real clear is detected on the next non-empty batch
-  // (with maxSeen = 0, detectCleared would falsely fire and reset the offset)
+  // empty batch: don't touch the watermark, a real clear shows on the next batch
   if (visits.length === 0)
     return {
       sourceProfileId,
@@ -81,7 +73,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       lastRunAt: now,
     }
 
-  // one pre-pass: highest source id in this batch, plus how many are past the ingested watermark
+  // pre-pass: batch max id and the count past the watermark
   let maxSeen = 0
   let aboveWatermark = 0
   for (const visit of visits) {
@@ -92,7 +84,7 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
       aboveWatermark += 1
   }
 
-  // ids shrank vs the watermark → browser history was cleared → realign
+  // id space shrank vs the watermark: history was cleared, realign
   const { cleared, offset, skipBelow, processAll } = computeSkip({
     watermark,
     maxSeen,
@@ -184,7 +176,7 @@ export interface ComputeSkipParams {
 
 // decide cleared / offset / skipBelow from the watermark and this batch's ids
 export function computeSkip({ watermark, maxSeen, idMode, full }: ComputeSkipParams): SkipState {
-  const hashIds = idMode === 'hash' // hash ids carry no order — bypass watermark logic
+  const hashIds = idMode === 'hash' // hash ids carry no order, skip watermark logic
   const cleared = !hashIds && detectCleared(watermark, maxSeen)
   const processAll = hashIds || full || cleared
   return {
@@ -218,7 +210,7 @@ export function prepareApplyStatements(db: DatabaseSync): ApplyStatements {
   }
 }
 
-// find or create the url row for the visit, remembering resolved ids for the batch
+// find or create the url row, memoized per batch
 export function resolveUrlId(stmts: ApplyStatements, urlIds: Map<string, number>, visit: NativeVisit): number {
   const cached = urlIds.get(visit.url)
   if (cached !== undefined)

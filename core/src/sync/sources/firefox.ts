@@ -3,9 +3,11 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
+import type { IdMode, NativeVisit } from '../applyVisits.ts'
+import { snapshot } from '../snapshot.ts'
+import type { SnapshotResult, SnapshotTarget } from '../snapshot.ts'
 import { listDirs } from './dirs.ts'
-import type { NativeVisit } from '../applyVisits.ts'
-import type { SnapshotTarget } from '../snapshot.ts'
+import type { ProfileSource } from './source.ts'
 
 // --- discovery ---
 
@@ -40,23 +42,44 @@ interface PlacesRow {
   title: string | null
 }
 
-export function parseFirefoxStaging(stagingPlacesPath: string): NativeVisit[] {
-  const db = new DatabaseSync(stagingPlacesPath, { readOnly: true })
-  try {
-    const statement = db.prepare(
-      'SELECT h.id AS visitId, h.visit_date AS visitDate, h.visit_type AS visitType, p.url AS url, p.title AS title FROM moz_historyvisits h JOIN moz_places p ON p.id = h.place_id ORDER BY h.id',
-    )
-    statement.setReadBigInts(true)
-    const rows = statement.all() as unknown as PlacesRow[]
-    return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
-  } finally {
-    db.close()
+// one firefox profile
+export class FirefoxSource implements ProfileSource {
+  readonly kind = 'firefox' as const
+
+  readonly idMode: IdMode = 'rowid'
+
+  readonly displayName: string | null
+
+  readonly profilePath: string
+
+  readonly #target: SnapshotTarget
+
+  constructor(target: SnapshotTarget) {
+    this.#target = target
+    this.displayName = target.displayName ?? null
+    this.profilePath = target.dbPath
+  }
+
+  snapshot(home: string): SnapshotResult {
+    return snapshot(this.#target, home)
+  }
+
+  parse(path: string): NativeVisit[] {
+    const db = new DatabaseSync(path, { readOnly: true })
+    try {
+      const statement = db.prepare(
+        'SELECT h.id AS visitId, h.visit_date AS visitDate, h.visit_type AS visitType, p.url AS url, p.title AS title FROM moz_historyvisits h JOIN moz_places p ON p.id = h.place_id ORDER BY h.id',
+      )
+      statement.setReadBigInts(true)
+      const rows = statement.all() as unknown as PlacesRow[]
+      return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+    } finally {
+      db.close()
+    }
   }
 }
 
-// places visit_type → TransitionType. 5/6 (redirects) and 7 (download) have no
-// enum value — chrome.history reports redirect chains as link, so they fall
-// through to the link default
+// places visit_type to TransitionType; 5/6/7 have no enum value and fall back to link
 const PLACES_TO_TRANSITION = new Map<number, Transition>([
   [1, 'link'],
   [2, 'typed'],

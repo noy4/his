@@ -44,7 +44,7 @@ function selector(target: SnapshotTarget): { browser: string, profile: string } 
   return { browser: target.profile.slice(0, cut), profile: target.profile.slice(cut + 1) }
 }
 
-// dir parts are slugified at discovery — normalize the filter the same way before comparing
+// normalize the filter the same way discovery slugified its dirs
 const DIR_PATTERN = /[^A-Za-z0-9._-]+/g
 
 function targetMatches(target: SnapshotTarget, filter: TargetFilter): boolean {

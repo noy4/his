@@ -3,9 +3,11 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
+import type { IdMode, NativeVisit } from '../applyVisits.ts'
+import { snapshot } from '../snapshot.ts'
+import type { SnapshotResult, SnapshotTarget } from '../snapshot.ts'
 import { listDirs } from './dirs.ts'
-import type { NativeVisit } from '../applyVisits.ts'
-import type { SnapshotTarget } from '../snapshot.ts'
+import type { ProfileSource } from './source.ts'
 
 // --- discovery ---
 
@@ -65,8 +67,6 @@ export function discoverChromiumProfiles(platform: NodeJS.Platform = process.pla
   return targets
 }
 
-// --- parse ---
-
 const NOISE_PROFILE_DIRS = new Set(['System Profile', 'Guest Profile'])
 
 interface ChromiumRow {
@@ -77,17 +77,40 @@ interface ChromiumRow {
   title: string | null
 }
 
-export function parseChromiumStaging(stagingHistoryPath: string): NativeVisit[] {
-  const db = new DatabaseSync(stagingHistoryPath, { readOnly: true })
-  try {
-    const statement = db.prepare(
-      'SELECT v.id AS visitId, v.visit_time AS visitTime, v.transition AS transition, u.url AS url, u.title AS title FROM visits v JOIN urls u ON u.id = v.url ORDER BY v.id',
-    )
-    statement.setReadBigInts(true)
-    const rows = statement.all() as unknown as ChromiumRow[]
-    return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
-  } finally {
-    db.close()
+// one chromium profile
+export class ChromiumSource implements ProfileSource {
+  readonly kind = 'chromium' as const
+
+  readonly idMode: IdMode = 'rowid'
+
+  readonly displayName: string | null
+
+  readonly profilePath: string
+
+  readonly #target: SnapshotTarget
+
+  constructor(target: SnapshotTarget) {
+    this.#target = target
+    this.displayName = target.displayName ?? null
+    this.profilePath = target.dbPath
+  }
+
+  snapshot(home: string): SnapshotResult {
+    return snapshot(this.#target, home)
+  }
+
+  parse(path: string): NativeVisit[] {
+    const db = new DatabaseSync(path, { readOnly: true })
+    try {
+      const statement = db.prepare(
+        'SELECT v.id AS visitId, v.visit_time AS visitTime, v.transition AS transition, u.url AS url, u.title AS title FROM visits v JOIN urls u ON u.id = v.url ORDER BY v.id',
+      )
+      statement.setReadBigInts(true)
+      const rows = statement.all() as unknown as ChromiumRow[]
+      return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+    } finally {
+      db.close()
+    }
   }
 }
 

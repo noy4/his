@@ -2,15 +2,41 @@ import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import type { EpochMs, Transition } from '../../model.ts'
-import type { NativeVisit } from '../applyVisits.ts'
+import type { IdMode, NativeVisit } from '../applyVisits.ts'
+import { snapshot } from '../snapshot.ts'
+import type { SnapshotResult, SnapshotTarget } from '../snapshot.ts'
+import type { ProfileSource } from './source.ts'
 
-// --- parse ---
+// --- source ---
 
-export function parseTakeoutStaging(stagingJsonPath: string): NativeVisit[] {
-  const raw: unknown = JSON.parse(fs.readFileSync(stagingJsonPath, 'utf8'))
-  const items = extractVisitArray(raw)
-  if (items === null) throw new Error(`no visit array found in ${stagingJsonPath}`)
-  return items.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+// one takeout export
+export class TakeoutSource implements ProfileSource {
+  readonly kind = 'takeout' as const
+
+  readonly idMode: IdMode = 'hash'
+
+  readonly displayName: string | null
+
+  readonly profilePath: string
+
+  readonly #target: SnapshotTarget
+
+  constructor(target: SnapshotTarget) {
+    this.#target = target
+    this.displayName = target.displayName ?? null
+    this.profilePath = target.dbPath
+  }
+
+  snapshot(home: string): SnapshotResult {
+    return snapshot(this.#target, home)
+  }
+
+  parse(path: string): NativeVisit[] {
+    const raw: unknown = JSON.parse(fs.readFileSync(path, 'utf8'))
+    const items = extractVisitArray(raw)
+    if (items === null) throw new Error(`no visit array found in ${path}`)
+    return items.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+  }
 }
 
 // --- helpers ---
@@ -41,8 +67,7 @@ export function parseTakeoutTime(text: string): EpochMs | null {
   return Number.isNaN(parsed) ? null : parsed
 }
 
-// takeout's page_transition strings are uppercase — map to the lowercase
-// WebExtensions values we store
+// takeout page_transition strings are uppercase; map to the lowercase enum
 const NAME_TO_TRANSITION = new Map<string, Transition>([
   ['LINK', 'link'],
   ['TYPED', 'typed'],
