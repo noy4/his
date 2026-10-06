@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import fs from 'node:fs'
 import http from 'node:http'
-import { open } from '@his/core'
+import { initDb } from '@his/core'
 import { historyDbPath } from '../home.ts'
 import { createApp } from './app.ts'
 import { createNodeHandler } from './node.ts'
@@ -38,7 +38,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
 
   fs.mkdirSync(home, { recursive: true })
 
-  const db = await open(historyDbPath(home))
+  const db = await initDb(historyDbPath(home))
   const token = randomBytes(24).toString('base64url')
 
   const distRoot = resolveDistRoot(options.dist ?? process.env.HIS_DIST)

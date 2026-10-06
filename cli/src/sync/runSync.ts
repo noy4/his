@@ -1,4 +1,4 @@
-import { createSource, open } from '@his/core'
+import { createSource, initDb } from '@his/core'
 import { historyDbPath } from '../home.ts'
 import type { SyncHooks, SyncOptions, SyncSummary } from './types.ts'
 import { discoverAllTargets } from './discover.ts'
@@ -9,7 +9,7 @@ export async function runSync(
   options: SyncOptions = {},
   hooks: SyncHooks = {},
 ): Promise<SyncSummary> {
-  const db = await open(historyDbPath(home))
+  const db = await initDb(historyDbPath(home))
   try {
     const summary: SyncSummary = {
       attempted: 0,

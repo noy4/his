@@ -2,30 +2,42 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { DatabaseSync } from 'node:sqlite'
-import type { CodeMigration, Migration } from './migration.ts'
-
-export type { CodeMigration, Migration } from './migration.ts'
 
 export interface OpenOptions {
   busyTimeout?: number
 }
 
+// one migration step: raw sql, or a code migration
+export type Migration = string | CodeMigration
+
+export interface CodeMigration {
+  // foreign keys must toggle off outside a transaction while rows move
+  foreignKeys?: false
+  up(db: DatabaseSync): void
+}
+
 // migrations live in db/migrations as NNN_name.sql (raw) or NNN_name.ts
-// (default-exported CodeMigration). Loaded per open() — keeps load-time
+// (default-exported CodeMigration). Loaded per initDb() — keeps load-time
 // effects out of this module and lets bundlers drop it when unused.
 const MIGRATIONS_DIR = 'migrations'
 
-export async function open(dbPath: string, options: OpenOptions = {}): Promise<DatabaseSync> {
+// archive db, ready to use: pragmas applied, migrations current
+export async function initDb(dbPath: string, options: OpenOptions = {}): Promise<DatabaseSync> {
+  const db = open(dbPath, options)
+  await migrate(db)
+  return db
+}
+
+export function open(dbPath: string, options: OpenOptions = {}): DatabaseSync {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true })
   const db = new DatabaseSync(dbPath)
   db.exec('PRAGMA journal_mode = WAL')
   db.exec('PRAGMA foreign_keys = ON')
   db.exec(`PRAGMA busy_timeout = ${options.busyTimeout ?? 5000}`)
-  await migrate(db)
   return db
 }
 
-async function migrate(db: DatabaseSync): Promise<void> {
+export async function migrate(db: DatabaseSync): Promise<void> {
   const row = db.prepare('PRAGMA user_version').get()
   let version = row === undefined ? 0 : Number(row.user_version)
   const migrations = await loadMigrations()

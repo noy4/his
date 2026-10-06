@@ -1,6 +1,5 @@
-export * from './db/migration.ts'
+export * from './db/db.ts'
 export * from './db/mutate.ts'
-export * from './db/open.ts'
 export * from './db/query.ts'
 export * from './db/stats.ts'
 export * from './model.ts'

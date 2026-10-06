@@ -1,6 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite'
 import path from 'node:path'
-import type { CodeMigration } from '../migration.ts'
+import type { CodeMigration } from '../db.ts'
 import { CHROMIUM_APPS, slugifyDir } from '../../sync/sources/chromium.ts'
 import { takeoutProfileKey } from '../../sync/sources/takeout.ts'
 
