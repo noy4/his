@@ -1,4 +1,4 @@
-import { SourceCard } from '@/components/SourceCard'
+import { SourceCard } from './SourceCard'
 import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/models/app'
 import { sourceKey } from '@/models/sources'
