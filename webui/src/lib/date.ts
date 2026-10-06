@@ -43,3 +43,16 @@ export function dayEndMs(iso: string): number | null {
   const d = dayjs(iso)
   return d.isValid() ? d.endOf('day').valueOf() : null
 }
+
+const DAY_MS = 86_400_000
+
+// → 'today' · 'yesterday' · '5d ago' · '3mo ago' · '2y ago' · null → '—'
+export function relativeAgo(epoch: number | null): string {
+  if (epoch === null || epoch === 0) return '—'
+  const days = Math.floor((Date.now() - epoch) / DAY_MS)
+  if (days <= 0) return 'today'
+  if (days === 1) return 'yesterday'
+  if (days < 30) return `${days}d ago`
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`
+  return `${Math.floor(days / 365)}y ago`
+}

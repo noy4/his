@@ -1,6 +1,7 @@
 import type { HisApi } from '@/api'
 import { signal } from '@preact/signals-react'
 import { HistoryModel } from '@/models/history'
+import { SourcesModel } from '@/models/sources'
 import { createApi } from '@/rpc/client'
 
 export class AppModel {
@@ -8,6 +9,7 @@ export class AppModel {
   readonly view = signal('timeline')
   readonly filters: FilterModel
   readonly history: HistoryModel
+  readonly sources: SourcesModel
 
   constructor(api = createApi()) {
     this.api = api
@@ -17,6 +19,7 @@ export class AppModel {
       from: this.filters.from,
       to: this.filters.to,
     })
+    this.sources = new SourcesModel()
   }
 
   setView(next: string): void {
