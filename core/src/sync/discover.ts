@@ -1,12 +1,9 @@
-import fs from 'node:fs'
-import path from 'node:path'
 import type { SnapshotTarget } from './snapshot.ts'
-import { takeoutDir } from '../paths.ts'
 import { discoverChromiumBrowser } from './sources/chromium.ts'
 import { discoverFirefoxProfiles } from './sources/firefox.ts'
 import { discoverSafariProfiles } from './sources/safari.ts'
 import { KNOWN_BROWSERS, kindOfBrowser } from './sources/source.ts'
-import { takeoutProfileKey } from './sources/takeout.ts'
+import { takeoutTargets } from './sources/takeout.ts'
 
 // discover one browser's profiles on this machine
 export function discoverBrowser(home: string, browser: string): SnapshotTarget[] {
@@ -56,21 +53,4 @@ export function resolveTargets(home: string, targets: string[] | undefined): Sna
       return token.slice(0, at) === target.browser && target.profile === profile
     })
   })
-}
-
-function takeoutTargets(home: string): SnapshotTarget[] {
-  const dir = takeoutDir(home)
-  if (!fs.existsSync(dir)) return []
-  return fs.readdirSync(dir)
-    .filter((name) => name.endsWith('.json'))
-    .sort()
-    .map((name) => {
-      const dbPath = path.join(dir, name)
-      return {
-        browser: 'takeout' as const,
-        profile: takeoutProfileKey(dbPath),
-        displayName: `Takeout (${name})`,
-        dbPath,
-      }
-    })
 }

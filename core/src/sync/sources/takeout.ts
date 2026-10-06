@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
+import { takeoutDir } from '../../paths.ts'
 import type { EpochMs, Transition } from '../../model.ts'
 import type { IdMode, NativeVisit } from '../applyVisits.ts'
 import { snapshot } from '../snapshot.ts'
@@ -40,6 +41,25 @@ export class TakeoutSource implements ProfileSource {
     if (items === null) throw new Error(`no visit array found in ${path}`)
     return items.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
   }
+}
+
+// --- discovery ---
+
+export function takeoutTargets(home: string): SnapshotTarget[] {
+  const dir = takeoutDir(home)
+  if (!fs.existsSync(dir)) return []
+  return fs.readdirSync(dir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+    .map((name) => {
+      const dbPath = path.join(dir, name)
+      return {
+        browser: 'takeout' as const,
+        profile: takeoutProfileKey(dbPath),
+        displayName: `Takeout (${name})`,
+        dbPath,
+      }
+    })
 }
 
 // --- helpers ---
