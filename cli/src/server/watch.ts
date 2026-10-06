@@ -23,9 +23,10 @@ export function startPeriodicSync(options: PeriodicSyncOptions): PeriodicSyncHan
   function tick(): void {
     if (options.runner.isRunning()) return
     try {
-      options.runner.run({})
+      // async failures land on lastRun(); the next tick retries anyway
+      options.runner.run({}).catch(() => { })
     } catch {
-      // next tick retries — no 'sync already running' here (isRunning guard)
+      // 'sync already running' or setup failure — next tick retries
     }
   }
   return {

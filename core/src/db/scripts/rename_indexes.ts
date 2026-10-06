@@ -4,9 +4,9 @@ import path from 'node:path'
 import { defaultHome } from '../../state.ts'
 
 // One-shot script — normalizes index names to the idx_<table>_<columns>
-// convention of schema.sql. Drops the v1 names and the dev-era intermediates,
-// then creates the current names only where missing. Keep in sync with
-// schema.sql when index definitions change. Safe to re-run.
+// convention of migrations/000_initial_schema.sql. Drops the v1 names and the
+// dev-era intermediates, then creates the current names only where missing.
+// Keep in sync with 000_initial_schema.sql when index definitions change. Safe to re-run.
 
 const RENAME_SQL = `
 DROP INDEX IF EXISTS visits_time;

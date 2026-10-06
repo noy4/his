@@ -4,12 +4,12 @@ import type { SyncHooks, SyncOptions, SyncSummary } from './types.ts'
 import { discoverAllTargets } from './discover.ts'
 import { runTarget } from './runTarget.ts'
 
-export function runSync(
+export async function runSync(
   home: string,
   options: SyncOptions = {},
   hooks: SyncHooks = {},
-): SyncSummary {
-  const db = open(historyDbPath(home))
+): Promise<SyncSummary> {
+  const db = await open(historyDbPath(home))
   try {
     const summary: SyncSummary = {
       attempted: 0,

@@ -38,7 +38,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
 
   fs.mkdirSync(home, { recursive: true })
 
-  const db = open(historyDbPath(home))
+  const db = await open(historyDbPath(home))
   const token = randomBytes(24).toString('base64url')
 
   const distRoot = resolveDistRoot(options.dist ?? process.env.HIS_DIST)
@@ -66,7 +66,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const runner = rpc.runner()
   if (!runner.isRunning()) {
     try {
-      runner.run({})
+      await runner.run({})
     } catch {
       // the 6h interval check picks the backlog up anyway
     }

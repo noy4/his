@@ -13,7 +13,7 @@ export interface RunnerOptions {
 }
 
 export interface SyncRunner {
-  run(options: SyncOptions): SyncSummary
+  run(options: SyncOptions): Promise<SyncSummary>
   isRunning(): boolean
   lastRun(): SyncLastRun | null
 }
@@ -36,13 +36,20 @@ export function createSyncRunner(options: RunnerOptions): SyncRunner {
   let running = false
   let last: SyncLastRun | null = null
 
-  function run(runOptions: SyncOptions): SyncSummary {
+  function run(runOptions: SyncOptions): Promise<SyncSummary> {
+    // sync throw keeps the 'already running' guard visible to plain callers
     if (running) throw new Error('sync already running')
     running = true
     const startedAt = Date.now()
     const failureLines: string[] = []
+    return doRun(runOptions, startedAt, failureLines).finally(() => {
+      running = false
+    })
+  }
+
+  async function doRun(runOptions: SyncOptions, startedAt: EpochMs, failureLines: string[]): Promise<SyncSummary> {
     try {
-      const summary = runSync(home, runOptions, {
+      const summary = await runSync(home, runOptions, {
         onError: (line) => failureLines.push(line),
       })
       if (summary.insertedVisits > 0) options.broadcast('db.changed', {})
@@ -57,8 +64,19 @@ export function createSyncRunner(options: RunnerOptions): SyncRunner {
         touchedUrls: summary.touchedUrls,
       }
       return summary
-    } finally {
-      running = false
+    } catch (error) {
+      // setup can reject (db open, migrations) — record it, then surface
+      last = {
+        startedAt,
+        finishedAt: Date.now(),
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+        attempted: 0,
+        failures: 0,
+        insertedVisits: 0,
+        touchedUrls: 0,
+      }
+      throw error
     }
   }
 

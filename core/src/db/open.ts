@@ -1,39 +1,34 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { DatabaseSync } from 'node:sqlite'
-import migration004 from './migrations/004_source_profiles_browser_identity.ts'
-import type { Migration } from './migration.ts'
+import type { CodeMigration, Migration } from './migration.ts'
+
+export type { CodeMigration, Migration } from './migration.ts'
 
 export interface OpenOptions {
   busyTimeout?: number
 }
 
-// Loaded per call — open() runs once per process, and keeping this free of
-// load-time effects lets bundlers drop the module when unused.
-function getMigrations(): readonly Migration[] {
-  return [
-    fs.readFileSync(path.join(import.meta.dirname, 'migrations/schema.sql'), 'utf8'),
-    fs.readFileSync(path.join(import.meta.dirname, 'migrations/001_target_fingerprints.sql'), 'utf8'),
-    fs.readFileSync(path.join(import.meta.dirname, 'migrations/002_transition_auto_toplevel.sql'), 'utf8'),
-    fs.readFileSync(path.join(import.meta.dirname, 'migrations/003_transition_lowercase.sql'), 'utf8'),
-    migration004,
-  ]
-}
+// migrations live in db/migrations as NNN_name.sql (raw) or NNN_name.ts
+// (default-exported CodeMigration). Loaded per open() — keeps load-time
+// effects out of this module and lets bundlers drop it when unused.
+const MIGRATIONS_DIR = 'migrations'
 
-export function open(dbPath: string, options: OpenOptions = {}): DatabaseSync {
+export async function open(dbPath: string, options: OpenOptions = {}): Promise<DatabaseSync> {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true })
   const db = new DatabaseSync(dbPath)
   db.exec('PRAGMA journal_mode = WAL')
   db.exec('PRAGMA foreign_keys = ON')
   db.exec(`PRAGMA busy_timeout = ${options.busyTimeout ?? 5000}`)
-  migrate(db)
+  await migrate(db)
   return db
 }
 
-function migrate(db: DatabaseSync): void {
+async function migrate(db: DatabaseSync): Promise<void> {
   const row = db.prepare('PRAGMA user_version').get()
   let version = row === undefined ? 0 : Number(row.user_version)
-  const migrations = getMigrations()
+  const migrations = await loadMigrations()
   while (version < migrations.length) {
     const migration = migrations[version]
     const toggleFk = typeof migration !== 'string' && migration.foreignKeys === false
@@ -54,4 +49,29 @@ function migrate(db: DatabaseSync): void {
       if (toggleFk) db.exec('PRAGMA foreign_keys = ON')
     }
   }
+}
+
+async function loadMigrations(): Promise<readonly Migration[]> {
+  const dir = path.join(import.meta.dirname, MIGRATIONS_DIR)
+  const names = fs.readdirSync(dir).filter((name) => name.endsWith('.sql') || name.endsWith('.ts'))
+  // version order IS the sorted filename — a misnamed file would silently shift
+  // slots, so fail loudly instead of skipping
+  for (const name of names) {
+    if (!/^\d+_/.test(name))
+      throw new Error(`migration file must be named NNN_name: ${name}`)
+  }
+  names.sort()
+  const migrations: Migration[] = []
+  for (const name of names) {
+    const file = pathToFileURL(path.join(dir, name))
+    if (name.endsWith('.ts')) {
+      const module = await import(file.href)
+      if (module === null || typeof module !== 'object' || typeof module.default !== 'object' || module.default === null || typeof module.default.up !== 'function')
+        throw new Error(`migration ${name} must default-export an object with up(db)`)
+      migrations.push(module.default as CodeMigration)
+    } else {
+      migrations.push(fs.readFileSync(path.join(dir, name), 'utf8'))
+    }
+  }
+  return migrations
 }

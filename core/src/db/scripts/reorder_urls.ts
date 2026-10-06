@@ -4,7 +4,8 @@ import path from 'node:path'
 import { defaultHome } from '../../state.ts'
 
 // One-shot script — rebuilds urls in a v1-shaped archive (columns in the
-// pre-HistoryItem order) into the current schema.sql layout. Index naming is
+// pre-HistoryItem order) into the current migrations/000_initial_schema.sql
+// layout. Index naming is
 // not handled here — see rename_indexes.ts. Not a migration: it is left out
 // of open()'s migration list and user_version is left untouched, so both are
 // safe to keep as pure out-of-band tooling.
@@ -13,7 +14,7 @@ import { defaultHome } from '../../state.ts'
 const TARGET_URL_ORDER =
   'id,url,title,first_visit_time,last_visit_time,visit_count,typed_count,hidden_at'
 
-// Keep in sync with schema.sql. Triggers must come off first: dropping urls
+// Keep in sync with 000_initial_schema.sql. Triggers must come off first: dropping urls
 // runs an implicit DELETE of every row, and the fts triggers would feed each
 // of those into urls_fts. The copy keeps rowids and values, so the
 // external-content urls_fts stays consistent across the swap and is verified
