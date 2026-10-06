@@ -1,18 +1,12 @@
 import type { DatabaseSync } from 'node:sqlite'
-import {
-  applyVisits,
-  createSource,
-  getTargetFingerprint,
-  setTargetFingerprint,
-} from '@his/core'
-import type { ApplyVisitsResult, SnapshotTarget } from '@his/core'
+import { applyVisits, getTargetFingerprint, setTargetFingerprint } from '@his/core'
+import type { ApplyVisitsResult, ProfileSource } from '@his/core'
 import type { SyncHooks, SyncOptions } from './types.ts'
 import { probeFingerprint } from './fingerprint.ts'
 
 interface RunTargetParams {
   db: DatabaseSync
-  home: string
-  target: SnapshotTarget
+  source: ProfileSource
   options: SyncOptions
   hooks: SyncHooks
 }
@@ -23,12 +17,10 @@ type RunTargetResult =
   | { status: 'failure' }
 
 export function runTarget(params: RunTargetParams): RunTargetResult {
-  const { db, home, target, options, hooks } = params
-  const label = kindLabel(target)
+  const { db, source, options, hooks } = params
+  const label = source.label
 
   try {
-    const source = createSource(target, home)
-
     // check fingerprint (--full bypasses)
     const fingerprint = probeFingerprint(source.profilePath)
 
@@ -71,9 +63,4 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
 
     return { status: 'failure' }
   }
-}
-
-// log label, e.g. "chromium · Brave (Default)"
-function kindLabel(target: SnapshotTarget): string {
-  return `${target.source} · ${target.displayName ?? target.profile}`
 }

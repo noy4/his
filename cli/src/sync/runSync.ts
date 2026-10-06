@@ -1,4 +1,4 @@
-import { open } from '@his/core'
+import { createSource, open } from '@his/core'
 import { historyDbPath } from '../home.ts'
 import { SYNC_KINDS, type SyncHooks, type SyncOptions, type SyncSummary } from './types.ts'
 import { discoverTargets } from './discover.ts'
@@ -20,7 +20,8 @@ export function runSync(
     }
     for (const kind of SYNC_KINDS) {
       for (const target of discoverTargets(kind, home, options)) {
-        const result = runTarget({ db, home, target, options, hooks })
+        const source = createSource(target, home)
+        const result = runTarget({ db, source, options, hooks })
         summary.attempted += 1
         switch (result.status) {
           case 'failure':

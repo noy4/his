@@ -14,6 +14,7 @@ export class TakeoutSource implements ProfileSource {
   readonly kind = 'takeout' as const
   readonly idMode: IdMode = 'hash'
   readonly displayName: string | null
+  readonly label: string
   readonly profilePath: string
 
   readonly #target: SnapshotTarget
@@ -23,6 +24,7 @@ export class TakeoutSource implements ProfileSource {
     this.#target = target
     this.#home = home
     this.displayName = target.displayName ?? null
+    this.label = `${this.kind} · ${target.displayName ?? target.profile}`
     this.profilePath = target.dbPath
   }
 

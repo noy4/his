@@ -12,6 +12,9 @@ export interface ProfileSource {
   readonly displayName: string | null
   readonly profilePath: string
 
+  /** log label, e.g. "chromium · Brave (Default)" */
+  readonly label: string
+
   /** stage a consistent copy of the source db */
   snapshot(): SnapshotResult
 
