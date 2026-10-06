@@ -1,7 +1,7 @@
 import { createSource, open } from '@his/core'
 import { historyDbPath } from '../home.ts'
-import { SYNC_KINDS, type SyncHooks, type SyncOptions, type SyncSummary } from './types.ts'
-import { discoverTargets } from './discover.ts'
+import type { SyncHooks, SyncOptions, SyncSummary } from './types.ts'
+import { discoverAllTargets } from './discover.ts'
 import { runTarget } from './runTarget.ts'
 
 export function runSync(
@@ -18,27 +18,27 @@ export function runSync(
       insertedVisits: 0,
       touchedUrls: 0,
     }
-    for (const kind of SYNC_KINDS) {
-      for (const target of discoverTargets(kind, home, options)) {
-        const source = createSource(target, home)
-        const result = runTarget({ db, source, options, hooks })
-        summary.attempted += 1
-        switch (result.status) {
-          case 'failure':
-            summary.failures += 1
-            break
-          case 'skipped':
-            summary.skipped += 1
-            break
-          case 'success':
-            summary.insertedVisits += result.insertedVisits
-            summary.touchedUrls += result.touchedUrls
-            break
-        }
+    const targets = discoverAllTargets(home, options)
+    if (targets.length === 0)
+      hooks.onLog?.('no targets found')
+
+    for (const target of targets) {
+      const source = createSource(target, home)
+      const result = runTarget({ db, source, options, hooks })
+      summary.attempted += 1
+      switch (result.status) {
+        case 'failure':
+          summary.failures += 1
+          break
+        case 'skipped':
+          summary.skipped += 1
+          break
+        case 'success':
+          summary.insertedVisits += result.insertedVisits
+          summary.touchedUrls += result.touchedUrls
+          break
       }
     }
-    if (summary.attempted === 0)
-      hooks.onLog?.('no targets found')
     return summary
   } finally {
     db.close()

@@ -9,13 +9,17 @@ import {
 import type { SnapshotTarget, SourceKind } from '@his/core'
 import { takeoutDir } from '../home.ts'
 
+export const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
+
 export interface TargetFilter {
   browser?: string
   profile?: string
 }
 
-export function discoverTargets(kind: SourceKind, home: string, filter: TargetFilter = {}): SnapshotTarget[] {
-  return discoverForKind(kind, home).filter((target) => targetMatches(target, filter))
+export function discoverAllTargets(home: string, filter: TargetFilter = {}): SnapshotTarget[] {
+  return SYNC_KINDS
+    .flatMap((kind) => discoverForKind(kind, home))
+    .filter((target) => targetMatches(target, filter))
 }
 
 function discoverForKind(kind: SourceKind, home: string): SnapshotTarget[] {

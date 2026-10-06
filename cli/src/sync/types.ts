@@ -1,6 +1,3 @@
-import type { SourceKind } from '@his/core'
-export const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
-
 export interface SyncOptions {
   browser?: string
   profile?: string
