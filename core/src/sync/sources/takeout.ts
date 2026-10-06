@@ -45,21 +45,32 @@ export class TakeoutSource implements ProfileSource {
 
 // --- discovery ---
 
-export function takeoutTargets(home: string): SnapshotTarget[] {
+// resolve the home takeout dir's export files; the profile token is the file
+// name (".json" optional), undefined = every *.json in the dir
+export function resolveTakeout(home: string, profile: string | undefined): SnapshotTarget[] {
   const dir = takeoutDir(home)
   if (!fs.existsSync(dir)) return []
-  return fs.readdirSync(dir)
-    .filter((name) => name.endsWith('.json'))
-    .sort()
-    .map((name) => {
-      const dbPath = path.join(dir, name)
-      return {
-        browser: 'takeout' as const,
-        profile: takeoutProfileKey(dbPath),
-        displayName: `Takeout (${name})`,
-        dbPath,
-      }
-    })
+  if (profile === undefined) {
+    return fs.readdirSync(dir)
+      .filter((name) => name.endsWith('.json'))
+      .sort()
+      .map((name) => takeoutTarget(dir, name))
+  }
+  const base = path.basename(profile)
+  if (base !== profile || base === '.' || base === '..') return []
+  const name = base.endsWith('.json') ? base : `${base}.json`
+  const dbPath = path.join(dir, name)
+  return fs.existsSync(dbPath) ? [takeoutTarget(dir, name)] : []
+}
+
+function takeoutTarget(dir: string, name: string): SnapshotTarget {
+  const dbPath = path.join(dir, name)
+  return {
+    browser: 'takeout' as const,
+    profile: takeoutProfileKey(dbPath),
+    displayName: `Takeout (${name})`,
+    dbPath,
+  }
 }
 
 // --- helpers ---

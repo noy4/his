@@ -10,8 +10,10 @@ import type { ProfileSource } from './source.ts'
 
 // --- discovery ---
 
-export function discoverSafariProfiles(platform: NodeJS.Platform = process.platform, home: string | null = os.homedir()): SnapshotTarget[] {
+// the single safari profile; a profile token other than "default" matches nothing
+export function resolveSafari(profile: string | undefined, platform: NodeJS.Platform = process.platform, home: string | null = os.homedir()): SnapshotTarget[] {
   if (platform !== 'darwin' || home === null) return []
+  if (profile !== undefined && profile !== 'default') return []
   const dbPath = path.join(home, 'Library', 'Safari', 'History.db')
   if (!fs.existsSync(dbPath)) return []
   return [{ browser: 'safari', profile: 'default', dbPath }]

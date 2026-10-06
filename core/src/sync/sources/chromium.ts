@@ -29,9 +29,12 @@ export const CHROMIUM_APPS: ChromiumApp[] = [
   { slug: 'opera-gx', displayName: 'Opera GX', userDirs: { win32: 'Opera Software/Opera GX Stable' } },
 ]
 
-// one chromium app
-export function discoverChromiumApp(platform: NodeJS.Platform, app: ChromiumApp, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
+// one chromium app's profiles; profile token selects one (slug match),
+// undefined = every profile whose History path exists under the app root
+export function resolveChromium(browser: string, profile: string | undefined, platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
   if (dataRoot === null) return []
+  const app = CHROMIUM_APPS.find((entry) => entry.slug === browser)
+  if (app === undefined) return []
   const userDir = app.userDirs[platform]
   if (userDir === undefined) return []
   const root = path.join(dataRoot, userDir)
@@ -39,6 +42,7 @@ export function discoverChromiumApp(platform: NodeJS.Platform, app: ChromiumApp,
   return listDirs(root)
     .filter((dir) => !NOISE_PROFILE_DIRS.has(dir))
     .filter((dir) => fs.existsSync(path.join(root, dir, 'History')))
+    .filter((dir) => profile === undefined || slugifyDir(dir) === profile)
     .map((dir) => ({
       browser: app.slug,
       profile: slugifyDir(dir),
@@ -46,20 +50,6 @@ export function discoverChromiumApp(platform: NodeJS.Platform, app: ChromiumApp,
       dbPath: path.join(root, dir, 'History'),
     }))
     .sort((x, y) => x.profile.localeCompare(y.profile))
-}
-
-// all chromium apps, sorted
-export function discoverChromiumProfiles(platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
-  return CHROMIUM_APPS
-    .map((app) => discoverChromiumApp(platform, app, dataRoot))
-    .flat()
-    .sort((x, y) => x.browser.localeCompare(y.browser) || x.profile.localeCompare(y.profile))
-}
-
-// one chromium slug; [] when the app is absent on this platform
-export function discoverChromiumBrowser(browser: string, platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
-  const app = CHROMIUM_APPS.find((entry) => entry.slug === browser)
-  return app === undefined ? [] : discoverChromiumApp(platform, app, dataRoot)
 }
 
 const NOISE_PROFILE_DIRS = new Set(['System Profile', 'Guest Profile'])

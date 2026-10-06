@@ -11,7 +11,9 @@ import type { ProfileSource } from './source.ts'
 
 // --- discovery ---
 
-export function discoverFirefoxProfiles(platform: NodeJS.Platform = process.platform, dataRoot: string | null = firefoxDataRoot(platform)): SnapshotTarget[] {
+// profiles under the firefox data roots; profile token selects one (slug
+// match), undefined = every profile whose places.sqlite path exists
+export function resolveFirefox(profile: string | undefined, platform: NodeJS.Platform = process.platform, dataRoot: string | null = firefoxDataRoot(platform)): SnapshotTarget[] {
   if (dataRoot === null) return []
   const targets: SnapshotTarget[] = []
   const roots = [dataRoot, path.join(dataRoot, 'Profiles')]
@@ -20,6 +22,7 @@ export function discoverFirefoxProfiles(platform: NodeJS.Platform = process.plat
     for (const dir of listDirs(root)) {
       const dbPath = path.join(root, dir, 'places.sqlite')
       if (!fs.existsSync(dbPath)) continue
+      if (profile !== undefined && slugifyDir(dir) !== profile) continue
       targets.push({
         browser: 'firefox',
         profile: slugifyDir(dir),
