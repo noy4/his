@@ -21,7 +21,7 @@ export class HisApp {
   start(): void {
     this.app.dock?.hide()
     this.#tray = createTray(this)
-    void this.openWindow()
+    // void this.openWindow()
   }
 
   // Quit funnel: destroy tray, stop serve, exit (app.exit bypasses before-quit).
