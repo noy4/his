@@ -1,5 +1,6 @@
-import { BrowserIcon } from '@/components/BrowserIcon'
 import type { SourceProfile } from '@/api'
+import { browserName } from '@/lib/browser/browser'
+import { BrowserIcon } from '@/lib/browser/BrowserIcon'
 import { relativeAgo } from '@/lib/date'
 import Check from '~icons/mdi/check'
 import { type ReactNode } from 'react'
@@ -16,8 +17,8 @@ export function SourceCard({ source, selected, onToggle }: Props) {
       <SourceCardHead>
         <SourceCardIcon browser={source.browser} />
         <SourceCardName
-          name={source.displayName ?? source.browser}
-          detail={`${source.browser}:${source.profile}`}
+          name={browserName(source.browser)}
+          detail={source.profile}
         />
       </SourceCardHead>
       <SourceCardStats

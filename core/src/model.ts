@@ -49,7 +49,6 @@ export interface RegisteredSource {
   browser: string
   profile: string
   kind: SourceKind
-  displayName: string | null
   profilePath: string
   watermark: Watermark
   /** listing aggregates over the profile's visits (sources.list) */

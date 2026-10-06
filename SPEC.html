@@ -680,9 +680,8 @@ db.changed        { }                                     <span class="c"># clie
         <text class="tm" x="352" y="349">browser</text>
         <text class="tm" x="352" y="362">profile</text>
         <text class="tm" x="352" y="375">kind</text>
-        <text class="tm" x="352" y="388">display_name</text>
-        <text class="tm" x="352" y="401">profile_path</text>
-        <text class="tm" x="352" y="414" style="font-style: italic">UNIQUE(browser, profile)</text>
+        <text class="tm" x="352" y="388">profile_path</text>
+        <text class="tm" x="352" y="401" style="font-style: italic">UNIQUE(browser, profile)</text>
 
         <!-- profile_watermarks -->
         <rect class="node" x="340" y="450" width="240" height="90" rx="6"/>
@@ -713,7 +712,6 @@ CREATE TABLE source_profiles (          <span class="c">-- registered browser pr
   browser       TEXT    NOT NULL,       <span class="c">-- user-facing slug · chrome, brave, ...</span>
   profile       TEXT    NOT NULL,       <span class="c">-- slugified dir · Default, vpw8f8gt.default-release, ...</span>
   kind          TEXT    NOT NULL,       <span class="c">-- engine · derived from browser</span>
-  display_name  TEXT,
   profile_path  TEXT    NOT NULL,
   UNIQUE(browser, profile)
 );

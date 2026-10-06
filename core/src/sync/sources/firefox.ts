@@ -48,7 +48,6 @@ export class FirefoxSource implements ProfileSource {
   readonly profile: string
   readonly kind = 'firefox' as const
   readonly idMode: IdMode = 'rowid'
-  readonly displayName: string | null
   readonly label: string
   readonly profilePath: string
 
@@ -60,7 +59,6 @@ export class FirefoxSource implements ProfileSource {
     this.#home = home
     this.browser = target.browser
     this.profile = target.profile
-    this.displayName = target.displayName ?? null
     this.label = `${this.kind} · ${target.displayName ?? target.profile}`
     this.profilePath = target.dbPath
   }

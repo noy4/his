@@ -37,7 +37,7 @@ export function setWatermark(db: DatabaseSync, sourceProfileId: number, patch: W
 export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
   const rows = db
     .prepare(
-      `SELECT sp.id, sp.browser, sp.profile, sp.kind, sp.display_name, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at, COUNT(v.id) AS visits, MAX(v.visit_time) AS last_visit_time
+      `SELECT sp.id, sp.browser, sp.profile, sp.kind, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at, COUNT(v.id) AS visits, MAX(v.visit_time) AS last_visit_time
        FROM source_profiles sp
        LEFT JOIN profile_watermarks pw ON pw.source_profile_id = sp.id
        LEFT JOIN visits v ON v.source_profile_id = sp.id
@@ -50,7 +50,6 @@ export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
     browser: row.browser,
     profile: row.profile,
     kind: row.kind as SourceKind,
-    displayName: row.display_name,
     profilePath: row.profile_path,
     watermark: {
       sourceProfileId: row.id,
@@ -68,7 +67,6 @@ interface SourceProfileJoinRow {
   browser: string
   profile: string
   kind: string
-  display_name: string | null
   profile_path: string
   last_source_visit_id: number | null
   source_id_offset: number | null

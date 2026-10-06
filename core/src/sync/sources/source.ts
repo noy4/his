@@ -12,7 +12,6 @@ export interface ProfileSource {
   readonly profile: string
   readonly kind: SourceKind
   readonly idMode: IdMode
-  readonly displayName: string | null
   readonly profilePath: string
 
   /** log label, e.g. "chromium · Brave (Default)" */

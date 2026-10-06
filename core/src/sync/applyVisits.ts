@@ -20,7 +20,6 @@ export interface SourceProfileRef {
   browser: string
   profile: string
   kind: SourceKind
-  displayName: string | null
   profilePath: string
   idMode: IdMode
 }
@@ -234,9 +233,9 @@ export function resolveUrlId(stmts: ApplyStatements, urlIds: Map<string, number>
 export function ensureSourceProfile(db: DatabaseSync, profile: SourceProfileRef): number {
   const row = db
     .prepare(
-      'INSERT INTO source_profiles (browser, profile, kind, display_name, profile_path) VALUES (?, ?, ?, ?, ?) ON CONFLICT(browser, profile) DO UPDATE SET kind = excluded.kind, display_name = COALESCE(excluded.display_name, display_name), profile_path = excluded.profile_path RETURNING id',
+      'INSERT INTO source_profiles (browser, profile, kind, profile_path) VALUES (?, ?, ?, ?) ON CONFLICT(browser, profile) DO UPDATE SET kind = excluded.kind, profile_path = excluded.profile_path RETURNING id',
     )
-    .get(profile.browser, profile.profile, profile.kind, profile.displayName, profile.profilePath) as { id: number } | undefined
+    .get(profile.browser, profile.profile, profile.kind, profile.profilePath) as { id: number } | undefined
   if (row === undefined)
     throw new Error(`failed to register source profile ${profile.browser}:${profile.profile}`)
   return Number(row.id)
