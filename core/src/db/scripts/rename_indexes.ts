@@ -1,7 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
-import path from 'node:path'
-import { defaultHome } from '../../paths.ts'
+import { historyDbPath, defaultHome } from '../../paths.ts'
 
 // One-shot script — normalizes index names to the idx_<table>_<columns>
 // convention of migrations/000_initial_schema.sql. Drops the v1 names and the
@@ -27,7 +26,7 @@ function indexNames(db: DatabaseSync): string {
 }
 
 export function main(): void {
-  const dbPath = process.argv[2] ?? path.join(defaultHome(), 'history.db')
+  const dbPath = process.argv[2] ?? historyDbPath(defaultHome())
   if (!fs.existsSync(dbPath)) {
     console.error(`no database at ${dbPath}`)
     process.exit(1)

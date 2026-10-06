@@ -1,9 +1,11 @@
 import type { DatabaseSync } from 'node:sqlite'
-import { applyVisits, getTargetFingerprint, setTargetFingerprint } from '@his/core'
-import type { ApplyVisitsResult, ProfileSource } from '@his/core'
+import type { SyncOptions } from '../model.ts'
+import type { ApplyVisitsResult } from './applyVisits.ts'
+import { applyVisits } from './applyVisits.ts'
+import type { ProfileSource } from './sources/source.ts'
 import type { SyncHooks } from './runSync.ts'
-import type { SyncOptions } from '@his/core'
 import { probeFingerprint } from './fingerprint.ts'
+import { getTargetFingerprint, setTargetFingerprint } from './watermarks.ts'
 
 interface RunTargetParams {
   db: DatabaseSync

@@ -1,7 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
-import path from 'node:path'
-import { defaultHome } from '../../paths.ts'
+import { historyDbPath, defaultHome } from '../../paths.ts'
 
 // One-shot script — rebuilds urls in a v1-shaped archive (columns in the
 // pre-HistoryItem order) into the current migrations/000_initial_schema.sql
@@ -86,7 +85,7 @@ export function alignUrlsSchema(db: DatabaseSync): void {
 // --- CLI entry ---
 
 export function main(): void {
-  const dbPath = process.argv[2] ?? path.join(defaultHome(), 'history.db')
+  const dbPath = process.argv[2] ?? historyDbPath(defaultHome())
   if (!fs.existsSync(dbPath)) {
     console.error(`no database at ${dbPath}`)
     process.exit(1)

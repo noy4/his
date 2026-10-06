@@ -1,5 +1,5 @@
 import type { EpochMs, SyncLastRun, SyncOptions, SyncSummary } from '@his/core'
-import { runSync } from '../sync/runSync.ts'
+import { runSync } from '@his/core'
 
 // --- contract ---
 

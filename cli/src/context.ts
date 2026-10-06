@@ -1,4 +1,4 @@
-import { resolveHome } from './home.ts'
+import { defaultHome } from '@his/core'
 
 export interface Context {
   home: string
@@ -13,7 +13,7 @@ export function withCtx<A extends unknown[]>(
 ): (...args: A) => void | Promise<void> {
   return (...args: A) => {
     const opts = args.at(-1) as CliOptions
-    const ctx = { home: resolveHome(opts.home) }
+    const ctx = { home: opts.home ?? defaultHome() }
     return fn(ctx, ...args)
   }
 }

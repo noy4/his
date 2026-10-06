@@ -1,13 +1,12 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import {
-  discoverChromiumProfiles,
-  discoverFirefoxProfiles,
-  discoverSafariProfiles,
-  takeoutProfileKey,
-} from '@his/core'
-import type { SnapshotTarget, SourceKind } from '@his/core'
-import { takeoutDir } from '../home.ts'
+import type { SourceKind } from '../model.ts'
+import type { SnapshotTarget } from './snapshot.ts'
+import { discoverChromiumProfiles } from './sources/chromium.ts'
+import { discoverFirefoxProfiles } from './sources/firefox.ts'
+import { discoverSafariProfiles } from './sources/safari.ts'
+import { takeoutDir } from '../paths.ts'
+import { takeoutProfileKey } from './sources/takeout.ts'
 
 export const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
 

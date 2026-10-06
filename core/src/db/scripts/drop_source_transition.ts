@@ -1,7 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
-import path from 'node:path'
-import { defaultHome } from '../../paths.ts'
+import { historyDbPath, defaultHome } from '../../paths.ts'
 
 // One-shot script — drops visits.source_transition from a v1-shaped archive.
 // The column was only a raw-value escape hatch kept at import time and is
@@ -18,7 +17,7 @@ function hasSourceTransition(db: DatabaseSync): boolean {
 }
 
 export function main(): void {
-  const dbPath = process.argv[2] ?? path.join(defaultHome(), 'history.db')
+  const dbPath = process.argv[2] ?? historyDbPath(defaultHome())
   if (!fs.existsSync(dbPath)) {
     console.error(`no database at ${dbPath}`)
     process.exit(1)

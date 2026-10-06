@@ -1,6 +1,6 @@
+import { runSync } from '@his/core'
 import type { SyncOptions } from '@his/core'
-import type { Context } from '../context.ts'
-import { runSync } from './runSync.ts'
+import type { Context } from './context.ts'
 
 export async function sync(ctx: Context, opts: SyncOptions): Promise<void> {
   const summary = await runSync(ctx.home, opts, {

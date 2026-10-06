@@ -1,8 +1,10 @@
-import { createSource, initDb } from '@his/core'
-import type { SnapshotTarget, SyncOptions, SyncSummary } from '@his/core'
-import { historyDbPath } from '../home.ts'
+import type { SyncOptions, SyncSummary } from '../model.ts'
+import type { SnapshotTarget } from './snapshot.ts'
+import { initDb } from '../db/db.ts'
+import { historyDbPath } from '../paths.ts'
 import { discoverAllTargets } from './discover.ts'
 import { runTarget } from './runTarget.ts'
+import { createSource } from './sources/source.ts'
 
 export interface SyncHooks {
   onLog?(line: string): void
