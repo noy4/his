@@ -1,8 +1,7 @@
 import type { SyncOptions, SyncSummary } from '../model.ts'
-import type { SnapshotTarget } from './snapshot.ts'
 import { initDb } from '../db/db.ts'
 import { historyDbPath } from '../paths.ts'
-import { discoverAllTargets } from './discover.ts'
+import { resolveTargets } from './discover.ts'
 import { runTarget } from './runTarget.ts'
 import { createSource } from './sources/source.ts'
 
@@ -25,7 +24,7 @@ export async function runSync(
       insertedVisits: 0,
       touchedUrls: 0,
     }
-    const targets = filterTargets(discoverAllTargets(home), options.targets)
+    const targets = resolveTargets(home, options.targets)
     if (targets.length === 0)
       hooks.onLog?.('no targets found')
 
@@ -50,20 +49,4 @@ export async function runSync(
   } finally {
     db.close()
   }
-}
-
-// normalize user input the way discovery slugified its dirs
-const DIR_PATTERN = /[^A-Za-z0-9._-]+/g
-
-// targets limit: "browser:profile" exact, bare "browser" = all its profiles
-function filterTargets(targets: SnapshotTarget[], wanted: string[] | undefined): SnapshotTarget[] {
-  if (wanted === undefined) return targets
-  const normalized = wanted.map((t) => {
-    const at = t.indexOf(':')
-    return at === -1 ? t : `${t.slice(0, at)}:${t.slice(at + 1).replace(DIR_PATTERN, '-')}`
-  })
-  return targets.filter((target) => {
-    const key = `${target.browser}:${target.profile}`
-    return normalized.some((t) => key === t || (!t.includes(':') && key.startsWith(`${t}:`)))
-  })
 }

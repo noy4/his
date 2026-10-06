@@ -54,6 +54,9 @@ export function kindOfBrowser(browser: string): SourceKind {
   return kind
 }
 
+// every browser slug the domain knows
+export const KNOWN_BROWSERS: string[] = Object.keys(KIND_OF_BROWSER)
+
 // dispatch by browser
 export function createSource(target: SnapshotTarget, home: string): ProfileSource {
   const Class = SOURCES[kindOfBrowser(target.browser)]

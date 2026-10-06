@@ -67,9 +67,9 @@ function identify(row: LegacyRow): { browser: string, profile: string } {
 
 // reverse discovery: <dataRoot>/<userDir>/<dir>/History -> browser slug + dir
 function chromiumPathMatch(profilePath: string): { browser: string, dir: string } | null {
-  for (const apps of [CHROMIUM_APPS.darwin, CHROMIUM_APPS.win32, CHROMIUM_APPS.linux]) {
-    for (const app of apps ?? []) {
-      const marker = `/${app.userDir}/`
+  for (const app of CHROMIUM_APPS) {
+    for (const userDir of Object.values(app.userDirs)) {
+      const marker = `/${userDir}/`
       const at = profilePath.indexOf(marker)
       if (at === -1) continue
       const dir = profilePath.slice(at + marker.length, profilePath.lastIndexOf('/'))

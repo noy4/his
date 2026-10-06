@@ -14,57 +14,52 @@ import type { ProfileSource } from './source.ts'
 export interface ChromiumApp {
   slug: 'chrome' | 'chromium' | 'edge' | 'brave' | 'vivaldi' | 'arc' | 'opera' | 'opera-gx'
   displayName: string
-  userDir: string
+  /** user dir under the platform's data root; no key = app not on that platform */
+  userDirs: Partial<Record<NodeJS.Platform, string>>
 }
 
-export const CHROMIUM_APPS: Partial<Record<NodeJS.Platform, ChromiumApp[]>> = {
-  darwin: [
-    { slug: 'chrome', displayName: 'Google Chrome', userDir: 'Google/Chrome' },
-    { slug: 'edge', displayName: 'Microsoft Edge', userDir: 'Microsoft Edge' },
-    { slug: 'brave', displayName: 'Brave', userDir: 'BraveSoftware/Brave-Browser' },
-    { slug: 'vivaldi', displayName: 'Vivaldi', userDir: 'Vivaldi' },
-    { slug: 'arc', displayName: 'Arc', userDir: 'Arc' },
-    { slug: 'opera', displayName: 'Opera', userDir: 'com.operasoftware.Opera' },
-  ],
-  win32: [
-    { slug: 'chrome', displayName: 'Google Chrome', userDir: 'Google/Chrome' },
-    { slug: 'edge', displayName: 'Microsoft Edge', userDir: 'Microsoft/Edge' },
-    { slug: 'brave', displayName: 'Brave', userDir: 'BraveSoftware/Brave-Browser' },
-    { slug: 'vivaldi', displayName: 'Vivaldi', userDir: 'Vivaldi' },
-    { slug: 'opera', displayName: 'Opera', userDir: 'Opera Software/Opera Stable' },
-    { slug: 'opera-gx', displayName: 'Opera GX', userDir: 'Opera Software/Opera GX Stable' },
-  ],
-  linux: [
-    { slug: 'chrome', displayName: 'Google Chrome', userDir: 'google-chrome' },
-    { slug: 'chromium', displayName: 'Chromium', userDir: 'chromium' },
-    { slug: 'edge', displayName: 'Microsoft Edge', userDir: 'microsoft-edge' },
-    { slug: 'brave', displayName: 'Brave', userDir: 'BraveSoftware/Brave-Browser' },
-    { slug: 'vivaldi', displayName: 'Vivaldi', userDir: 'vivaldi' },
-    { slug: 'arc', displayName: 'Arc', userDir: 'Arc' },
-    { slug: 'opera', displayName: 'Opera', userDir: 'opera' },
-  ],
-}
+export const CHROMIUM_APPS: ChromiumApp[] = [
+  { slug: 'chrome', displayName: 'Google Chrome', userDirs: { darwin: 'Google/Chrome', win32: 'Google/Chrome', linux: 'google-chrome' } },
+  { slug: 'chromium', displayName: 'Chromium', userDirs: { linux: 'chromium' } },
+  { slug: 'edge', displayName: 'Microsoft Edge', userDirs: { darwin: 'Microsoft Edge', win32: 'Microsoft/Edge', linux: 'microsoft-edge' } },
+  { slug: 'brave', displayName: 'Brave', userDirs: { darwin: 'BraveSoftware/Brave-Browser', win32: 'BraveSoftware/Brave-Browser', linux: 'BraveSoftware/Brave-Browser' } },
+  { slug: 'vivaldi', displayName: 'Vivaldi', userDirs: { darwin: 'Vivaldi', win32: 'Vivaldi', linux: 'vivaldi' } },
+  { slug: 'arc', displayName: 'Arc', userDirs: { darwin: 'Arc', linux: 'Arc' } },
+  { slug: 'opera', displayName: 'Opera', userDirs: { darwin: 'com.operasoftware.Opera', win32: 'Opera Software/Opera Stable', linux: 'opera' } },
+  { slug: 'opera-gx', displayName: 'Opera GX', userDirs: { win32: 'Opera Software/Opera GX Stable' } },
+]
 
-export function discoverChromiumProfiles(platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
+// one chromium app
+export function discoverChromiumApp(platform: NodeJS.Platform, app: ChromiumApp, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
   if (dataRoot === null) return []
-  const targets: SnapshotTarget[] = []
-  for (const app of CHROMIUM_APPS[platform] ?? []) {
-    const root = path.join(dataRoot, app.userDir)
-    if (!fs.existsSync(root)) continue
-    for (const dir of listDirs(root)) {
-      if (NOISE_PROFILE_DIRS.has(dir)) continue
-      const dbPath = path.join(root, dir, 'History')
-      if (!fs.existsSync(dbPath)) continue
-      targets.push({
-        browser: app.slug,
-        profile: slugifyDir(dir),
-        displayName: `${app.displayName} (${dir})`,
-        dbPath,
-      })
-    }
-  }
-  targets.sort((x, y) => x.browser.localeCompare(y.browser) || x.profile.localeCompare(y.profile))
-  return targets
+  const userDir = app.userDirs[platform]
+  if (userDir === undefined) return []
+  const root = path.join(dataRoot, userDir)
+  if (!fs.existsSync(root)) return []
+  return listDirs(root)
+    .filter((dir) => !NOISE_PROFILE_DIRS.has(dir))
+    .filter((dir) => fs.existsSync(path.join(root, dir, 'History')))
+    .map((dir) => ({
+      browser: app.slug,
+      profile: slugifyDir(dir),
+      displayName: `${app.displayName} (${dir})`,
+      dbPath: path.join(root, dir, 'History'),
+    }))
+    .sort((x, y) => x.profile.localeCompare(y.profile))
+}
+
+// all chromium apps, sorted
+export function discoverChromiumProfiles(platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
+  return CHROMIUM_APPS
+    .map((app) => discoverChromiumApp(platform, app, dataRoot))
+    .flat()
+    .sort((x, y) => x.browser.localeCompare(y.browser) || x.profile.localeCompare(y.profile))
+}
+
+// one chromium slug; [] when the app is absent on this platform
+export function discoverChromiumBrowser(browser: string, platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
+  const app = CHROMIUM_APPS.find((entry) => entry.slug === browser)
+  return app === undefined ? [] : discoverChromiumApp(platform, app, dataRoot)
 }
 
 const NOISE_PROFILE_DIRS = new Set(['System Profile', 'Guest Profile'])
