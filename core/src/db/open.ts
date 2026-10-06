@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import migration004 from './004_source_profiles_browser_identity.ts'
+import migration004 from './migrations/004_source_profiles_browser_identity.ts'
 import type { Migration } from './migration.ts'
 
 export interface OpenOptions {
@@ -12,10 +12,10 @@ export interface OpenOptions {
 // load-time effects lets bundlers drop the module when unused.
 function getMigrations(): readonly Migration[] {
   return [
-    fs.readFileSync(path.join(import.meta.dirname, 'schema.sql'), 'utf8'),
-    fs.readFileSync(path.join(import.meta.dirname, '001_target_fingerprints.sql'), 'utf8'),
-    fs.readFileSync(path.join(import.meta.dirname, '002_transition_auto_toplevel.sql'), 'utf8'),
-    fs.readFileSync(path.join(import.meta.dirname, '003_transition_lowercase.sql'), 'utf8'),
+    fs.readFileSync(path.join(import.meta.dirname, 'migrations/schema.sql'), 'utf8'),
+    fs.readFileSync(path.join(import.meta.dirname, 'migrations/001_target_fingerprints.sql'), 'utf8'),
+    fs.readFileSync(path.join(import.meta.dirname, 'migrations/002_transition_auto_toplevel.sql'), 'utf8'),
+    fs.readFileSync(path.join(import.meta.dirname, 'migrations/003_transition_lowercase.sql'), 'utf8'),
     migration004,
   ]
 }
