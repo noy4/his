@@ -4,13 +4,13 @@ import path from 'node:path'
 import { defaultHome, processAlive, readState, type InstanceState } from '@his/core/state'
 import { createTray } from './tray.ts'
 
-// App context: spawns `his serve`, owns the window and tray.
 export class HisApp {
   readonly app: App
   #win: BrowserWindow | null = null
   #tray: Tray | null = null
   #quitting = false
   #serveProc: ChildProcess | undefined
+  #booting: Promise<InstanceState> | null = null
 
   constructor(app: App) {
     this.app = app
@@ -22,6 +22,8 @@ export class HisApp {
     this.app.dock?.hide()
     this.#tray = createTray(this)
     // void this.openWindow()
+    // spawn serve at boot
+    this.ensureServe().catch((error) => console.error(`his: ${error instanceof Error ? error.message : String(error)}`))
   }
 
   // Quit funnel: destroy tray, stop serve, exit (app.exit bypasses before-quit).
@@ -64,6 +66,14 @@ export class HisApp {
   async ensureServe(timeoutMs = 10_000): Promise<InstanceState> {
     const existing = readState(defaultHome())
     if (existing !== null) return existing
+    // single-flight: 'Open' clicked during startup reuses the running boot
+    this.#booting ??= this.#bootServe(timeoutMs).finally(() => {
+      this.#booting = null
+    })
+    return this.#booting
+  }
+
+  async #bootServe(timeoutMs: number): Promise<InstanceState> {
     this.#spawnServe()
     const deadline = Date.now() + timeoutMs
     while (Date.now() < deadline) {
