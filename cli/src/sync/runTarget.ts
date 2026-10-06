@@ -27,7 +27,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
   const label = kindLabel(target)
 
   try {
-    const source = createSource(target)
+    const source = createSource(target, home)
 
     // check fingerprint (--full bypasses)
     const fingerprint = probeFingerprint(source.profilePath)
@@ -41,7 +41,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     }
 
     // snapshot and parse
-    const snap = source.snapshot(home)
+    const snap = source.snapshot()
     const visits = source.parse(snap.path)
 
     // upsert visits

@@ -12,23 +12,22 @@ import type { ProfileSource } from './source.ts'
 // one takeout export
 export class TakeoutSource implements ProfileSource {
   readonly kind = 'takeout' as const
-
   readonly idMode: IdMode = 'hash'
-
   readonly displayName: string | null
-
   readonly profilePath: string
 
   readonly #target: SnapshotTarget
+  readonly #home: string
 
-  constructor(target: SnapshotTarget) {
+  constructor(target: SnapshotTarget, home: string) {
     this.#target = target
+    this.#home = home
     this.displayName = target.displayName ?? null
     this.profilePath = target.dbPath
   }
 
-  snapshot(home: string): SnapshotResult {
-    return snapshot(this.#target, home)
+  snapshot(): SnapshotResult {
+    return snapshot(this.#target, this.#home)
   }
 
   parse(path: string): NativeVisit[] {

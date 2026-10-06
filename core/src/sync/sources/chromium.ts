@@ -80,25 +80,23 @@ interface ChromiumRow {
 // one chromium profile
 export class ChromiumSource implements ProfileSource {
   readonly kind = 'chromium' as const
-
   readonly idMode: IdMode = 'rowid'
-
   readonly displayName: string | null
-
   readonly profilePath: string
 
   readonly #target: SnapshotTarget
+  readonly #home: string
 
-  constructor(target: SnapshotTarget) {
+  constructor(target: SnapshotTarget, home: string) {
     this.#target = target
+    this.#home = home
     this.displayName = target.displayName ?? null
     this.profilePath = target.dbPath
   }
 
-  snapshot(home: string): SnapshotResult {
-    return snapshot(this.#target, home)
+  snapshot(): SnapshotResult {
+    return snapshot(this.#target, this.#home)
   }
-
   parse(path: string): NativeVisit[] {
     const db = new DatabaseSync(path, { readOnly: true })
     try {

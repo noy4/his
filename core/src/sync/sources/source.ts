@@ -13,14 +13,14 @@ export interface ProfileSource {
   readonly profilePath: string
 
   /** stage a consistent copy of the source db */
-  snapshot(home: string): SnapshotResult
+  snapshot(): SnapshotResult
 
   /** read one staging snapshot file */
   parse(path: string): NativeVisit[]
 }
 
 // kind to concrete class
-export const SOURCES: Record<SourceKind, new (target: SnapshotTarget) => ProfileSource> = {
+export const SOURCES: Record<SourceKind, new (target: SnapshotTarget, home: string) => ProfileSource> = {
   chromium: ChromiumSource,
   firefox: FirefoxSource,
   safari: SafariSource,
@@ -28,8 +28,8 @@ export const SOURCES: Record<SourceKind, new (target: SnapshotTarget) => Profile
 }
 
 // dispatch by kind
-export function createSource(target: SnapshotTarget): ProfileSource {
-  const cls = SOURCES[target.source as SourceKind]
-  if (cls === undefined) throw new Error(`unknown source: ${target.source}`)
-  return new cls(target)
+export function createSource(target: SnapshotTarget, home: string): ProfileSource {
+  const Class = SOURCES[target.source as SourceKind]
+  if (Class === undefined) throw new Error(`unknown source: ${target.source}`)
+  return new Class(target, home)
 }
