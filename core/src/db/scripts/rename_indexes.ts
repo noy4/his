@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
 import path from 'node:path'
-import { defaultHome } from '../../state.ts'
+import { defaultHome } from '../../paths.ts'
 
 // One-shot script — normalizes index names to the idx_<table>_<columns>
 // convention of migrations/000_initial_schema.sql. Drops the v1 names and the

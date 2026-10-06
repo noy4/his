@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
 import path from 'node:path'
-import { defaultHome } from '../../state.ts'
+import { defaultHome } from '../../paths.ts'
 
 // One-shot script — rebuilds urls in a v1-shaped archive (columns in the
 // pre-HistoryItem order) into the current migrations/000_initial_schema.sql

@@ -1,12 +1,7 @@
 import fs from 'node:fs'
-import os from 'node:os'
-import path from 'node:path'
+import { stateFilePath } from './paths.ts'
 
-// --- contract ---
-
-// The running instance keeps ~/.his/state.json; one home = one archive = one
-// instance. Served by `his serve`, read by every command and the desktop
-// shell — dead-PID files are pruned in place by any reader.
+// The running instance keeps ~/.his/state.json
 export interface InstanceState {
   pid: number
   port: number
@@ -14,16 +9,6 @@ export interface InstanceState {
   db: string
   token?: string
 }
-
-export function defaultHome(): string {
-  return process.env.HIS_HOME ?? path.join(os.homedir(), '.his')
-}
-
-export function stateFilePath(home: string): string {
-  return path.join(home, 'state.json')
-}
-
-// --- read / write ---
 
 export function processAlive(pid: number): boolean {
   try {

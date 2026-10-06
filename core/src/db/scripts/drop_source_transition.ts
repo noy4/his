@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
 import path from 'node:path'
-import { defaultHome } from '../../state.ts'
+import { defaultHome } from '../../paths.ts'
 
 // One-shot script — drops visits.source_transition from a v1-shaped archive.
 // The column was only a raw-value escape hatch kept at import time and is
