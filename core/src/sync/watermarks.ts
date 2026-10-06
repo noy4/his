@@ -1,23 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { EpochMs } from '../model.ts'
-import type { SourceKind } from './applyVisits.ts'
-
-export interface Watermark {
-  sourceProfileId: number
-  lastSourceVisitId: number
-  sourceIdOffset: number
-  lastRunAt: EpochMs | null
-}
-
-export interface RegisteredSource {
-  id: number
-  browser: string
-  profile: string
-  kind: SourceKind
-  displayName: string | null
-  profilePath: string
-  watermark: Watermark
-}
+import type { EpochMs, RegisteredSource, SourceKind, Watermark } from '../model.ts'
 
 export interface WatermarkPatch {
   lastSourceVisitId: number
@@ -54,7 +36,14 @@ export function setWatermark(db: DatabaseSync, sourceProfileId: number, patch: W
 
 export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
   const rows = db
-    .prepare('SELECT sp.id, sp.browser, sp.profile, sp.kind, sp.display_name, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at FROM source_profiles sp LEFT JOIN profile_watermarks pw ON pw.source_profile_id = sp.id ORDER BY sp.browser, sp.profile')
+    .prepare(
+      `SELECT sp.id, sp.browser, sp.profile, sp.kind, sp.display_name, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at, COUNT(v.id) AS visits, MAX(v.visit_time) AS last_visit_time
+       FROM source_profiles sp
+       LEFT JOIN profile_watermarks pw ON pw.source_profile_id = sp.id
+       LEFT JOIN visits v ON v.source_profile_id = sp.id
+       GROUP BY sp.id
+       ORDER BY sp.browser, sp.profile`,
+    )
     .all() as unknown as SourceProfileJoinRow[]
   return rows.map((row) => ({
     id: row.id,
@@ -69,6 +58,8 @@ export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
       sourceIdOffset: row.source_id_offset ?? 0,
       lastRunAt: row.last_run_at,
     },
+    visits: Number(row.visits),
+    lastVisit: row.last_visit_time === null ? null : Number(row.last_visit_time),
   }))
 }
 
@@ -82,6 +73,8 @@ interface SourceProfileJoinRow {
   last_source_visit_id: number | null
   source_id_offset: number | null
   last_run_at: number | null
+  visits: number | bigint
+  last_visit_time: number | null
 }
 
 export function detectCleared(watermark: Watermark, sourceMaxVisitId: number): boolean {

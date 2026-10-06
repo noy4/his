@@ -2,7 +2,7 @@ import { SourceCard } from '@/components/SourceCard'
 import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/models/app'
 import { sourceKey } from '@/models/sources'
-import type { SyncSummary } from '@/models/sources'
+import type { SyncSummary } from '@/api'
 import CheckNetwork from '~icons/mdi/check-network-outline'
 import Close from '~icons/mdi/close'
 import Loading from '~icons/mdi/loading'
@@ -119,9 +119,10 @@ function SyncSelectedButton({ children, onClick, disabled, running }: { children
 
 function RunSummary({ run }: { run: SyncSummary | null }) {
   if (run === null) return null
+  const synced = run.attempted - run.failures
   return (
     <p className="mt-2 font-mono text-[0.72rem] text-muted">
-      {run.synced}/{run.attempted} synced · {run.skipped} skipped · +{run.insertedVisits.toLocaleString()} visits
+      {synced}/{run.attempted} synced · {run.skipped} skipped · +{run.insertedVisits.toLocaleString()} visits
     </p>
   )
 }

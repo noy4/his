@@ -19,7 +19,7 @@ export class AppModel {
       from: this.filters.from,
       to: this.filters.to,
     })
-    this.sources = new SourcesModel()
+    this.sources = new SourcesModel(api)
   }
 
   setView(next: string): void {

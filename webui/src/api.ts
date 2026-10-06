@@ -1,7 +1,14 @@
-import type { HistoryItem, Transition, VisitItem } from '@his/core/model'
+import type { HistoryItem, RegisteredSource, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core/model'
 
 export { TRANSITIONS } from '@his/core/model'
 export type { HistoryItem, Transition, VisitItem }
+export type { SyncLastRun, SyncSummary }
+
+// sources.list row — RegisteredSource (source_profiles + watermark) + listing aggregates
+export type SourceProfile = RegisteredSource
+
+// sync.run RPC params — the same shape as the CLI --target flags
+export type SyncRunParams = SyncOptions
 
 export interface ItemDetail {
   item: HistoryItem
@@ -50,5 +57,8 @@ export interface HisApi {
   deleteUrl(url: string): Promise<void>
   restoreUrl(url: string): Promise<void>
   stats(): Promise<Stats>
+  sourcesList(): Promise<SourceProfile[]>
+  syncRun(params: SyncRunParams): Promise<SyncSummary>
+  syncStatus(): Promise<SyncLastRun | null>
   on<K extends keyof HisEvents & string>(event: K, handler: HisEvents[K]): () => void
 }

@@ -11,15 +11,8 @@ import { takeoutDir } from '../home.ts'
 
 export const SYNC_KINDS: SourceKind[] = ['chromium', 'firefox', 'safari', 'takeout']
 
-export interface TargetFilter {
-  browser?: string
-  profile?: string
-}
-
-export function discoverAllTargets(home: string, filter: TargetFilter = {}): SnapshotTarget[] {
-  return SYNC_KINDS
-    .flatMap((kind) => discoverForKind(kind, home))
-    .filter((target) => targetMatches(target, filter))
+export function discoverAllTargets(home: string): SnapshotTarget[] {
+  return SYNC_KINDS.flatMap((kind) => discoverForKind(kind, home))
 }
 
 function discoverForKind(kind: SourceKind, home: string): SnapshotTarget[] {
@@ -33,17 +26,6 @@ function discoverForKind(kind: SourceKind, home: string): SnapshotTarget[] {
     case 'takeout':
       return takeoutTargets(home)
   }
-}
-
-// normalize user input the way discovery slugified its dirs
-const DIR_PATTERN = /[^A-Za-z0-9._-]+/g
-
-function targetMatches(target: SnapshotTarget, filter: TargetFilter): boolean {
-  if (filter.browser !== undefined && target.browser !== filter.browser)
-    return false
-  if (filter.profile !== undefined && target.profile !== filter.profile.replace(DIR_PATTERN, '-'))
-    return false
-  return true
 }
 
 function takeoutTargets(home: string): SnapshotTarget[] {

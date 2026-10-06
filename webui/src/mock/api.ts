@@ -1,8 +1,9 @@
-import type { HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, Stats, VisitItem } from '@/api'
+import type { HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { isoDay } from '@/lib/date'
-import { MOCK_ITEMS, MOCK_VISITS } from './data'
+import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
+const SYNC_DELAY_MS = 600
 
 function byLastVisitDesc(a: HistoryItem, b: HistoryItem): number {
   return b.lastVisit - a.lastVisit || b.id - a.id
@@ -58,6 +59,63 @@ function computeStats(): Stats {
 }
 
 const stats = computeStats()
+
+// --- sources ---
+
+const keyOf = (s: SourceProfile): string => `${s.browser}:${s.profile}`
+
+let sources: SourceProfile[] = MOCK_SOURCES.map((s) => ({ ...s }))
+let inRun = false
+let lastRunRecord: SyncLastRun | null = null
+
+function hashKey(text: string): number {
+  let h = 0
+  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function syncRun(params: SyncRunParams): Promise<SyncSummary> {
+  if (inRun) throw new Error('sync already running')
+  inRun = true
+  const startedAt = Date.now()
+  try {
+    await delay(SYNC_DELAY_MS)
+    const wanted = params.targets === undefined ? null : new Set(params.targets)
+    const targets = sources.filter((s) => wanted === null || wanted.has(keyOf(s)))
+    let skipped = 0
+    let inserted = 0
+    const runAt = Date.now()
+    for (const source of targets) {
+      if (source.browser === 'firefox') {
+        skipped += 1
+        continue
+      }
+      const bump = 1 + (hashKey(keyOf(source)) % 800)
+      source.visits += bump
+      source.lastVisit = runAt - (hashKey(source.profile) % 3_600_000)
+      source.watermark.lastRunAt = runAt
+      inserted += bump
+    }
+    const synced = targets.length - skipped
+    lastRunRecord = {
+      startedAt,
+      finishedAt: Date.now(),
+      ok: true,
+      error: null,
+      attempted: targets.length,
+      failures: 0,
+      insertedVisits: inserted,
+      touchedUrls: synced,
+    }
+    return { attempted: targets.length, failures: 0, skipped, insertedVisits: inserted, touchedUrls: synced }
+  } finally {
+    inRun = false
+  }
+}
 
 function encodeCursor(item: HistoryItem): string {
   return btoa(`v1.${item.lastVisit}.${item.id}`)
@@ -124,6 +182,16 @@ export const mockApi: HisApi = {
 
   async stats(): Promise<Stats> {
     return stats
+  },
+
+  async sourcesList(): Promise<SourceProfile[]> {
+    return sources.map((s) => ({ ...s }))
+  },
+
+  syncRun: (params: SyncRunParams) => syncRun(params),
+
+  async syncStatus(): Promise<SyncLastRun | null> {
+    return lastRunRecord === null ? null : { ...lastRunRecord }
   },
 
   on: () => () => {},

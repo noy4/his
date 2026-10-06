@@ -1,4 +1,4 @@
-import type { HistoryItem, Transition, VisitItem } from '@/api'
+import type { HistoryItem, SourceProfile, Transition, VisitItem } from '@/api'
 
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
@@ -222,3 +222,72 @@ const data = build()
 
 export const MOCK_ITEMS: readonly HistoryItem[] = data.items
 export const MOCK_VISITS: ReadonlyMap<number, VisitItem[]> = data.visits
+
+export const MOCK_SOURCES: SourceProfile[] = [
+  {
+    id: 1,
+    browser: 'brave',
+    profile: 'Default',
+    kind: 'chromium',
+    displayName: 'Brave (Default)',
+    profilePath: '/Users/*/Library/Application Support/BraveSoftware/Brave-Browser/Default/History',
+    watermark: { sourceProfileId: 1, lastSourceVisitId: 26463, sourceIdOffset: 0, lastRunAt: NOW - 4 * HOUR },
+    visits: 26463,
+    lastVisit: NOW - 4 * HOUR,
+  },
+  {
+    id: 2,
+    browser: 'chrome',
+    profile: 'Default',
+    kind: 'chromium',
+    displayName: 'Google Chrome (Default)',
+    profilePath: '/Users/*/Library/Application Support/Google/Chrome/Default/History',
+    watermark: { sourceProfileId: 2, lastSourceVisitId: 185, sourceIdOffset: 0, lastRunAt: NOW - 23 * DAY },
+    visits: 185,
+    lastVisit: NOW - 23 * DAY,
+  },
+  {
+    id: 3,
+    browser: 'vivaldi',
+    profile: 'Default',
+    kind: 'chromium',
+    displayName: 'Vivaldi (Default)',
+    profilePath: '/Users/*/Library/Application Support/Vivaldi/Default/History',
+    watermark: { sourceProfileId: 3, lastSourceVisitId: 23, sourceIdOffset: 0, lastRunAt: NOW - 5 * DAY },
+    visits: 23,
+    lastVisit: NOW - 5 * DAY,
+  },
+  {
+    id: 4,
+    browser: 'safari',
+    profile: 'default',
+    kind: 'safari',
+    displayName: null,
+    profilePath: '/Users/*/Library/Safari/History.db',
+    watermark: { sourceProfileId: 4, lastSourceVisitId: 7, sourceIdOffset: 0, lastRunAt: NOW - 60 * DAY },
+    visits: 7,
+    lastVisit: NOW - 87 * DAY,
+  },
+  {
+    id: 5,
+    browser: 'firefox',
+    profile: 'vpw8f8gt.default-release',
+    kind: 'firefox',
+    displayName: null,
+    profilePath: '/Users/*/Library/Application Support/Firefox/Profiles/vpw8f8gt.default-release/places.sqlite',
+    watermark: { sourceProfileId: 5, lastSourceVisitId: 2, sourceIdOffset: 0, lastRunAt: NOW - 40 * DAY },
+    visits: 2,
+    lastVisit: NOW - 300 * DAY,
+  },
+  {
+    id: 6,
+    browser: 'takeout',
+    profile: 'History-2026-09-30',
+    kind: 'takeout',
+    displayName: 'Takeout (History.json)',
+    profilePath: '~/.his/takeout/History-2026-09-30.json',
+    watermark: { sourceProfileId: 6, lastSourceVisitId: 0, sourceIdOffset: 0, lastRunAt: null },
+    visits: 0,
+    lastVisit: null,
+  },
+]

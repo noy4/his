@@ -1,6 +1,6 @@
 import { BrowserIcon } from '@/components/BrowserIcon'
+import type { SourceProfile } from '@/api'
 import { relativeAgo } from '@/lib/date'
-import type { SourceProfile } from '@/models/sources'
 import Check from '~icons/mdi/check'
 import { type ReactNode } from 'react'
 
@@ -22,9 +22,9 @@ export function SourceCard({ source, selected, onToggle }: Props) {
       </SourceCardHead>
       <SourceCardStats
         visits={source.visits}
-        age={relativeAgo(source.lastVisit ?? source.lastRunAt)}
+        age={relativeAgo(source.lastVisit ?? source.watermark.lastRunAt)}
       />
-      <SourceCardSynced lastRunAt={source.lastRunAt} />
+      <SourceCardSynced lastRunAt={source.watermark.lastRunAt} />
     </SourceCardRoot>
   )
 }

@@ -1,4 +1,5 @@
-import type { IdMode, NativeVisit, SourceKind } from '../applyVisits.ts'
+import type { IdMode, NativeVisit } from '../applyVisits.ts'
+import type { SourceKind } from '../../model.ts'
 import type { SnapshotResult, SnapshotTarget } from '../snapshot.ts'
 import { ChromiumSource } from './chromium.ts'
 import { FirefoxSource } from './firefox.ts'

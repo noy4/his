@@ -1,5 +1,4 @@
-import type { EpochMs } from '@his/core'
-import type { SyncOptions, SyncSummary } from '../sync/types.ts'
+import type { EpochMs, SyncLastRun, SyncOptions, SyncSummary } from '@his/core'
 import { runSync } from '../sync/runSync.ts'
 
 // --- contract ---
@@ -16,17 +15,6 @@ export interface SyncRunner {
   run(options: SyncOptions): Promise<SyncSummary>
   isRunning(): boolean
   lastRun(): SyncLastRun | null
-}
-
-export interface SyncLastRun {
-  startedAt: EpochMs
-  finishedAt: EpochMs
-  ok: boolean
-  error: string | null
-  attempted: number
-  failures: number
-  insertedVisits: number
-  touchedUrls: number
 }
 
 // --- runner ---

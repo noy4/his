@@ -935,8 +935,7 @@ CREATE TABLE favicons (
         </thead>
         <tbody>
           <tr><td><code>sync</code></td><td>Run sync once — writes <code>history.db</code> directly. Prints per-source counts; errors exit 1</td></tr>
-          <tr><td><code>sync --browser &lt;slug&gt;</code></td><td>Limit to one browser — <code>chrome</code> / <code>chromium</code> / <code>edge</code> / <code>brave</code> / <code>vivaldi</code> / <code>arc</code> / <code>opera</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code></td></tr>
-          <tr><td><code>sync --profile &lt;dir&gt;</code></td><td>Limit to one profile dir (e.g. <code>Default</code>); combines with <code>--browser</code></td></tr>
+          <tr><td><code>sync --target &lt;browser[:profile]&gt;</code></td><td>Limit to targets, repeatable (e.g. <code>--target=chrome:Default --target=brave</code>) — bare <code>&lt;browser&gt;</code> runs all of its profiles; slugs: <code>chrome</code> / <code>chromium</code> / <code>edge</code> / <code>brave</code> / <code>vivaldi</code> / <code>arc</code> / <code>opera</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code></td></tr>
           <tr><td><code>sync --full</code></td><td>Ignore watermarks and re-read everything (idempotent)</td></tr>
           <tr><td><code>serve</code></td><td>Foreground — HTTP + RPC + 6h sync loop with startup catch-up. <code>Ctrl+C</code> stops and removes the state file</td></tr>
           <tr><td><code>serve --port &lt;n&gt;</code></td><td>Port to bind (default <code>4477</code>); +1 on conflict, recorded in the state file</td></tr>

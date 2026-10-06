@@ -1,5 +1,5 @@
+import type { SyncOptions } from '@his/core'
 import type { Context } from '../context.ts'
-import type { SyncOptions } from './types.ts'
 import { runSync } from './runSync.ts'
 
 export async function sync(ctx: Context, opts: SyncOptions): Promise<void> {

@@ -109,8 +109,19 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
     return { changed }
   }
 
-  function syncOptions(params: unknown): { full?: boolean } {
-    return { full: optionalBoolean(params, 'full') ?? false }
+  function syncOptions(params: unknown): { full?: boolean; targets?: string[] } {
+    const raw = asObject(params) ?? {}
+    const options: { full?: boolean; targets?: string[] } = { full: optionalBoolean(params, 'full') ?? false }
+    const targets = raw.targets
+    if (targets !== undefined) {
+      if (!Array.isArray(targets)) throw rpcError(INVALID_PARAMS, 'params.targets: string[] required')
+      options.targets = targets.map((target, i) => {
+        if (typeof target !== 'string' || target === '')
+          throw rpcError(INVALID_PARAMS, `params.targets[${i}]: non-empty string required`)
+        return target
+      })
+    }
+    return options
   }
 
   function broadcast(method: string, params: unknown): void {

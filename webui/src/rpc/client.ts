@@ -1,4 +1,4 @@
-import type { HisApi, HisEvents, ItemDetail, SearchPage, SearchParams, Stats, VisitItem } from '@/api'
+import type { HisApi, HisEvents, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { mockApi } from '@/mock/api'
 import { RpcTransport } from '@/rpc/transport'
 
@@ -12,6 +12,9 @@ export function createApi(): HisApi {
     deleteUrl: (url: string) => transport.call('history.deleteUrl', { url }).then(() => undefined),
     restoreUrl: (url: string) => transport.call('history.restoreUrl', { url }).then(() => undefined),
     stats: () => transport.call<Stats>('history.stats'),
+    sourcesList: () => transport.call<SourceProfile[]>('sources.list'),
+    syncRun: (params: SyncRunParams) => transport.call<SyncSummary>('sync.run', params),
+    syncStatus: () => transport.call<SyncLastRun | null>('sync.status'),
     on: (event, handler) => transport.on(event, handler),
   }
 }

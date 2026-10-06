@@ -1,9 +1,6 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite'
-import type { EpochMs, Transition } from '../model.ts'
+import type { EpochMs, SourceKind, Transition, Watermark } from '../model.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
-import type { Watermark } from './watermarks.ts'
-
-export type SourceKind = 'chromium' | 'firefox' | 'safari' | 'takeout'
 
 // id semantics: rowid is comparable, hash is not
 // rowid: live browser dbs number visits with ordered rowids
