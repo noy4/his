@@ -48,53 +48,51 @@ interface VisitRow {
 
 // --- queries ---
 
+// sql text kept together with its positional params
+interface Fragment {
+  sql: string
+  params?: (string | number)[]
+}
+
 export function search(db: DatabaseSync, filter: SearchFilter = {}): SearchPage {
   const limit = clampLimit(filter.limit)
-  const joinStatements: string[] = []
-  const joinParams: (string | number)[] = []
-  const whereParams: (string | number)[] = []
-  const conditions: string[] = ['hidden_at IS NULL']
+  const fragments: Fragment[] = [{ sql: 'hidden_at IS NULL' }]
 
   const url = filter.url
   if (url !== undefined) {
-    conditions.push('url = ?')
-    whereParams.push(url)
+    fragments.push({ sql: 'url = ?', params: [url] })
   }
 
   const from = filter.from
   if (from !== undefined) {
-    conditions.push('last_visit_time >= ?')
-    whereParams.push(from)
+    fragments.push({ sql: 'last_visit_time >= ?', params: [from] })
   }
 
   const to = filter.to
   if (to !== undefined) {
-    conditions.push('last_visit_time <= ?')
-    whereParams.push(to)
+    fragments.push({ sql: 'last_visit_time <= ?', params: [to] })
   }
 
   const query = filter.query?.trim() ?? ''
+  let ftsJoin: Fragment | null = null
   if (query.length !== 0) {
     if (codePoints(query) >= 3) {
-      joinStatements.push('JOIN (SELECT rowid AS fts_id FROM urls_fts WHERE urls_fts MATCH ?) fts ON fts.fts_id = urls.id')
-      joinParams.push(ftsPattern(query))
+      ftsJoin = { sql: 'JOIN (SELECT rowid AS fts_id FROM urls_fts WHERE urls_fts MATCH ?) fts ON fts.fts_id = urls.id', params: [ftsPattern(query)] }
     } else {
-      conditions.push('(title LIKE ? ESCAPE ? OR url LIKE ? ESCAPE ?)')
       const pattern = likePattern(query)
-      whereParams.push(pattern, '\\', pattern, '\\')
+      fragments.push({ sql: '(title LIKE ? ESCAPE ? OR url LIKE ? ESCAPE ?)', params: [pattern, '\\', pattern, '\\'] })
     }
   }
 
   const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
   if (cursor !== null) {
-    conditions.push('(last_visit_time < ? OR (last_visit_time = ? AND id < ?))')
-    whereParams.push(cursor[0], cursor[0], cursor[1])
+    fragments.push({ sql: '(last_visit_time < ? OR (last_visit_time = ? AND id < ?))', params: [cursor[0], cursor[0], cursor[1]] })
   }
 
   const statement = db.prepare(
-    `SELECT ${URL_COLUMNS} FROM urls ${joinStatements.join(' ')} WHERE ${conditions.join(' AND ')} ORDER BY last_visit_time DESC, id DESC LIMIT ?`,
+    `SELECT ${URL_COLUMNS} FROM urls ${ftsJoin?.sql ?? ''} WHERE ${fragments.map((fragment) => fragment.sql).join(' AND ')} ORDER BY last_visit_time DESC, id DESC LIMIT ?`,
   )
-  const rows = statement.all(...joinParams, ...whereParams, limit + 1) as unknown as UrlRow[]
+  const rows = statement.all(...(ftsJoin?.params ?? []), ...fragments.flatMap((fragment) => fragment.params ?? []), limit + 1) as unknown as UrlRow[]
   const items = rows.slice(0, limit).map(toHistoryItem)
   const last = items.at(-1)
   return {
