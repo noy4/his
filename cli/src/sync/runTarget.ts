@@ -25,7 +25,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     const fingerprint = probeFingerprint(source.profilePath)
 
     if (!options.full) {
-      const stored = getTargetFingerprint(db, source.kind, source.profilePath)
+      const stored = getTargetFingerprint(db, source.browser, source.profile)
       if (stored === fingerprint) {
         hooks.onLog?.(`${label}: unchanged — skipped`)
         return { status: 'skipped' }

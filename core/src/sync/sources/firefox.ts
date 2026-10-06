@@ -44,6 +44,8 @@ interface PlacesRow {
 
 // one firefox profile
 export class FirefoxSource implements ProfileSource {
+  readonly browser: string
+  readonly profile: string
   readonly kind = 'firefox' as const
   readonly idMode: IdMode = 'rowid'
   readonly displayName: string | null
@@ -56,6 +58,8 @@ export class FirefoxSource implements ProfileSource {
   constructor(target: SnapshotTarget, home: string) {
     this.#target = target
     this.#home = home
+    this.browser = target.browser
+    this.profile = target.profile
     this.displayName = target.displayName ?? null
     this.label = `${this.kind} · ${target.displayName ?? target.profile}`
     this.profilePath = target.dbPath

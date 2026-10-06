@@ -11,6 +11,8 @@ export interface Watermark {
 
 export interface RegisteredSource {
   id: number
+  browser: string
+  profile: string
   kind: SourceKind
   displayName: string | null
   profilePath: string
@@ -52,10 +54,12 @@ export function setWatermark(db: DatabaseSync, sourceProfileId: number, patch: W
 
 export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
   const rows = db
-    .prepare('SELECT sp.id, sp.kind, sp.display_name, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at FROM source_profiles sp LEFT JOIN profile_watermarks pw ON pw.source_profile_id = sp.id ORDER BY sp.kind, sp.profile_path')
+    .prepare('SELECT sp.id, sp.browser, sp.profile, sp.kind, sp.display_name, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at FROM source_profiles sp LEFT JOIN profile_watermarks pw ON pw.source_profile_id = sp.id ORDER BY sp.browser, sp.profile')
     .all() as unknown as SourceProfileJoinRow[]
   return rows.map((row) => ({
     id: row.id,
+    browser: row.browser,
+    profile: row.profile,
     kind: row.kind as SourceKind,
     displayName: row.display_name,
     profilePath: row.profile_path,
@@ -70,6 +74,8 @@ export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
 
 interface SourceProfileJoinRow {
   id: number
+  browser: string
+  profile: string
   kind: string
   display_name: string | null
   profile_path: string
@@ -88,13 +94,13 @@ export function resetOffset(watermark: Watermark): number {
 
 // --- target fingerprint (change gate) ---
 
-// Read the change-gate fingerprint for a source profile (kind + path).
-export function getTargetFingerprint(db: DatabaseSync, kind: SourceKind, profilePath: string): string | null {
+// Read the change-gate fingerprint for a source profile (browser + profile).
+export function getTargetFingerprint(db: DatabaseSync, browser: string, profile: string): string | null {
   const row = db
     .prepare(
-      'SELECT pw.last_fingerprint AS fingerprint FROM source_profiles sp JOIN profile_watermarks pw ON pw.source_profile_id = sp.id WHERE sp.kind = ? AND sp.profile_path = ?',
+      'SELECT pw.last_fingerprint AS fingerprint FROM source_profiles sp JOIN profile_watermarks pw ON pw.source_profile_id = sp.id WHERE sp.browser = ? AND sp.profile = ?',
     )
-    .get(kind, profilePath) as unknown as { fingerprint: string | null } | undefined
+    .get(browser, profile) as unknown as { fingerprint: string | null } | undefined
   return row?.fingerprint ?? null
 }
 

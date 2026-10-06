@@ -610,7 +610,7 @@ db.changed        { }                                     <span class="c"># clie
     <h3><iconify-icon icon="mdi:code-braces" noobserver></iconify-icon>Schema</h3>
 
     <div class="figure">
-      <svg viewBox="0 0 768 536" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="his schema diagram">
+      <svg viewBox="0 0 768 556" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="his schema diagram">
         <defs>
           <marker id="er-head" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" class="head-muted"/></marker>
         </defs>
@@ -640,10 +640,10 @@ db.changed        { }                                     <span class="c"># clie
         <text class="tm" x="60" y="126">id · PK</text>
         <text class="tm" x="60" y="139">url · UNIQUE</text>
         <text class="tm" x="60" y="152">title</text>
-        <text class="tm" x="60" y="165">visit_count</text>
-        <text class="tm" x="60" y="178">typed_count</text>
-        <text class="tm" x="60" y="191">first_visit_time · ms</text>
-        <text class="tm" x="60" y="204">last_visit_time · ms</text>
+        <text class="tm" x="60" y="165">first_visit_time · ms</text>
+        <text class="tm" x="60" y="178">last_visit_time · ms</text>
+        <text class="tm" x="60" y="191">visit_count</text>
+        <text class="tm" x="60" y="204">typed_count</text>
         <text class="tm" x="60" y="217">hidden_at · soft delete</text>
         <line x1="60" y1="222" x2="256" y2="222" style="stroke: var(--border); stroke-width: 1"/>
         <text class="tm" x="60" y="235" style="font-style: italic">idx: last_visit_time DESC</text>
@@ -673,23 +673,25 @@ db.changed        { }                                     <span class="c"># clie
         <text class="tm" x="352" y="248" style="font-style: italic">idx: (url_id, visit_time DESC)</text>
 
         <!-- source_profiles -->
-        <rect class="node" x="340" y="300" width="240" height="105" rx="6"/>
+        <rect class="node" x="340" y="300" width="240" height="130" rx="6"/>
         <text class="tt" x="352" y="318">source_profiles</text>
         <text class="tm" x="467" y="318">registry</text>
         <text class="tm" x="352" y="336">id · PK</text>
-        <text class="tm" x="352" y="349">kind · chromium | firefox | safari | takeout</text>
-        <text class="tm" x="352" y="362">display_name</text>
-        <text class="tm" x="352" y="375">profile_path</text>
-        <text class="tm" x="352" y="388">UNIQUE(kind, profile_path)</text>
+        <text class="tm" x="352" y="349">browser</text>
+        <text class="tm" x="352" y="362">profile</text>
+        <text class="tm" x="352" y="375">kind</text>
+        <text class="tm" x="352" y="388">display_name</text>
+        <text class="tm" x="352" y="401">profile_path</text>
+        <text class="tm" x="352" y="414" style="font-style: italic">UNIQUE(browser, profile)</text>
 
         <!-- profile_watermarks -->
-        <rect class="node" x="340" y="428" width="240" height="90" rx="6"/>
-        <text class="tt" x="352" y="446">profile_watermarks</text>
-        <text class="tm" x="486" y="446">cursors</text>
-        <text class="tm" x="352" y="462">source_profile_id · PK · FK</text>
-        <text class="tm" x="352" y="475">last_source_visit_id</text>
-        <text class="tm" x="352" y="488">source_id_offset · reset offset</text>
-        <text class="tm" x="352" y="501">last_run_at</text>
+        <rect class="node" x="340" y="450" width="240" height="90" rx="6"/>
+        <text class="tt" x="352" y="468">profile_watermarks</text>
+        <text class="tm" x="486" y="468">cursors</text>
+        <text class="tm" x="352" y="484">source_profile_id · PK · FK</text>
+        <text class="tm" x="352" y="497">last_source_visit_id</text>
+        <text class="tm" x="352" y="510">source_id_offset · reset offset</text>
+        <text class="tm" x="352" y="523">last_run_at</text>
 
         <!-- favicon_cache -->
         <rect class="node" x="616" y="90" width="132" height="114" rx="6"/>
@@ -706,22 +708,24 @@ db.changed        { }                                     <span class="c"># clie
     </div>
 
     <pre><span class="c">-- history.db · WAL · foreign_keys=ON · append-only (+ soft delete)</span>
-CREATE TABLE source_profiles (          <span class="c">-- registered browser profiles</span>
+CREATE TABLE source_profiles (          <span class="c">-- registered browser profiles · identity = (browser, profile)</span>
   id            INTEGER PRIMARY KEY,
-  kind          TEXT    NOT NULL,       <span class="c">-- chromium | firefox | safari | takeout</span>
+  browser       TEXT    NOT NULL,       <span class="c">-- user-facing slug · chrome, brave, ...</span>
+  profile       TEXT    NOT NULL,       <span class="c">-- slugified dir · Default, vpw8f8gt.default-release, ...</span>
+  kind          TEXT    NOT NULL,       <span class="c">-- engine · derived from browser</span>
   display_name  TEXT,
   profile_path  TEXT    NOT NULL,
-  UNIQUE(kind, profile_path)
+  UNIQUE(browser, profile)
 );
 
 CREATE TABLE urls (                     <span class="c">-- HistoryItem · URL aggregate</span>
   id               INTEGER PRIMARY KEY,
   url              TEXT    NOT NULL UNIQUE,
   title            TEXT,                <span class="c">-- last seen</span>
-  visit_count      INTEGER NOT NULL DEFAULT 0,
-  typed_count      INTEGER NOT NULL DEFAULT 0,
   first_visit_time INTEGER NOT NULL,    <span class="c">-- epoch ms</span>
   last_visit_time  INTEGER NOT NULL,    <span class="c">-- epoch ms</span>
+  visit_count      INTEGER NOT NULL DEFAULT 0,
+  typed_count      INTEGER NOT NULL DEFAULT 0,
   hidden_at        INTEGER              <span class="c">-- soft delete · NULL = visible</span>
 );
 

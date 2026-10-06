@@ -7,6 +7,8 @@ import { TakeoutSource } from './takeout.ts'
 
 // instance contract, one profile
 export interface ProfileSource {
+  readonly browser: string
+  readonly profile: string
   readonly kind: SourceKind
   readonly idMode: IdMode
   readonly displayName: string | null

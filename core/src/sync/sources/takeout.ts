@@ -11,6 +11,8 @@ import type { ProfileSource } from './source.ts'
 
 // one takeout export
 export class TakeoutSource implements ProfileSource {
+  readonly browser: string
+  readonly profile: string
   readonly kind = 'takeout' as const
   readonly idMode: IdMode = 'hash'
   readonly displayName: string | null
@@ -23,6 +25,8 @@ export class TakeoutSource implements ProfileSource {
   constructor(target: SnapshotTarget, home: string) {
     this.#target = target
     this.#home = home
+    this.browser = target.browser
+    this.profile = target.profile
     this.displayName = target.displayName ?? null
     this.label = `${this.kind} · ${target.displayName ?? target.profile}`
     this.profilePath = target.dbPath

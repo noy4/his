@@ -17,7 +17,7 @@ export interface ChromiumApp {
   userDir: string
 }
 
-const CHROMIUM_APPS: Partial<Record<NodeJS.Platform, ChromiumApp[]>> = {
+export const CHROMIUM_APPS: Partial<Record<NodeJS.Platform, ChromiumApp[]>> = {
   darwin: [
     { slug: 'chrome', displayName: 'Google Chrome', userDir: 'Google/Chrome' },
     { slug: 'edge', displayName: 'Microsoft Edge', userDir: 'Microsoft Edge' },
@@ -79,6 +79,8 @@ interface ChromiumRow {
 
 // one chromium profile
 export class ChromiumSource implements ProfileSource {
+  readonly browser: string
+  readonly profile: string
   readonly kind = 'chromium' as const
   readonly idMode: IdMode = 'rowid'
   readonly displayName: string | null
@@ -91,6 +93,8 @@ export class ChromiumSource implements ProfileSource {
   constructor(target: SnapshotTarget, home: string) {
     this.#target = target
     this.#home = home
+    this.browser = target.browser
+    this.profile = target.profile
     this.displayName = target.displayName ?? null
     this.label = `${this.kind} · ${target.displayName ?? target.profile}`
     this.profilePath = target.dbPath
@@ -162,6 +166,7 @@ function platformDataRoot(platform: NodeJS.Platform): string | null {
   return null
 }
 
-function slugifyDir(dir: string): string {
+// filesystem dir to the slug used in profile keys
+export function slugifyDir(dir: string): string {
   return dir.replace(/[^A-Za-z0-9._-]+/g, '-')
 }

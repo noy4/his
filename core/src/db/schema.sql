@@ -1,10 +1,12 @@
 -- Browser profiles
 CREATE TABLE source_profiles (
   id            INTEGER PRIMARY KEY,
+  browser       TEXT    NOT NULL,
+  profile       TEXT    NOT NULL,
   kind          TEXT    NOT NULL,
   display_name  TEXT,
   profile_path  TEXT    NOT NULL,
-  UNIQUE(kind, profile_path)
+  UNIQUE(browser, profile)
 );
 
 -- WebExtensions history API HistoryItem:

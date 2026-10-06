@@ -28,6 +28,8 @@ interface SafariRow {
 
 // one safari profile
 export class SafariSource implements ProfileSource {
+  readonly browser: string
+  readonly profile: string
   readonly kind = 'safari' as const
   readonly idMode: IdMode = 'rowid'
   readonly displayName: string | null
@@ -40,6 +42,8 @@ export class SafariSource implements ProfileSource {
   constructor(target: SnapshotTarget, home: string) {
     this.#target = target
     this.#home = home
+    this.browser = target.browser
+    this.profile = target.profile
     this.displayName = target.displayName ?? null
     this.label = `${this.kind} · ${target.displayName ?? target.profile}`
     this.profilePath = target.dbPath
