@@ -5,6 +5,8 @@ import dayjs from 'dayjs'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
 import { DashboardModel } from './dashboard.model'
+import type { ComponentProps, ReactNode } from 'react'
+import { buttonBase } from '@/components/ui/button'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DAY = 86_400_000
@@ -200,24 +202,37 @@ function MonthNav({
   const month = dayjs(`${value}-01`)
   return (
     <div className="inline-flex items-center gap-0.5 rounded-sm border bg-bg-2 text-sm">
-      <button
-        type="button"
+      <NavButton
+        icon={<ChevronLeft width={15} height={15} />}
         aria-label="Previous month"
         onClick={onPrev}
-        className="inline-flex items-center px-1.5 py-1 text-muted transition-colors hover:text-text"
-      >
-        <ChevronLeft width={15} height={15} />
-      </button>
-      <span className="px-1 font-medium tabular-nums">{month.format('MMM YYYY')}</span>
-      <button
-        type="button"
+      />
+      <span className="px-1 font-medium tabular-nums">
+        {month.format('MMM YYYY')}
+      </span>
+      <NavButton
+        icon={<ChevronRight width={15} height={15} />}
         aria-label="Next month"
         onClick={onNext}
-        className="inline-flex items-center px-1.5 py-1 text-muted transition-colors hover:text-text"
-      >
-        <ChevronRight width={15} height={15} />
-      </button>
+      />
     </div>
+  )
+}
+
+function NavButton({
+  icon,
+  children,
+  ...props
+}: ComponentProps<'button'> & { icon: ReactNode }) {
+  return (
+    <button
+      type="button"
+      className={`${buttonBase} text-muted hover:bg-bg-3 hover:text-text`}
+      {...props}
+    >
+      {icon}
+      {children}
+    </button>
   )
 }
 
