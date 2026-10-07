@@ -1,6 +1,6 @@
 import type { IconComponent } from '@/components/icons'
 import { AppModel } from '@/models/app'
-import { Dashboard } from '@/views/Dashboard'
+import { Dashboard } from '@/views/dashboard/Dashboard'
 import { List } from '@/views/List'
 import { Sources } from '@/views/sources/Sources'
 import { Timeline } from '@/views/timeline/Timeline'

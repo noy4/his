@@ -1,38 +1,25 @@
-import type { Stats } from '@/api'
 import { dateLabel } from '@/lib/date'
+import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/models/app'
 import dayjs from 'dayjs'
-import { useEffect, useState } from 'react'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
+import { DashboardModel } from './dashboard.model'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DAY = 86_400_000
 
-type Mode = 'month' | 'all'
-
 export function Dashboard({ app }: { app: AppModel }) {
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [mode, setMode] = useState<Mode>('all')
-  const [monthKey, setMonthKey] = useState(() => dayjs().format('YYYY-MM'))
-
-  useEffect(() => {
-    let stale = false
-    void app.history.stats().then((s) => {
-      if (!stale) setStats(s)
-    })
-    return () => {
-      stale = true
-    }
-  }, [app.history])
+  const dashboard = useModel(() => new DashboardModel(app.api))
+  const stats = dashboard.stats.value
 
   if (!stats) {
     return <p className="h-full overflow-y-auto py-12 text-center font-mono text-[0.8rem] text-muted">Loading…</p>
   }
 
   const { totals } = stats
-  const monthly = mode === 'month'
-  const month = dayjs(`${monthKey}-01`)
+  const monthly = dashboard.mode.value === 'month'
+  const month = dayjs(`${dashboard.monthKey.value}-01`)
   const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY)
 
   const byHour = monthly ? [] : stats.byHour.map((h) => h.visits)
@@ -44,10 +31,18 @@ export function Dashboard({ app }: { app: AppModel }) {
   return (
     <div className="h-full overflow-y-auto px-4 pt-4 pb-10">
       <div className="mb-4 flex items-center justify-between gap-4">
-        {monthly ? <MonthNav value={monthKey} onChange={setMonthKey} /> : <div />}
+        {monthly ? (
+          <MonthNav
+            value={dashboard.monthKey.value}
+            onPrev={() => dashboard.shiftMonth(-1)}
+            onNext={() => dashboard.shiftMonth(1)}
+          />
+        ) : (
+          <div />
+        )}
         <SegmentedControl
-          value={mode}
-          onChange={setMode}
+          value={dashboard.mode.value}
+          onChange={(m) => dashboard.setMode(m)}
           options={[
             { value: 'month', label: 'Monthly' },
             { value: 'all', label: 'All time' },
@@ -169,14 +164,22 @@ function SegmentedControl<T extends string>({
   )
 }
 
-function MonthNav({ value, onChange }: { value: string; onChange: (next: string) => void }) {
+function MonthNav({
+  value,
+  onPrev,
+  onNext,
+}: {
+  value: string
+  onPrev: () => void
+  onNext: () => void
+}) {
   const month = dayjs(`${value}-01`)
   return (
     <div className="inline-flex items-center gap-0.5 rounded-sm border border-border-2 bg-bg-2 text-sm">
       <button
         type="button"
         aria-label="Previous month"
-        onClick={() => onChange(month.subtract(1, 'month').format('YYYY-MM'))}
+        onClick={onPrev}
         className="inline-flex items-center px-1.5 py-1 text-muted transition-colors hover:text-text"
       >
         <ChevronLeft width={15} height={15} />
@@ -185,7 +188,7 @@ function MonthNav({ value, onChange }: { value: string; onChange: (next: string)
       <button
         type="button"
         aria-label="Next month"
-        onClick={() => onChange(month.add(1, 'month').format('YYYY-MM'))}
+        onClick={onNext}
         className="inline-flex items-center px-1.5 py-1 text-muted transition-colors hover:text-text"
       >
         <ChevronRight width={15} height={15} />

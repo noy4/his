@@ -6,7 +6,7 @@ import { createApi } from '@/rpc/client'
 
 export class AppModel {
   readonly api: HisApi
-  readonly view = signal('timeline')
+  readonly view = signal('dashboard')
   readonly filters: FilterModel
   readonly history: HistoryModel
   readonly sources: SourcesModel
