@@ -26,11 +26,11 @@ export function Dashboard({ app }: { app: AppModel }) {
   const month = dayjs(`${dashboard.monthKey.value}-01`)
   const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY)
 
-  const byHour = monthly ? [] : stats.byHour.map((h) => h.visits)
-  const byHourLabels = monthly ? [] : stats.byHour.map((h) => (h.hour % 6 === 0 ? String(h.hour) : ''))
-  const byDow = monthly ? [] : stats.byDow.map((d) => d.visits)
-  const topDomains = monthly ? [] : stats.topDomains
-  const busiestDays = monthly ? [] : stats.busiestDays
+  const byHour = stats.byHour.map((h) => h.visits)
+  const byHourLabels = stats.byHour.map((h) => (h.hour % 6 === 0 ? String(h.hour) : ''))
+  const byDow = stats.byDow.map((d) => d.visits)
+  const topDomains = stats.topDomains
+  const busiestDays = stats.busiestDays
 
   return (
     <DashboardRoot>
@@ -57,10 +57,10 @@ export function Dashboard({ app }: { app: AppModel }) {
       <DashboardContentRoot>
         <Card title="Overview">
           <div className="grid grid-cols-2 gap-4">
-            <Stat label="visits" value={monthly ? '—' : fmtNum(totals.visits)} />
-            <Stat label="URLs" value={monthly ? '—' : fmtNum(totals.items)} />
-            <Stat label="domains" value={monthly ? '—' : fmtNum(totals.domains)} />
-            <Stat label="days tracked" value={monthly ? '—' : fmtNum(days)} />
+            <Stat label="visits" value={fmtNum(totals.visits)} />
+            <Stat label="URLs" value={fmtNum(totals.items)} />
+            <Stat label="domains" value={fmtNum(totals.domains)} />
+            <Stat label="days tracked" value={fmtNum(days)} />
           </div>
           <p className="mt-3 text-xs text-muted">
             {monthly ? month.format('MMM YYYY') : `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}

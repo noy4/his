@@ -58,6 +58,48 @@ function computeStats(): Stats {
   }
 }
 
+function computeMonthlyStats(month: string): Stats {
+  const byHour = new Array<number>(24).fill(0)
+  const byDow = new Array<number>(7).fill(0)
+  const byDay = new Map<string, number>()
+  const byDomain = new Map<string, number>()
+  const visitedUrls = new Set<number>()
+  let visits = 0
+  let firstVisit = Number.POSITIVE_INFINITY
+  let lastVisit = 0
+
+  for (const it of MOCK_ITEMS) {
+    if (it.hiddenAt !== null) continue
+    const host = hostOf(it.url)
+    for (const v of MOCK_VISITS.get(it.id) ?? []) {
+      const day = isoDay(v.visitTime)
+      if (day.slice(0, 7) !== month) continue
+      visits += 1
+      visitedUrls.add(it.id)
+      firstVisit = Math.min(firstVisit, v.visitTime)
+      lastVisit = Math.max(lastVisit, v.visitTime)
+      byDomain.set(host, (byDomain.get(host) ?? 0) + 1)
+      byHour[new Date(v.visitTime).getHours()] += 1
+      byDow[new Date(v.visitTime).getDay()] += 1
+      byDay.set(day, (byDay.get(day) ?? 0) + 1)
+    }
+  }
+
+  return {
+    totals: {
+      items: visitedUrls.size,
+      visits,
+      domains: byDomain.size,
+      firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
+      lastVisit,
+    },
+    byHour: byHour.map((v, hour) => ({ hour, visits: v })),
+    byDow: byDow.map((v, dow) => ({ dow, visits: v })),
+    topDomains: topN(byDomain, 8).map(({ key, visits }) => ({ domain: key, visits })),
+    busiestDays: topN(byDay, 5).map(({ key, visits }) => ({ day: key, visits })),
+  }
+}
+
 const stats = computeStats()
 
 // --- sources ---
@@ -124,7 +166,7 @@ function encodeCursor(item: HistoryItem): string {
 function decodeCursor(cursor: string): { lastVisit: number; id: number } | null {
   try {
     const m = /^v1\.(\d+)\.(\d+)$/.exec(atob(cursor))
-    if (!m) return null
+    if (m === null) return null
     return { lastVisit: Number(m[1]), id: Number(m[2]) }
   } catch {
     return null
@@ -166,22 +208,22 @@ export const mockApi: HisApi = {
 
   async getItem(id: number): Promise<ItemDetail | null> {
     const item = MOCK_ITEMS.find((it) => it.id === id)
-    if (!item) return null
+    if (item === undefined) return null
     return { item, visits: MOCK_VISITS.get(id) ?? [] }
   },
 
   async deleteUrl(url: string): Promise<void> {
     const item = MOCK_ITEMS.find((it) => it.url === url)
-    if (item) item.hiddenAt = Date.now()
+    if (item !== undefined) item.hiddenAt = Date.now()
   },
 
   async restoreUrl(url: string): Promise<void> {
     const item = MOCK_ITEMS.find((it) => it.url === url)
-    if (item) item.hiddenAt = null
+    if (item !== undefined) item.hiddenAt = null
   },
 
-  async stats(): Promise<Stats> {
-    return stats
+  async stats(month?: string): Promise<Stats> {
+    return month === undefined ? stats : computeMonthlyStats(month)
   },
 
   async sourcesList(): Promise<SourceProfile[]> {

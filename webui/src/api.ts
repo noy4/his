@@ -56,7 +56,7 @@ export interface HisApi {
   getItem(id: number): Promise<ItemDetail | null>
   deleteUrl(url: string): Promise<void>
   restoreUrl(url: string): Promise<void>
-  stats(): Promise<Stats>
+  stats(month?: string): Promise<Stats>
   sourcesList(): Promise<SourceProfile[]>
   syncRun(params: SyncRunParams): Promise<SyncSummary>
   syncStatus(): Promise<SyncLastRun | null>

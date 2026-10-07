@@ -90,7 +90,7 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
       case 'history.restoreUrl':
         return hideUrl(params, false)
       case 'history.stats':
-        return stats(db)
+        return stats(db, monthParam(params))
       case 'sources.list':
         return listSourceProfiles(db)
       case 'sync.run':
@@ -237,6 +237,15 @@ function optionalNumber(params: unknown, key: string): number | undefined {
   const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)[key] : undefined
   if (raw === undefined) return undefined
   if (typeof raw !== 'number' || !Number.isFinite(raw)) throw rpcError(INVALID_PARAMS, `params.${key}: number required`)
+  return raw
+}
+
+function monthParam(params: unknown): string | undefined {
+  const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)['month'] : undefined
+  if (raw === undefined) return undefined
+  if (typeof raw !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(raw)) {
+    throw rpcError(INVALID_PARAMS, 'params.month: YYYY-MM string required')
+  }
   return raw
 }
 
