@@ -1,14 +1,13 @@
+import { historyDbPath, initDb } from '@his/core'
+import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
 import { spawn } from 'node:child_process'
-import { randomBytes } from 'node:crypto'
 import fs from 'node:fs'
 import http from 'node:http'
-import { historyDbPath, initDb } from '@his/core'
 import { createApp } from './app.ts'
 import { createNodeHandler } from './node.ts'
 import { attachRpc, type RpcHandle } from './rpc.ts'
-import { startPeriodicSync, type PeriodicSyncHandle } from './watch.ts'
 import { resolveDistRoot } from './static.ts'
-import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
+import { startPeriodicSync, type PeriodicSyncHandle } from './watch.ts'
 
 const HOST = '127.0.0.1'
 const PORT_ATTEMPTS = 20
@@ -38,7 +37,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   fs.mkdirSync(home, { recursive: true })
 
   const db = await initDb(historyDbPath(home))
-  const token = randomBytes(24).toString('base64url')
 
   const distRoot = resolveDistRoot(options.dist ?? process.env.HIS_DIST)
   if (distRoot === null)
@@ -48,7 +46,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     dist: distRoot,
   })
   const server = http.createServer(createNodeHandler(app))
-  const rpc: RpcHandle = attachRpc(server, { db, home, token })
+  const rpc: RpcHandle = attachRpc(server, { db, home })
 
   const port = await bind(server, options.port)
   const info: InstanceState = {
@@ -56,7 +54,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     port,
     url: `http://${HOST}:${port}/`,
     db: historyDbPath(home),
-    token,
   }
   writeState(home, info)
 

@@ -18,7 +18,6 @@ import { monthParam, numberParam, optionalNumber, searchFilter, stringParam, syn
 export interface RpcOptions {
   db: DatabaseSync
   home: string
-  token: string
 }
 
 export interface RpcHandle {
@@ -44,7 +43,7 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
       ws.on('message', (data, isBinary) => {
         if (!isBinary) void receive(ws, data, dispatch)
       })
-      const drop = (): void => {
+      const drop = () => {
         clients.delete(ws)
       }
       ws.on('close', drop)
@@ -52,32 +51,13 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
     })
   })
 
-  type Handler = (params: unknown) => unknown | Promise<unknown>
-
-  const handlers: Record<string, Handler> = {
-    'history.search': (params) => search(db, searchFilter(params)),
-    'history.getVisits': (params) => getVisits(db, numberParam(params, 'urlId'), optionalNumber(params, 'limit')),
-    'history.getItem': (params) => getItem(db, numberParam(params, 'id')),
-    'history.deleteUrl': (params) => hideUrl(params, true),
-    'history.restoreUrl': (params) => hideUrl(params, false),
-    'history.stats': (params) => stats(db, monthParam(params)),
-    'sources.list': () => listSourceProfiles(db),
-    'sync.run': (params) => runner.run(syncOptions(params)),
-    'sync.status': () => runner.lastRun(),
-  }
+  const handlers = createHandlers({ db, runner, broadcast })
 
   function dispatch(method: string, params: unknown): unknown | Promise<unknown> {
     const handler = handlers[method]
     if (handler === undefined)
       throw rpcError(METHOD_NOT_FOUND, `method not found: ${method}`)
     return handler(params)
-  }
-
-  function hideUrl(params: unknown, hide: boolean): { changed: boolean } {
-    const url = stringParam(params, 'url')
-    const changed = hide ? deleteUrl(db, url) : restoreUrl(db, url)
-    if (changed) broadcast('db.changed', {})
-    return { changed }
   }
 
   function broadcast(method: string, params: unknown): void {
@@ -110,4 +90,32 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
       for (const client of clients) client.terminate()
     },
   }
+}
+
+type Handler = (params: unknown) => unknown | Promise<unknown>
+
+function createHandlers({ db, runner, broadcast }: {
+  db: DatabaseSync,
+  runner: SyncRunner,
+  broadcast: (method: string, params: unknown) => void,
+}): Record<string, Handler> {
+  function hideUrl(params: unknown, hide: boolean): { changed: boolean } {
+    const url = stringParam(params, 'url')
+    const changed = hide ? deleteUrl(db, url) : restoreUrl(db, url)
+    if (changed) broadcast('db.changed', {})
+    return { changed }
+  }
+
+  const handlers: Record<string, Handler> = {
+    'history.search': (params) => search(db, searchFilter(params)),
+    'history.getVisits': (params) => getVisits(db, numberParam(params, 'urlId'), optionalNumber(params, 'limit')),
+    'history.getItem': (params) => getItem(db, numberParam(params, 'id')),
+    'history.deleteUrl': (params) => hideUrl(params, true),
+    'history.restoreUrl': (params) => hideUrl(params, false),
+    'history.stats': (params) => stats(db, monthParam(params)),
+    'sources.list': () => listSourceProfiles(db),
+    'sync.run': (params) => runner.run(syncOptions(params)),
+    'sync.status': () => runner.lastRun(),
+  }
+  return handlers
 }
