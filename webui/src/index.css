@@ -1,17 +1,17 @@
 @import 'tailwindcss';
 
 :root {
-  --bg: #0B0E14;
-  --surface: #151A23;
-  --surface-2: #21252F;
-  --border: #2C313F;
-  --border-strong: #383F50;
-  --text: #C3CDDC;
-  --text-strong: #F7F9FC;
-  --muted: #7E8A9E;
-  --primary: #4465DB;
+  --bg: #0b0e14;
+  --surface: #151a23;
+  --surface-2: #21252f;
+  --border: #2c313f;
+  --border-strong: #383f50;
+  --text: #c3cddc;
+  --text-strong: #f7f9fc;
+  --muted: #7e8a9e;
+  --primary: #4465db;
   --primary-soft: rgba(68, 101, 219, 0.15);
-  --accent: #F08A59;
+  --accent: #f08a59;
   --accent-soft: rgba(240, 138, 89, 0.15);
   --mono: ui-monospace, SFMono-Regular, 'Geist Mono', Menlo, monospace;
   color-scheme: dark;
@@ -19,17 +19,17 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #F8FAFC;
-    --surface: #FFFFFF;
-    --surface-2: #F1F5F9;
-    --border: #E2E8F0;
-    --border-strong: #CBD5E1;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
     --text: #334155;
-    --text-strong: #0F172A;
-    --muted: #64748B;
-    --primary: #2563EB;
+    --text-strong: #0f172a;
+    --muted: #64748b;
+    --primary: #2563eb;
     --primary-soft: rgba(37, 99, 235, 0.1);
-    --accent: #EA580C;
+    --accent: #ea580c;
     --accent-soft: rgba(234, 88, 12, 0.1);
     color-scheme: light;
   }
@@ -56,7 +56,9 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans',
+      'Noto Sans JP', sans-serif;
     font-size: 15px;
     line-height: 1.75;
     -webkit-font-smoothing: antialiased;
