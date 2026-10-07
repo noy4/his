@@ -13,13 +13,12 @@ export async function serveCommand(ctx: Context, opts: ServeOptions): Promise<vo
   if (port === null) throw new Error(`invalid --port: ${opts.port} (integer 1-65535)`)
   const result = await serve({ home: ctx.home, port, open: opts.open })
   if (result.kind === 'already-running') {
-    console.log(result.info.url)
+    console.log(result.instance.url)
     return
   }
-  const { info, done } = result.handle
-  console.log(`his: serving ${info.url}`)
-  console.log(`his: archive ${info.db}`)
-  await done
+  console.log(`his: serving ${result.instance.url}`)
+  console.log(`his: archive ${result.instance.db}`)
+  await result.done
 }
 
 function parsePortArg(raw: string | undefined): number | null {

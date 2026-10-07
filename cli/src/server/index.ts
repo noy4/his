@@ -19,20 +19,15 @@ export interface ServeOptions {
   dist?: string
 }
 
-export interface ServeHandle {
-  info: InstanceState
-  done: Promise<void>
-}
-
 export type ServeResult =
-  | { kind: 'started'; handle: ServeHandle }
-  | { kind: 'already-running'; info: InstanceState }
+  | { kind: 'started'; instance: InstanceState; done: Promise<void> }
+  | { kind: 'already-running'; instance: InstanceState }
 
 export async function serve(options: ServeOptions): Promise<ServeResult> {
   const { home } = options
   const running = readState(home)
   if (running !== null)
-    return { kind: 'already-running', info: running }
+    return { kind: 'already-running', instance: running }
 
   const db = await initDb(historyDbPath(home))
   const distRoot = resolveDistRoot(options.dist ?? process.env.HIS_DIST)
@@ -44,16 +39,16 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const runner = new SyncRunner({ home })
   const rpc = new RpcServer(server, () => createHandlers({ db, runner }))
 
-  let info: InstanceState
+  let instance: InstanceState
   try {
     const port = await bind(server, options.port)
-    info = {
+    instance = {
       pid: process.pid,
       port,
       url: `http://${HOST}:${port}/`,
       db: historyDbPath(home),
     }
-    writeState(home, info)
+    writeState(home, instance)
   } catch (error) {
     db.close()
     throw error
@@ -84,9 +79,9 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   runner.trigger()
   const stopSchedule = runner.schedule()
 
-  if (options.open === true) openUrl(info.url)
+  if (options.open === true) openUrl(instance.url)
 
-  return { kind: 'started', handle: { info, done } }
+  return { kind: 'started', instance, done }
 }
 
 // --- bind & lifecycle ---
