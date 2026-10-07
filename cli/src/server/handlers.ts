@@ -8,7 +8,7 @@ import {
   stats,
 } from '@his/core'
 import type { Handler } from './rpc.ts'
-import type { SyncRunner } from './runner.ts'
+import type { SyncRunner } from './sync-runner.ts'
 
 export function createHandlers({ db, runner }: {
   db: DatabaseSync,

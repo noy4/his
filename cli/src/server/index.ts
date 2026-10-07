@@ -6,7 +6,7 @@ import { createApp } from './app.ts'
 import { createHandlers } from './handlers.ts'
 import { createNodeHandler } from './node.ts'
 import { RpcServer } from './rpc.ts'
-import { createSyncRunner, type SyncRunner } from './runner.ts'
+import { SyncRunner } from './sync-runner.ts'
 import { resolveDistRoot } from './static.ts'
 import { startPeriodicSync, type PeriodicSyncHandle } from './watch.ts'
 
@@ -47,7 +47,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const server = http.createServer(createNodeHandler(app))
   let runner!: SyncRunner
   const rpc = new RpcServer(server, ({ broadcast }) => {
-    runner = createSyncRunner({ home, broadcast })
+    runner = new SyncRunner({ home, broadcast })
     return createHandlers({ db, runner })
   })
 
@@ -88,9 +88,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
 
   // Startup catch-up — async so serve returns early; the 6h interval
   // retries failures (which land on lastRun()).
-  if (!runner.isRunning()) {
-    void runner.run({}).catch(() => { })
-  }
+  runner.trigger()
   const watch: PeriodicSyncHandle = startPeriodicSync({ runner })
 
   if (options.open === true) openUrl(info.url)

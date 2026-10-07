@@ -1,4 +1,4 @@
-import type { SyncRunner } from './runner.ts'
+import type { SyncRunner } from './sync-runner.ts'
 
 // --- contract ---
 
@@ -21,13 +21,8 @@ export function startPeriodicSync(options: PeriodicSyncOptions): PeriodicSyncHan
   const timer = setInterval(tick, options.interval ?? SYNC_INTERVAL)
   timer.unref()
   function tick(): void {
-    if (options.runner.isRunning()) return
-    try {
-      // async failures land on lastRun(); the next tick retries anyway
-      options.runner.run({}).catch(() => { })
-    } catch {
-      // 'sync already running' or setup failure — next tick retries
-    }
+    // failures land on lastRun(); the next tick retries anyway
+    options.runner.trigger()
   }
   return {
     stop(): void {
