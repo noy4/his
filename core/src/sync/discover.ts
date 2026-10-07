@@ -19,7 +19,7 @@ export function discoverAllTargets(home: string): SyncTarget[] {
   return KNOWN_BROWSERS.flatMap((browser) => discoverBrowser(home, browser))
 }
 
-export function discoverBrowser(home: string, slug: string, profile?: string): SyncTarget[] {
-  const browser = browserOf(slug)
+export function discoverBrowser(home: string, name: string, profile?: string): SyncTarget[] {
+  const browser = browserOf(name)
   return browser.engine.discover(browser, home, profile)
 }

@@ -15,14 +15,14 @@ export const chromiumEngine: Engine = {
 }
 
 export const CHROMIUM_BROWSERS: readonly Browser[] = [
-  { slug: 'chrome', displayName: 'Google Chrome', engine: chromiumEngine, userDirs: { darwin: 'Google/Chrome', win32: 'Google/Chrome', linux: 'google-chrome' } },
-  { slug: 'chromium', displayName: 'Chromium', engine: chromiumEngine, userDirs: { linux: 'chromium' } },
-  { slug: 'edge', displayName: 'Microsoft Edge', engine: chromiumEngine, userDirs: { darwin: 'Microsoft Edge', win32: 'Microsoft/Edge', linux: 'microsoft-edge' } },
-  { slug: 'brave', displayName: 'Brave', engine: chromiumEngine, userDirs: { darwin: 'BraveSoftware/Brave-Browser', win32: 'BraveSoftware/Brave-Browser', linux: 'BraveSoftware/Brave-Browser' } },
-  { slug: 'vivaldi', displayName: 'Vivaldi', engine: chromiumEngine, userDirs: { darwin: 'Vivaldi', win32: 'Vivaldi', linux: 'vivaldi' } },
-  { slug: 'arc', displayName: 'Arc', engine: chromiumEngine, userDirs: { darwin: 'Arc', linux: 'Arc' } },
-  { slug: 'opera', displayName: 'Opera', engine: chromiumEngine, userDirs: { darwin: 'com.operasoftware.Opera', win32: 'Opera Software/Opera Stable', linux: 'opera' } },
-  { slug: 'opera-gx', displayName: 'Opera GX', engine: chromiumEngine, userDirs: { win32: 'Opera Software/Opera GX Stable' } },
+  { name: 'chrome', displayName: 'Google Chrome', engine: chromiumEngine, userDirs: { darwin: 'Google/Chrome', win32: 'Google/Chrome', linux: 'google-chrome' } },
+  { name: 'chromium', displayName: 'Chromium', engine: chromiumEngine, userDirs: { linux: 'chromium' } },
+  { name: 'edge', displayName: 'Microsoft Edge', engine: chromiumEngine, userDirs: { darwin: 'Microsoft Edge', win32: 'Microsoft/Edge', linux: 'microsoft-edge' } },
+  { name: 'brave', displayName: 'Brave', engine: chromiumEngine, userDirs: { darwin: 'BraveSoftware/Brave-Browser', win32: 'BraveSoftware/Brave-Browser', linux: 'BraveSoftware/Brave-Browser' } },
+  { name: 'vivaldi', displayName: 'Vivaldi', engine: chromiumEngine, userDirs: { darwin: 'Vivaldi', win32: 'Vivaldi', linux: 'vivaldi' } },
+  { name: 'arc', displayName: 'Arc', engine: chromiumEngine, userDirs: { darwin: 'Arc', linux: 'Arc' } },
+  { name: 'opera', displayName: 'Opera', engine: chromiumEngine, userDirs: { darwin: 'com.operasoftware.Opera', win32: 'Opera Software/Opera Stable', linux: 'opera' } },
+  { name: 'opera-gx', displayName: 'Opera GX', engine: chromiumEngine, userDirs: { win32: 'Opera Software/Opera GX Stable' } },
 ]
 
 // --- discovery ---
@@ -40,7 +40,7 @@ export function resolveChromium(browser: Browser, profile: string | undefined, p
     .filter((dir) => fs.existsSync(path.join(root, dir, 'History')))
     .filter((dir) => profile === undefined || slugifyDir(dir) === profile)
     .map((dir) => ({
-      browser: browser.slug,
+      browser: browser.name,
       profile: slugifyDir(dir),
       displayName: `${browser.displayName} (${dir})`,
       dbPath: path.join(root, dir, 'History'),

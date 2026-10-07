@@ -12,12 +12,12 @@ export const BROWSERS: readonly Browser[] = [
   TAKEOUT_BROWSER,
 ]
 
-const BY_SLUG = new Map(BROWSERS.map((browser) => [browser.slug, browser]))
+const BY_NAME = new Map(BROWSERS.map((browser) => [browser.name, browser]))
 
-export const KNOWN_BROWSERS: string[] = [...BY_SLUG.keys()]
+export const KNOWN_BROWSERS: string[] = [...BY_NAME.keys()]
 
-export function browserOf(slug: string): Browser {
-  const browser = BY_SLUG.get(slug)
-  if (browser === undefined) throw new Error(`unknown browser: ${slug}`)
+export function browserOf(name: string): Browser {
+  const browser = BY_NAME.get(name)
+  if (browser === undefined) throw new Error(`unknown browser: ${name}`)
   return browser
 }

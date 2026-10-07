@@ -74,7 +74,7 @@ function chromiumPathMatch(profilePath: string): { browser: string, dir: string 
       const at = profilePath.indexOf(marker)
       if (at === -1) continue
       const dir = profilePath.slice(at + marker.length, profilePath.lastIndexOf('/'))
-      return { browser: app.slug, dir }
+      return { browser: app.name, dir }
     }
   }
   return null

@@ -22,7 +22,7 @@ export interface Engine {
 
 // one browser: pure data pointing at its engine
 export interface Browser {
-  readonly slug: string
+  readonly name: string
   readonly displayName: string
   readonly engine: Engine
   /** chromium: user dir under the platform's data root; no key = not on that platform */

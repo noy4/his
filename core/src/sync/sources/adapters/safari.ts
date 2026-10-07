@@ -13,7 +13,7 @@ export const safariEngine: Engine = {
   parse: parseSafari,
 }
 
-export const SAFARI_BROWSER: Browser = { slug: 'safari', displayName: 'Safari', engine: safariEngine }
+export const SAFARI_BROWSER: Browser = { name: 'safari', displayName: 'Safari', engine: safariEngine }
 
 // --- discovery ---
 

@@ -14,7 +14,7 @@ export const firefoxEngine: Engine = {
   parse: parseFirefox,
 }
 
-export const FIREFOX_BROWSER: Browser = { slug: 'firefox', displayName: 'Firefox', engine: firefoxEngine }
+export const FIREFOX_BROWSER: Browser = { name: 'firefox', displayName: 'Firefox', engine: firefoxEngine }
 
 // --- discovery ---
 

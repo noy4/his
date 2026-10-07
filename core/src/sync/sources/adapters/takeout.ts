@@ -13,7 +13,7 @@ export const takeoutEngine: Engine = {
   parse: parseTakeout,
 }
 
-export const TAKEOUT_BROWSER: Browser = { slug: 'takeout', displayName: 'Takeout', engine: takeoutEngine }
+export const TAKEOUT_BROWSER: Browser = { name: 'takeout', displayName: 'Takeout', engine: takeoutEngine }
 
 // --- parse ---
 
