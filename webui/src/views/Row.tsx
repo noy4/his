@@ -54,7 +54,7 @@ export function Row({ item }: { item: HistoryItem }) {
         />
       </span>
       <span className="grid min-w-0 flex-1 leading-[1.45]">
-        <span className="truncate text-[0.88rem] font-medium text-text">
+        <span className="truncate text-[0.88rem] font-medium">
           {item.title || item.url}
         </span>
         <span className="truncate font-mono text-[0.7rem] text-muted">{item.url}</span>

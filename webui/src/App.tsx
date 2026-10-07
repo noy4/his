@@ -27,7 +27,7 @@ const VIEWS: ViewDef[] = [
 
 export default function App() {
   const app = useModel(() => new AppModel())
-  const CurrentView = VIEWS.find((v) => v.id === app.view.value)
+  const CurrentView = VIEWS.find((v) => v.id === app.view.value)?.content
 
   return (
     <Root>
@@ -37,7 +37,7 @@ export default function App() {
       </HeaderRoot>
       <MainRoot>
         {CurrentView && (
-          <CurrentView.content key={CurrentView.id} app={app} />
+          <CurrentView app={app} />
         )}
       </MainRoot>
     </Root>
@@ -62,7 +62,7 @@ function HeaderRoot({ children }: { children: ReactNode }) {
 
 function Brand() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-2 font-semibold text-text">
+    <span className="inline-flex shrink-0 items-center gap-2 font-semibold">
       <History width={20} height={20} className="text-primary" />
       his
     </span>
@@ -109,7 +109,7 @@ function ViewNavItem({
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-1.5 rounded px-3 py-1 font-medium transition-colors ${active ? 'bg-bg-2 text-text' : 'text-muted hover:text-text'
+      className={`inline-flex items-center gap-1.5 rounded px-3 pl-2.5 py-1 font-medium transition-colors ${active ? 'bg-bg-2 text-text' : 'text-muted hover:text-text'
         }`}
       aria-pressed={active}
       onClick={onClick}

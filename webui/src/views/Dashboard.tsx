@@ -93,7 +93,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-2xl font-semibold tabular-nums text-text">{value}</div>
+      <div className="text-2xl font-semibold tabular-nums">{value}</div>
       <div className="text-xs text-muted">{label}</div>
     </div>
   )

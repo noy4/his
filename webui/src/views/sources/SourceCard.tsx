@@ -80,7 +80,7 @@ function SourceCardIcon({ browser }: { browser: string }) {
 function SourceCardName({ name, detail }: { name: string; detail: string }) {
   return (
     <span className="grid min-w-0">
-      <span className="truncate text-[0.9rem] font-medium text-text">{name}</span>
+      <span className="truncate text-[0.9rem] font-medium">{name}</span>
       <span className="truncate font-mono text-[0.7rem] text-muted">{detail}</span>
     </span>
   )
