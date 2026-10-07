@@ -4,7 +4,7 @@ import { fmtNum } from '@/lib/format'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/models/app'
 import dayjs from 'dayjs'
-import Lock from '~icons/mdi/lock'
+import { Favicon } from '../Favicon'
 import { DashboardModel } from './dashboard.model'
 import {
   Bars,
@@ -86,10 +86,11 @@ export function Dashboard({ app }: { app: AppModel }) {
         <Card title="Top domains">
           <ol className="space-y-1 text-sm">
             {topDomains.map((d) => (
-              <li key={d.domain} className="flex items-center gap-2">
-                {isLocalDomain(d.domain) && (
-                  <Lock width={14} height={14} className="shrink-0 text-primary" />
-                )}
+              <li
+                key={d.domain}
+                className={`-mx-1 flex items-center gap-2 rounded px-1 ${isLocalDomain(d.domain) ? 'bg-primary-soft' : ''}`}
+              >
+                <Favicon host={d.domain} size={18} />
                 <span className="min-w-0 flex-1 truncate text-text-2">{d.domain}</span>
                 <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
               </li>
