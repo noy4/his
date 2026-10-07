@@ -38,11 +38,14 @@ export function Card({ title, children }: { title: string; children: React.React
   )
 }
 
-export function Stat({ label, value }: { label: string; value: string }) {
+export function Stat({ label, value, icon }: { label: string; value: string; icon?: ReactNode }) {
   return (
     <div>
       <div className="text-2xl font-semibold tabular-nums">{value}</div>
-      <div className="text-xs text-muted">{label}</div>
+      <div className="flex items-center gap-1 text-xs text-muted">
+        {icon}
+        {label}
+      </div>
     </div>
   )
 }
@@ -98,7 +101,7 @@ export function DashboardSkeleton() {
             {Array.from({ length: 4 }, (_, i) => (
               <div key={i} className="space-y-1.5">
                 <Sk className="h-7 w-20" />
-                <Sk className="h-3 w-12" />
+                <Sk className="h-3 w-16" />
               </div>
             ))}
           </div>

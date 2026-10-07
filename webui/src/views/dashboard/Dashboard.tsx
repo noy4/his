@@ -4,6 +4,10 @@ import { fmtNum } from '@/lib/format'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/models/app'
 import dayjs from 'dayjs'
+import CalendarIcon from '~icons/mdi/calendar-range'
+import EyeIcon from '~icons/mdi/eye-outline'
+import LinkIcon from '~icons/mdi/link-variant'
+import WebIcon from '~icons/mdi/web'
 import { Favicon } from '../Favicon'
 import { DashboardModel } from './dashboard.model'
 import {
@@ -65,10 +69,10 @@ export function Dashboard({ app }: { app: AppModel }) {
       <DashboardContentRoot>
         <Card title="Overview">
           <div className="grid grid-cols-2 gap-4">
-            <Stat label="visits" value={fmtNum(totals.visits)} />
-            <Stat label="URLs" value={fmtNum(totals.items)} />
-            <Stat label="domains" value={fmtNum(totals.domains)} />
-            <Stat label="days tracked" value={fmtNum(days)} />
+            <Stat label="visits" value={fmtNum(totals.visits)} icon={<EyeIcon width={14} height={14} />} />
+            <Stat label="URLs" value={fmtNum(totals.items)} icon={<LinkIcon width={14} height={14} />} />
+            <Stat label="domains" value={fmtNum(totals.domains)} icon={<WebIcon width={14} height={14} />} />
+            <Stat label="days tracked" value={fmtNum(days)} icon={<CalendarIcon width={14} height={14} />} />
           </div>
           <p className="mt-3 text-xs text-muted">
             {monthly ? month.format('MMM YYYY') : `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}
