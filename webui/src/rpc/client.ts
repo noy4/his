@@ -1,5 +1,5 @@
 import type { HisApi, HisEvents, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
-import { mockApi } from '@/mock/api'
+import { mockApi } from '@/mock/mock-api'
 import { RpcTransport } from '@/rpc/transport'
 
 export function createApi(): HisApi {
