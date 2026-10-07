@@ -1,23 +1,12 @@
 import type http from 'node:http'
 import type { Duplex } from 'node:stream'
-import type { DatabaseSync } from 'node:sqlite'
-import {
-  getItem,
-  getVisits,
-  listSourceProfiles,
-  search,
-  stats,
-} from '@his/core'
 import { WebSocketServer } from 'ws'
 import type { WebSocket } from 'ws'
-import { createSyncRunner, type SyncRunner } from './runner.ts'
 import { METHOD_NOT_FOUND, frameNotification, receive, rpcError } from './rpc-frame.ts'
-import { monthParam, numberParam, optionalNumber, searchFilter, syncOptions } from './rpc-params.ts'
 
-export interface RpcOptions {
-  db: DatabaseSync
-  home: string
-}
+export type Handler = (params: unknown) => unknown | Promise<unknown>
+export type Broadcast = (method: string, params: unknown) => void
+export type HandlersFactory = (context: { broadcast: Broadcast }) => Record<string, Handler>
 
 const OPEN = 1 // WebSocket.readyState value from the ws package
 
@@ -26,7 +15,6 @@ export class RpcServer {
   readonly #wss = new WebSocketServer({ noServer: true })
   readonly #clients = new Set<WebSocket>()
   readonly #alive = new WeakMap<WebSocket, boolean>()
-  readonly #runner: SyncRunner
   readonly #handlers: Record<string, Handler>
   readonly #onUpgrade = (
     req: http.IncomingMessage,
@@ -37,23 +25,18 @@ export class RpcServer {
   }
   #heartbeat: NodeJS.Timeout | null = null
 
-  constructor(server: http.Server, options: RpcOptions) {
+  constructor(server: http.Server, handlers: HandlersFactory) {
     this.#server = server
-    this.#runner = createSyncRunner({ home: options.home, broadcast: this.broadcast })
-    this.#handlers = createHandlers({ db: options.db, runner: this.#runner })
+    this.#handlers = handlers({ broadcast: this.broadcast })
     server.on('upgrade', this.#onUpgrade)
     this.#startHeartbeat()
   }
 
-  broadcast = (method: string, params: unknown): void => {
+  broadcast: Broadcast = (method, params) => {
     const frame = frameNotification(method, params)
     for (const client of this.#clients) {
       if (client.readyState === OPEN) client.send(frame)
     }
-  }
-
-  runner(): SyncRunner {
-    return this.#runner
   }
 
   stop(): void {
@@ -98,22 +81,4 @@ export class RpcServer {
       throw rpcError(METHOD_NOT_FOUND, `method not found: ${method}`)
     return handler(params)
   }
-}
-
-type Handler = (params: unknown) => unknown | Promise<unknown>
-
-function createHandlers({ db, runner }: {
-  db: DatabaseSync,
-  runner: SyncRunner,
-}): Record<string, Handler> {
-  const handlers: Record<string, Handler> = {
-    'history.search': (params) => search(db, searchFilter(params)),
-    'history.getVisits': (params) => getVisits(db, numberParam(params, 'urlId'), optionalNumber(params, 'limit')),
-    'history.getItem': (params) => getItem(db, numberParam(params, 'id')),
-    'history.stats': (params) => stats(db, monthParam(params)),
-    'sources.list': () => listSourceProfiles(db),
-    'sync.run': (params) => runner.run(syncOptions(params)),
-    'sync.status': () => runner.lastRun(),
-  }
-  return handlers
 }
