@@ -4,7 +4,7 @@ import { WebSocketServer } from 'ws'
 import type { WebSocket } from 'ws'
 import { METHOD_NOT_FOUND, frameNotification, receive, rpcError } from './rpc-frame.ts'
 
-export type Handler = (params: unknown) => unknown | Promise<unknown>
+export type Handler = (params: Record<string, any>) => unknown | Promise<unknown>
 export type Broadcast = (method: string, params: unknown) => void
 export type HandlersFactory = (context: { broadcast: Broadcast }) => Record<string, Handler>
 
@@ -79,6 +79,6 @@ export class RpcServer {
     const handler = this.#handlers[method]
     if (handler === undefined)
       throw rpcError(METHOD_NOT_FOUND, `method not found: ${method}`)
-    return handler(params)
+    return handler(params as Record<string, any>)
   }
 }
