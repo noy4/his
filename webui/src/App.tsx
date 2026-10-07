@@ -27,11 +27,19 @@ const VIEWS: ViewDef[] = [
 
 export default function App() {
   const app = useModel(() => new AppModel())
+  const CurrentView = VIEWS.find((v) => v.id === app.view.value)
 
   return (
     <Root>
-      <Header app={app} />
-      <Main app={app} />
+      <HeaderRoot>
+        <Brand />
+        <ViewNav app={app} />
+      </HeaderRoot>
+      <MainRoot>
+        {CurrentView && (
+          <CurrentView.content key={CurrentView.id} app={app} />
+        )}
+      </MainRoot>
     </Root>
   )
 }
@@ -43,15 +51,6 @@ function Root({ children }: { children: ReactNode }) {
 }
 
 // Header
-
-function Header({ app }: { app: AppModel }) {
-  return (
-    <HeaderRoot>
-      <Brand />
-      <ViewNav app={app} />
-    </HeaderRoot>
-  )
-}
 
 function HeaderRoot({ children }: { children: ReactNode }) {
   return (
@@ -123,15 +122,10 @@ function ViewNavItem({
 
 // Main
 
-function Main({ app }: { app: AppModel }) {
-  const view = app.view.value
-
+function MainRoot({ children }: { children: ReactNode }) {
   return (
     <main className="min-h-0 flex-1">
-      {VIEWS.map((v) => v.id === view
-        ? <v.content key={v.id} app={app} />
-        : null
-      )}
+      {children}
     </main>
   )
 }
