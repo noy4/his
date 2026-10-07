@@ -54,14 +54,20 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     return createHandlers({ db, runner })
   })
 
-  const port = await bind(server, options.port)
-  const info: InstanceState = {
-    pid: process.pid,
-    port,
-    url: `http://${HOST}:${port}/`,
-    db: historyDbPath(home),
+  let info: InstanceState
+  try {
+    const port = await bind(server, options.port)
+    info = {
+      pid: process.pid,
+      port,
+      url: `http://${HOST}:${port}/`,
+      db: historyDbPath(home),
+    }
+    writeState(home, info)
+  } catch (error) {
+    db.close()
+    throw error
   }
-  writeState(home, info)
 
   let finish: () => void = () => { }
   const done = new Promise<void>((resolve) => {
