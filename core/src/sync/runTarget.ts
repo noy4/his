@@ -20,7 +20,7 @@ interface RunTargetParams {
 type RunTargetResult =
   | { status: 'success'; insertedVisits: number; touchedUrls: number }
   | { status: 'skipped' }
-  | { status: 'failure' }
+  | { status: 'failure'; error: string }
 
 export function runTarget(params: RunTargetParams): RunTargetResult {
   const { db, home, target, options, hooks } = params
@@ -73,8 +73,9 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     }
   } catch (error) {
     // one error line, then the loop carries on with the next target
-    hooks.onError?.(`${logLabel}: ${error instanceof Error ? error.message : String(error)}`)
+    const line = `${logLabel}: ${error instanceof Error ? error.message : String(error)}`
+    hooks.onError?.(line)
 
-    return { status: 'failure' }
+    return { status: 'failure', error: line }
   }
 }

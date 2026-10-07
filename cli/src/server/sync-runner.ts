@@ -22,9 +22,7 @@ export class SyncRunner {
     // sync throw keeps the 'already running' guard visible to plain callers
     if (this.running) throw new Error('sync already running')
     this.running = true
-    const startedAt = Date.now()
-    const failureLines: string[] = []
-    return this.doRun(options, startedAt, failureLines).finally(() => {
+    return this.doRun(options).finally(() => {
       this.running = false
     })
   }
@@ -44,15 +42,14 @@ export class SyncRunner {
     return this.last
   }
 
-  private async doRun(options: SyncOptions, startedAt: EpochMs, failureLines: string[]): Promise<SyncSummary> {
+  private async doRun(options: SyncOptions): Promise<SyncSummary> {
+    const startedAt = Date.now()
     try {
-      const summary = await runSync(this.home, options, {
-        onError: (line) => failureLines.push(line),
-      })
+      const summary = await runSync(this.home, options)
       if (summary.insertedVisits > 0) this.broadcast('db.changed', {})
       this.recordLast(startedAt, {
         ok: summary.failures === 0,
-        error: failureLines.length === 0 ? null : failureLines.join(' | '),
+        error: summary.errors.length === 0 ? null : summary.errors.join(' | '),
         attempted: summary.attempted,
         failures: summary.failures,
         insertedVisits: summary.insertedVisits,

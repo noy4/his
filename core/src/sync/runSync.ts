@@ -22,6 +22,7 @@ export async function runSync(
       skipped: 0,
       insertedVisits: 0,
       touchedUrls: 0,
+      errors: [],
     }
     const targets = resolveTargets(home, options.targets)
     if (targets.length === 0)
@@ -33,6 +34,7 @@ export async function runSync(
       switch (result.status) {
         case 'failure':
           summary.failures += 1
+          summary.errors.push(result.error)
           break
         case 'skipped':
           summary.skipped += 1

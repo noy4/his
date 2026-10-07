@@ -62,6 +62,8 @@ export interface SyncSummary {
   skipped: number
   insertedVisits: number
   touchedUrls: number
+  /** one line per failed target ("<browser> · <profile>: <message>") */
+  errors: string[]
 }
 
 // how to run a sync — CLI flags, sync.run RPC params, runner invocations
