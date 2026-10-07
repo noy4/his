@@ -1,7 +1,6 @@
 import { historyDbPath, initDb } from '@his/core'
 import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
 import { spawn } from 'node:child_process'
-import fs from 'node:fs'
 import http from 'node:http'
 import { createApp } from './app.ts'
 import { createHandlers } from './handlers.ts'
@@ -35,8 +34,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const running = readState(home)
   if (running !== null)
     return { kind: 'already-running', info: running }
-
-  fs.mkdirSync(home, { recursive: true })
 
   const db = await initDb(historyDbPath(home))
 
