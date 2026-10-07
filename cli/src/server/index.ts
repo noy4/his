@@ -69,10 +69,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     throw error
   }
 
-  let finish: () => void = () => { }
-  const done = new Promise<void>((resolve) => {
-    finish = resolve
-  })
+  const { promise: done, resolve: finish } = Promise.withResolvers<void>()
 
   let closing = false
   const shutdown = (): void => {
