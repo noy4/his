@@ -22,7 +22,7 @@ export interface Engine {
 // one browser: pure data pointing at its engine
 export interface Browser {
   readonly name: string
-  readonly displayName: string
+  readonly label: string
   readonly engine: Engine
   /** chromium: user dir under the platform's data root; no key = not on that platform */
   readonly userDirs?: Partial<Record<NodeJS.Platform, string>>

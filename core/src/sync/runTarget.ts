@@ -26,7 +26,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
   const { db, home, target, options, hooks } = params
   const browser = browserOf(target.browser)
   const { engine } = browser
-  const label = `${browser.displayName} · ${target.profile}`
+  const logLabel = `${browser.label} · ${target.profile}`
 
   try {
 
@@ -36,7 +36,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     if (!options.full) {
       const stored = getTargetFingerprint(db, target.browser, target.profile)
       if (stored === fingerprint) {
-        hooks.onLog?.(`${label}: unchanged — skipped`)
+        hooks.onLog?.(`${logLabel}: unchanged — skipped`)
         return { status: 'skipped' }
       }
     }
@@ -65,7 +65,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     // save fingerprint
     setTargetFingerprint(db, result.sourceProfileId, fingerprint)
 
-    hooks.onLog?.(`${label}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
+    hooks.onLog?.(`${logLabel}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
 
     return {
       status: 'success',
@@ -74,7 +74,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     }
   } catch (error) {
     // one error line, then the loop carries on with the next target
-    hooks.onError?.(`${label}: ${error instanceof Error ? error.message : String(error)}`)
+    hooks.onError?.(`${logLabel}: ${error instanceof Error ? error.message : String(error)}`)
 
     return { status: 'failure' }
   }
