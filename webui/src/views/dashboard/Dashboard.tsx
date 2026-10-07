@@ -1,9 +1,11 @@
 import { dateLabel } from '@/lib/date'
+import { isLocalDomain } from '@/lib/domain'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/models/app'
 import dayjs from 'dayjs'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
+import Lock from '~icons/mdi/lock'
 import { DashboardModel } from './dashboard.model'
 import type { ComponentProps, ReactNode } from 'react'
 import { buttonBase } from '@/components/ui/button'
@@ -78,6 +80,9 @@ export function Dashboard({ app }: { app: AppModel }) {
           <ol className="space-y-1 text-sm">
             {topDomains.map((d) => (
               <li key={d.domain} className="flex items-center gap-2">
+                {isLocalDomain(d.domain) && (
+                  <Lock width={14} height={14} className="shrink-0 text-primary" />
+                )}
                 <span className="min-w-0 flex-1 truncate text-text-2">{d.domain}</span>
                 <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
               </li>
