@@ -4,8 +4,7 @@ import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs } from '../../model.ts'
 import type { NativeVisit } from '../applyVisits.ts'
-import type { SnapshotTarget } from '../snapshot.ts'
-import type { Browser, Engine } from './types.ts'
+import type { Browser, Engine, SyncTarget } from './types.ts'
 
 export const safariEngine: Engine = {
   kind: 'safari',
@@ -19,7 +18,7 @@ export const SAFARI_BROWSER: Browser = { slug: 'safari', displayName: 'Safari', 
 // --- discovery ---
 
 // the single safari profile; a profile token other than "default" matches nothing
-export function resolveSafari(profile: string | undefined, platform: NodeJS.Platform = process.platform, home: string | null = os.homedir()): SnapshotTarget[] {
+export function resolveSafari(profile: string | undefined, platform: NodeJS.Platform = process.platform, home: string | null = os.homedir()): SyncTarget[] {
   if (platform !== 'darwin' || home === null) return []
   if (profile !== undefined && profile !== 'default') return []
   const dbPath = path.join(home, 'Library', 'Safari', 'History.db')

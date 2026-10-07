@@ -1,13 +1,21 @@
 import type { SourceKind } from '../../model.ts'
 import type { IdMode, NativeVisit } from '../applyVisits.ts'
-import type { SnapshotTarget } from '../snapshot.ts'
+
+// one discovered profile to sync
+export interface SyncTarget {
+  // browser slug
+  browser: string
+  profile: string
+  displayName?: string
+  dbPath: string
+}
 
 // parse engine, shared by every browser built on it; stateless
 export interface Engine {
   readonly kind: SourceKind
   readonly idMode: IdMode
   /** profiles of one browser; profile token selects one, undefined = all */
-  discover(browser: Browser, home: string, profile: string | undefined): SnapshotTarget[]
+  discover(browser: Browser, home: string, profile: string | undefined): SyncTarget[]
   /** read one staging snapshot file */
   parse(path: string): NativeVisit[]
 }

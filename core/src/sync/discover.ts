@@ -1,7 +1,7 @@
-import type { SnapshotTarget } from './snapshot.ts'
+import type { SyncTarget } from './sources/types.ts'
 import { browserOf, KNOWN_BROWSERS } from './sources/browsers.ts'
 
-export function resolveTargets(home: string, targets: string[] | undefined): SnapshotTarget[] {
+export function resolveTargets(home: string, targets: string[] | undefined): SyncTarget[] {
   if (targets === undefined)
     return discoverAllTargets(home)
 
@@ -15,11 +15,11 @@ export function resolveTargets(home: string, targets: string[] | undefined): Sna
   })
 }
 
-export function discoverAllTargets(home: string): SnapshotTarget[] {
+export function discoverAllTargets(home: string): SyncTarget[] {
   return KNOWN_BROWSERS.flatMap((browser) => discoverBrowser(home, browser))
 }
 
-export function discoverBrowser(home: string, slug: string, profile?: string): SnapshotTarget[] {
+export function discoverBrowser(home: string, slug: string, profile?: string): SyncTarget[] {
   const browser = browserOf(slug)
   return browser.engine.discover(browser, home, profile)
 }

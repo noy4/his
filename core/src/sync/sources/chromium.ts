@@ -4,9 +4,8 @@ import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
 import type { NativeVisit } from '../applyVisits.ts'
-import type { SnapshotTarget } from '../snapshot.ts'
 import { listDirs, slugifyDir } from './dirs.ts'
-import type { Browser, Engine } from './types.ts'
+import type { Browser, Engine, SyncTarget } from './types.ts'
 
 export const chromiumEngine: Engine = {
   kind: 'chromium',
@@ -30,7 +29,7 @@ export const CHROMIUM_BROWSERS: readonly Browser[] = [
 
 // one chromium browser's profiles; profile token selects one (slug match),
 // undefined = every profile whose History path exists under the app root
-export function resolveChromium(browser: Browser, profile: string | undefined, platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
+export function resolveChromium(browser: Browser, profile: string | undefined, platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SyncTarget[] {
   if (dataRoot === null) return []
   const userDir = browser.userDirs?.[platform]
   if (userDir === undefined) return []

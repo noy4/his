@@ -3,7 +3,7 @@ import type { SyncOptions } from '../model.ts'
 import type { ApplyVisitsResult } from './applyVisits.ts'
 import { applyVisits } from './applyVisits.ts'
 import { snapshot } from './snapshot.ts'
-import type { SnapshotTarget } from './snapshot.ts'
+import type { SyncTarget } from './sources/types.ts'
 import { browserOf } from './sources/browsers.ts'
 import type { SyncHooks } from './runSync.ts'
 import { probeFingerprint } from './fingerprint.ts'
@@ -12,7 +12,7 @@ import { getTargetFingerprint, setTargetFingerprint } from './watermarks.ts'
 interface RunTargetParams {
   db: DatabaseSync
   home: string
-  target: SnapshotTarget
+  target: SyncTarget
   options: SyncOptions
   hooks: SyncHooks
 }

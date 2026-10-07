@@ -4,8 +4,7 @@ import path from 'node:path'
 import { takeoutDir } from '../../paths.ts'
 import type { EpochMs, Transition } from '../../model.ts'
 import type { NativeVisit } from '../applyVisits.ts'
-import type { SnapshotTarget } from '../snapshot.ts'
-import type { Browser, Engine } from './types.ts'
+import type { Browser, Engine, SyncTarget } from './types.ts'
 
 export const takeoutEngine: Engine = {
   kind: 'takeout',
@@ -29,7 +28,7 @@ function parseTakeout(path: string): NativeVisit[] {
 
 // resolve the home takeout dir's export files; the profile token is the file
 // name (".json" optional), undefined = every *.json in the dir
-export function resolveTakeout(home: string, profile: string | undefined): SnapshotTarget[] {
+export function resolveTakeout(home: string, profile: string | undefined): SyncTarget[] {
   const dir = takeoutDir(home)
   if (!fs.existsSync(dir)) return []
   if (profile === undefined) {
@@ -45,7 +44,7 @@ export function resolveTakeout(home: string, profile: string | undefined): Snaps
   return fs.existsSync(dbPath) ? [takeoutTarget(dir, name)] : []
 }
 
-function takeoutTarget(dir: string, name: string): SnapshotTarget {
+function takeoutTarget(dir: string, name: string): SyncTarget {
   const dbPath = path.join(dir, name)
   return {
     browser: 'takeout' as const,
@@ -64,7 +63,7 @@ export function stableVisitHash(url: string, visitTimeMs: EpochMs): number {
   return Number(digest.readBigUInt64BE(0) & MAX_SAFE_HASH)
 }
 
-// profile key; 'takeout' lives in SnapshotTarget.browser
+// profile key; 'takeout' lives in SyncTarget.browser
 export function takeoutProfileKey(jsonPath: string): string {
   const stem = path.basename(jsonPath).replace(/\.json$/i, '')
   const slug = stem.replace(/[^A-Za-z0-9._-]+/g, '-')

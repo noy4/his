@@ -1,14 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-
-export interface SnapshotTarget {
-  // browser slug
-  browser: string
-  profile: string
-  displayName?: string
-  dbPath: string
-}
+import type { SyncTarget } from './sources/types.ts'
 
 export interface SnapshotResult {
   path: string
@@ -18,7 +11,7 @@ export interface SnapshotResult {
 
 const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
 
-export function snapshot(target: SnapshotTarget, home: string): SnapshotResult {
+export function snapshot(target: SyncTarget, home: string): SnapshotResult {
   const staging = stagingPath(home, target.browser, target.profile)
   fs.mkdirSync(staging, { recursive: true })
   const snapshotPath = path.join(staging, path.basename(target.dbPath))

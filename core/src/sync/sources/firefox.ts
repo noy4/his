@@ -4,9 +4,8 @@ import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
 import type { NativeVisit } from '../applyVisits.ts'
-import type { SnapshotTarget } from '../snapshot.ts'
 import { listDirs, slugifyDir } from './dirs.ts'
-import type { Browser, Engine } from './types.ts'
+import type { Browser, Engine, SyncTarget } from './types.ts'
 
 export const firefoxEngine: Engine = {
   kind: 'firefox',
@@ -21,9 +20,9 @@ export const FIREFOX_BROWSER: Browser = { slug: 'firefox', displayName: 'Firefox
 
 // profiles under the firefox data roots; profile token selects one (slug
 // match), undefined = every profile whose places.sqlite path exists
-export function resolveFirefox(profile: string | undefined, platform: NodeJS.Platform = process.platform, dataRoot: string | null = firefoxDataRoot(platform)): SnapshotTarget[] {
+export function resolveFirefox(profile: string | undefined, platform: NodeJS.Platform = process.platform, dataRoot: string | null = firefoxDataRoot(platform)): SyncTarget[] {
   if (dataRoot === null) return []
-  const targets: SnapshotTarget[] = []
+  const targets: SyncTarget[] = []
   const roots = [dataRoot, path.join(dataRoot, 'Profiles')]
   for (const root of roots) {
     if (!fs.existsSync(root)) continue
