@@ -102,7 +102,7 @@ export function Dashboard({ app }: { app: AppModel }) {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border-2 bg-bg-2 p-4">
+    <div className="rounded-lg border bg-bg-2 p-4">
       <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted uppercase">{title}</h2>
       {children}
     </div>
@@ -175,7 +175,7 @@ function MonthNav({
 }) {
   const month = dayjs(`${value}-01`)
   return (
-    <div className="inline-flex items-center gap-0.5 rounded-sm border border-border-2 bg-bg-2 text-sm">
+    <div className="inline-flex items-center gap-0.5 rounded-sm border bg-bg-2 text-sm">
       <button
         type="button"
         aria-label="Previous month"

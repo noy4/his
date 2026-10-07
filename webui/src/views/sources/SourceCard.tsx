@@ -42,7 +42,7 @@ function SourceCardRoot({ selected, onToggle, children }: { selected: boolean; o
       onClick={onToggle}
       className={`relative flex flex-col gap-2.5 rounded-lg border bg-bg-2 p-4 text-left transition-colors ${selected
         ? 'border-primary ring-1 ring-primary'
-        : 'border-border-2 hover:border-border hover:bg-bg-3'}`}
+        : 'hover:border-border hover:bg-bg-3'}`}
     >
       {children}
       <SourceCardCheck selected={selected} />

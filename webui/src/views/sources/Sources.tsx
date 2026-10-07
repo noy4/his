@@ -83,7 +83,7 @@ function SourcesRoot({ children }: { children: ReactNode }) {
 // SourcesHeader
 
 function SourcesHeader({ children }: { children: ReactNode }) {
-  return <header className="shrink-0 border-b border-border-2 px-4 py-3">{children}</header>
+  return <header className="shrink-0 border-b px-4 py-3">{children}</header>
 }
 
 function SourcesToolbar({ children }: { children: ReactNode }) {
