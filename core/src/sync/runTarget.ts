@@ -29,7 +29,6 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
   const logLabel = `${browser.label} · ${target.profile}`
 
   try {
-
     // check fingerprint (--full bypasses)
     const fingerprint = probeFingerprint(target.dbPath)
 

@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./state": "./src/state.ts",
+    "./paths": "./src/paths.ts",
     "./model": "./src/model.ts"
   },
   "scripts": {

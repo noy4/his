@@ -1,7 +1,8 @@
 import { BrowserWindow, Tray, type App } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import path from 'node:path'
-import { defaultHome, processAlive, readState, type InstanceState } from '@his/core/state'
+import { defaultHome } from '@his/core/paths'
+import { processAlive, readState, type InstanceState } from '@his/core/state'
 import { createTray } from './tray.ts'
 
 export class HisApp {
