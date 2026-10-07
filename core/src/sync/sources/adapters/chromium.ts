@@ -4,7 +4,7 @@ import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../../model.ts'
 import type { NativeVisit } from '../../applyVisits.ts'
-import { listDirs, slugifyDir } from '../dirs.ts'
+import { listDirs, dirToProfileName } from '../dirs.ts'
 import type { Browser, Engine, SyncTarget } from '../types.ts'
 
 export const chromiumEngine: Engine = {
@@ -38,10 +38,10 @@ export function resolveChromium(browser: Browser, profile: string | undefined, p
   return listDirs(root)
     .filter((dir) => !NOISE_PROFILE_DIRS.has(dir))
     .filter((dir) => fs.existsSync(path.join(root, dir, 'History')))
-    .filter((dir) => profile === undefined || slugifyDir(dir) === profile)
+    .filter((dir) => profile === undefined || dirToProfileName(dir) === profile)
     .map((dir) => ({
       browser: browser.name,
-      profile: slugifyDir(dir),
+      profile: dirToProfileName(dir),
       displayName: `${browser.displayName} (${dir})`,
       dbPath: path.join(root, dir, 'History'),
     }))

@@ -4,7 +4,7 @@ import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../../model.ts'
 import type { NativeVisit } from '../../applyVisits.ts'
-import { listDirs, slugifyDir } from '../dirs.ts'
+import { listDirs, dirToProfileName } from '../dirs.ts'
 import type { Browser, Engine, SyncTarget } from '../types.ts'
 
 export const firefoxEngine: Engine = {
@@ -29,10 +29,10 @@ export function resolveFirefox(profile: string | undefined, platform: NodeJS.Pla
     for (const dir of listDirs(root)) {
       const dbPath = path.join(root, dir, 'places.sqlite')
       if (!fs.existsSync(dbPath)) continue
-      if (profile !== undefined && slugifyDir(dir) !== profile) continue
+      if (profile !== undefined && dirToProfileName(dir) !== profile) continue
       targets.push({
         browser: 'firefox',
-        profile: slugifyDir(dir),
+        profile: dirToProfileName(dir),
         displayName: `Firefox (${dir.replace(/^[^.]*\./, '')})`,
         dbPath,
       })

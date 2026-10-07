@@ -2,7 +2,7 @@ import type { DatabaseSync } from 'node:sqlite'
 import path from 'node:path'
 import type { CodeMigration } from '../db.ts'
 import { CHROMIUM_BROWSERS } from '../../sync/sources/adapters/chromium.ts'
-import { slugifyDir } from '../../sync/sources/dirs.ts'
+import { dirToProfileName } from '../../sync/sources/dirs.ts'
 import { takeoutProfileKey } from '../../sync/sources/adapters/takeout.ts'
 
 // table rebuild: profile identity moves from (kind, profile_path) to (browser, profile).
@@ -48,11 +48,11 @@ function identify(row: LegacyRow): { browser: string, profile: string } {
     case 'chromium': {
       const match = chromiumPathMatch(row.profile_path)
       if (match !== null)
-        return { browser: match.browser, profile: slugifyDir(match.dir) }
+        return { browser: match.browser, profile: dirToProfileName(match.dir) }
       break
     }
     case 'firefox':
-      return { browser: 'firefox', profile: slugifyDir(path.basename(path.dirname(row.profile_path))) }
+      return { browser: 'firefox', profile: dirToProfileName(path.basename(path.dirname(row.profile_path))) }
     case 'safari':
       return { browser: 'safari', profile: 'default' }
     case 'takeout':
@@ -62,7 +62,7 @@ function identify(row: LegacyRow): { browser: string, profile: string } {
   // that profile may re-ingest once with a discovered identity later
   return {
     browser: row.kind,
-    profile: `${slugifyDir(path.basename(path.dirname(row.profile_path)))}-u${row.id}`,
+    profile: `${dirToProfileName(path.basename(path.dirname(row.profile_path)))}-u${row.id}`,
   }
 }
 
