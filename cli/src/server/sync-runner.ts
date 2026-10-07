@@ -1,6 +1,8 @@
 import type { EpochMs, SyncLastRun, SyncOptions, SyncSummary } from '@his/core'
 import { runSync } from '@his/core'
 
+const SYNC_INTERVAL = 6 * 60 * 60 * 1000
+
 export interface SyncRunnerOptions {
   home: string
 }
@@ -51,6 +53,13 @@ export class SyncRunner {
   trigger(): void {
     if (this.running) return
     void this.run().catch(() => { })
+  }
+
+  // triggers every interval (default 6h)
+  schedule(interval = SYNC_INTERVAL): () => void {
+    const timer = setInterval(() => this.trigger(), interval)
+    timer.unref()
+    return () => clearInterval(timer)
   }
 
   isRunning(): boolean {

@@ -8,7 +8,6 @@ import { createNodeHandler } from './node.ts'
 import { RpcServer } from './rpc.ts'
 import { SyncRunner } from './sync-runner.ts'
 import { resolveDistRoot } from './static.ts'
-import { startPeriodicSync, type PeriodicSyncHandle } from './watch.ts'
 
 const HOST = '127.0.0.1'
 const PORT_ATTEMPTS = 20
@@ -68,7 +67,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     closing = true
     process.removeListener('SIGINT', shutdown)
     process.removeListener('SIGTERM', shutdown)
-    watch.stop()
+    stopSchedule()
     rpc.stop()
     server.closeAllConnections()
     server.close(() => {
@@ -83,7 +82,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   // Startup catch-up — async so serve returns early; the 6h interval
   // retries failures (which land on lastRun()).
   runner.trigger()
-  const watch: PeriodicSyncHandle = startPeriodicSync(runner)
+  const stopSchedule = runner.schedule()
 
   if (options.open === true) openUrl(info.url)
 
