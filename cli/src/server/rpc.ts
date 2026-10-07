@@ -8,20 +8,13 @@ import {
   restoreUrl,
   search,
   stats,
-  type SearchFilter,
 } from '@his/core'
 import { WebSocketServer } from 'ws'
 import type { WebSocket } from 'ws'
 import { createSyncRunner, type SyncRunner } from './runner.ts'
+import { METHOD_NOT_FOUND, frameNotification, receive, rpcError } from './rpc-frame.ts'
+import { monthParam, numberParam, optionalNumber, searchFilter, stringParam, syncOptions } from './rpc-params.ts'
 
-// --- contract ---
-
-// JSON-RPC 2.0 over WS at /rpc — methods mirror the WebExtensions history
-// API; notification db.changed pushes on the same socket (sync.progress on
-// hold — see SPEC).
-// Access control (token + loopback Host pin + same-origin) is intentionally
-// absent for now — see local.md before exposing beyond the loopback.
-// history.stats is a WebUI extension (Dashboard) beyond the WebExtensions surface.
 export interface RpcOptions {
   db: DatabaseSync
   home: string
@@ -34,25 +27,7 @@ export interface RpcHandle {
   stop(): void
 }
 
-interface RpcError extends Error {
-  code: number
-}
-
-interface JsonRpcRequest {
-  jsonrpc: '2.0'
-  id: number | string | null | undefined
-  method: string
-  params?: unknown
-}
-
 const OPEN = 1 // WebSocket.readyState value from the ws package
-const PARSE_ERROR = -32700
-const INVALID_REQUEST = -32600
-const METHOD_NOT_FOUND = -32601
-const INVALID_PARAMS = -32602
-const SERVER_ERROR = -32000
-
-// --- attach ---
 
 export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
   const { db, home } = options
@@ -77,29 +52,25 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
     })
   })
 
+  type Handler = (params: unknown) => unknown | Promise<unknown>
+
+  const handlers: Record<string, Handler> = {
+    'history.search': (params) => search(db, searchFilter(params)),
+    'history.getVisits': (params) => getVisits(db, numberParam(params, 'urlId'), optionalNumber(params, 'limit')),
+    'history.getItem': (params) => getItem(db, numberParam(params, 'id')),
+    'history.deleteUrl': (params) => hideUrl(params, true),
+    'history.restoreUrl': (params) => hideUrl(params, false),
+    'history.stats': (params) => stats(db, monthParam(params)),
+    'sources.list': () => listSourceProfiles(db),
+    'sync.run': (params) => runner.run(syncOptions(params)),
+    'sync.status': () => runner.lastRun(),
+  }
+
   function dispatch(method: string, params: unknown): unknown | Promise<unknown> {
-    switch (method) {
-      case 'history.search':
-        return search(db, searchFilter(params))
-      case 'history.getVisits':
-        return getVisits(db, numberParam(params, 'urlId'), optionalNumber(params, 'limit'))
-      case 'history.getItem':
-        return getItem(db, numberParam(params, 'id'))
-      case 'history.deleteUrl':
-        return hideUrl(params, true)
-      case 'history.restoreUrl':
-        return hideUrl(params, false)
-      case 'history.stats':
-        return stats(db, monthParam(params))
-      case 'sources.list':
-        return listSourceProfiles(db)
-      case 'sync.run':
-        return runner.run(syncOptions(params))
-      case 'sync.status':
-        return runner.lastRun()
-      default:
-        throw rpcError(METHOD_NOT_FOUND, `method not found: ${method}`)
-    }
+    const handler = handlers[method]
+    if (handler === undefined)
+      throw rpcError(METHOD_NOT_FOUND, `method not found: ${method}`)
+    return handler(params)
   }
 
   function hideUrl(params: unknown, hide: boolean): { changed: boolean } {
@@ -109,23 +80,8 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
     return { changed }
   }
 
-  function syncOptions(params: unknown): { full?: boolean; targets?: string[] } {
-    const raw = asObject(params) ?? {}
-    const options: { full?: boolean; targets?: string[] } = { full: optionalBoolean(params, 'full') ?? false }
-    const targets = raw.targets
-    if (targets !== undefined) {
-      if (!Array.isArray(targets)) throw rpcError(INVALID_PARAMS, 'params.targets: string[] required')
-      options.targets = targets.map((target, i) => {
-        if (typeof target !== 'string' || target === '')
-          throw rpcError(INVALID_PARAMS, `params.targets[${i}]: non-empty string required`)
-        return target
-      })
-    }
-    return options
-  }
-
   function broadcast(method: string, params: unknown): void {
-    const frame = JSON.stringify({ jsonrpc: '2.0', method, params })
+    const frame = frameNotification(method, params)
     for (const client of clients) {
       if (client.readyState === OPEN) client.send(frame)
     }
@@ -154,131 +110,4 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
       for (const client of clients) client.terminate()
     },
   }
-}
-
-// --- receive ---
-
-async function receive(ws: WebSocket, data: unknown, dispatch: (method: string, params: unknown) => unknown | Promise<unknown>): Promise<void> {
-  let message: unknown
-  try {
-    message = JSON.parse(Buffer.from(data as ArrayBufferLike).toString('utf8'))
-  } catch {
-    sendError(ws, null, PARSE_ERROR, 'parse error')
-    return
-  }
-  const request = asRpcRequest(message)
-  if (request === null) {
-    sendError(ws, null, INVALID_REQUEST, 'invalid request')
-    return
-  }
-  try {
-    const result = dispatch(request.method, request.params)
-    if (request.id !== undefined && request.id !== null) {
-      sendResult(ws, request.id, await result)
-    }
-  } catch (error) {
-    if (request.id !== undefined && request.id !== null) {
-      const rpc = error as RpcError
-      sendError(ws, request.id, rpc.code ?? SERVER_ERROR, rpc.message)
-    }
-  }
-}
-
-function sendResult(ws: WebSocket, id: number | string, result: unknown): void {
-  ws.send(JSON.stringify({ jsonrpc: '2.0', id, result }))
-}
-
-function sendError(ws: WebSocket, id: number | string | null, code: number, message: string): void {
-  ws.send(JSON.stringify({ jsonrpc: '2.0', id, error: { code, message } }))
-}
-
-function asRpcRequest(message: unknown): JsonRpcRequest | null {
-  if (typeof message !== 'object' || message === null) return null
-  const raw = message as Record<string, unknown>
-  if (typeof raw.method !== 'string') return null
-  if ('id' in raw && !isRpcId(raw.id)) return null
-  return {
-    jsonrpc: '2.0',
-    id: raw.id as JsonRpcRequest['id'],
-    method: raw.method,
-    params: raw.params,
-  }
-}
-
-function isRpcId(id: unknown): boolean {
-  return typeof id === 'string' || typeof id === 'number' || id === null
-}
-
-// --- params ---
-
-function rpcError(code: number, message: string): RpcError {
-  const error = new Error(message) as RpcError
-  error.code = code
-  return error
-}
-
-function asObject(params: unknown): Record<string, unknown> | null {
-  return typeof params === 'object' && params !== null ? (params as Record<string, unknown>) : null
-}
-
-function stringParam(params: unknown, key: string): string {
-  const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)[key] : undefined
-  if (typeof raw !== 'string' || raw === '') throw rpcError(INVALID_PARAMS, `params.${key}: string required`)
-  return raw
-}
-
-function numberParam(params: unknown, key: string): number {
-  const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)[key] : undefined
-  if (typeof raw !== 'number' || !Number.isFinite(raw)) throw rpcError(INVALID_PARAMS, `params.${key}: number required`)
-  return raw
-}
-
-function optionalNumber(params: unknown, key: string): number | undefined {
-  const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)[key] : undefined
-  if (raw === undefined) return undefined
-  if (typeof raw !== 'number' || !Number.isFinite(raw)) throw rpcError(INVALID_PARAMS, `params.${key}: number required`)
-  return raw
-}
-
-function monthParam(params: unknown): string | undefined {
-  const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)['month'] : undefined
-  if (raw === undefined) return undefined
-  if (typeof raw !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(raw)) {
-    throw rpcError(INVALID_PARAMS, 'params.month: YYYY-MM string required')
-  }
-  return raw
-}
-
-function optionalBoolean(params: unknown, key: string): boolean | undefined {
-  const raw = typeof params === 'object' && params !== null ? (params as Record<string, unknown>)[key] : undefined
-  if (raw === undefined) return undefined
-  if (typeof raw !== 'boolean') throw rpcError(INVALID_PARAMS, `params.${key}: boolean required`)
-  return raw
-}
-
-function searchFilter(params: unknown): SearchFilter {
-  const raw = asObject(params) ?? {}
-  const filter: SearchFilter = {}
-  const query = raw.query
-  if (query !== undefined) {
-    if (typeof query !== 'string') throw rpcError(INVALID_PARAMS, 'params.query: string required')
-    filter.query = query
-  }
-  const cursor = raw.cursor
-  if (cursor !== undefined) {
-    if (typeof cursor !== 'string') throw rpcError(INVALID_PARAMS, 'params.cursor: string required')
-    filter.cursor = cursor
-  }
-  for (const key of ['from', 'to'] as const) {
-    const value = raw[key]
-    if (value === undefined) continue
-    if (typeof value !== 'number' || !Number.isFinite(value)) throw rpcError(INVALID_PARAMS, `params.${key}: number required`)
-    filter[key] = value
-  }
-  const limit = raw.limit
-  if (limit !== undefined) {
-    if (typeof limit !== 'number' || !Number.isFinite(limit)) throw rpcError(INVALID_PARAMS, 'params.limit: number required')
-    filter.limit = limit
-  }
-  return filter
 }
