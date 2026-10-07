@@ -1,13 +1,20 @@
 import type { Stats } from '@/api'
 import { dateLabel } from '@/lib/date'
 import type { AppModel } from '@/models/app'
+import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
+import ChevronLeft from '~icons/mdi/chevron-left'
+import ChevronRight from '~icons/mdi/chevron-right'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DAY = 86_400_000
 
+type Mode = 'month' | 'all'
+
 export function Dashboard({ app }: { app: AppModel }) {
   const [stats, setStats] = useState<Stats | null>(null)
+  const [mode, setMode] = useState<Mode>('all')
+  const [monthKey, setMonthKey] = useState(() => dayjs().format('YYYY-MM'))
 
   useEffect(() => {
     let stale = false
@@ -24,38 +31,55 @@ export function Dashboard({ app }: { app: AppModel }) {
   }
 
   const { totals } = stats
+  const monthly = mode === 'month'
+  const month = dayjs(`${monthKey}-01`)
   const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY)
+
+  const byHour = monthly ? [] : stats.byHour.map((h) => h.visits)
+  const byHourLabels = monthly ? [] : stats.byHour.map((h) => (h.hour % 6 === 0 ? String(h.hour) : ''))
+  const byDow = monthly ? [] : stats.byDow.map((d) => d.visits)
+  const topDomains = monthly ? [] : stats.topDomains
+  const busiestDays = monthly ? [] : stats.busiestDays
 
   return (
     <div className="h-full overflow-y-auto px-4 pt-4 pb-10">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        {monthly ? <MonthNav value={monthKey} onChange={setMonthKey} /> : <div />}
+        <SegmentedControl
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: 'month', label: 'Monthly' },
+            { value: 'all', label: 'All time' },
+          ]}
+        />
+      </div>
+
       <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
         <Card title="Overview">
           <div className="grid grid-cols-2 gap-4">
-            <Stat label="visits" value={fmtNum(totals.visits)} />
-            <Stat label="URLs" value={fmtNum(totals.items)} />
-            <Stat label="domains" value={fmtNum(totals.domains)} />
-            <Stat label="days tracked" value={fmtNum(days)} />
+            <Stat label="visits" value={monthly ? '—' : fmtNum(totals.visits)} />
+            <Stat label="URLs" value={monthly ? '—' : fmtNum(totals.items)} />
+            <Stat label="domains" value={monthly ? '—' : fmtNum(totals.domains)} />
+            <Stat label="days tracked" value={monthly ? '—' : fmtNum(days)} />
           </div>
           <p className="mt-3 text-xs text-muted">
-            {dateLabel(totals.firstVisit)} → {dateLabel(totals.lastVisit)}
+            {monthly ? month.format('MMM YYYY') : `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}
           </p>
         </Card>
 
         <div className="grid gap-4">
           <Card title="By hour of day">
-            <Bars
-              data={stats.byHour.map((h) => h.visits)}
-              labels={stats.byHour.map((h) => (h.hour % 6 === 0 ? String(h.hour) : ''))}
-            />
+            <Bars data={byHour} labels={byHourLabels} />
           </Card>
           <Card title="By day of week">
-            <Bars data={stats.byDow.map((d) => d.visits)} labels={DOW} />
+            <Bars data={byDow} labels={DOW} />
           </Card>
         </div>
 
         <Card title="Top domains">
           <ol className="space-y-1 text-sm">
-            {stats.topDomains.map((d) => (
+            {topDomains.map((d) => (
               <li key={d.domain} className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-text-2">{d.domain}</span>
                 <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
@@ -66,7 +90,7 @@ export function Dashboard({ app }: { app: AppModel }) {
 
         <Card title="Busiest days">
           <ol className="space-y-1 text-sm">
-            {stats.busiestDays.map((d) => (
+            {busiestDays.map((d) => (
               <li key={d.day} className="flex items-center justify-between gap-2">
                 <span className="truncate text-text-2">{d.day}</span>
                 <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
@@ -115,6 +139,57 @@ function Bars({ data, labels }: { data: number[]; labels?: string[] }) {
           <span className="text-[10px] text-muted/70">{labels ? labels[i] : ''}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+function SegmentedControl<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T
+  onChange: (next: T) => void
+  options: { value: T; label: string }[]
+}) {
+  return (
+    <div className="inline-flex shrink-0 gap-1 rounded-sm bg-bg-3 p-0.5 text-sm" role="group" aria-label="Stats period">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          aria-pressed={value === o.value}
+          onClick={() => onChange(o.value)}
+          className={`rounded px-3 py-1 font-medium transition-colors ${value === o.value ? 'bg-bg-2 text-text' : 'text-muted hover:text-text'}`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function MonthNav({ value, onChange }: { value: string; onChange: (next: string) => void }) {
+  const month = dayjs(`${value}-01`)
+  return (
+    <div className="inline-flex items-center gap-0.5 rounded-sm border border-border-2 bg-bg-2 text-sm">
+      <button
+        type="button"
+        aria-label="Previous month"
+        onClick={() => onChange(month.subtract(1, 'month').format('YYYY-MM'))}
+        className="inline-flex items-center px-1.5 py-1 text-muted transition-colors hover:text-text"
+      >
+        <ChevronLeft width={15} height={15} />
+      </button>
+      <span className="px-1 font-medium tabular-nums">{month.format('MMM YYYY')}</span>
+      <button
+        type="button"
+        aria-label="Next month"
+        onClick={() => onChange(month.add(1, 'month').format('YYYY-MM'))}
+        className="inline-flex items-center px-1.5 py-1 text-muted transition-colors hover:text-text"
+      >
+        <ChevronRight width={15} height={15} />
+      </button>
     </div>
   )
 }
