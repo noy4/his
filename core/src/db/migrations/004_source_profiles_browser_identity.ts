@@ -1,9 +1,9 @@
 import type { DatabaseSync } from 'node:sqlite'
 import path from 'node:path'
 import type { CodeMigration } from '../db.ts'
-import { CHROMIUM_BROWSERS } from '../../sync/sources/chromium.ts'
+import { CHROMIUM_BROWSERS } from '../../sync/sources/adapters/chromium.ts'
 import { slugifyDir } from '../../sync/sources/dirs.ts'
-import { takeoutProfileKey } from '../../sync/sources/takeout.ts'
+import { takeoutProfileKey } from '../../sync/sources/adapters/takeout.ts'
 
 // table rebuild: profile identity moves from (kind, profile_path) to (browser, profile).
 // ids are preserved, so visits, watermarks and fingerprints stay attached.

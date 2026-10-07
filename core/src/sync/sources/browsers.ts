@@ -1,8 +1,8 @@
-import { CHROMIUM_BROWSERS } from './chromium.ts'
+import { CHROMIUM_BROWSERS } from './adapters/chromium.ts'
 import type { Browser } from './types.ts'
-import { FIREFOX_BROWSER } from './firefox.ts'
-import { SAFARI_BROWSER } from './safari.ts'
-import { TAKEOUT_BROWSER } from './takeout.ts'
+import { FIREFOX_BROWSER } from './adapters/firefox.ts'
+import { SAFARI_BROWSER } from './adapters/safari.ts'
+import { TAKEOUT_BROWSER } from './adapters/takeout.ts'
 
 // single source of truth for every browser the domain knows
 export const BROWSERS: readonly Browser[] = [

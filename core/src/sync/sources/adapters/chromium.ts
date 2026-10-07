@@ -2,10 +2,10 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, Transition } from '../../model.ts'
-import type { NativeVisit } from '../applyVisits.ts'
-import { listDirs, slugifyDir } from './dirs.ts'
-import type { Browser, Engine, SyncTarget } from './types.ts'
+import type { EpochMs, Transition } from '../../../model.ts'
+import type { NativeVisit } from '../../applyVisits.ts'
+import { listDirs, slugifyDir } from '../dirs.ts'
+import type { Browser, Engine, SyncTarget } from '../types.ts'
 
 export const chromiumEngine: Engine = {
   kind: 'chromium',
