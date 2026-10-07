@@ -136,5 +136,11 @@ function tryListen(server: http.Server, port: number): Promise<boolean> {
 }
 
 function openUrl(url: string): void {
-  spawn('open', [url], { detached: true, stdio: 'ignore' }).unref()
+  // Best effort — a missing opener falls back to printing the URL.
+  const [cmd, args] = process.platform === 'win32'
+    ? ['cmd', ['/c', 'start', '', url]]
+    : [process.platform === 'darwin' ? 'open' : 'xdg-open', [url]]
+  spawn(cmd, args, { detached: true, stdio: 'ignore' })
+    .on('error', () => console.error(`his: could not open a browser — visit ${url}`))
+    .unref()
 }
