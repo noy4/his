@@ -67,6 +67,54 @@ export function Bars({ data, labels }: { data: number[]; labels?: string[] }) {
   )
 }
 
+function Sk({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded bg-bg-3 ${className}`} />
+}
+
+function ListSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 8 }, (_, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <Sk className="size-[18px]" />
+          <Sk className="h-4 flex-1" />
+          <Sk className="h-3 w-8" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function DashboardSkeleton() {
+  return (
+    <DashboardRoot>
+      <DashboardHeaderRoot>
+        <Sk className="h-8 w-36" />
+        <Sk className="h-8 w-44" />
+      </DashboardHeaderRoot>
+      <DashboardContentRoot>
+        <Card title="Overview">
+          <div className="grid grid-cols-2 gap-4">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={i} className="space-y-1.5">
+                <Sk className="h-7 w-20" />
+                <Sk className="h-3 w-12" />
+              </div>
+            ))}
+          </div>
+          <Sk className="mt-3 h-3 w-32" />
+        </Card>
+        <div className="grid gap-4">
+          <Card title="By hour of day"><Sk className="h-32" /></Card>
+          <Card title="By day of week"><Sk className="h-32" /></Card>
+        </div>
+        <Card title="Top domains"><ListSkeleton /></Card>
+        <Card title="Busiest days"><ListSkeleton /></Card>
+      </DashboardContentRoot>
+    </DashboardRoot>
+  )
+}
+
 export function SegmentedControl<T extends string>({
   value,
   onChange,

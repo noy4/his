@@ -12,6 +12,7 @@ import {
   DashboardContentRoot,
   DashboardHeaderRoot,
   DashboardRoot,
+  DashboardSkeleton,
   MonthNav,
   SegmentedControl,
   Stat,
@@ -25,7 +26,7 @@ export function Dashboard({ app }: { app: AppModel }) {
   const stats = dashboard.stats.value
 
   if (!stats) {
-    return <p className="h-full overflow-y-auto py-12 text-center font-mono text-[0.8rem] text-muted">Loading…</p>
+    return <DashboardSkeleton />
   }
 
   const { totals } = stats
