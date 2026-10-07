@@ -63,19 +63,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   }
   writeState(home, info)
 
-  // Startup catch-up — recover what accumulated while serve was closed
-  // (sources keep ~90 days, so nothing is lost in between).
-  if (!runner.isRunning()) {
-    try {
-      await runner.run({})
-    } catch {
-      // the 6h interval check picks the backlog up anyway
-    }
-  }
-  const watch: PeriodicSyncHandle = startPeriodicSync({ runner })
-
-  if (options.open === true) openUrl(info.url)
-
   let finish: () => void = () => { }
   const done = new Promise<void>((resolve) => {
     finish = resolve
@@ -98,6 +85,15 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   }
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)
+
+  // Startup catch-up — async so serve returns early; the 6h interval
+  // retries failures (which land on lastRun()).
+  if (!runner.isRunning()) {
+    void runner.run({}).catch(() => { })
+  }
+  const watch: PeriodicSyncHandle = startPeriodicSync({ runner })
+
+  if (options.open === true) openUrl(info.url)
 
   return { kind: 'started', handle: { info, done } }
 }
