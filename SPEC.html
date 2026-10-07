@@ -544,7 +544,6 @@
 history.search    { query?, from?, to?, cursor?, limit? } → { items, nextCursor }
 history.getVisits { urlId, limit? }                       → VisitItem[]
 history.getItem   { id }                                  → { item, visits }
-history.deleteUrl { url }                                 → { }              <span class="c"># soft hide · restoreUrl reverts</span>
 sources.list                                              → Source[]         <span class="c"># + watermarks</span>
 sync.run          { full? }                                → RunHandle        <span class="c"># progress push on hold</span>
 sync.status                                               → LastRun
@@ -634,7 +633,7 @@ db.changed        { }                                     <span class="c"># clie
         <text class="alabel" x="470" y="70">host</text>
 
         <!-- urls -->
-        <rect class="node" x="48" y="90" width="220" height="156" rx="6"/>
+        <rect class="node" x="48" y="90" width="220" height="143" rx="6"/>
         <text class="tt" x="60" y="108">urls</text>
         <text class="tm" x="92" y="108">HistoryItem · URL aggregate</text>
         <text class="tm" x="60" y="126">id · PK</text>
@@ -644,9 +643,8 @@ db.changed        { }                                     <span class="c"># clie
         <text class="tm" x="60" y="178">last_visit_time · ms</text>
         <text class="tm" x="60" y="191">visit_count</text>
         <text class="tm" x="60" y="204">typed_count</text>
-        <text class="tm" x="60" y="217">hidden_at · soft delete</text>
-        <line x1="60" y1="222" x2="256" y2="222" style="stroke: var(--border); stroke-width: 1"/>
-        <text class="tm" x="60" y="235" style="font-style: italic">idx: last_visit_time DESC</text>
+        <line x1="60" y1="209" x2="256" y2="209" style="stroke: var(--border); stroke-width: 1"/>
+        <text class="tm" x="60" y="222" style="font-style: italic">idx: last_visit_time DESC</text>
 
         <!-- urls_fts -->
         <rect class="node" x="48" y="296" width="220" height="88" rx="6" style="stroke-dasharray:5 4"/>
@@ -706,7 +704,7 @@ db.changed        { }                                     <span class="c"># clie
       </svg>
     </div>
 
-    <pre><span class="c">-- history.db · WAL · foreign_keys=ON · append-only (+ soft delete)</span>
+    <pre><span class="c">-- history.db · WAL · foreign_keys=ON · append-only</span>
 CREATE TABLE source_profiles (          <span class="c">-- registered browser profiles · identity = (browser, profile)</span>
   id            INTEGER PRIMARY KEY,
   browser       TEXT    NOT NULL,       <span class="c">-- user-facing slug · chrome, brave, ...</span>
@@ -723,8 +721,7 @@ CREATE TABLE urls (                     <span class="c">-- HistoryItem · URL ag
   first_visit_time INTEGER NOT NULL,    <span class="c">-- epoch ms</span>
   last_visit_time  INTEGER NOT NULL,    <span class="c">-- epoch ms</span>
   visit_count      INTEGER NOT NULL DEFAULT 0,
-  typed_count      INTEGER NOT NULL DEFAULT 0,
-  hidden_at        INTEGER              <span class="c">-- soft delete · NULL = visible</span>
+  typed_count      INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE visits (                   <span class="c">-- VisitItem · one row per visit</span>
@@ -799,17 +796,10 @@ END;</pre>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:delete-outline" noobserver></iconify-icon>
-          <h4>Soft delete</h4>
-        </div>
-        <p><code>urls.hidden_at</code> — reads filter <code>hidden_at IS NULL</code>; <code>history.deleteUrl</code> / <code>restoreUrl</code> flip it. Alt: tombstone + compact / immutable.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
           <iconify-icon icon="mdi:table-search" noobserver></iconify-icon>
           <h4>Search: trigram</h4>
         </div>
-        <p>External content on <code>urls</code> (title, url), trigger-maintained; &lt;3 chars → LIKE; hits join <code>hidden_at IS NULL</code>. Alt: unicode61 / contentless.</p>
+        <p>External content on <code>urls</code> (title, url), trigger-maintained; &lt;3 chars → LIKE. Alt: unicode61 / contentless.</p>
       </div>
     </div>
 

@@ -1,11 +1,9 @@
 import type http from 'node:http'
 import type { DatabaseSync } from 'node:sqlite'
 import {
-  deleteUrl,
   getItem,
   getVisits,
   listSourceProfiles,
-  restoreUrl,
   search,
   stats,
 } from '@his/core'
@@ -13,7 +11,7 @@ import { WebSocketServer } from 'ws'
 import type { WebSocket } from 'ws'
 import { createSyncRunner, type SyncRunner } from './runner.ts'
 import { METHOD_NOT_FOUND, frameNotification, receive, rpcError } from './rpc-frame.ts'
-import { monthParam, numberParam, optionalNumber, searchFilter, stringParam, syncOptions } from './rpc-params.ts'
+import { monthParam, numberParam, optionalNumber, searchFilter, syncOptions } from './rpc-params.ts'
 
 export interface RpcOptions {
   db: DatabaseSync
@@ -51,7 +49,7 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
     })
   })
 
-  const handlers = createHandlers({ db, runner, broadcast })
+  const handlers = createHandlers({ db, runner })
 
   function dispatch(method: string, params: unknown): unknown | Promise<unknown> {
     const handler = handlers[method]
@@ -94,24 +92,14 @@ export function attachRpc(server: http.Server, options: RpcOptions): RpcHandle {
 
 type Handler = (params: unknown) => unknown | Promise<unknown>
 
-function createHandlers({ db, runner, broadcast }: {
+function createHandlers({ db, runner }: {
   db: DatabaseSync,
   runner: SyncRunner,
-  broadcast: (method: string, params: unknown) => void,
 }): Record<string, Handler> {
-  function hideUrl(params: unknown, hide: boolean): { changed: boolean } {
-    const url = stringParam(params, 'url')
-    const changed = hide ? deleteUrl(db, url) : restoreUrl(db, url)
-    if (changed) broadcast('db.changed', {})
-    return { changed }
-  }
-
   const handlers: Record<string, Handler> = {
     'history.search': (params) => search(db, searchFilter(params)),
     'history.getVisits': (params) => getVisits(db, numberParam(params, 'urlId'), optionalNumber(params, 'limit')),
     'history.getItem': (params) => getItem(db, numberParam(params, 'id')),
-    'history.deleteUrl': (params) => hideUrl(params, true),
-    'history.restoreUrl': (params) => hideUrl(params, false),
     'history.stats': (params) => stats(db, monthParam(params)),
     'sources.list': () => listSourceProfiles(db),
     'sync.run': (params) => runner.run(syncOptions(params)),

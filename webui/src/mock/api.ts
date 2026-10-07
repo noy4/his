@@ -25,7 +25,7 @@ function topN(map: Map<string, number>, n: number): { key: string; visits: numbe
 }
 
 function computeStats(): Stats {
-  const visible = MOCK_ITEMS.filter((it) => it.hiddenAt === null)
+  const visible = MOCK_ITEMS
   const byHour = new Array<number>(24).fill(0)
   const byDow = new Array<number>(7).fill(0)
   const byDay = new Map<string, number>()
@@ -69,7 +69,6 @@ function computeMonthlyStats(month: string): Stats {
   let lastVisit = 0
 
   for (const it of MOCK_ITEMS) {
-    if (it.hiddenAt !== null) continue
     const host = hostOf(it.url)
     for (const v of MOCK_VISITS.get(it.id) ?? []) {
       const day = isoDay(v.visitTime)
@@ -179,7 +178,6 @@ function findVisible(params: SearchParams): HistoryItem[] {
   const to = params.to ?? Infinity
   const rows = MOCK_ITEMS.filter(
     (it) =>
-      it.hiddenAt === null &&
       it.lastVisit >= from &&
       it.lastVisit <= to &&
       (q === '' || it.title.toLowerCase().includes(q) || it.url.toLowerCase().includes(q)),
@@ -210,16 +208,6 @@ export const mockApi: HisApi = {
     const item = MOCK_ITEMS.find((it) => it.id === id)
     if (item === undefined) return null
     return { item, visits: MOCK_VISITS.get(id) ?? [] }
-  },
-
-  async deleteUrl(url: string): Promise<void> {
-    const item = MOCK_ITEMS.find((it) => it.url === url)
-    if (item !== undefined) item.hiddenAt = Date.now()
-  },
-
-  async restoreUrl(url: string): Promise<void> {
-    const item = MOCK_ITEMS.find((it) => it.url === url)
-    if (item !== undefined) item.hiddenAt = null
   },
 
   async stats(month?: string): Promise<Stats> {

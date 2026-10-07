@@ -200,7 +200,6 @@ function build(): { items: HistoryItem[]; visits: Map<number, VisitItem[]> } {
     }
     visits.set(id, vs)
 
-    const hidden = r() < 0.02
     items.push({
       id,
       url,
@@ -209,7 +208,6 @@ function build(): { items: HistoryItem[]; visits: Map<number, VisitItem[]> } {
       typedCount: vs.filter((v) => v.transition === 'typed').length,
       firstVisit: vs[vs.length - 1].visitTime,
       lastVisit,
-      hiddenAt: hidden ? lastVisit + int(r, 10, 240) * MINUTE : null,
     })
   }
 

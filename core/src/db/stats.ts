@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs } from '../model.ts'
 
-// Dashboard aggregates — visible rows only; shape mirrors the WebUI Stats 1:1.
+// Dashboard aggregates; shape mirrors the WebUI Stats 1:1.
 // Buckets use server-local time, days 'YYYY-MM-DD'; month ('YYYY-MM') scopes
 // everything to that calendar month (totals count URLs visited in it).
 
@@ -65,7 +65,7 @@ interface DayRow {
 
 function allTimeStats(db: DatabaseSync): Stats {
   const rows = db
-    .prepare('SELECT url, visit_count, first_visit_time, last_visit_time FROM urls WHERE hidden_at IS NULL')
+    .prepare('SELECT url, visit_count, first_visit_time, last_visit_time FROM urls')
     .all() as unknown as UrlRow[]
 
   const byDomain = new Map<string, number>()
@@ -90,7 +90,7 @@ function allTimeStats(db: DatabaseSync): Stats {
   const byHour = Array.from({ length: 24 }, () => 0)
   for (const bucket of db.prepare(
     `SELECT strftime('%H', visit_time / 1000, 'unixepoch', 'localtime') AS hour, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id WHERE urls.hidden_at IS NULL GROUP BY hour`,
+     FROM visits JOIN urls ON urls.id = visits.url_id GROUP BY hour`,
   ).all() as unknown as HourRow[]) {
     byHour[Number(bucket.hour)] = Number(bucket.visits)
   }
@@ -98,14 +98,14 @@ function allTimeStats(db: DatabaseSync): Stats {
   const byDow = Array.from({ length: 7 }, () => 0)
   for (const bucket of db.prepare(
     `SELECT strftime('%w', visit_time / 1000, 'unixepoch', 'localtime') AS dow, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id WHERE urls.hidden_at IS NULL GROUP BY dow`,
+     FROM visits JOIN urls ON urls.id = visits.url_id GROUP BY dow`,
   ).all() as unknown as DowRow[]) {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
   }
 
   const busiestDays = (db.prepare(
     `SELECT DATE(visit_time / 1000, 'unixepoch', 'localtime') AS day, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id WHERE urls.hidden_at IS NULL GROUP BY day
+     FROM visits JOIN urls ON urls.id = visits.url_id GROUP BY day
      ORDER BY visits DESC, day LIMIT 5`,
   ).all() as unknown as DayRow[]).map((row) => ({ day: row.day, visits: Number(row.visits) }))
 
@@ -123,7 +123,7 @@ function monthStats(db: DatabaseSync, month: string): Stats {
     `SELECT urls.url AS url, COUNT(*) AS visits,
             MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE urls.hidden_at IS NULL AND ${MONTH_BUCKET}
+     WHERE ${MONTH_BUCKET}
      GROUP BY urls.url`,
   ).all(month) as unknown as MonthUrlRow[]
 
@@ -151,7 +151,7 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   for (const bucket of db.prepare(
     `SELECT strftime('%H', visit_time / 1000, 'unixepoch', 'localtime') AS hour, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE urls.hidden_at IS NULL AND ${MONTH_BUCKET}
+     WHERE ${MONTH_BUCKET}
      GROUP BY hour`,
   ).all(month) as unknown as HourRow[]) {
     byHour[Number(bucket.hour)] = Number(bucket.visits)
@@ -161,7 +161,7 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   for (const bucket of db.prepare(
     `SELECT strftime('%w', visit_time / 1000, 'unixepoch', 'localtime') AS dow, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE urls.hidden_at IS NULL AND ${MONTH_BUCKET}
+     WHERE ${MONTH_BUCKET}
      GROUP BY dow`,
   ).all(month) as unknown as DowRow[]) {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
@@ -170,7 +170,7 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   const busiestDays = (db.prepare(
     `SELECT DATE(visit_time / 1000, 'unixepoch', 'localtime') AS day, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE urls.hidden_at IS NULL AND ${MONTH_BUCKET}
+     WHERE ${MONTH_BUCKET}
      GROUP BY day
      ORDER BY visits DESC, day LIMIT 5`,
   ).all(month) as unknown as DayRow[]).map((row) => ({ day: row.day, visits: Number(row.visits) }))

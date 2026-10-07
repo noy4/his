@@ -18,8 +18,7 @@ CREATE TABLE urls (
   first_visit_time INTEGER NOT NULL, -- not in HistoryItem
   last_visit_time  INTEGER NOT NULL,
   visit_count      INTEGER NOT NULL DEFAULT 0,
-  typed_count      INTEGER NOT NULL DEFAULT 0,
-  hidden_at        INTEGER           -- not in HistoryItem
+  typed_count      INTEGER NOT NULL DEFAULT 0
 );
 
 -- WebExtensions history API VisitItem:

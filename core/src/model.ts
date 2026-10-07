@@ -25,7 +25,6 @@ export interface HistoryItem {
   typedCount: number
   firstVisit: EpochMs
   lastVisit: EpochMs
-  hiddenAt: EpochMs | null
 }
 
 export interface VisitItem {

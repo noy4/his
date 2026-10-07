@@ -11,7 +11,7 @@ import { historyDbPath, defaultHome } from '../../paths.ts'
 // Run as: node core/src/db/scripts/reorder_urls.ts [dbPath]
 
 const TARGET_URL_ORDER =
-  'id,url,title,first_visit_time,last_visit_time,visit_count,typed_count,hidden_at'
+  'id,url,title,first_visit_time,last_visit_time,visit_count,typed_count'
 
 // Keep in sync with 000_initial_schema.sql. Triggers must come off first: dropping urls
 // runs an implicit DELETE of every row, and the fts triggers would feed each
@@ -30,11 +30,10 @@ CREATE TABLE urls_rebuild (
   first_visit_time INTEGER NOT NULL,
   last_visit_time  INTEGER NOT NULL,
   visit_count      INTEGER NOT NULL DEFAULT 0,
-  typed_count      INTEGER NOT NULL DEFAULT 0,
-  hidden_at        INTEGER
+  typed_count      INTEGER NOT NULL DEFAULT 0
 );
-INSERT INTO urls_rebuild (id, url, title, first_visit_time, last_visit_time, visit_count, typed_count, hidden_at)
-SELECT id, url, title, first_visit_time, last_visit_time, visit_count, typed_count, hidden_at
+INSERT INTO urls_rebuild (id, url, title, first_visit_time, last_visit_time, visit_count, typed_count)
+SELECT id, url, title, first_visit_time, last_visit_time, visit_count, typed_count
 FROM urls;
 DROP TABLE urls;
 ALTER TABLE urls_rebuild RENAME TO urls;

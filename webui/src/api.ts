@@ -54,8 +54,6 @@ export interface HisApi {
   search(params: SearchParams): Promise<SearchPage>
   getVisits(urlId: number, limit?: number): Promise<VisitItem[]>
   getItem(id: number): Promise<ItemDetail | null>
-  deleteUrl(url: string): Promise<void>
-  restoreUrl(url: string): Promise<void>
   stats(month?: string): Promise<Stats>
   sourcesList(): Promise<SourceProfile[]>
   syncRun(params: SyncRunParams): Promise<SyncSummary>

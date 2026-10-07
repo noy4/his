@@ -66,17 +66,8 @@ export class HistoryModel {
     await this.fetchNext()
   }
 
-  async delete(item: HistoryItem): Promise<void> {
-    await this.api.deleteUrl(item.url)
-    this.remove(item.id)
-  }
-
   stats(): Promise<Stats> {
     return this.api.stats()
-  }
-
-  private remove(id: number): void {
-    this.items.value = this.items.value.filter((it) => it.id !== id)
   }
 
   private fetchNext(): Promise<void> {

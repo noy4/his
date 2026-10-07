@@ -25,7 +25,7 @@ export interface ItemDetail {
 const DEFAULT_LIMIT = 50
 const MAX_LIMIT = 200
 const CURSOR_VERSION = 'v1'
-const URL_COLUMNS = 'id, url, title, last_visit_time, visit_count, typed_count, first_visit_time, hidden_at'
+const URL_COLUMNS = 'id, url, title, last_visit_time, visit_count, typed_count, first_visit_time'
 const VISIT_COLUMNS = 'id, url_id, visit_time, transition'
 
 interface UrlRow {
@@ -36,7 +36,6 @@ interface UrlRow {
   typed_count: number
   first_visit_time: number
   last_visit_time: number
-  hidden_at: number | null
 }
 
 interface VisitRow {
@@ -56,7 +55,7 @@ interface Fragment {
 
 export function search(db: DatabaseSync, filter: SearchFilter = {}): SearchPage {
   const limit = clampLimit(filter.limit)
-  const fragments: Fragment[] = [{ sql: 'hidden_at IS NULL' }]
+  const fragments: Fragment[] = []
 
   const url = filter.url
   if (url !== undefined) {
@@ -89,8 +88,10 @@ export function search(db: DatabaseSync, filter: SearchFilter = {}): SearchPage 
     fragments.push({ sql: '(last_visit_time < ? OR (last_visit_time = ? AND id < ?))', params: [cursor[0], cursor[0], cursor[1]] })
   }
 
+  const clauses = fragments.map((fragment) => fragment.sql).join(' AND ')
+  const where = clauses === '' ? '' : ` WHERE ${clauses}`
   const statement = db.prepare(
-    `SELECT ${URL_COLUMNS} FROM urls ${ftsJoin?.sql ?? ''} WHERE ${fragments.map((fragment) => fragment.sql).join(' AND ')} ORDER BY last_visit_time DESC, id DESC LIMIT ?`,
+    `SELECT ${URL_COLUMNS} FROM urls ${ftsJoin?.sql ?? ''}${where} ORDER BY last_visit_time DESC, id DESC LIMIT ?`,
   )
   const rows = statement.all(...(ftsJoin?.params ?? []), ...fragments.flatMap((fragment) => fragment.params ?? []), limit + 1) as unknown as UrlRow[]
   const items = rows.slice(0, limit).map(toHistoryItem)
@@ -114,7 +115,7 @@ export function getVisits(db: DatabaseSync, urlId: number, limit?: number): Visi
 
 export function getItem(db: DatabaseSync, id: number): ItemDetail | null {
   const statement = db.prepare(
-    `SELECT ${URL_COLUMNS} FROM urls WHERE id = ? AND hidden_at IS NULL`,
+    `SELECT ${URL_COLUMNS} FROM urls WHERE id = ?`,
   )
   const row = statement.get(id) as unknown as UrlRow | undefined
   if (row === undefined) return null
@@ -132,7 +133,6 @@ function toHistoryItem(row: UrlRow): HistoryItem {
     typedCount: row.typed_count,
     firstVisit: row.first_visit_time,
     lastVisit: row.last_visit_time,
-    hiddenAt: row.hidden_at,
   }
 }
 
