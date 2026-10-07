@@ -2,6 +2,9 @@ import type { CSSProperties } from 'react'
 import { isLocalDomain } from '@/lib/domain'
 import Lock from '~icons/mdi/lock'
 
+/** Hosts whose dark, transparent favicons are hard to see on dark backgrounds */
+const WHITE_BG_HOSTS = /(^|\.)github\.com$/
+
 function tileStyle(host: string): CSSProperties {
   let h = 0
   for (let i = 0; i < host.length; i++) h = (h * 31 + host.charCodeAt(i)) % 360
@@ -11,8 +14,16 @@ function tileStyle(host: string): CSSProperties {
 export function Favicon({ host, size = 30 }: { host: string; size?: number }) {
   if (isLocalDomain(host)) {
     return (
-      <span className="inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }} aria-hidden="true">
-        <Lock width={size * 0.8} height={size * 0.8} className="text-text-2" />
+      <span
+        className="inline-flex shrink-0 items-center justify-center"
+        style={{ width: size, height: size }}
+        aria-hidden="true"
+      >
+        <Lock
+          width={size * 0.8}
+          height={size * 0.8}
+          className="text-text-2"
+        />
       </span>
     )
   }
@@ -53,7 +64,7 @@ function RemoteIcon({ host }: { host: string }) {
           }
           const tile = img.parentElement as HTMLElement
           const letter = img.previousElementSibling as HTMLElement
-          tile.style.background = 'transparent'
+          tile.style.background = WHITE_BG_HOSTS.test(host) ? '#fff' : 'transparent'
           letter.style.display = 'none'
         }}
       />
