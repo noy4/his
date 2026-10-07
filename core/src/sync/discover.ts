@@ -1,9 +1,5 @@
 import type { SnapshotTarget } from './snapshot.ts'
-import { resolveChromium } from './sources/chromium.ts'
-import { resolveFirefox } from './sources/firefox.ts'
-import { resolveSafari } from './sources/safari.ts'
-import { KNOWN_BROWSERS, kindOfBrowser } from './sources/source.ts'
-import { resolveTakeout } from './sources/takeout.ts'
+import { browserOf, KNOWN_BROWSERS } from './sources/browsers.ts'
 
 export function resolveTargets(home: string, targets: string[] | undefined): SnapshotTarget[] {
   if (targets === undefined)
@@ -23,12 +19,7 @@ export function discoverAllTargets(home: string): SnapshotTarget[] {
   return KNOWN_BROWSERS.flatMap((browser) => discoverBrowser(home, browser))
 }
 
-export function discoverBrowser(home: string, browser: string, profile?: string): SnapshotTarget[] {
-  const kind = kindOfBrowser(browser)
-  switch (kind) {
-    case 'chromium': return resolveChromium(browser, profile)
-    case 'firefox': return resolveFirefox(profile)
-    case 'safari': return resolveSafari(profile)
-    case 'takeout': return resolveTakeout(home, profile)
-  }
+export function discoverBrowser(home: string, slug: string, profile?: string): SnapshotTarget[] {
+  const browser = browserOf(slug)
+  return browser.engine.discover(browser, home, profile)
 }

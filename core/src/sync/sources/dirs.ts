@@ -8,3 +8,8 @@ export function listDirs(dir: string): string[] {
     return []
   }
 }
+
+// filesystem dir to the slug used in profile keys
+export function slugifyDir(dir: string): string {
+  return dir.replace(/[^A-Za-z0-9._-]+/g, '-')
+}

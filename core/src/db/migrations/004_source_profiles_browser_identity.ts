@@ -1,7 +1,8 @@
 import type { DatabaseSync } from 'node:sqlite'
 import path from 'node:path'
 import type { CodeMigration } from '../db.ts'
-import { CHROMIUM_APPS, slugifyDir } from '../../sync/sources/chromium.ts'
+import { CHROMIUM_BROWSERS } from '../../sync/sources/chromium.ts'
+import { slugifyDir } from '../../sync/sources/dirs.ts'
 import { takeoutProfileKey } from '../../sync/sources/takeout.ts'
 
 // table rebuild: profile identity moves from (kind, profile_path) to (browser, profile).
@@ -67,8 +68,8 @@ function identify(row: LegacyRow): { browser: string, profile: string } {
 
 // reverse discovery: <dataRoot>/<userDir>/<dir>/History -> browser slug + dir
 function chromiumPathMatch(profilePath: string): { browser: string, dir: string } | null {
-  for (const app of CHROMIUM_APPS) {
-    for (const userDir of Object.values(app.userDirs)) {
+  for (const app of CHROMIUM_BROWSERS) {
+    for (const userDir of Object.values(app.userDirs ?? {})) {
       const marker = `/${userDir}/`
       const at = profilePath.indexOf(marker)
       if (at === -1) continue

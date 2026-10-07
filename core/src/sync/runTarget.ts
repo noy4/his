@@ -2,14 +2,17 @@ import type { DatabaseSync } from 'node:sqlite'
 import type { SyncOptions } from '../model.ts'
 import type { ApplyVisitsResult } from './applyVisits.ts'
 import { applyVisits } from './applyVisits.ts'
-import type { ProfileSource } from './sources/source.ts'
+import { snapshot } from './snapshot.ts'
+import type { SnapshotTarget } from './snapshot.ts'
+import { browserOf } from './sources/browsers.ts'
 import type { SyncHooks } from './runSync.ts'
 import { probeFingerprint } from './fingerprint.ts'
 import { getTargetFingerprint, setTargetFingerprint } from './watermarks.ts'
 
 interface RunTargetParams {
   db: DatabaseSync
-  source: ProfileSource
+  home: string
+  target: SnapshotTarget
   options: SyncOptions
   hooks: SyncHooks
 }
@@ -20,15 +23,17 @@ type RunTargetResult =
   | { status: 'failure' }
 
 export function runTarget(params: RunTargetParams): RunTargetResult {
-  const { db, source, options, hooks } = params
-  const label = source.label
+  const { db, home, target, options, hooks } = params
+  const { engine } = browserOf(target.browser)
+  const label = `${engine.kind} · ${target.displayName ?? target.profile}`
 
   try {
+
     // check fingerprint (--full bypasses)
-    const fingerprint = probeFingerprint(source.profilePath)
+    const fingerprint = probeFingerprint(target.dbPath)
 
     if (!options.full) {
-      const stored = getTargetFingerprint(db, source.browser, source.profile)
+      const stored = getTargetFingerprint(db, target.browser, target.profile)
       if (stored === fingerprint) {
         hooks.onLog?.(`${label}: unchanged — skipped`)
         return { status: 'skipped' }
@@ -36,13 +41,19 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     }
 
     // snapshot and parse
-    const snap = source.snapshot()
-    const visits = source.parse(snap.path)
+    const snap = snapshot(target, home)
+    const visits = engine.parse(snap.path)
 
     // upsert visits
     const result: ApplyVisitsResult = applyVisits({
       db,
-      profile: source,
+      profile: {
+        browser: target.browser,
+        profile: target.profile,
+        kind: engine.kind,
+        idMode: engine.idMode,
+        profilePath: target.dbPath,
+      },
       visits,
       options: {
         full: options.full,

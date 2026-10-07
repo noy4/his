@@ -3,39 +3,36 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
-import type { IdMode, NativeVisit } from '../applyVisits.ts'
-import { snapshot } from '../snapshot.ts'
-import type { SnapshotResult, SnapshotTarget } from '../snapshot.ts'
-import { listDirs } from './dirs.ts'
-import type { ProfileSource } from './source.ts'
+import type { NativeVisit } from '../applyVisits.ts'
+import type { SnapshotTarget } from '../snapshot.ts'
+import { listDirs, slugifyDir } from './dirs.ts'
+import type { Browser, Engine } from './types.ts'
+
+export const chromiumEngine: Engine = {
+  kind: 'chromium',
+  idMode: 'rowid',
+  discover: (browser, _home, profile) => resolveChromium(browser, profile),
+  parse: parseChromium,
+}
+
+export const CHROMIUM_BROWSERS: readonly Browser[] = [
+  { slug: 'chrome', displayName: 'Google Chrome', engine: chromiumEngine, userDirs: { darwin: 'Google/Chrome', win32: 'Google/Chrome', linux: 'google-chrome' } },
+  { slug: 'chromium', displayName: 'Chromium', engine: chromiumEngine, userDirs: { linux: 'chromium' } },
+  { slug: 'edge', displayName: 'Microsoft Edge', engine: chromiumEngine, userDirs: { darwin: 'Microsoft Edge', win32: 'Microsoft/Edge', linux: 'microsoft-edge' } },
+  { slug: 'brave', displayName: 'Brave', engine: chromiumEngine, userDirs: { darwin: 'BraveSoftware/Brave-Browser', win32: 'BraveSoftware/Brave-Browser', linux: 'BraveSoftware/Brave-Browser' } },
+  { slug: 'vivaldi', displayName: 'Vivaldi', engine: chromiumEngine, userDirs: { darwin: 'Vivaldi', win32: 'Vivaldi', linux: 'vivaldi' } },
+  { slug: 'arc', displayName: 'Arc', engine: chromiumEngine, userDirs: { darwin: 'Arc', linux: 'Arc' } },
+  { slug: 'opera', displayName: 'Opera', engine: chromiumEngine, userDirs: { darwin: 'com.operasoftware.Opera', win32: 'Opera Software/Opera Stable', linux: 'opera' } },
+  { slug: 'opera-gx', displayName: 'Opera GX', engine: chromiumEngine, userDirs: { win32: 'Opera Software/Opera GX Stable' } },
+]
 
 // --- discovery ---
 
-export interface ChromiumApp {
-  slug: 'chrome' | 'chromium' | 'edge' | 'brave' | 'vivaldi' | 'arc' | 'opera' | 'opera-gx'
-  displayName: string
-  /** user dir under the platform's data root; no key = app not on that platform */
-  userDirs: Partial<Record<NodeJS.Platform, string>>
-}
-
-export const CHROMIUM_APPS: ChromiumApp[] = [
-  { slug: 'chrome', displayName: 'Google Chrome', userDirs: { darwin: 'Google/Chrome', win32: 'Google/Chrome', linux: 'google-chrome' } },
-  { slug: 'chromium', displayName: 'Chromium', userDirs: { linux: 'chromium' } },
-  { slug: 'edge', displayName: 'Microsoft Edge', userDirs: { darwin: 'Microsoft Edge', win32: 'Microsoft/Edge', linux: 'microsoft-edge' } },
-  { slug: 'brave', displayName: 'Brave', userDirs: { darwin: 'BraveSoftware/Brave-Browser', win32: 'BraveSoftware/Brave-Browser', linux: 'BraveSoftware/Brave-Browser' } },
-  { slug: 'vivaldi', displayName: 'Vivaldi', userDirs: { darwin: 'Vivaldi', win32: 'Vivaldi', linux: 'vivaldi' } },
-  { slug: 'arc', displayName: 'Arc', userDirs: { darwin: 'Arc', linux: 'Arc' } },
-  { slug: 'opera', displayName: 'Opera', userDirs: { darwin: 'com.operasoftware.Opera', win32: 'Opera Software/Opera Stable', linux: 'opera' } },
-  { slug: 'opera-gx', displayName: 'Opera GX', userDirs: { win32: 'Opera Software/Opera GX Stable' } },
-]
-
-// one chromium app's profiles; profile token selects one (slug match),
+// one chromium browser's profiles; profile token selects one (slug match),
 // undefined = every profile whose History path exists under the app root
-export function resolveChromium(browser: string, profile: string | undefined, platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
+export function resolveChromium(browser: Browser, profile: string | undefined, platform: NodeJS.Platform = process.platform, dataRoot: string | null = platformDataRoot(platform)): SnapshotTarget[] {
   if (dataRoot === null) return []
-  const app = CHROMIUM_APPS.find((entry) => entry.slug === browser)
-  if (app === undefined) return []
-  const userDir = app.userDirs[platform]
+  const userDir = browser.userDirs?.[platform]
   if (userDir === undefined) return []
   const root = path.join(dataRoot, userDir)
   if (!fs.existsSync(root)) return []
@@ -44,15 +41,17 @@ export function resolveChromium(browser: string, profile: string | undefined, pl
     .filter((dir) => fs.existsSync(path.join(root, dir, 'History')))
     .filter((dir) => profile === undefined || slugifyDir(dir) === profile)
     .map((dir) => ({
-      browser: app.slug,
+      browser: browser.slug,
       profile: slugifyDir(dir),
-      displayName: `${app.displayName} (${dir})`,
+      displayName: `${browser.displayName} (${dir})`,
       dbPath: path.join(root, dir, 'History'),
     }))
     .sort((x, y) => x.profile.localeCompare(y.profile))
 }
 
 const NOISE_PROFILE_DIRS = new Set(['System Profile', 'Guest Profile'])
+
+// --- parse ---
 
 interface ChromiumRow {
   visitId: bigint
@@ -62,42 +61,17 @@ interface ChromiumRow {
   title: string | null
 }
 
-// one chromium profile
-export class ChromiumSource implements ProfileSource {
-  readonly browser: string
-  readonly profile: string
-  readonly kind = 'chromium' as const
-  readonly idMode: IdMode = 'rowid'
-  readonly label: string
-  readonly profilePath: string
-
-  readonly #target: SnapshotTarget
-  readonly #home: string
-
-  constructor(target: SnapshotTarget, home: string) {
-    this.#target = target
-    this.#home = home
-    this.browser = target.browser
-    this.profile = target.profile
-    this.label = `${this.kind} · ${target.displayName ?? target.profile}`
-    this.profilePath = target.dbPath
-  }
-
-  snapshot(): SnapshotResult {
-    return snapshot(this.#target, this.#home)
-  }
-  parse(path: string): NativeVisit[] {
-    const db = new DatabaseSync(path, { readOnly: true })
-    try {
-      const statement = db.prepare(
-        'SELECT v.id AS visitId, v.visit_time AS visitTime, v.transition AS transition, u.url AS url, u.title AS title FROM visits v JOIN urls u ON u.id = v.url ORDER BY v.id',
-      )
-      statement.setReadBigInts(true)
-      const rows = statement.all() as unknown as ChromiumRow[]
-      return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
-    } finally {
-      db.close()
-    }
+function parseChromium(path: string): NativeVisit[] {
+  const db = new DatabaseSync(path, { readOnly: true })
+  try {
+    const statement = db.prepare(
+      'SELECT v.id AS visitId, v.visit_time AS visitTime, v.transition AS transition, u.url AS url, u.title AS title FROM visits v JOIN urls u ON u.id = v.url ORDER BY v.id',
+    )
+    statement.setReadBigInts(true)
+    const rows = statement.all() as unknown as ChromiumRow[]
+    return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+  } finally {
+    db.close()
   }
 }
 
@@ -147,9 +121,4 @@ function platformDataRoot(platform: NodeJS.Platform): string | null {
   if (platform === 'linux') return `${home}/.config`
   if (platform === 'win32') return process.env.LOCALAPPDATA ?? `${home}/AppData/Local`
   return null
-}
-
-// filesystem dir to the slug used in profile keys
-export function slugifyDir(dir: string): string {
-  return dir.replace(/[^A-Za-z0-9._-]+/g, '-')
 }

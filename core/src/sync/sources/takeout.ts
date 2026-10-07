@@ -3,44 +3,26 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { takeoutDir } from '../../paths.ts'
 import type { EpochMs, Transition } from '../../model.ts'
-import type { IdMode, NativeVisit } from '../applyVisits.ts'
-import { snapshot } from '../snapshot.ts'
-import type { SnapshotResult, SnapshotTarget } from '../snapshot.ts'
-import type { ProfileSource } from './source.ts'
+import type { NativeVisit } from '../applyVisits.ts'
+import type { SnapshotTarget } from '../snapshot.ts'
+import type { Browser, Engine } from './types.ts'
 
-// --- source ---
+export const takeoutEngine: Engine = {
+  kind: 'takeout',
+  idMode: 'hash',
+  discover: (_browser, home, profile) => resolveTakeout(home, profile),
+  parse: parseTakeout,
+}
 
-// one takeout export
-export class TakeoutSource implements ProfileSource {
-  readonly browser: string
-  readonly profile: string
-  readonly kind = 'takeout' as const
-  readonly idMode: IdMode = 'hash'
-  readonly label: string
-  readonly profilePath: string
+export const TAKEOUT_BROWSER: Browser = { slug: 'takeout', displayName: 'Takeout', engine: takeoutEngine }
 
-  readonly #target: SnapshotTarget
-  readonly #home: string
+// --- parse ---
 
-  constructor(target: SnapshotTarget, home: string) {
-    this.#target = target
-    this.#home = home
-    this.browser = target.browser
-    this.profile = target.profile
-    this.label = `${this.kind} · ${target.displayName ?? target.profile}`
-    this.profilePath = target.dbPath
-  }
-
-  snapshot(): SnapshotResult {
-    return snapshot(this.#target, this.#home)
-  }
-
-  parse(path: string): NativeVisit[] {
-    const raw: unknown = JSON.parse(fs.readFileSync(path, 'utf8'))
-    const items = extractVisitArray(raw)
-    if (items === null) throw new Error(`no visit array found in ${path}`)
-    return items.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
-  }
+function parseTakeout(path: string): NativeVisit[] {
+  const raw: unknown = JSON.parse(fs.readFileSync(path, 'utf8'))
+  const items = extractVisitArray(raw)
+  if (items === null) throw new Error(`no visit array found in ${path}`)
+  return items.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
 }
 
 // --- discovery ---

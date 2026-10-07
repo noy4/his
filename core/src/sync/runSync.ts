@@ -3,7 +3,6 @@ import { initDb } from '../db/db.ts'
 import { historyDbPath } from '../paths.ts'
 import { resolveTargets } from './discover.ts'
 import { runTarget } from './runTarget.ts'
-import { createSource } from './sources/source.ts'
 
 export interface SyncHooks {
   onLog?(line: string): void
@@ -29,8 +28,7 @@ export async function runSync(
       hooks.onLog?.('no targets found')
 
     for (const target of targets) {
-      const source = createSource(target, home)
-      const result = runTarget({ db, source, options, hooks })
+      const result = runTarget({ db, home, target, options, hooks })
       summary.attempted += 1
       switch (result.status) {
         case 'failure':

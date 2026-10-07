@@ -3,10 +3,18 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs } from '../../model.ts'
-import type { IdMode, NativeVisit } from '../applyVisits.ts'
-import { snapshot } from '../snapshot.ts'
-import type { SnapshotResult, SnapshotTarget } from '../snapshot.ts'
-import type { ProfileSource } from './source.ts'
+import type { NativeVisit } from '../applyVisits.ts'
+import type { SnapshotTarget } from '../snapshot.ts'
+import type { Browser, Engine } from './types.ts'
+
+export const safariEngine: Engine = {
+  kind: 'safari',
+  idMode: 'rowid',
+  discover: (_browser, _home, profile) => resolveSafari(profile),
+  parse: parseSafari,
+}
+
+export const SAFARI_BROWSER: Browser = { slug: 'safari', displayName: 'Safari', engine: safariEngine }
 
 // --- discovery ---
 
@@ -28,41 +36,15 @@ interface SafariRow {
   url: string
 }
 
-// one safari profile
-export class SafariSource implements ProfileSource {
-  readonly browser: string
-  readonly profile: string
-  readonly kind = 'safari' as const
-  readonly idMode: IdMode = 'rowid'
-  readonly label: string
-  readonly profilePath: string
-
-  readonly #target: SnapshotTarget
-  readonly #home: string
-
-  constructor(target: SnapshotTarget, home: string) {
-    this.#target = target
-    this.#home = home
-    this.browser = target.browser
-    this.profile = target.profile
-    this.label = `${this.kind} · ${target.displayName ?? target.profile}`
-    this.profilePath = target.dbPath
-  }
-
-  snapshot(): SnapshotResult {
-    return snapshot(this.#target, this.#home)
-  }
-
-  parse(path: string): NativeVisit[] {
-    const db = new DatabaseSync(path, { readOnly: true })
-    try {
-      const rows = db.prepare(
-        'SELECT v.id AS visitId, v.visit_time AS visitTime, v.title AS title, i.url AS url FROM history_visits v JOIN history_items i ON i.id = v.history_item ORDER BY v.id',
-      ).all() as unknown as SafariRow[]
-      return rows.map(toNativeVisit)
-    } finally {
-      db.close()
-    }
+function parseSafari(path: string): NativeVisit[] {
+  const db = new DatabaseSync(path, { readOnly: true })
+  try {
+    const rows = db.prepare(
+      'SELECT v.id AS visitId, v.visit_time AS visitTime, v.title AS title, i.url AS url FROM history_visits v JOIN history_items i ON i.id = v.history_item ORDER BY v.id',
+    ).all() as unknown as SafariRow[]
+    return rows.map(toNativeVisit)
+  } finally {
+    db.close()
   }
 }
 

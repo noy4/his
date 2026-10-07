@@ -3,11 +3,19 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, Transition } from '../../model.ts'
-import type { IdMode, NativeVisit } from '../applyVisits.ts'
-import { snapshot } from '../snapshot.ts'
-import type { SnapshotResult, SnapshotTarget } from '../snapshot.ts'
-import { listDirs } from './dirs.ts'
-import type { ProfileSource } from './source.ts'
+import type { NativeVisit } from '../applyVisits.ts'
+import type { SnapshotTarget } from '../snapshot.ts'
+import { listDirs, slugifyDir } from './dirs.ts'
+import type { Browser, Engine } from './types.ts'
+
+export const firefoxEngine: Engine = {
+  kind: 'firefox',
+  idMode: 'rowid',
+  discover: (_browser, _home, profile) => resolveFirefox(profile),
+  parse: parseFirefox,
+}
+
+export const FIREFOX_BROWSER: Browser = { slug: 'firefox', displayName: 'Firefox', engine: firefoxEngine }
 
 // --- discovery ---
 
@@ -45,42 +53,17 @@ interface PlacesRow {
   title: string | null
 }
 
-// one firefox profile
-export class FirefoxSource implements ProfileSource {
-  readonly browser: string
-  readonly profile: string
-  readonly kind = 'firefox' as const
-  readonly idMode: IdMode = 'rowid'
-  readonly label: string
-  readonly profilePath: string
-
-  readonly #target: SnapshotTarget
-  readonly #home: string
-
-  constructor(target: SnapshotTarget, home: string) {
-    this.#target = target
-    this.#home = home
-    this.browser = target.browser
-    this.profile = target.profile
-    this.label = `${this.kind} · ${target.displayName ?? target.profile}`
-    this.profilePath = target.dbPath
-  }
-
-  snapshot(): SnapshotResult {
-    return snapshot(this.#target, this.#home)
-  }
-  parse(path: string): NativeVisit[] {
-    const db = new DatabaseSync(path, { readOnly: true })
-    try {
-      const statement = db.prepare(
-        'SELECT h.id AS visitId, h.visit_date AS visitDate, h.visit_type AS visitType, p.url AS url, p.title AS title FROM moz_historyvisits h JOIN moz_places p ON p.id = h.place_id ORDER BY h.id',
-      )
-      statement.setReadBigInts(true)
-      const rows = statement.all() as unknown as PlacesRow[]
-      return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
-    } finally {
-      db.close()
-    }
+function parseFirefox(path: string): NativeVisit[] {
+  const db = new DatabaseSync(path, { readOnly: true })
+  try {
+    const statement = db.prepare(
+      'SELECT h.id AS visitId, h.visit_date AS visitDate, h.visit_type AS visitType, p.url AS url, p.title AS title FROM moz_historyvisits h JOIN moz_places p ON p.id = h.place_id ORDER BY h.id',
+    )
+    statement.setReadBigInts(true)
+    const rows = statement.all() as unknown as PlacesRow[]
+    return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+  } finally {
+    db.close()
   }
 }
 
@@ -120,8 +103,4 @@ function firefoxDataRoot(platform: NodeJS.Platform): string | null {
   if (platform === 'linux') return `${home}/.mozilla/firefox`
   if (platform === 'win32') return `${process.env.APPDATA ?? `${home}/AppData/Roaming`}/Mozilla/Firefox`
   return null
-}
-
-function slugifyDir(dir: string): string {
-  return dir.replace(/[^A-Za-z0-9._-]+/g, '-')
 }
