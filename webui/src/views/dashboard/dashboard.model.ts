@@ -6,7 +6,7 @@ export type DashboardMode = 'month' | 'all'
 
 export class DashboardModel {
   readonly api: HisApi
-  readonly mode = signal<DashboardMode>('all')
+  readonly mode = signal<DashboardMode>('month')
   readonly monthKey = signal(dayjs().format('YYYY-MM'))
   readonly stats = signal<Stats | null>(null)
   #request = 0
@@ -21,7 +21,7 @@ export class DashboardModel {
       this.#started = true
       void this.reload()
     }
-    return () => {}
+    return () => { }
   }
 
   setMode(next: DashboardMode): void {
