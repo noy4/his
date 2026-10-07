@@ -35,7 +35,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     console.error('his: webui dist not found — static routes will 503 (build webui or set HIS_DIST)')
 
   const app = createApp({ dist: distRoot })
-  const server = http.createServer(createNodeHandler(app))
+  const server = http.createServer(createNodeHandler(app.fetch))
   const runner = new SyncRunner({ home })
   const rpc = new RpcServer(server, () => createHandlers({ db, runner }))
 

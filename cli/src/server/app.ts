@@ -1,23 +1,23 @@
 import { readStaticFile } from './static.ts'
 
-// --- contract ---
-
-// The whole HTTP surface is written against the Web requests API so the app
-// is runner-agnostic — the Node adapter in node.ts is the only runner glue.
-// WebSocket upgrade handling is not part of the request path (rpc.ts).
 export interface AppOptions {
   dist: string | null
 }
 
 export type WebHandler = (request: Request) => Promise<Response>
+type App = {
+  fetch: WebHandler
+}
 
 // --- app ---
 
-export function createApp(options: AppOptions): WebHandler {
-  return (request) => route(request, options)
+export function createApp(options: AppOptions): App {
+  return {
+    fetch: (request) => handle(request, options)
+  }
 }
 
-async function route(request: Request, options: AppOptions): Promise<Response> {
+async function handle(request: Request, options: AppOptions): Promise<Response> {
   if (request.method !== 'GET' && request.method !== 'HEAD')
     return textResponse(405, 'method not allowed', { allow: 'GET, HEAD' })
 

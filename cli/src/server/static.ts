@@ -1,8 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-// --- contract ---
-
 export interface StaticFile {
   data: Buffer
   contentType: string
