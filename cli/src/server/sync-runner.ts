@@ -3,50 +3,25 @@ import { runSync } from '@his/core'
 
 export interface SyncRunnerOptions {
   home: string
-  broadcast(method: string, params: unknown): void
 }
 
-// In-process sync state: single-flight guard, last-run record, db.changed broadcast.
+// In-process sync state: single-flight guard, last-run record.
 export class SyncRunner {
   private readonly home: string
-  private readonly broadcast: (method: string, params: unknown) => void
   private running = false
   private last: SyncLastRun | null = null
 
   constructor(options: SyncRunnerOptions) {
     this.home = options.home
-    this.broadcast = options.broadcast
   }
 
   async run(options: SyncOptions = {}): Promise<SyncSummary> {
-    // sync throw keeps the 'already running' guard visible to plain callers
     if (this.running) throw new Error('sync already running')
+    // set before the first await so concurrent callers see the guard
     this.running = true
-    return this.doRun(options).finally(() => {
-      this.running = false
-    })
-  }
-
-  // fire-and-forget pace helper for watch/index: skips when busy, failures
-  // land on lastRun(); the next trigger retries
-  trigger(): void {
-    if (this.running) return
-    void this.run().catch(() => { })
-  }
-
-  isRunning(): boolean {
-    return this.running
-  }
-
-  lastRun(): SyncLastRun | null {
-    return this.last
-  }
-
-  private async doRun(options: SyncOptions): Promise<SyncSummary> {
     const startedAt = Date.now()
     try {
       const summary = await runSync(this.home, options)
-      if (summary.insertedVisits > 0) this.broadcast('db.changed', {})
       this.recordLast(startedAt, {
         ok: summary.failures === 0,
         error: summary.errors.length === 0 ? null : summary.errors.join(' | '),
@@ -67,7 +42,23 @@ export class SyncRunner {
         touchedUrls: 0,
       })
       throw error
+    } finally {
+      this.running = false
     }
+  }
+
+  // fire-and-forget; skips if busy, errors go to lastRun()
+  trigger(): void {
+    if (this.running) return
+    void this.run().catch(() => { })
+  }
+
+  isRunning(): boolean {
+    return this.running
+  }
+
+  lastRun(): SyncLastRun | null {
+    return this.last
   }
 
   private recordLast(startedAt: EpochMs, result: Omit<SyncLastRun, 'startedAt' | 'finishedAt'>): void {

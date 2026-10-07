@@ -36,20 +36,14 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     return { kind: 'already-running', info: running }
 
   const db = await initDb(historyDbPath(home))
-
   const distRoot = resolveDistRoot(options.dist ?? process.env.HIS_DIST)
   if (distRoot === null)
     console.error('his: webui dist not found — static routes will 503 (build webui or set HIS_DIST)')
 
-  const app = createApp({
-    dist: distRoot,
-  })
+  const app = createApp({ dist: distRoot })
   const server = http.createServer(createNodeHandler(app))
-  let runner!: SyncRunner
-  const rpc = new RpcServer(server, ({ broadcast }) => {
-    runner = new SyncRunner({ home, broadcast })
-    return createHandlers({ db, runner })
-  })
+  const runner = new SyncRunner({ home })
+  const rpc = new RpcServer(server, () => createHandlers({ db, runner }))
 
   let info: InstanceState
   try {
@@ -89,7 +83,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   // Startup catch-up — async so serve returns early; the 6h interval
   // retries failures (which land on lastRun()).
   runner.trigger()
-  const watch: PeriodicSyncHandle = startPeriodicSync({ runner })
+  const watch: PeriodicSyncHandle = startPeriodicSync(runner)
 
   if (options.open === true) openUrl(info.url)
 

@@ -1,15 +1,6 @@
 import type { SyncRunner } from './sync-runner.ts'
 
-// --- contract ---
-
-// Ticks the runner's change-gated sync every 6h while serve lives. Change
-// detection lives inside sync.ts (per-target fingerprints, persisted in the
-// DB) — this only paces the runs. Startup catch-up is called at serve spawn
-// (see index.ts).
-export interface PeriodicSyncOptions {
-  runner: SyncRunner
-  interval?: number
-}
+// Triggers sync every 6h; change detection is sync's job.
 
 export interface PeriodicSyncHandle {
   stop(): void
@@ -17,13 +8,12 @@ export interface PeriodicSyncHandle {
 
 const SYNC_INTERVAL = 6 * 60 * 60 * 1000
 
-export function startPeriodicSync(options: PeriodicSyncOptions): PeriodicSyncHandle {
-  const timer = setInterval(tick, options.interval ?? SYNC_INTERVAL)
-  timer.unref()
+export function startPeriodicSync(runner: SyncRunner, interval?: number): PeriodicSyncHandle {
   function tick(): void {
-    // failures land on lastRun(); the next tick retries anyway
-    options.runner.trigger()
+    runner.trigger()
   }
+  const timer = setInterval(tick, interval ?? SYNC_INTERVAL)
+  timer.unref()
   return {
     stop(): void {
       clearInterval(timer)
