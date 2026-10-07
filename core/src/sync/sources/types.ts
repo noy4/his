@@ -6,7 +6,6 @@ export interface SyncTarget {
   // browser slug
   browser: string
   profile: string
-  displayName?: string
   dbPath: string
 }
 

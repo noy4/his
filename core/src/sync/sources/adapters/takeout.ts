@@ -49,7 +49,6 @@ function takeoutTarget(dir: string, name: string): SyncTarget {
   return {
     browser: 'takeout' as const,
     profile: takeoutProfileKey(dbPath),
-    displayName: `Takeout (${name})`,
     dbPath,
   }
 }

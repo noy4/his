@@ -24,8 +24,9 @@ type RunTargetResult =
 
 export function runTarget(params: RunTargetParams): RunTargetResult {
   const { db, home, target, options, hooks } = params
-  const { engine } = browserOf(target.browser)
-  const label = `${engine.kind} · ${target.displayName ?? target.profile}`
+  const browser = browserOf(target.browser)
+  const { engine } = browser
+  const label = `${browser.displayName} · ${target.profile}`
 
   try {
 

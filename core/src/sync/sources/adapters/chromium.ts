@@ -42,7 +42,6 @@ export function resolveChromium(browser: Browser, profile: string | undefined, p
     .map((dir) => ({
       browser: browser.name,
       profile: dirToProfileName(dir),
-      displayName: `${browser.displayName} (${dir})`,
       dbPath: path.join(root, dir, 'History'),
     }))
     .sort((x, y) => x.profile.localeCompare(y.profile))

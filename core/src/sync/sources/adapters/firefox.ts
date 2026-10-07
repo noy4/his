@@ -33,7 +33,6 @@ export function resolveFirefox(profile: string | undefined, platform: NodeJS.Pla
       targets.push({
         browser: 'firefox',
         profile: dirToProfileName(dir),
-        displayName: `Firefox (${dir.replace(/^[^.]*\./, '')})`,
         dbPath,
       })
     }
