@@ -40,9 +40,9 @@ function SourceCardRoot({ selected, onToggle, children }: { selected: boolean; o
       type="button"
       aria-pressed={selected}
       onClick={onToggle}
-      className={`relative flex flex-col gap-2.5 rounded-lg border bg-surface p-4 text-left transition-colors ${selected
+      className={`relative flex flex-col gap-2.5 rounded-lg border bg-bg-2 p-4 text-left transition-colors ${selected
         ? 'border-primary ring-1 ring-primary'
-        : 'border-line hover:border-line-strong hover:bg-surface-2'}`}
+        : 'border-border-2 hover:border-border hover:bg-bg-3'}`}
     >
       {children}
       <SourceCardCheck selected={selected} />
@@ -56,7 +56,7 @@ function SourceCardCheck({ selected }: { selected: boolean }) {
       aria-hidden="true"
       className={`absolute top-3 right-3 inline-flex h-[18px] w-[18px] items-center justify-center rounded-[5px] border transition-colors ${selected
         ? 'border-primary bg-primary text-white'
-        : 'border-line-strong bg-surface-2'}`}
+        : 'border-border bg-bg-3'}`}
     >
       {selected && <Check width={14} height={14} />}
     </span>
@@ -71,7 +71,7 @@ function SourceCardHead({ children }: { children: ReactNode }) {
 
 function SourceCardIcon({ browser }: { browser: string }) {
   return (
-    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-2">
+    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-bg-3">
       <BrowserIcon browser={browser} width={22} height={22} />
     </span>
   )
@@ -80,7 +80,7 @@ function SourceCardIcon({ browser }: { browser: string }) {
 function SourceCardName({ name, detail }: { name: string; detail: string }) {
   return (
     <span className="grid min-w-0">
-      <span className="truncate text-[0.9rem] font-medium text-ink-strong">{name}</span>
+      <span className="truncate text-[0.9rem] font-medium text-text">{name}</span>
       <span className="truncate font-mono text-[0.7rem] text-muted">{detail}</span>
     </span>
   )

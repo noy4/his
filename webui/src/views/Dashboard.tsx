@@ -57,7 +57,7 @@ export function Dashboard({ app }: { app: AppModel }) {
           <ol className="space-y-1 text-sm">
             {stats.topDomains.map((d) => (
               <li key={d.domain} className="flex items-center gap-2">
-                <span className="min-w-0 flex-1 truncate text-ink">{d.domain}</span>
+                <span className="min-w-0 flex-1 truncate text-text-2">{d.domain}</span>
                 <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
               </li>
             ))}
@@ -68,7 +68,7 @@ export function Dashboard({ app }: { app: AppModel }) {
           <ol className="space-y-1 text-sm">
             {stats.busiestDays.map((d) => (
               <li key={d.day} className="flex items-center justify-between gap-2">
-                <span className="truncate text-ink">{d.day}</span>
+                <span className="truncate text-text-2">{d.day}</span>
                 <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
               </li>
             ))}
@@ -83,7 +83,7 @@ export function Dashboard({ app }: { app: AppModel }) {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-line bg-surface p-4">
+    <div className="rounded-lg border border-border-2 bg-bg-2 p-4">
       <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted uppercase">{title}</h2>
       {children}
     </div>
@@ -93,7 +93,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-2xl font-semibold tabular-nums text-ink-strong">{value}</div>
+      <div className="text-2xl font-semibold tabular-nums text-text">{value}</div>
       <div className="text-xs text-muted">{label}</div>
     </div>
   )

@@ -83,7 +83,7 @@ function SourcesRoot({ children }: { children: ReactNode }) {
 // SourcesHeader
 
 function SourcesHeader({ children }: { children: ReactNode }) {
-  return <header className="shrink-0 border-b border-line px-4 py-3">{children}</header>
+  return <header className="shrink-0 border-b border-border-2 px-4 py-3">{children}</header>
 }
 
 function SourcesToolbar({ children }: { children: ReactNode }) {
@@ -96,7 +96,7 @@ function ToolbarButton({ icon, label, onClick, disabled }: { icon: ReactNode; la
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-mono text-[0.75rem] text-muted transition-colors hover:text-ink-strong disabled:pointer-events-none disabled:opacity-40"
+      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-mono text-[0.75rem] text-muted transition-colors hover:text-text disabled:pointer-events-none disabled:opacity-40"
     >
       {icon}
       {label}

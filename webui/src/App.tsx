@@ -55,7 +55,7 @@ function Header({ app }: { app: AppModel }) {
 
 function HeaderRoot({ children }: { children: ReactNode }) {
   return (
-    <header className="flex shrink-0 items-center gap-4 border-b border-line px-4 py-2.5">
+    <header className="flex shrink-0 items-center gap-4 border-b border-border-2 px-4 py-2.5">
       {children}
     </header>
   )
@@ -63,7 +63,7 @@ function HeaderRoot({ children }: { children: ReactNode }) {
 
 function Brand() {
   return (
-    <span className="inline-flex shrink-0 items-center gap-2 font-semibold text-ink-strong">
+    <span className="inline-flex shrink-0 items-center gap-2 font-semibold text-text">
       <History width={20} height={20} className="text-primary" />
       his
     </span>
@@ -90,7 +90,7 @@ function ViewNav({ app }: { app: AppModel }) {
 function ViewNavRoot({ children }: { children: ReactNode }) {
   return (
     <nav
-      className="flex gap-1 rounded-sm bg-surface-2 p-0.5 text-sm"
+      className="flex gap-1 rounded-sm bg-bg-3 p-0.5 text-sm"
       aria-label="View"
     >
       {children}
@@ -110,7 +110,7 @@ function ViewNavItem({
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-1.5 rounded px-3 py-1 font-medium transition-colors ${active ? 'bg-surface text-ink-strong' : 'text-muted hover:text-ink-strong'
+      className={`inline-flex items-center gap-1.5 rounded px-3 py-1 font-medium transition-colors ${active ? 'bg-bg-2 text-text' : 'text-muted hover:text-text'
         }`}
       aria-pressed={active}
       onClick={onClick}

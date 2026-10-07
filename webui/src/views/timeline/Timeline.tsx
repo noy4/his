@@ -21,7 +21,7 @@ export function Timeline({ app }: { app: AppModel }) {
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-10">
         {groups.map((g) => (
           <section className="mb-5" key={g.key}>
-            <h2 className="mb-1 border-b border-line pb-1.5 font-mono text-[0.7rem] font-semibold tracking-[0.1em] text-muted uppercase">
+            <h2 className="mb-1 border-b border-border-2 pb-1.5 font-mono text-[0.7rem] font-semibold tracking-[0.1em] text-muted uppercase">
               {g.label}
             </h2>
             <div className="grid">
