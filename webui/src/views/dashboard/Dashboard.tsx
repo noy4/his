@@ -29,8 +29,8 @@ export function Dashboard({ app }: { app: AppModel }) {
   const busiestDays = monthly ? [] : stats.busiestDays
 
   return (
-    <div className="h-full overflow-y-auto px-4 pt-4 pb-10">
-      <div className="mb-4 flex items-center justify-between gap-4">
+    <DashboardRoot>
+      <DashboardHeaderRoot>
         {monthly ? (
           <MonthNav
             value={dashboard.monthKey.value}
@@ -48,9 +48,9 @@ export function Dashboard({ app }: { app: AppModel }) {
             { value: 'all', label: 'All time' },
           ]}
         />
-      </div>
+      </DashboardHeaderRoot>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+      <DashboardContentRoot>
         <Card title="Overview">
           <div className="grid grid-cols-2 gap-4">
             <Stat label="visits" value={monthly ? '—' : fmtNum(totals.visits)} />
@@ -93,12 +93,36 @@ export function Dashboard({ app }: { app: AppModel }) {
             ))}
           </ol>
         </Card>
-      </div>
-    </div>
+      </DashboardContentRoot>
+    </DashboardRoot>
   )
 }
 
 // --- components ---
+
+function DashboardRoot({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="h-full overflow-y-auto px-4 pt-4 pb-10">
+      {children}
+    </div>
+  )
+}
+
+function DashboardHeaderRoot({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-4">
+      {children}
+    </div>
+  )
+}
+
+function DashboardContentRoot({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+      {children}
+    </div>
+  )
+}
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
