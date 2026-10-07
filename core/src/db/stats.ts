@@ -1,13 +1,10 @@
 import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs } from '../model.ts'
 
-// --- contract ---
+// Dashboard aggregates — visible rows only; shape mirrors the WebUI Stats 1:1.
+// Buckets use server-local time, days 'YYYY-MM-DD'; month ('YYYY-MM') scopes
+// everything to that calendar month (totals count URLs visited in it).
 
-// Dashboard aggregates — visible rows only (hidden_at IS NULL), matching the
-// WebUI Stats shape 1:1 so the RPC result needs no reshaping. Day / hour /
-// weekday buckets use the server's local timezone; days are 'YYYY-MM-DD'.
-// `month` ('YYYY-MM', server-local timezone) scopes every aggregate to that
-// calendar month; totals then count URL rows visited in the month.
 export interface StatTotals {
   items: number
   visits: number
@@ -30,7 +27,8 @@ const MONTH_BUCKET =
 
 export function stats(db: DatabaseSync, month?: string): Stats {
   if (month === undefined) return allTimeStats(db)
-  if (!MONTH_RE.test(month)) throw new Error(`month: 'YYYY-MM' required, got ${month}`)
+  if (!MONTH_RE.test(month))
+    throw new Error(`month: 'YYYY-MM' required, got ${month}`)
   return monthStats(db, month)
 }
 
@@ -185,6 +183,8 @@ function monthStats(db: DatabaseSync, month: string): Stats {
     busiestDays,
   }
 }
+
+// --- helpers ---
 
 function hostOf(url: string): string {
   try {
