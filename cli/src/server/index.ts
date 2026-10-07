@@ -5,7 +5,7 @@ import fs from 'node:fs'
 import http from 'node:http'
 import { createApp } from './app.ts'
 import { createNodeHandler } from './node.ts'
-import { attachRpc, type RpcHandle } from './rpc.ts'
+import { RpcServer } from './rpc.ts'
 import { resolveDistRoot } from './static.ts'
 import { startPeriodicSync, type PeriodicSyncHandle } from './watch.ts'
 
@@ -46,7 +46,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     dist: distRoot,
   })
   const server = http.createServer(createNodeHandler(app))
-  const rpc: RpcHandle = attachRpc(server, { db, home })
+  const rpc = new RpcServer(server, { db, home })
 
   const port = await bind(server, options.port)
   const info: InstanceState = {
