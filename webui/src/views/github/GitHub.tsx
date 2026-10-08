@@ -170,15 +170,15 @@ function RecentVisits({ gh }: { gh: GithubModel }) {
           ))}
           <span className="ml-auto" />
           {f && (
-          <button
-            type="button"
-            onClick={() => gh.setFilter(null)}
-            className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary hover:opacity-80"
-          >
-            {f.repo ? `${f.owner}/${f.repo}` : f.owner}
-            <CloseIcon width={12} height={12} />
-          </button>
-        )}
+            <button
+              type="button"
+              onClick={() => gh.setFilter(null)}
+              className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary hover:opacity-80"
+            >
+              {f.repo ? `${f.owner}/${f.repo}` : f.owner}
+              <CloseIcon width={12} height={12} />
+            </button>
+          )}
           <ViewToggle gh={gh} />
         </div>
         {groups.length === 0 && <p className="py-6 text-center text-sm text-muted">No visits</p>}
@@ -253,7 +253,7 @@ function KindAvatar({ owner, kind, size = 18 }: { owner: string; kind?: GithubKi
   const Icon = kind === 'pull' ? PullIcon : IssueIcon
   const badge = Math.round(size * 0.6)
   return (
-    <span className="relative block shrink-0">
+    <span className="relative block shrink-0" title={kind ? (kind === 'pull' ? 'Pull request' : 'Issue') : undefined}>
       <Avatar owner={owner} size={size} />
       {kind && (
         <Icon

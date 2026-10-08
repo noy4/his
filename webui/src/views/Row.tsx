@@ -15,7 +15,7 @@ export function Row({ item, icon }: { item: HistoryItem; icon?: ReactNode }) {
   const host = hostOf(item.url)
   return (
     <a
-      className="flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-2 text-inherit no-underline hover:bg-bg-2"
+      className="flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-2 text-inherit no-underline hover:bg-bg-3 cursor-default"
       href={item.url}
       target="_blank"
       rel="noreferrer"
@@ -29,7 +29,7 @@ export function Row({ item, icon }: { item: HistoryItem; icon?: ReactNode }) {
       </span>
       <span className="inline-flex shrink-0 items-center gap-2">
         {item.visitCount > 1 && (
-          <span className="min-w-5 rounded bg-primary-soft px-1.5 py-px text-center font-mono text-[0.68rem] font-semibold text-primary">
+          <span title={`${item.visitCount} visits`} className="min-w-5 rounded bg-primary-soft px-1.5 py-px text-center font-mono text-[0.68rem] font-semibold text-primary">
             {item.visitCount}
           </span>
         )}
