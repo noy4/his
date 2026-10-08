@@ -3,9 +3,11 @@ import type { GithubStats, GithubVisitKind, HisApi, HistoryItem } from '@/api'
 import dayjs from 'dayjs'
 
 export type GithubMode = 'month' | 'all'
+export type GithubView = 'list' | 'card'
 export type GithubFilter = { owner: string; repo?: string } | null
 
 const PAGE = 30
+const VIEW_KEY = 'his.github.view'
 
 export class GithubModel {
   readonly api: HisApi
@@ -16,6 +18,7 @@ export class GithubModel {
   readonly kind = signal<GithubVisitKind>('all')
   readonly visits = signal<HistoryItem[]>([])
   readonly nextCursor = signal<string | null>(null)
+  readonly view = signal<GithubView>(localStorage.getItem(VIEW_KEY) === 'card' ? 'card' : 'list')
   #statsReq = 0
   #visitsReq = 0
   #started = false
@@ -56,6 +59,11 @@ export class GithubModel {
     if (this.kind.value === next) return
     this.kind.value = next
     void this.loadVisits(false)
+  }
+
+  setView(next: GithubView): void {
+    this.view.value = next
+    localStorage.setItem(VIEW_KEY, next)
   }
 
   loadMore(): void {

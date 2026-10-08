@@ -285,6 +285,50 @@
         </div>
       </div>
 
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:check-circle" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:view-grid-outline" style="color:var(--green)" noobserver></iconify-icon>
+              Phase 4 — Recent visits カード表示
+            </span>
+            <span class="step-meta">P3 · core + webui</span>
+          </div>
+          <div class="step-body">List / Cards 切替。Repos が本命（desc あり）、Issues/PRs は title + <code>#n · author</code>、Code は title のみ（全種別で切替可）。</div>
+          <div class="tasks">
+            <div class="task done">
+              <iconify-icon icon="mdi:regex" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">parseGithubTitle</div>
+                <div class="task-desc">title → <code>{ name, desc?, meta? }</code> · テスト付き</div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:toggle-switch-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">view signal</div>
+                <div class="task-desc"><code>'list' | 'card'</code> · localStorage 保存</div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:card-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">GitHub.cards.tsx</div>
+                <div class="task-desc">avatar · name · org · desc · auto-fill grid 240px</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:pause-circle-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">保留</div>
+                <div class="task-desc">カード重複排除</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 

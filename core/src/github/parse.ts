@@ -93,3 +93,29 @@ export function matchesKind(ref: GithubRef, k: GithubVisitKind): boolean {
   if (k === 'code') return ref.repo !== undefined && !ref.root && !ref.kind
   return ref.kind !== undefined
 }
+
+export interface GithubTitle {
+  name: string
+  desc?: string
+  meta?: string
+}
+
+// Page <title> → card fields. Falls back to { name: title }.
+// repo:     'owner/repo: A fast bundler'                       → { name: 'repo', desc: 'A fast bundler' }
+// pull:     'Fix X by alice · Pull Request #12 · owner/repo'   → { name: 'Fix X', meta: 'alice' }
+// issue:    'Bug Y · Issue #3 · owner/repo'                    → { name: 'Bug Y' }
+export function parseGithubTitle(title: string, ref: GithubRef): GithubTitle {
+  const t = title.trim()
+  if (ref.root && ref.repo) {
+    const m = /^([^/\s]+)\/([^:\s]+)(?::\s*(.*))?$/s.exec(t)
+    if (m && m[2]) return { name: m[2], desc: m[3]?.trim() || undefined }
+    return { name: ref.repo }
+  }
+  if (ref.kind) {
+    const head = t.split(' · ')[0] ?? t
+    const by = ref.kind === 'pull' ? / by (\S+)$/.exec(head) : null
+    const name = (by ? head.slice(0, by.index) : head).trim()
+    return { name: name || t, meta: by?.[1] }
+  }
+  return { name: t }
+}

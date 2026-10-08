@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { matchesKind, mergeRepoRoots, parseGithubUrl } from './parse.ts'
+import { matchesKind, mergeRepoRoots, parseGithubTitle, parseGithubUrl } from './parse.ts'
 
 describe('parseGithubUrl', () => {
   const cases: [string, ReturnType<typeof parseGithubUrl>][] = [
@@ -72,5 +72,27 @@ describe('matchesKind', () => {
   })
   it('issue_pr = PR + Issue', () => {
     assert.deepEqual(all.map((r) => matchesKind(r, 'issue_pr')), [false, false, false, true, true])
+  })
+})
+
+describe('parseGithubTitle', () => {
+  const root = { owner: 'o', repo: 'r', root: true } as const
+  it('repo with desc', () => {
+    assert.deepEqual(parseGithubTitle('o/r: A tool: fast', root), { name: 'r', desc: 'A tool: fast' })
+  })
+  it('repo without desc', () => {
+    assert.deepEqual(parseGithubTitle('o/r', root), { name: 'r', desc: undefined })
+  })
+  it('repo odd title', () => {
+    assert.deepEqual(parseGithubTitle('GitHub - something', root), { name: 'r' })
+  })
+  it('pull', () => {
+    assert.deepEqual(parseGithubTitle('Fix X by alice · Pull Request #12 · o/r', { owner: 'o', repo: 'r', kind: 'pull', number: 12 }), { name: 'Fix X', meta: 'alice' })
+  })
+  it('issue', () => {
+    assert.deepEqual(parseGithubTitle('Bug Y · Issue #3 · o/r', { owner: 'o', repo: 'r', kind: 'issue', number: 3 }), { name: 'Bug Y', meta: undefined })
+  })
+  it('empty', () => {
+    assert.equal(parseGithubTitle('', { owner: 'o', repo: 'r', kind: 'issue', number: 3 }).name, '')
   })
 })
