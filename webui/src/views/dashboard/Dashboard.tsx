@@ -10,17 +10,17 @@ import LinkIcon from '~icons/mdi/link-variant'
 import WebIcon from '~icons/mdi/web'
 import { Favicon } from '../Favicon'
 import { DashboardModel } from './dashboard.model'
+import { DashboardSkeleton } from './Dashboard.components'
 import {
   Bars,
   Card,
-  DashboardContentRoot,
-  DashboardHeaderRoot,
-  DashboardRoot,
-  DashboardSkeleton,
   MonthNav,
   SegmentedControl,
   Stat,
-} from './Dashboard.components'
+  StatsContentRoot,
+  StatsHeaderRoot,
+  StatsRoot,
+} from '../stats/Stats.components'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const DAY = 86_400_000
@@ -45,8 +45,8 @@ export function Dashboard({ app }: { app: AppModel }) {
   const busiestDays = stats.busiestDays
 
   return (
-    <DashboardRoot>
-      <DashboardHeaderRoot>
+    <StatsRoot>
+      <StatsHeaderRoot>
         {monthly ? (
           <MonthNav
             value={dashboard.monthKey.value}
@@ -64,9 +64,9 @@ export function Dashboard({ app }: { app: AppModel }) {
             { value: 'all', label: 'All time' },
           ]}
         />
-      </DashboardHeaderRoot>
+      </StatsHeaderRoot>
 
-      <DashboardContentRoot>
+      <StatsContentRoot>
         <Card title="Overview">
           <div className="grid grid-cols-2 gap-4">
             <Stat label="visits" value={fmtNum(totals.visits)} icon={<EyeIcon width={14} height={14} />} />
@@ -113,7 +113,7 @@ export function Dashboard({ app }: { app: AppModel }) {
             ))}
           </ol>
         </Card>
-      </DashboardContentRoot>
-    </DashboardRoot>
+      </StatsContentRoot>
+    </StatsRoot>
   )
 }

@@ -13,14 +13,14 @@ import PullIcon from '~icons/octicon/git-pull-request-16'
 import RepoIcon from '~icons/octicon/repo-16'
 import {
   Card,
-  DashboardContentRoot,
-  DashboardHeaderRoot,
-  DashboardRoot,
-  DashboardSkeleton,
   MonthNav,
   SegmentedControl,
   Stat,
-} from '../dashboard/Dashboard.components'
+  StatsContentRoot,
+  StatsHeaderRoot,
+  StatsRoot,
+} from '../stats/Stats.components'
+import { GitHubSkeleton } from './GitHub.skeleton'
 import { Row } from '../Row'
 import { GithubModel } from './github.model'
 
@@ -41,14 +41,14 @@ const rowCls = '-mx-1 flex items-center gap-2 rounded px-1 hover:bg-bg-3'
 export function GitHub({ app }: { app: AppModel }) {
   const gh = useModel(() => new GithubModel(app.api))
   const stats = gh.stats.value
-  if (!stats) return <DashboardSkeleton />
+  if (!stats) return <GitHubSkeleton />
 
   const { totals } = stats
   const monthly = gh.mode.value === 'month'
 
   return (
-    <DashboardRoot>
-      <DashboardHeaderRoot>
+    <StatsRoot>
+      <StatsHeaderRoot>
         {monthly ? (
           <MonthNav value={gh.monthKey.value} onPrev={() => gh.shiftMonth(-1)} onNext={() => gh.shiftMonth(1)} />
         ) : (
@@ -62,9 +62,9 @@ export function GitHub({ app }: { app: AppModel }) {
             { value: 'all', label: 'All time' },
           ]}
         />
-      </DashboardHeaderRoot>
+      </StatsHeaderRoot>
 
-      <DashboardContentRoot>
+      <StatsContentRoot>
         <Card title="Overview">
           <div className="grid grid-cols-2 gap-4">
             <Stat label="visits" value={fmtNum(totals.visits)} icon={<EyeIcon width={14} height={14} />} />
@@ -131,8 +131,8 @@ export function GitHub({ app }: { app: AppModel }) {
           </ol>
         </Card>
         <RecentVisits gh={gh} />
-      </DashboardContentRoot>
-    </DashboardRoot>
+      </StatsContentRoot>
+    </StatsRoot>
   )
 }
 
