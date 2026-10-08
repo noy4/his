@@ -264,7 +264,7 @@
               <iconify-icon icon="mdi:filter-variant" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Recent visits</div>
-                <div class="task-desc">全幅カード · 日付グループ · 種別バッジ (All / Code / PRs / Issues) · repo/owner 絞込 · PR/Issue バッジ · Show more (cursor · 30件)</div>
+                <div class="task-desc">全幅カード · 日付グループ · 種別バッジ (All / Repos / Code / Issues/PRs) · repo/owner 絞込 · PR/Issue バッジ · Show more (cursor · 30件)</div>
               </div>
             </div>
             <div class="task done">
@@ -347,8 +347,8 @@
         <p>Top repos / owners は外部リンクでなく Recent visits のフィルタ。PR/Issue 行は外部リンク。</p>
       </div>
       <div class="card">
-        <div class="card-head"><iconify-icon icon="mdi:tag-outline" noobserver></iconify-icon><h4>種別フィルタ — 命名検討中</h4></div>
-        <p><code>kind: 'all' | 'code' | 'pull' | 'issue'</code>。<code>code</code> = PR/Issue 以外の repo ページ。ラベル候補: Code / Pages / Other / Browse。</p>
+        <div class="card-head"><iconify-icon icon="mdi:tag-outline" noobserver></iconify-icon><h4>種別フィルタ</h4></div>
+        <p><code>kind: 'all' | 'repo' | 'code' | 'issue_pr'</code>。<code>repo</code> = <code>/:owner/:repo</code> ルートのみ（<code>GithubRef.root</code>）· <code>code</code> = それ以外の repo ページ · <code>issue_pr</code> = PR + Issue（GitHub に倣い Issues 先）。全種別が重ならない。</p>
       </div>
       <div class="card">
         <div class="card-head"><iconify-icon icon="mdi:pause-circle-outline" style="color:var(--muted)" noobserver></iconify-icon><h4>db.changed 再取得 — 保留</h4></div>

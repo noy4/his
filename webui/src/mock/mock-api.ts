@@ -1,6 +1,6 @@
 import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { isoDay } from '@/lib/date'
-import { matchesKind, parseGithubUrl, type GithubRef } from '@his/core/github'
+import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubRef } from '@his/core/github'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -189,7 +189,7 @@ function githubVisits(params: GithubVisitsParams): SearchPage {
   const owner = params.owner?.toLowerCase()
   const repo = params.repo?.toLowerCase()
   const kind = params.kind ?? 'all'
-  const rows = githubPeriod(params.month)
+  const rows = mergeRepoRoots(githubPeriod(params.month))
     .filter(({ ref }) => (!owner || ref.owner === owner) && (!repo || ref.repo === repo) && matchesKind(ref, kind))
     .map(({ item }) => item)
     .sort(byLastVisitDesc)
@@ -247,7 +247,7 @@ async function syncRun(params: SyncRunParams): Promise<SyncSummary> {
       insertedVisits: inserted,
       touchedUrls: synced,
     }
-    return { attempted: targets.length, failures: 0, skipped, insertedVisits: inserted, touchedUrls: synced }
+    return { attempted: targets.length, failures: 0, skipped, insertedVisits: inserted, touchedUrls: synced, errors: [] }
   } finally {
     inRun = false
   }

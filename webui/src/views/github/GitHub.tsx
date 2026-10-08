@@ -24,12 +24,12 @@ import { GitHubSkeleton } from './GitHub.skeleton'
 import { Row } from '../Row'
 import { GithubModel } from './github.model'
 
-// 'code' = PR/Issue 以外の repo ページ（命名検討中: Code / Pages / Other）
+// repo = repo root only · code = other repo pages except PR/Issue · issue_pr = PR + Issue
 const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
   { value: 'all', label: 'All' },
+  { value: 'repo', label: 'Repos' },
   { value: 'code', label: 'Code' },
-  { value: 'pull', label: 'PRs' },
-  { value: 'issue', label: 'Issues' },
+  { value: 'issue_pr', label: 'Issues/PRs' },
 ]
 
 function Count({ n }: { n: number }) {

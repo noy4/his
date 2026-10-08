@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import { matchesKind, parseGithubUrl, type GithubKind, type GithubRef, type GithubVisitKind } from '../github/parse.ts'
+import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GithubRef, type GithubVisitKind } from '../github/parse.ts'
 import type { EpochMs, HistoryItem } from '../model.ts'
 import { clampLimit, decodeCursor, encodeCursor, type SearchPage } from './query.ts'
 import { MONTH_BUCKET, MONTH_RE } from './stats.ts'
@@ -74,7 +74,7 @@ export function githubVisits(db: DatabaseSync, filter: GithubVisitsFilter = {}):
   const limit = clampLimit(filter.limit)
   const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
 
-  const rows = githubRows(db, filter.month)
+  const rows = mergeRepoRoots(githubRows(db, filter.month))
     .filter(({ ref }) => (owner === undefined || ref.owner === owner) && (repo === undefined || ref.repo === repo) && matchesKind(ref, kind))
     .map(({ item }) => item)
     .sort((a, b) => b.lastVisit - a.lastVisit || b.id - a.id)

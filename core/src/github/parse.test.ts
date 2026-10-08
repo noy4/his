@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { matchesKind, parseGithubUrl } from './parse.ts'
+import { matchesKind, mergeRepoRoots, parseGithubUrl } from './parse.ts'
 
 describe('parseGithubUrl', () => {
   const cases: [string, ReturnType<typeof parseGithubUrl>][] = [
     ['https://github.com/Foo', { owner: 'foo' }],
     ['https://github.com/Foo/', { owner: 'foo' }],
-    ['https://github.com/Foo/Bar', { owner: 'foo', repo: 'bar' }],
-    ['https://www.github.com/foo/bar', { owner: 'foo', repo: 'bar' }],
+    ['https://github.com/Foo/Bar', { owner: 'foo', repo: 'bar', root: true }],
+    ['https://github.com/Foo/Bar/?tab=readme#x', { owner: 'foo', repo: 'bar', root: true }],
+    ['https://www.github.com/foo/bar', { owner: 'foo', repo: 'bar', root: true }],
     ['https://github.com/foo/bar/tree/main/src', { owner: 'foo', repo: 'bar' }],
     ['https://github.com/foo/bar/pulls', { owner: 'foo', repo: 'bar' }],
     ['https://github.com/foo/bar/issues', { owner: 'foo', repo: 'bar' }],
@@ -32,20 +33,44 @@ describe('parseGithubUrl', () => {
   }
 })
 
+describe('mergeRepoRoots', () => {
+  const row = (id: number, url: string, lastVisit: number) => ({
+    item: { id, url, title: `t${id}`, visitCount: 1, typedCount: 0, firstVisit: lastVisit, lastVisit },
+    ref: parseGithubUrl(url)!,
+  })
+
+  it('collapses root variants, keeps other pages', () => {
+    const out = mergeRepoRoots([
+      row(1, 'https://github.com/Foo/Bar', 10),
+      row(2, 'https://github.com/foo/bar?tab=MIT-1-ov-file', 30),
+      row(3, 'https://github.com/foo/bar#readme', 20),
+      row(4, 'https://github.com/foo/bar/issues/1', 40),
+    ])
+    assert.deepEqual(out.map((r) => r.item), [
+      { id: 4, url: 'https://github.com/foo/bar/issues/1', title: 't4', visitCount: 1, typedCount: 0, firstVisit: 40, lastVisit: 40 },
+      { id: 2, url: 'https://github.com/foo/bar', title: 't2', visitCount: 3, typedCount: 0, firstVisit: 10, lastVisit: 30 },
+    ])
+  })
+})
+
 describe('matchesKind', () => {
   const owner = { owner: 'foo' }
-  const repo = { owner: 'foo', repo: 'bar' }
+  const root = { owner: 'foo', repo: 'bar', root: true } as const
+  const page = { owner: 'foo', repo: 'bar' }
   const pull = { owner: 'foo', repo: 'bar', kind: 'pull', number: 1 } as const
   const issue = { owner: 'foo', repo: 'bar', kind: 'issue', number: 1 } as const
+  const all = [owner, root, page, pull, issue]
 
   it('all matches everything', () => {
-    for (const r of [owner, repo, pull, issue]) assert.equal(matchesKind(r, 'all'), true)
+    for (const r of all) assert.equal(matchesKind(r, 'all'), true)
   })
-  it('code = repo pages without PR/Issue', () => {
-    assert.deepEqual([owner, repo, pull, issue].map((r) => matchesKind(r, 'code')), [false, true, false, false])
+  it('repo = repo root only', () => {
+    assert.deepEqual(all.map((r) => matchesKind(r, 'repo')), [false, true, false, false, false])
   })
-  it('pull / issue', () => {
-    assert.deepEqual([owner, repo, pull, issue].map((r) => matchesKind(r, 'pull')), [false, false, true, false])
-    assert.deepEqual([owner, repo, pull, issue].map((r) => matchesKind(r, 'issue')), [false, false, false, true])
+  it('code = repo pages without root / PR / Issue', () => {
+    assert.deepEqual(all.map((r) => matchesKind(r, 'code')), [false, false, true, false, false])
+  })
+  it('issue_pr = PR + Issue', () => {
+    assert.deepEqual(all.map((r) => matchesKind(r, 'issue_pr')), [false, false, false, true, true])
   })
 })

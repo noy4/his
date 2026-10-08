@@ -1,12 +1,13 @@
 // github.com URL → owner / repo / PR・Issue. Pure (no node:*) so the WebUI can import it.
 
 export type GithubKind = 'pull' | 'issue'
-// 'code' = repo pages other than a single PR/Issue
-export type GithubVisitKind = 'all' | 'code' | GithubKind
+// 'repo' = repo root only · 'code' = other repo pages except PR/Issue · 'issue_pr' = single PR/Issue
+export type GithubVisitKind = 'all' | 'repo' | 'code' | 'issue_pr'
 
 export interface GithubRef {
   owner: string
   repo?: string
+  root?: true // exactly /:owner/:repo
   kind?: GithubKind
   number?: number
 }
@@ -32,14 +33,63 @@ export function parseGithubUrl(url: string): GithubRef | null {
   const [owner, repo, type, num] = u.pathname.toLowerCase().split('/').filter(Boolean)
   if (!owner || RESERVED.has(owner)) return null
   if (!repo) return { owner }
+  if (!type) return { owner, repo, root: true }
   const n = num !== undefined && /^\d+$/.test(num) ? Number(num) : undefined
   const kind: GithubKind | undefined =
     n === undefined ? undefined : type === 'pull' ? 'pull' : type === 'issues' ? 'issue' : undefined
   return kind ? { owner, repo, kind, number: n } : { owner, repo }
 }
 
+interface VisitLike {
+  id: number
+  url: string
+  title: string
+  visitCount: number
+  typedCount: number
+  firstVisit: number
+  lastVisit: number
+}
+
+// Collapse repo-root variants (?tab=…, #readme, trailing /) into one row per repo.
+// Newest variant wins id/title; url drops query/hash; counts are summed.
+export function mergeRepoRoots<T extends VisitLike>(rows: { item: T; ref: GithubRef }[]): { item: T; ref: GithubRef }[] {
+  const roots = new Map<string, { item: T; ref: GithubRef }>()
+  const out: { item: T; ref: GithubRef }[] = []
+  for (const row of rows) {
+    if (!row.ref.root) {
+      out.push(row)
+      continue
+    }
+    const key = `${row.ref.owner}/${row.ref.repo}`
+    const prev = roots.get(key)
+    if (!prev) {
+      roots.set(key, { item: { ...row.item, url: stripUrl(row.item.url) }, ref: row.ref })
+      continue
+    }
+    const a = prev.item
+    const b = row.item
+    const newer = b.lastVisit > a.lastVisit || (b.lastVisit === a.lastVisit && b.id > a.id) ? b : a
+    prev.item = {
+      ...newer,
+      url: stripUrl(newer.url),
+      visitCount: a.visitCount + b.visitCount,
+      typedCount: a.typedCount + b.typedCount,
+      firstVisit: Math.min(a.firstVisit, b.firstVisit),
+      lastVisit: Math.max(a.lastVisit, b.lastVisit),
+    }
+  }
+  return [...out, ...roots.values()]
+}
+
+// 'https://github.com/Foo/Bar/?tab=x#y' → 'https://github.com/Foo/Bar'
+function stripUrl(url: string): string {
+  const u = new URL(url)
+  return `${u.origin}${u.pathname.replace(/\/+$/, '')}`
+}
+
 export function matchesKind(ref: GithubRef, k: GithubVisitKind): boolean {
   if (k === 'all') return true
-  if (k === 'code') return ref.repo !== undefined && !ref.kind
-  return ref.kind === k
+  if (k === 'repo') return ref.root === true
+  if (k === 'code') return ref.repo !== undefined && !ref.root && !ref.kind
+  return ref.kind !== undefined
 }
