@@ -1,4 +1,5 @@
 import type { HistoryItem } from '@/api'
+import type { ReactNode } from 'react'
 import { timeLabel } from '@/lib/date'
 import { Favicon } from './Favicon'
 
@@ -10,7 +11,7 @@ function hostOf(url: string): string {
   }
 }
 
-export function Row({ item }: { item: HistoryItem }) {
+export function Row({ item, icon }: { item: HistoryItem; icon?: ReactNode }) {
   const host = hostOf(item.url)
   return (
     <a
@@ -19,7 +20,7 @@ export function Row({ item }: { item: HistoryItem }) {
       target="_blank"
       rel="noreferrer"
     >
-      <Favicon host={host} />
+      {icon ?? <Favicon host={host} />}
       <span className="grid min-w-0 flex-1 leading-[1.45]">
         <span className="truncate text-[0.88rem] font-medium">
           {item.title || item.url}

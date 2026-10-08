@@ -1,12 +1,14 @@
 import type { IconComponent } from '@/components/icons'
 import { AppModel } from '@/models/app'
 import { Dashboard } from '@/views/dashboard/Dashboard'
+import { GitHub } from '@/views/github/GitHub'
 import { List } from '@/views/List'
 import { Sources } from '@/views/sources/Sources'
 import { Timeline } from '@/views/timeline/Timeline'
 import { type ComponentType, type ReactNode } from 'react'
 import ChartBoxOutline from '~icons/mdi/chart-box-outline'
 import DatabaseImport from '~icons/mdi/database-import'
+import GithubIcon from '~icons/mdi/github'
 import FormatListBulleted from '~icons/mdi/format-list-bulleted'
 import History from '~icons/mdi/history'
 import { useModel } from './lib/useModel'
@@ -20,6 +22,7 @@ type ViewDef = {
 
 const VIEWS: ViewDef[] = [
   { id: 'dashboard', label: 'Dashboard', icon: ChartBoxOutline, content: Dashboard },
+  { id: 'github', label: 'GitHub', icon: GithubIcon, content: GitHub },
   { id: 'timeline', label: 'Timeline', icon: History, content: Timeline },
   { id: 'list', label: 'List', icon: FormatListBulleted, content: List },
   { id: 'sources', label: 'Sources', icon: DatabaseImport, content: Sources },
