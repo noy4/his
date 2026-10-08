@@ -1,6 +1,7 @@
 export * from './db/db.ts'
 export * from './db/query.ts'
 export * from './db/stats.ts'
+export * from './github/parse.ts'
 export * from './model.ts'
 export * from './paths.ts'
 export * from './state.ts'

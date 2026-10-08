@@ -1,6 +1,6 @@
 import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { isoDay } from '@/lib/date'
-import { matchesKind, parseGithubUrl, type GithubRef } from '@/lib/github'
+import { matchesKind, parseGithubUrl, type GithubRef } from '@his/core/github'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50

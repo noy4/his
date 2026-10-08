@@ -1,4 +1,8 @@
-import type { GithubKind, GithubVisitKind } from '@/api'
+// github.com URL → owner / repo / PR・Issue. Pure (no node:*) so the WebUI can import it.
+
+export type GithubKind = 'pull' | 'issue'
+// 'code' = repo pages other than a single PR/Issue
+export type GithubVisitKind = 'all' | 'code' | GithubKind
 
 export interface GithubRef {
   owner: string
@@ -9,12 +13,14 @@ export interface GithubRef {
 
 // top-level paths that are not owners
 const RESERVED = new Set([
-  'settings', 'notifications', 'orgs', 'search', 'explore', 'marketplace', 'pulls', 'issues',
-  'login', 'logout', 'signup', 'sponsors', 'topics', 'trending', 'new', 'codespaces', 'features',
-  'about', 'pricing', 'enterprise', 'collections', 'events', 'dashboard', 'apps', 'site', 'stars',
+  'about', 'apps', 'codespaces', 'collections', 'dashboard', 'enterprise', 'events', 'explore',
+  'features', 'issues', 'login', 'logout', 'marketplace', 'new', 'notifications', 'orgs',
+  'pricing', 'pulls', 'search', 'settings', 'signup', 'site', 'sponsors', 'stars', 'topics',
+  'trending',
 ])
 
 // 'https://github.com/Foo/Bar/pull/12/files?x#y' → { owner: 'foo', repo: 'bar', kind: 'pull', number: 12 }
+// gist.github.com etc. → null
 export function parseGithubUrl(url: string): GithubRef | null {
   let u: URL
   try {
@@ -26,8 +32,9 @@ export function parseGithubUrl(url: string): GithubRef | null {
   const [owner, repo, type, num] = u.pathname.toLowerCase().split('/').filter(Boolean)
   if (!owner || RESERVED.has(owner)) return null
   if (!repo) return { owner }
-  const n = num && /^\d+$/.test(num) ? Number(num) : undefined
-  const kind: GithubKind | undefined = n === undefined ? undefined : type === 'pull' ? 'pull' : type === 'issues' ? 'issue' : undefined
+  const n = num !== undefined && /^\d+$/.test(num) ? Number(num) : undefined
+  const kind: GithubKind | undefined =
+    n === undefined ? undefined : type === 'pull' ? 'pull' : type === 'issues' ? 'issue' : undefined
   return kind ? { owner, repo, kind, number: n } : { owner, repo }
 }
 

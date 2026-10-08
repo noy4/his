@@ -1,3 +1,4 @@
+import type { GithubKind, GithubVisitKind } from '@his/core/github'
 import type { HistoryItem, RegisteredSource, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core/model'
 
 export { TRANSITIONS } from '@his/core/model'
@@ -46,9 +47,7 @@ export interface Stats {
 
 // --- GitHub insights ---
 
-export type GithubKind = 'pull' | 'issue'
-// 'code' = repo pages other than a single PR/Issue
-export type GithubVisitKind = 'all' | 'code' | GithubKind
+export type { GithubKind, GithubVisitKind }
 
 export interface GithubStats {
   totals: { visits: number; repos: number; owners: number; items: number; firstVisit: number; lastVisit: number }

@@ -1,7 +1,7 @@
 import type { GithubKind, GithubVisitKind, HistoryItem } from '@/api'
 import { dateLabel, relativeDateLabel } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
-import { parseGithubUrl } from '@/lib/github'
+import { parseGithubUrl } from '@his/core/github'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/models/app'
 import dayjs from 'dayjs'

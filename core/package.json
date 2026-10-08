@@ -7,11 +7,13 @@
     ".": "./src/index.ts",
     "./state": "./src/state.ts",
     "./paths": "./src/paths.ts",
-    "./model": "./src/model.ts"
+    "./model": "./src/model.ts",
+    "./github": "./src/github/parse.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "test": "node --test src/**/*.test.ts"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
