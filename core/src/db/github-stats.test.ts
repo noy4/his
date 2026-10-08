@@ -1,0 +1,117 @@
+import assert from 'node:assert/strict'
+import { DatabaseSync } from 'node:sqlite'
+import { before, describe, it } from 'node:test'
+import { migrate } from './db.ts'
+import { githubStats, githubVisits } from './github-stats.ts'
+
+// local-time ms so month buckets ('localtime') line up
+const at = (iso: string) => new Date(iso).getTime()
+
+const db = new DatabaseSync(':memory:')
+
+function seed(url: string, title: string, times: string[]): void {
+  const ms = times.map(at)
+  const { id } = db.prepare(
+    'INSERT INTO urls (url, title, first_visit_time, last_visit_time, visit_count) VALUES (?, ?, ?, ?, ?) RETURNING id',
+  ).get(url, title, Math.min(...ms), Math.max(...ms), ms.length) as { id: number }
+  for (const t of ms) {
+    db.prepare('INSERT INTO visits (url_id, visit_time, transition, source_profile_id, source_visit_id) VALUES (?, ?, ?, 1, ?)')
+      .run(id, t, 'link', Math.floor(Math.random() * 1e12))
+  }
+}
+
+before(async () => {
+  await migrate(db)
+  db.prepare("INSERT INTO source_profiles (id, browser, profile, kind, profile_path) VALUES (1, 'chrome', 'Default', 'chromium', '/x')").run()
+  seed('https://github.com/Foo/Bar', 'foo/bar · GitHub', ['2026-09-01T10:00', '2026-10-01T10:00', '2026-10-02T10:00'])
+  seed('https://github.com/foo/bar/pull/12', 'Old title · Pull Request #12 · foo/bar', ['2026-10-03T10:00'])
+  seed('https://github.com/foo/bar/pull/12/files', 'New title · Pull Request #12 · foo/bar', ['2026-10-04T10:00', '2026-10-05T10:00'])
+  seed('https://github.com/foo/baz/issues/3', 'Bug · Issue #3 · foo/baz', ['2026-09-10T10:00'])
+  seed('https://github.com/qux', 'qux', ['2026-10-06T10:00'])
+  seed('https://github.com/settings/profile', 'Settings', ['2026-10-07T10:00'])
+  seed('https://gist.github.com/foo/abc', 'gist', ['2026-10-07T10:00'])
+  seed('https://example.com/foo/bar', 'other', ['2026-10-07T10:00'])
+})
+
+describe('githubStats', () => {
+  it('all time', () => {
+    const s = githubStats(db)
+    assert.deepEqual(s.totals, {
+      visits: 8, repos: 2, owners: 2, items: 2,
+      firstVisit: at('2026-09-01T10:00'), lastVisit: at('2026-10-06T10:00'),
+    })
+    assert.deepEqual(s.topRepos, [
+      { owner: 'foo', repo: 'bar', visits: 6 },
+      { owner: 'foo', repo: 'baz', visits: 1 },
+    ])
+    assert.deepEqual(s.topOwners, [
+      { owner: 'foo', repos: 2, visits: 7 },
+      { owner: 'qux', repos: 0, visits: 1 },
+    ])
+    assert.deepEqual(s.topItems[0], {
+      owner: 'foo', repo: 'bar', kind: 'pull', number: 12,
+      title: 'New title', url: 'https://github.com/foo/bar/pull/12/files', visits: 3,
+    })
+    assert.equal(s.topItems[1]?.kind, 'issue')
+  })
+
+  it('month narrows to that month visits', () => {
+    const s = githubStats(db, '2026-09')
+    assert.deepEqual(s.totals, {
+      visits: 2, repos: 2, owners: 1, items: 1,
+      firstVisit: at('2026-09-01T10:00'), lastVisit: at('2026-09-10T10:00'),
+    })
+  })
+
+  it('empty month', () => {
+    assert.deepEqual(githubStats(db, '2020-01').totals, { visits: 0, repos: 0, owners: 0, items: 0, firstVisit: 0, lastVisit: 0 })
+  })
+
+  it('rejects bad month', () => {
+    assert.throws(() => githubStats(db, '2026-13'))
+  })
+})
+
+describe('githubVisits', () => {
+  const urls = (p: Parameters<typeof githubVisits>[1]) => githubVisits(db, p).items.map((it) => it.url)
+
+  it('newest first, github.com only', () => {
+    assert.deepEqual(urls({}), [
+      'https://github.com/qux',
+      'https://github.com/foo/bar/pull/12/files',
+      'https://github.com/foo/bar/pull/12',
+      'https://github.com/Foo/Bar',
+      'https://github.com/foo/baz/issues/3',
+    ])
+  })
+
+  it('owner / repo filter (case-insensitive)', () => {
+    assert.equal(urls({ owner: 'FOO' }).length, 4)
+    assert.deepEqual(urls({ owner: 'foo', repo: 'baz' }), ['https://github.com/foo/baz/issues/3'])
+  })
+
+  it('kind filter', () => {
+    assert.deepEqual(urls({ kind: 'code' }), ['https://github.com/Foo/Bar'])
+    assert.equal(urls({ kind: 'pull' }).length, 2)
+    assert.deepEqual(urls({ kind: 'issue' }), ['https://github.com/foo/baz/issues/3'])
+  })
+
+  it('month uses that month visits', () => {
+    const page = githubVisits(db, { month: '2026-09' })
+    assert.deepEqual(page.items.map((it) => [it.url, it.visitCount]), [
+      ['https://github.com/foo/baz/issues/3', 1],
+      ['https://github.com/Foo/Bar', 1],
+    ])
+  })
+
+  it('cursor pages without overlap', () => {
+    const seen: string[] = []
+    let cursor: string | undefined
+    do {
+      const page = githubVisits(db, { limit: 2, cursor })
+      seen.push(...page.items.map((it) => it.url))
+      cursor = page.nextCursor ?? undefined
+    } while (cursor)
+    assert.deepEqual(seen, urls({}))
+  })
+})

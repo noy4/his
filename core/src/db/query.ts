@@ -145,7 +145,7 @@ function toVisitItem(row: VisitRow): VisitItem {
   }
 }
 
-function clampLimit(limit: number | undefined): number {
+export function clampLimit(limit: number | undefined): number {
   if (limit === undefined || !Number.isFinite(limit)) return DEFAULT_LIMIT
   return Math.min(Math.max(Math.trunc(limit), 1), MAX_LIMIT)
 }
@@ -162,11 +162,11 @@ function likePattern(query: string): string {
   return `%${query.replace(/[\\%_]/g, '\\$&')}%`
 }
 
-function encodeCursor(lastVisit: EpochMs, id: number): string {
+export function encodeCursor(lastVisit: EpochMs, id: number): string {
   return `${CURSOR_VERSION}:${Buffer.from(JSON.stringify([lastVisit, id]), 'utf8').toString('base64url')}`
 }
 
-function decodeCursor(cursor: string): [EpochMs, number] | null {
+export function decodeCursor(cursor: string): [EpochMs, number] | null {
   if (!cursor.startsWith(`${CURSOR_VERSION}:`)) return null
   try {
     const pair: unknown = JSON.parse(Buffer.from(cursor.slice(CURSOR_VERSION.length + 1), 'base64url').toString('utf8'))

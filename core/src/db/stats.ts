@@ -21,8 +21,8 @@ export interface Stats {
   busiestDays: { day: string; visits: number }[]
 }
 
-const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
-const MONTH_BUCKET =
+export const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
+export const MONTH_BUCKET =
   "strftime('%Y-%m', visit_time / 1000, 'unixepoch', 'localtime') = ?"
 
 export function stats(db: DatabaseSync, month?: string): Stats {
