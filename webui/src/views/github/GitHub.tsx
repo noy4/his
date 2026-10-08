@@ -184,7 +184,7 @@ function RecentVisits({ gh }: { gh: GithubModel }) {
         {groups.length === 0 && <p className="py-6 text-center text-sm text-muted">No visits</p>}
         {groups.map((g) => (
           <section key={g.label} className="mb-2">
-            <h3 className="sticky top-0 bg-bg-2 py-1 text-xs font-semibold text-muted">{g.label}</h3>
+            <h3 className="sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted">{g.label}</h3>
             {cards ? (
               <CardGrid>
                 {g.items.map((v) => (
