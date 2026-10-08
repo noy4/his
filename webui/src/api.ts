@@ -44,6 +44,28 @@ export interface Stats {
   busiestDays: { day: string; visits: number }[]
 }
 
+// --- GitHub insights ---
+
+export type GithubKind = 'pull' | 'issue'
+// 'code' = repo pages other than a single PR/Issue
+export type GithubVisitKind = 'all' | 'code' | GithubKind
+
+export interface GithubStats {
+  totals: { visits: number; repos: number; owners: number; items: number; firstVisit: number; lastVisit: number }
+  topRepos: { owner: string; repo: string; visits: number }[]
+  topOwners: { owner: string; repos: number; visits: number }[]
+  topItems: { owner: string; repo: string; kind: GithubKind; number: number; title: string; url: string; visits: number }[]
+}
+
+export interface GithubVisitsParams {
+  month?: string
+  owner?: string
+  repo?: string
+  kind?: GithubVisitKind
+  cursor?: string
+  limit?: number
+}
+
 // notifications — sync.progress is on hold (see SPEC); db.changed pending
 // open-ended so new server events can arrive before the map lists them
 export interface HisEvents {
@@ -55,6 +77,8 @@ export interface HisApi {
   getVisits(urlId: number, limit?: number): Promise<VisitItem[]>
   getItem(id: number): Promise<ItemDetail | null>
   stats(month?: string): Promise<Stats>
+  githubStats(month?: string): Promise<GithubStats>
+  githubVisits(params: GithubVisitsParams): Promise<SearchPage>
   sourcesList(): Promise<SourceProfile[]>
   syncRun(params: SyncRunParams): Promise<SyncSummary>
   syncStatus(): Promise<SyncLastRun | null>

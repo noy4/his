@@ -1,5 +1,6 @@
-import type { HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
+import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { isoDay } from '@/lib/date'
+import { matchesKind, parseGithubUrl, type GithubRef } from '@/lib/github'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -101,6 +102,100 @@ function computeMonthlyStats(month: string): Stats {
 
 const stats = computeStats()
 
+// --- github ---
+
+const GITHUB_TOP = 20
+const GITHUB_ITEMS: { item: HistoryItem; ref: GithubRef }[] = MOCK_ITEMS.flatMap((item) => {
+  const ref = parseGithubUrl(item.url)
+  return ref ? [{ item, ref }] : []
+})
+
+// month → item narrowed to that month's visits (visitCount / first / last), or null if unvisited
+function inPeriod(item: HistoryItem, month?: string): HistoryItem | null {
+  if (month === undefined) return item
+  const times = (MOCK_VISITS.get(item.id) ?? []).map((v) => v.visitTime).filter((t) => isoDay(t).slice(0, 7) === month)
+  if (times.length === 0) return null
+  return { ...item, visitCount: times.length, firstVisit: Math.min(...times), lastVisit: Math.max(...times) }
+}
+
+function githubPeriod(month?: string): { item: HistoryItem; ref: GithubRef }[] {
+  return GITHUB_ITEMS.flatMap(({ item, ref }) => {
+    const it = inPeriod(item, month)
+    return it ? [{ item: it, ref }] : []
+  })
+}
+
+// 'Fix foo by bar · Pull Request #12 · o/r' → 'Fix foo by bar'
+function cleanTitle(title: string): string {
+  return title.split(' · ')[0]
+}
+
+function computeGithubStats(month?: string): GithubStats {
+  const repos = new Map<string, { owner: string; repo: string; visits: number }>()
+  const owners = new Map<string, { visits: number; repos: Set<string> }>()
+  const items = new Map<string, GithubStats['topItems'][number] & { last: number }>()
+  let visits = 0
+  let firstVisit = Number.POSITIVE_INFINITY
+  let lastVisit = 0
+
+  for (const { item, ref } of githubPeriod(month)) {
+    const n = item.visitCount
+    visits += n
+    firstVisit = Math.min(firstVisit, item.firstVisit)
+    lastVisit = Math.max(lastVisit, item.lastVisit)
+    const o = owners.get(ref.owner) ?? { visits: 0, repos: new Set<string>() }
+    o.visits += n
+    owners.set(ref.owner, o)
+    if (!ref.repo) continue
+    o.repos.add(ref.repo)
+    const rk = `${ref.owner}/${ref.repo}`
+    const r = repos.get(rk) ?? { owner: ref.owner, repo: ref.repo, visits: 0 }
+    r.visits += n
+    repos.set(rk, r)
+    if (!ref.kind || ref.number === undefined) continue
+    const ik = `${rk}/${ref.kind}/${ref.number}`
+    const cur = items.get(ik)
+    if (cur) {
+      cur.visits += n
+      if (item.lastVisit > cur.last) Object.assign(cur, { title: cleanTitle(item.title), url: item.url, last: item.lastVisit })
+    } else {
+      items.set(ik, { owner: ref.owner, repo: ref.repo, kind: ref.kind, number: ref.number, title: cleanTitle(item.title), url: item.url, visits: n, last: item.lastVisit })
+    }
+  }
+
+  const byVisits = <T extends { visits: number }>(a: T, b: T) => b.visits - a.visits
+  return {
+    totals: {
+      visits,
+      repos: repos.size,
+      owners: owners.size,
+      items: items.size,
+      firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
+      lastVisit,
+    },
+    topRepos: [...repos.values()].sort(byVisits).slice(0, GITHUB_TOP),
+    topOwners: [...owners]
+      .map(([owner, o]) => ({ owner, repos: o.repos.size, visits: o.visits }))
+      .sort(byVisits)
+      .slice(0, GITHUB_TOP),
+    topItems: [...items.values()]
+      .sort(byVisits)
+      .slice(0, GITHUB_TOP)
+      .map(({ last: _, ...it }) => it),
+  }
+}
+
+function githubVisits(params: GithubVisitsParams): SearchPage {
+  const owner = params.owner?.toLowerCase()
+  const repo = params.repo?.toLowerCase()
+  const kind = params.kind ?? 'all'
+  const rows = githubPeriod(params.month)
+    .filter(({ ref }) => (!owner || ref.owner === owner) && (!repo || ref.repo === repo) && matchesKind(ref, kind))
+    .map(({ item }) => item)
+    .sort(byLastVisitDesc)
+  return paginate(rows, params.cursor, params.limit)
+}
+
 // --- sources ---
 
 const keyOf = (s: SourceProfile): string => `${s.browser}:${s.profile}`
@@ -186,17 +281,20 @@ function findVisible(params: SearchParams): HistoryItem[] {
   return rows
 }
 
+// rows must be sorted by byLastVisitDesc; keyset on (lastVisit, id)
+function paginate(rows: HistoryItem[], cursorText?: string, limit = DEFAULT_LIMIT): SearchPage {
+  const cursor = cursorText ? decodeCursor(cursorText) : null
+  const keyed = cursor
+    ? rows.filter((it) => it.lastVisit < cursor.lastVisit || (it.lastVisit === cursor.lastVisit && it.id < cursor.id))
+    : rows
+  const page = keyed.slice(0, limit)
+  const nextCursor = keyed.length > limit && page.length > 0 ? encodeCursor(page[page.length - 1]) : null
+  return { items: page, nextCursor }
+}
+
 export const mockApi: HisApi = {
   async search(params: SearchParams): Promise<SearchPage> {
-    const rows = findVisible(params)
-    const cursor = params.cursor ? decodeCursor(params.cursor) : null
-    const keyed = cursor
-      ? rows.filter((it) => it.lastVisit < cursor.lastVisit || (it.lastVisit === cursor.lastVisit && it.id < cursor.id))
-      : rows
-    const limit = params.limit ?? DEFAULT_LIMIT
-    const page = keyed.slice(0, limit)
-    const nextCursor = keyed.length > limit && page.length > 0 ? encodeCursor(page[page.length - 1]) : null
-    return { items: page, nextCursor }
+    return paginate(findVisible(params), params.cursor, params.limit)
   },
 
   async getVisits(urlId: number, limit?: number): Promise<VisitItem[]> {
@@ -212,6 +310,14 @@ export const mockApi: HisApi = {
 
   async stats(month?: string): Promise<Stats> {
     return month === undefined ? stats : computeMonthlyStats(month)
+  },
+
+  async githubStats(month?: string): Promise<GithubStats> {
+    return computeGithubStats(month)
+  },
+
+  async githubVisits(params: GithubVisitsParams): Promise<SearchPage> {
+    return githubVisits(params)
   },
 
   async sourcesList(): Promise<SourceProfile[]> {
