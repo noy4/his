@@ -73,7 +73,7 @@ export function GitHub({ app }: { app: AppModel }) {
             <Stat label="visits" value={fmtNum(totals.visits)} icon={<EyeIcon width={14} height={14} />} />
             <Stat label="repos" value={fmtNum(totals.repos)} icon={<RepoIcon width={14} height={14} />} />
             <Stat label="owners" value={fmtNum(totals.owners)} icon={<AccountIcon width={14} height={14} />} />
-            <Stat label="PRs / issues" value={fmtNum(totals.items)} icon={<PullIcon width={14} height={14} />} />
+            <Stat label="Issues / PRs" value={fmtNum(totals.items)} icon={<PullIcon width={14} height={14} />} />
           </div>
           <p className="mt-3 text-xs text-muted">
             {monthly ? dayjs(`${gh.monthKey.value}-01`).format('MMM YYYY') : `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}
@@ -111,7 +111,7 @@ export function GitHub({ app }: { app: AppModel }) {
           </ol>
         </Card>
 
-        <Card title="Top PRs / issues">
+        <Card title="Top Issues / PRs">
           <ol className="space-y-1.5 text-sm">
             {stats.topItems.map((it) => {
               return (

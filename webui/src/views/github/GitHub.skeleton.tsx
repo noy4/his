@@ -21,7 +21,7 @@ export function GitHubSkeleton() {
         </Card>
         <Card title="Top repos"><ListSkeleton /></Card>
         <Card title="Top owners"><ListSkeleton /></Card>
-        <Card title="Top PRs / issues"><ListSkeleton /></Card>
+        <Card title="Top Issues / PRs"><ListSkeleton /></Card>
         <div className="col-span-full">
           <Card title="Recent visits">
             <div className="mb-3 flex gap-1.5">
