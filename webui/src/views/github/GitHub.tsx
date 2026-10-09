@@ -74,10 +74,10 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
   return (
     <Card title="Overview">
       <div className="grid grid-cols-2 gap-4">
-        <Stat label="visits" value={fmtNum(totals.visits)} icon={<EyeIcon />} />
-        <Stat label="repos" value={fmtNum(totals.repos)} icon={<RepoIcon />} />
-        <Stat label="owners" value={fmtNum(totals.owners)} icon={<AccountIcon />} />
-        <Stat label="Issues / PRs" value={fmtNum(totals.items)} icon={<PullIcon />} />
+        <Stat label="visits" value={fmtNum(totals.visits)} icon={EyeIcon} />
+        <Stat label="repos" value={fmtNum(totals.repos)} icon={RepoIcon} />
+        <Stat label="owners" value={fmtNum(totals.owners)} icon={AccountIcon} />
+        <Stat label="Issues / PRs" value={fmtNum(totals.items)} icon={PullIcon} />
       </div>
       <p className="mt-3 text-xs text-muted">
         {monthly

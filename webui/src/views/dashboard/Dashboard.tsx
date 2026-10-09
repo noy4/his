@@ -69,10 +69,10 @@ export function Dashboard({ app }: { app: AppModel }) {
       <StatsContentRoot>
         <Card title="Overview">
           <div className="grid grid-cols-2 gap-4">
-            <Stat label="visits" value={fmtNum(totals.visits)} icon={<EyeIcon />} />
-            <Stat label="URLs" value={fmtNum(totals.items)} icon={<LinkIcon />} />
-            <Stat label="domains" value={fmtNum(totals.domains)} icon={<WebIcon />} />
-            <Stat label="days tracked" value={fmtNum(days)} icon={<CalendarIcon />} />
+            <Stat label="visits" value={fmtNum(totals.visits)} icon={EyeIcon} />
+            <Stat label="URLs" value={fmtNum(totals.items)} icon={LinkIcon} />
+            <Stat label="domains" value={fmtNum(totals.domains)} icon={WebIcon} />
+            <Stat label="days tracked" value={fmtNum(days)} icon={CalendarIcon} />
           </div>
           <p className="mt-3 text-xs text-muted">
             {monthly ? month.format('MMM YYYY') : `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}

@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
 import type { ComponentProps, ReactNode } from 'react'
+import type { IconComponent } from '@/components/icons'
 import { buttonBase } from '@/components/ui/button'
 import { fmtNum } from '@/lib/format'
 
@@ -38,14 +39,10 @@ export function Card({ title, children }: { title: string; children: React.React
   )
 }
 
-export function Stat({ label, value, icon }: { label: string; value: string; icon?: ReactNode }) {
+export function Stat({ label, value, icon: Icon }: { label: string; value: string; icon?: IconComponent }) {
   return (
     <div className="flex items-center gap-3">
-      {icon && (
-        <span aria-hidden="true" className="shrink-0 text-muted [&>svg]:size-7">
-          {icon}
-        </span>
-      )}
+      {Icon && <Icon aria-hidden="true" className="size-7 shrink-0 text-muted" />}
       <div className="min-w-0">
         <div className="text-2xl font-semibold tabular-nums">{value}</div>
         <div className="text-xs text-muted">{label}</div>
