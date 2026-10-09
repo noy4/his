@@ -11,7 +11,7 @@ function hostOf(url: string): string {
   }
 }
 
-export function Row({ item, icon }: { item: HistoryItem; icon?: ReactNode }) {
+export function HistoryRow({ item, icon }: { item: HistoryItem; icon?: ReactNode }) {
   const host = hostOf(item.url)
   return (
     <a

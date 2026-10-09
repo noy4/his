@@ -6,9 +6,9 @@ import { cn } from 'cn'
 import type { ComponentProps } from 'react'
 import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
-import { Row } from '../Row'
+import { HistoryRow } from '../HistoryRow'
 import { Card, CardTitle } from '../stats/Stats.components'
-import { CardGrid, VisitCard } from './GitHub.cards'
+import { CardGrid, GitHubVisitCard } from './GitHub.cards'
 import {
   EmptyMessage,
   FilterChip,
@@ -53,7 +53,7 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
             label={filter.repo ? `${filter.owner}/${filter.repo}` : filter.owner}
           />
         )}
-        <ViewToggle gh={gh} />
+        <VisitsViewToggle gh={gh} />
       </VisitsToolbarRoot>
 
       {groups.length === 0 && <VisitsEmptyMessage />}
@@ -63,33 +63,13 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
           <VisitsGroupTitle>{g.label}</VisitsGroupTitle>
           {isCardView ? (
             <CardGrid>
-              {g.items.map((v) => (
-                <VisitCard
-                  key={v.id}
-                  item={v}
-                  avatar={(owner, size) => (
-                    <GitHubItemAvatar
-                      owner={owner}
-                      kind={parseGithubUrl(v.url)?.kind}
-                      size={size}
-                    />
-                  )}
-                />
+              {g.items.map((item) => (
+                <GitHubVisitCard key={item.id} item={item} />
               ))}
             </CardGrid>
           ) : (
-            g.items.map((v) => (
-              <Row
-                key={v.id}
-                item={v}
-                icon={(
-                  <GitHubItemAvatar
-                    owner={parseGithubUrl(v.url)?.owner ?? ''}
-                    kind={parseGithubUrl(v.url)?.kind}
-                    size={24}
-                  />
-                )}
-              />
+            g.items.map((item) => (
+              <GitHubVisitRow key={item.id} item={item} />
             ))
           )}
         </VisitsGroupRoot>
@@ -119,24 +99,7 @@ export function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>
   )
 }
 
-export function VisitsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
-  return <section {...props} className={cn('mb-2', className)} />
-}
-
-export function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
-  return (
-    <h3
-      {...props}
-      className={cn('sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted', className)}
-    />
-  )
-}
-
-export function VisitsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
-  return <EmptyMessage {...props}>No visits</EmptyMessage>
-}
-
-function ViewToggle({ gh }: { gh: GithubModel }) {
+function VisitsViewToggle({ gh }: { gh: GithubModel }) {
   const v = gh.view.value
   const opts = [
     { value: 'list', label: 'List', Icon: ListIcon },
@@ -156,5 +119,38 @@ function ViewToggle({ gh }: { gh: GithubModel }) {
         </ToggleGroupButton>
       ))}
     </ToggleGroupRoot>
+  )
+}
+
+export function VisitsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
+  return <EmptyMessage {...props}>No visits</EmptyMessage>
+}
+
+export function VisitsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
+  return <section {...props} className={cn('mb-2', className)} />
+}
+
+export function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
+  return (
+    <h3
+      {...props}
+      className={cn('sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted', className)}
+    />
+  )
+}
+
+function GitHubVisitRow({ item }: { item: HistoryItem }) {
+  const ref = parseGithubUrl(item.url)
+  return (
+    <HistoryRow
+      item={item}
+      icon={(
+        <GitHubItemAvatar
+          owner={ref?.owner ?? ''}
+          kind={ref?.kind}
+          size={24}
+        />
+      )}
+    />
   )
 }

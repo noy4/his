@@ -2,7 +2,7 @@ import { useModel } from '@/lib/useModel'
 import { isoDay, relativeDateLabel } from '@/lib/date'
 import { AppModel } from '@/models/app'
 import { SearchBar } from '@/components/SearchBar'
-import { Row } from '@/views/Row'
+import { HistoryRow } from '@/views/HistoryRow'
 import type { HistoryItem } from '@/api'
 
 export function Timeline({ app }: { app: AppModel }) {
@@ -26,7 +26,7 @@ export function Timeline({ app }: { app: AppModel }) {
             </h2>
             <div className="grid">
               {g.items.map((it) => (
-                <Row key={it.id} item={it} />
+                <HistoryRow key={it.id} item={it} />
               ))}
             </div>
           </section>

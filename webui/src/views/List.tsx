@@ -1,7 +1,7 @@
 import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/models/app'
 import { SearchBar } from '@/components/SearchBar'
-import { Row } from '@/views/Row'
+import { HistoryRow } from '@/views/HistoryRow'
 
 export function List({ app }: { app: AppModel }) {
   const {
@@ -19,7 +19,7 @@ export function List({ app }: { app: AppModel }) {
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-10">
         <div className="grid">
           {items.value.map((it) => (
-            <Row key={it.id} item={it} />
+            <HistoryRow key={it.id} item={it} />
           ))}
         </div>
         {loading.value && <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>}

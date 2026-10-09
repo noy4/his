@@ -2,6 +2,7 @@ import type { HistoryItem } from '@/api'
 import { timeLabel } from '@/lib/date'
 import { parseGithubTitle, parseGithubUrl } from '@his/core/github'
 import type { ReactNode } from 'react'
+import { GitHubItemAvatar } from './GitHub.components'
 
 const cardCls =
   'flex min-w-0 flex-col gap-1.5 rounded-lg border border-border p-3 text-inherit no-underline transition-colors hover:bg-bg-3'
@@ -10,7 +11,7 @@ export function CardGrid({ children }: { children: ReactNode }) {
   return <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-2">{children}</div>
 }
 
-export function VisitCard({ item, avatar }: { item: HistoryItem; avatar: (owner: string, size: number) => ReactNode }) {
+export function GitHubVisitCard({ item }: { item: HistoryItem }) {
   const ref = parseGithubUrl(item.url)
   if (!ref) return null
   const t = parseGithubTitle(item.title || item.url, ref)
@@ -22,7 +23,11 @@ export function VisitCard({ item, avatar }: { item: HistoryItem; avatar: (owner:
   return (
     <a className={cardCls} href={item.url} target="_blank" rel="noreferrer">
       <div className="flex min-w-0 flex-col items-start gap-2.5">
-        {avatar(ref.owner, ref.root ? 36 : 28)}
+        <GitHubItemAvatar
+          owner={ref.owner}
+          kind={ref.kind}
+          size={ref.root ? 36 : 28}
+        />
         <div className="grid w-full min-w-0 leading-[1.35]">
           <span className={`text-sm font-semibold text-text ${ref.root ? 'truncate' : 'line-clamp-2'}`}>{t.name}</span>
           <span className="truncate font-mono text-[0.7rem] text-muted">{org}</span>
