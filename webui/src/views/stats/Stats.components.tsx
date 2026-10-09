@@ -5,6 +5,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import type { IconComponent } from '@/components/icons'
 import { buttonBase } from '@/components/ui/button'
 import { fmtNum } from '@/lib/format'
+import { cn } from 'cn'
 
 export function StatsRoot({ children }: { children: React.ReactNode }) {
   return (
@@ -30,11 +31,9 @@ export function StatsContentRoot({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function Card({ children }: { children: React.ReactNode }) {
+export function Card({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <div className="rounded-lg border bg-bg-2 p-4">
-      {children}
-    </div>
+    <div {...props} className={cn('rounded-lg border bg-bg-2 p-4', className)} />
   )
 }
 

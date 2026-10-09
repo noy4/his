@@ -18,7 +18,7 @@ import {
   StatsHeaderRoot,
   StatsRoot,
 } from '../stats/Stats.components'
-import { Avatar, KindAvatar, RecentVisits } from './GitHub.components'
+import { Avatar, KindAvatar, RecentVisitsCard } from './GitHub.components'
 import { GithubModel } from './github.model'
 import { GitHubSkeleton } from './GitHub.skeleton'
 
@@ -59,7 +59,7 @@ export function GitHub({ app }: { app: AppModel }) {
         <TopOwnersCard gh={gh} />
         <TopItemsCard gh={gh} />
       </StatsContentRoot>
-      <RecentVisits gh={gh} />
+      <RecentVisitsCard gh={gh} />
     </StatsRoot>
   )
 }

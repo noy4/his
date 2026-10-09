@@ -21,7 +21,7 @@ const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
   { value: 'issue_pr', label: 'Issues/PRs' },
 ]
 
-export function RecentVisits({ gh }: { gh: GithubModel }) {
+export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
   const f = gh.filter.value
   const k = gh.kind.value
   const shown = gh.visits.value
@@ -36,49 +36,68 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
   }
 
   return (
-    <div className="mt-4">
-      <Card>
-        <CardTitle>Recent Visits</CardTitle>
-        <VisitsToolbarRoot>
-          {KIND_OPTIONS.map((o) => (
-            <FilterChip
-              key={o.value}
-              selected={k === o.value}
-              onClick={() => gh.setKind(o.value)}
-            >
-              {o.label}
-            </FilterChip>
-          ))}
-          <span className="ml-auto" />
-          {f && (
-            <RemovableChip
-              onRemove={() => gh.setFilter(null)}
-              removeLabel={`Remove filter: ${f.repo ? `${f.owner}/${f.repo}` : f.owner}`}
-              label={f.repo ? `${f.owner}/${f.repo}` : f.owner}
-            />
-          )}
-          <ViewToggle gh={gh} />
-        </VisitsToolbarRoot>
-        {groups.length === 0 && <VisitsEmptyMessage />}
-        {groups.map((g) => (
-          <VisitsGroupRoot key={g.label}>
-            <VisitsGroupTitle>{g.label}</VisitsGroupTitle>
-            {cards ? (
-              <CardGrid>
-                {g.items.map((v) => (
-                  <VisitCard key={v.id} item={v} avatar={(owner, size) => <KindAvatar owner={owner} kind={parseGithubUrl(v.url)?.kind} size={size} />} />
-                ))}
-              </CardGrid>
-            ) : (
-              g.items.map((v) => (
-                <Row key={v.id} item={v} icon={<KindAvatar owner={parseGithubUrl(v.url)?.owner ?? ''} kind={parseGithubUrl(v.url)?.kind} size={24} />} />
-              ))
-            )}
-          </VisitsGroupRoot>
+    <Card className="mt-4">
+      <CardTitle>Recent Visits</CardTitle>
+      <VisitsToolbarRoot>
+        {KIND_OPTIONS.map((o) => (
+          <FilterChip
+            key={o.value}
+            selected={k === o.value}
+            onClick={() => gh.setKind(o.value)}
+          >
+            {o.label}
+          </FilterChip>
         ))}
-        {hasMore && <LoadMoreButton onClick={() => gh.loadMore()} />}
-      </Card>
-    </div>
+        <span className="ml-auto" />
+        {f && (
+          <RemovableChip
+            onRemove={() => gh.setFilter(null)}
+            removeLabel={`Remove filter: ${f.repo ? `${f.owner}/${f.repo}` : f.owner}`}
+            label={f.repo ? `${f.owner}/${f.repo}` : f.owner}
+          />
+        )}
+        <ViewToggle gh={gh} />
+      </VisitsToolbarRoot>
+
+      {groups.length === 0 && <VisitsEmptyMessage />}
+
+      {groups.map((g) => (
+        <VisitsGroupRoot key={g.label}>
+          <VisitsGroupTitle>{g.label}</VisitsGroupTitle>
+          {cards ? (
+            <CardGrid>
+              {g.items.map((v) => (
+                <VisitCard
+                  key={v.id}
+                  item={v}
+                  avatar={(owner, size) => (
+                    <KindAvatar
+                      owner={owner}
+                      kind={parseGithubUrl(v.url)?.kind}
+                      size={size}
+                    />
+                  )}
+                />
+              ))}
+            </CardGrid>
+          ) : (
+            g.items.map((v) => (
+              <Row key={v.id}
+                item={v}
+                icon={(
+                  <KindAvatar
+                    owner={parseGithubUrl(v.url)?.owner ?? ''}
+                    kind={parseGithubUrl(v.url)?.kind}
+                    size={24}
+                  />
+                )}
+              />
+            ))
+          )}
+        </VisitsGroupRoot>
+      ))}
+      {hasMore && <LoadMoreButton onClick={() => gh.loadMore()} />}
+    </Card>
   )
 }
 
