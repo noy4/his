@@ -40,11 +40,15 @@ export function Card({ title, children }: { title: string; children: React.React
 
 export function Stat({ label, value, icon }: { label: string; value: string; icon?: ReactNode }) {
   return (
-    <div>
-      <div className="text-2xl font-semibold tabular-nums">{value}</div>
-      <div className="flex items-center gap-1 text-xs text-muted">
-        {icon}
-        {label}
+    <div className="flex items-center gap-3">
+      {icon && (
+        <span aria-hidden="true" className="shrink-0 text-muted [&>svg]:size-7">
+          {icon}
+        </span>
+      )}
+      <div className="min-w-0">
+        <div className="text-2xl font-semibold tabular-nums">{value}</div>
+        <div className="text-xs text-muted">{label}</div>
       </div>
     </div>
   )
