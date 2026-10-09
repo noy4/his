@@ -150,16 +150,23 @@ function TopItemsCard({ gh }: { gh: GithubModel }) {
         {stats.topItems.slice(0, TOP_LIMIT).map((it) => {
           return (
             <li key={it.url}>
-              <a className={`${rowCls} items-start`} href={it.url} target="_blank" rel="noreferrer">
-                <span className="mt-0.5 shrink-0">
-                  <KindAvatar owner={it.owner} kind={it.kind} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-text-2">{it.title}</span>
-                  <span className="block truncate text-xs text-muted">
+              <a
+                className={`${rowCls} items-start`}
+                href={it.url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <KindAvatar
+                  owner={it.owner}
+                  kind={it.kind}
+                  className="mt-0.5"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-text-2">{it.title}</div>
+                  <div className="truncate text-xs text-muted">
                     {it.owner}/{it.repo}#{it.number}
-                  </span>
-                </span>
+                  </div>
+                </div>
                 <Count n={it.visits} />
               </a>
             </li>

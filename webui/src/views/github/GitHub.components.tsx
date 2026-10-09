@@ -1,6 +1,7 @@
 import type { GithubKind, GithubVisitKind, HistoryItem } from '@/api'
 import { relativeDateLabel } from '@/lib/date'
 import { parseGithubUrl } from '@his/core/github'
+import { cn } from 'cn'
 import CloseIcon from '~icons/mdi/close'
 import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
@@ -131,11 +132,19 @@ export function Avatar({ owner, size = 18 }: { owner: string; size?: number }) {
   )
 }
 
-export function KindAvatar({ owner, kind, size = 18 }: { owner: string; kind?: GithubKind; size?: number }) {
+export function KindAvatar({ owner, kind, size = 18, className }: {
+  owner: string
+  kind?: GithubKind
+  size?: number
+  className?: string
+}) {
   const Icon = kind === 'pull' ? PullIcon : IssueIcon
   const badge = Math.round(size * 0.6)
   return (
-    <span className="relative block shrink-0" title={kind ? (kind === 'pull' ? 'Pull request' : 'Issue') : undefined}>
+    <span
+      className={cn('relative block shrink-0', className)}
+      title={kind ? (kind === 'pull' ? 'Pull request' : 'Issue') : undefined}
+    >
       <Avatar owner={owner} size={size} />
       {kind && (
         <Icon
@@ -149,5 +158,12 @@ export function KindAvatar({ owner, kind, size = 18 }: { owner: string; kind?: G
 }
 
 export function Count({ n }: { n: number }) {
-  return <span title='visits count' className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(n)}</span>
+  return (
+    <span
+      title='visits count'
+      className="shrink-0 font-mono text-xs text-muted tabular-nums"
+    >
+      {fmtNum(n)}
+    </span>
+  )
 }
