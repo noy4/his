@@ -18,7 +18,8 @@ import {
   StatsHeaderRoot,
   StatsRoot,
 } from '../stats/Stats.components'
-import { Avatar, KindAvatar, RecentVisitsCard } from './GitHub.components'
+import { Avatar, KindAvatar } from './GitHub.components'
+import { RecentVisitsCard } from './RecentVisitsCard'
 import { GithubModel } from './github.model'
 import { GitHubSkeleton } from './GitHub.skeleton'
 
