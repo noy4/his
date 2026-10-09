@@ -23,7 +23,7 @@ export interface GithubVisitsFilter {
   limit?: number
 }
 
-const TOP = 20
+const TOP = 5
 
 export function githubStats(db: DatabaseSync, month?: string): GithubStats {
   const repos = new Map<string, { owner: string; repo: string; visits: number }>()

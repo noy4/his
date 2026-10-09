@@ -21,7 +21,6 @@ import { Avatar, KindAvatar, RecentVisits } from './GitHub.components'
 import { GithubModel } from './github.model'
 import { GitHubSkeleton } from './GitHub.skeleton'
 
-const TOP_LIMIT = 5
 const rowCls = '-mx-1 flex items-center gap-2 rounded px-1 hover:bg-bg-3'
 
 export function GitHub({ app }: { app: AppModel }) {
@@ -94,7 +93,7 @@ function TopReposCard({ gh }: { gh: GithubModel }) {
     <Card>
       <CardTitle>Top repos</CardTitle>
       <ol className="space-y-1 text-sm">
-        {stats.topRepos.slice(0, TOP_LIMIT).map((r) => (
+        {stats.topRepos.map((r) => (
           <li key={`${r.owner}/${r.repo}`}>
             <button
               type="button"
@@ -121,7 +120,7 @@ function TopOwnersCard({ gh }: { gh: GithubModel }) {
     <Card>
       <CardTitle>Top owners</CardTitle>
       <ol className="space-y-1 text-sm">
-        {stats.topOwners.slice(0, TOP_LIMIT).map((o) => (
+        {stats.topOwners.map((o) => (
           <li key={o.owner}>
             <button
               type="button"
@@ -147,7 +146,7 @@ function TopItemsCard({ gh }: { gh: GithubModel }) {
     <Card>
       <CardTitle>Top Issues / PRs</CardTitle>
       <ol className="space-y-1.5 text-sm">
-        {stats.topItems.slice(0, TOP_LIMIT).map((it) => {
+        {stats.topItems.map((it) => {
           return (
             <li key={it.url}>
               <a
