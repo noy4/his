@@ -83,17 +83,17 @@ export function Dashboard({ app }: { app: AppModel }) {
 
         <div className="grid gap-4">
           <Card>
-            <CardTitle>By hour of day</CardTitle>
+            <CardTitle>By Hour of Day</CardTitle>
             <Bars data={byHour} labels={byHourLabels} />
           </Card>
           <Card>
-            <CardTitle>By day of week</CardTitle>
+            <CardTitle>By Day of Week</CardTitle>
             <Bars data={byDow} labels={DOW} />
           </Card>
         </div>
 
         <Card>
-          <CardTitle>Top domains</CardTitle>
+          <CardTitle>Top Domains</CardTitle>
           <ol className="space-y-1 text-sm">
             {topDomains.map((d) => (
               <li
@@ -109,7 +109,7 @@ export function Dashboard({ app }: { app: AppModel }) {
         </Card>
 
         <Card>
-          <CardTitle>Busiest days</CardTitle>
+          <CardTitle>Busiest Days</CardTitle>
           <ol className="space-y-1 text-sm">
             {busiestDays.map((d) => (
               <li key={d.day} className="flex items-center justify-between gap-2">

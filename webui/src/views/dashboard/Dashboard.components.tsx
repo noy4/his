@@ -22,20 +22,20 @@ export function DashboardSkeleton() {
         </Card>
         <div className="grid gap-4">
           <Card>
-            <CardTitle>By hour of day</CardTitle>
+            <CardTitle>By Hour of Day</CardTitle>
             <Sk className="h-32" />
           </Card>
           <Card>
-            <CardTitle>By day of week</CardTitle>
+            <CardTitle>By Day of Week</CardTitle>
             <Sk className="h-32" />
           </Card>
         </div>
         <Card>
-          <CardTitle>Top domains</CardTitle>
+          <CardTitle>Top Domains</CardTitle>
           <ListSkeleton />
         </Card>
         <Card>
-          <CardTitle>Busiest days</CardTitle>
+          <CardTitle>Busiest Days</CardTitle>
           <ListSkeleton />
         </Card>
       </StatsContentRoot>

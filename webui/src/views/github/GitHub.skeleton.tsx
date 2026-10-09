@@ -21,11 +21,11 @@ export function GitHubSkeleton() {
           <Sk className="mt-3 h-3 w-32" />
         </Card>
         <Card>
-          <CardTitle>Top repos</CardTitle>
+          <CardTitle>Top Repos</CardTitle>
           <ListSkeleton />
         </Card>
         <Card>
-          <CardTitle>Top owners</CardTitle>
+          <CardTitle>Top Owners</CardTitle>
           <ListSkeleton />
         </Card>
         <Card>
@@ -34,7 +34,7 @@ export function GitHubSkeleton() {
         </Card>
         <div className="col-span-full">
           <Card>
-            <CardTitle>Recent visits</CardTitle>
+            <CardTitle>Recent Visits</CardTitle>
             <div className="mb-3 flex gap-1.5">
               {Array.from({ length: 4 }, (_, i) => <Sk key={i} className="h-5 w-12 rounded-full" />)}
             </div>

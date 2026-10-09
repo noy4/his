@@ -3,6 +3,7 @@ import { fmtNum } from '@/lib/format'
 import { Count } from './GitHub.components'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/models/app'
+import { cn } from 'cn'
 import AccountIcon from '~icons/mdi/account-group-outline'
 import EyeIcon from '~icons/mdi/eye-outline'
 import PullIcon from '~icons/octicon/git-pull-request-16'
@@ -91,19 +92,22 @@ function TopReposCard({ gh }: { gh: GithubModel }) {
   if (!stats) return null
   return (
     <Card>
-      <CardTitle>Top repos</CardTitle>
+      <CardTitle>Top Repos</CardTitle>
       <ol className="space-y-1 text-sm">
         {stats.topRepos.map((r) => (
           <li key={`${r.owner}/${r.repo}`}>
             <button
               type="button"
-              className={`${rowCls} w-full text-left`}
-              onClick={() => gh.setFilter({ owner: r.owner, repo: r.repo })}
+              className={cn(rowCls, 'w-full text-left')}
+              onClick={() => gh.setFilter({
+                owner: r.owner,
+                repo: r.repo
+              })}
             >
               <Avatar owner={r.owner} />
-              <span className="min-w-0 flex-1 truncate text-text-2">
+              <div className="min-w-0 flex-1 truncate text-text-2">
                 <span className="text-muted">{r.owner}/</span>{r.repo}
-              </span>
+              </div>
               <Count n={r.visits} />
             </button>
           </li>
@@ -118,18 +122,22 @@ function TopOwnersCard({ gh }: { gh: GithubModel }) {
   if (!stats) return null
   return (
     <Card>
-      <CardTitle>Top owners</CardTitle>
+      <CardTitle>Top Owners</CardTitle>
       <ol className="space-y-1 text-sm">
         {stats.topOwners.map((o) => (
           <li key={o.owner}>
             <button
               type="button"
-              className={`${rowCls} w-full text-left`}
+              className={cn(rowCls, 'w-full text-left')}
               onClick={() => gh.setFilter({ owner: o.owner })}
             >
               <Avatar owner={o.owner} />
-              <span className="min-w-0 flex-1 truncate text-text-2">{o.owner}</span>
-              <span className="shrink-0 text-xs text-muted">{o.repos} repos</span>
+              <span className="min-w-0 flex-1 truncate text-text-2">
+                {o.owner}
+              </span>
+              <span className="shrink-0 text-xs text-muted">
+                {o.repos} repos
+              </span>
               <Count n={o.visits} />
             </button>
           </li>
@@ -150,7 +158,7 @@ function TopItemsCard({ gh }: { gh: GithubModel }) {
           return (
             <li key={it.url}>
               <a
-                className={`${rowCls} items-start`}
+                className={cn(rowCls, 'items-start')}
                 href={it.url}
                 target="_blank"
                 rel="noreferrer"

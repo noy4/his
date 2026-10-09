@@ -38,7 +38,7 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
   return (
     <div className="col-span-full">
       <Card>
-        <CardTitle>Recent visits</CardTitle>
+        <CardTitle>Recent Visits</CardTitle>
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
           {KIND_OPTIONS.map((o) => (
             <button
