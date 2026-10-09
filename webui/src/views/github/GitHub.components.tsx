@@ -118,14 +118,14 @@ function ViewToggle({ gh }: { gh: GithubModel }) {
   )
 }
 
-function Avatar({ owner, size = 18 }: { owner: string; size?: number }) {
+export function Avatar({ owner, size = 18 }: { owner: string; size?: number }) {
   return (
     <img
       src={`https://github.com/${owner}.png?size=${size * 2}`}
       alt=""
       width={size}
       height={size}
-      className="block shrink-0 rounded-full bg-bg-3"
+      className="shrink-0 rounded-full bg-bg-3"
     />
   )
 }

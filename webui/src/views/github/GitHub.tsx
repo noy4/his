@@ -17,7 +17,7 @@ import {
   StatsHeaderRoot,
   StatsRoot,
 } from '../stats/Stats.components'
-import { KindAvatar, RecentVisits } from './GitHub.components'
+import { Avatar, KindAvatar, RecentVisits } from './GitHub.components'
 import { GithubModel } from './github.model'
 import { GitHubSkeleton } from './GitHub.skeleton'
 
@@ -97,7 +97,7 @@ function TopReposCard({ gh }: { gh: GithubModel }) {
         {stats.topRepos.slice(0, TOP_LIMIT).map((r) => (
           <li key={`${r.owner}/${r.repo}`}>
             <button type="button" className={`${rowCls} w-full text-left`} onClick={() => gh.setFilter({ owner: r.owner, repo: r.repo })}>
-              <img src={`https://github.com/${r.owner}.png?size=36`} alt="" className="size-[18px] shrink-0 rounded-full bg-bg-3" />
+              <Avatar owner={r.owner} />
               <span className="min-w-0 flex-1 truncate text-text-2">
                 <span className="text-muted">{r.owner}/</span>{r.repo}
               </span>
@@ -119,7 +119,7 @@ function TopOwnersCard({ gh }: { gh: GithubModel }) {
         {stats.topOwners.slice(0, TOP_LIMIT).map((o) => (
           <li key={o.owner}>
             <button type="button" className={`${rowCls} w-full text-left`} onClick={() => gh.setFilter({ owner: o.owner })}>
-              <img src={`https://github.com/${o.owner}.png?size=36`} alt="" className="size-[18px] shrink-0 rounded-full bg-bg-3" />
+              <Avatar owner={o.owner} />
               <span className="min-w-0 flex-1 truncate text-text-2">{o.owner}</span>
               <span className="shrink-0 text-xs text-muted">{o.repos} repos</span>
               <Count n={o.visits} />
