@@ -80,9 +80,7 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
         <Stat label="Issues / PRs" value={fmtNum(totals.items)} icon={PullIcon} />
       </div>
       <p className="mt-3 text-xs text-muted">
-        {monthly
-          ? dayjs(`${gh.monthKey.value}-01`).format('MMM YYYY')
-          : `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}
+        {!monthly && `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}
       </p>
     </Card>
   )
