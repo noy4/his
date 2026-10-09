@@ -2,6 +2,7 @@ import type { GithubKind, GithubVisitKind, HistoryItem } from '@/api'
 import { relativeDateLabel } from '@/lib/date'
 import { parseGithubUrl } from '@his/core/github'
 import { cn } from 'cn'
+import type { ComponentProps, ReactNode } from 'react'
 import CloseIcon from '~icons/mdi/close'
 import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
@@ -38,35 +39,27 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
     <div className="mt-4">
       <Card>
         <CardTitle>Recent Visits</CardTitle>
-        <div className="mb-2 flex flex-wrap items-center gap-1.5">
+        <VisitsToolbarRoot>
           {KIND_OPTIONS.map((o) => (
-            <button
+            <FilterChip
               key={o.value}
-              type="button"
-              aria-pressed={k === o.value}
+              selected={k === o.value}
               onClick={() => gh.setKind(o.value)}
-              className={cn(
-                'rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
-                k === o.value ? 'border-primary bg-primary-soft text-primary' : 'text-muted hover:text-text',
-              )}
             >
               {o.label}
-            </button>
+            </FilterChip>
           ))}
           <span className="ml-auto" />
           {f && (
-            <button
-              type="button"
-              onClick={() => gh.setFilter(null)}
-              className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary hover:opacity-80"
-            >
-              {f.repo ? `${f.owner}/${f.repo}` : f.owner}
-              <CloseIcon width={12} height={12} />
-            </button>
+            <RemovableChip
+              onRemove={() => gh.setFilter(null)}
+              removeLabel={`Remove filter: ${f.repo ? `${f.owner}/${f.repo}` : f.owner}`}
+              label={f.repo ? `${f.owner}/${f.repo}` : f.owner}
+            />
           )}
           <ViewToggle gh={gh} />
-        </div>
-        {groups.length === 0 && <p className="py-6 text-center text-sm text-muted">No visits</p>}
+        </VisitsToolbarRoot>
+        {groups.length === 0 && <VisitsEmptyMessage />}
         {groups.map((g) => (
           <section key={g.label} className="mb-2">
             <h3 className="sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted">{g.label}</h3>
@@ -94,6 +87,80 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
         )}
       </Card>
     </div>
+  )
+}
+
+export function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div
+      {...props}
+      className={cn('mb-2 flex flex-wrap items-center gap-1.5', className)}
+    />
+  )
+}
+
+export function VisitsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
+  return <EmptyMessage {...props}>No visits</EmptyMessage>
+}
+
+export function EmptyMessage({ className, ...props }: ComponentProps<'p'>) {
+  return (
+    <p
+      {...props}
+      className={cn('py-6 text-center text-sm text-muted', className)}
+    />
+  )
+}
+
+export function FilterChip({ selected = false, className, ...props }: ComponentProps<'button'> & { selected?: boolean }) {
+  return (
+    <button
+      type="button"
+      {...props}
+      aria-pressed={selected}
+      className={cn(
+        'rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
+        selected
+          ? 'border-primary bg-primary-soft text-primary'
+          : 'text-muted hover:text-text',
+        className,
+      )}
+    />
+  )
+}
+
+type RemovableChipProps = ComponentProps<'span'> & {
+  label?: ReactNode
+  removeLabel?: string
+  onRemove: () => void
+}
+
+export function RemovableChip({
+  children,
+  className,
+  label,
+  removeLabel = 'Remove filter',
+  onRemove,
+  ...props
+}: RemovableChipProps) {
+  return (
+    <span
+      {...props}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full bg-primary-soft py-0.5 pl-2.5 pr-0.5 text-xs font-medium text-primary',
+        className,
+      )}
+    >
+      {label ?? children}
+      <button
+        type="button"
+        aria-label={removeLabel}
+        onClick={onRemove}
+        className="-my-0.5 inline-flex shrink-0 items-center justify-center rounded-full p-1 transition-[background-color,scale] duration-150 hover:bg-primary-soft hover:scale-110 active:scale-95 focus-visible:outline-2 focus-visible:outline-primary"
+      >
+        <CloseIcon width={12} height={12} aria-hidden="true" />
+      </button>
+    </span>
   )
 }
 
