@@ -58,8 +58,8 @@ export function GitHub({ app }: { app: AppModel }) {
         <TopReposCard gh={gh} />
         <TopOwnersCard gh={gh} />
         <TopItemsCard gh={gh} />
-        <RecentVisits gh={gh} />
       </StatsContentRoot>
+      <RecentVisits gh={gh} />
     </StatsRoot>
   )
 }

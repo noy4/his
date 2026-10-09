@@ -39,7 +39,7 @@ export function Card({ children }: { children: React.ReactNode }) {
 }
 
 export function CardTitle({ children }: { children: ReactNode }) {
-  return <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted uppercase">{children}</h2>
+  return <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted">{children}</h2>
 }
 
 export function Stat({ label, value, icon: Icon }: { label: string; value: string; icon?: IconComponent }) {

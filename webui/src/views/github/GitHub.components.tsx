@@ -13,7 +13,6 @@ import { CardGrid, VisitCard } from './GitHub.cards'
 import { GithubModel } from './github.model'
 import { fmtNum } from '@/lib/format'
 
-// repo = repo root only · code = other repo pages except PR/Issue · issue_pr = PR + Issue
 const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'repo', label: 'Repos' },
@@ -36,7 +35,7 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
   }
 
   return (
-    <div className="col-span-full">
+    <div className="mt-4">
       <Card>
         <CardTitle>Recent Visits</CardTitle>
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
@@ -46,7 +45,10 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
               type="button"
               aria-pressed={k === o.value}
               onClick={() => gh.setKind(o.value)}
-              className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${k === o.value ? 'border-primary bg-primary-soft text-primary' : 'text-muted hover:text-text'}`}
+              className={cn(
+                'rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
+                k === o.value ? 'border-primary bg-primary-soft text-primary' : 'text-muted hover:text-text',
+              )}
             >
               {o.label}
             </button>
@@ -111,7 +113,10 @@ function ViewToggle({ gh }: { gh: GithubModel }) {
           aria-label={label}
           aria-pressed={v === value}
           onClick={() => gh.setView(value)}
-          className={`rounded p-1 transition-colors ${v === value ? 'bg-bg-2 text-text' : 'text-muted hover:text-text'}`}
+          className={cn(
+            'rounded p-1 transition-colors',
+            v === value ? 'bg-bg-2 text-text' : 'text-muted hover:text-text',
+          )}
         >
           <Icon width={14} height={14} />
         </button>
@@ -150,7 +155,10 @@ export function KindAvatar({ owner, kind, size = 18, className }: {
         <Icon
           width={badge}
           height={badge}
-          className={`absolute -right-1 -bottom-1 rounded-full bg-bg-2 p-px ${kind === 'pull' ? 'text-primary' : 'text-muted'}`}
+          className={cn(
+            'absolute -right-1 -bottom-1 rounded-full bg-bg-2 p-px',
+            kind === 'pull' ? 'text-primary' : 'text-muted',
+          )}
         />
       )}
     </span>
