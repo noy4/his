@@ -27,6 +27,8 @@ import { CardGrid, VisitCard } from './GitHub.cards'
 import { Row } from '../Row'
 import { GithubModel } from './github.model'
 
+const TOP_LIMIT = 5
+
 // repo = repo root only · code = other repo pages except PR/Issue · issue_pr = PR + Issue
 const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -82,7 +84,7 @@ export function GitHub({ app }: { app: AppModel }) {
 
         <Card title="Top repos">
           <ol className="space-y-1 text-sm">
-            {stats.topRepos.map((r) => (
+            {stats.topRepos.slice(0, TOP_LIMIT).map((r) => (
               <li key={`${r.owner}/${r.repo}`}>
                 <button type="button" className={`${rowCls} w-full text-left`} onClick={() => gh.setFilter({ owner: r.owner, repo: r.repo })}>
                   <img src={`https://github.com/${r.owner}.png?size=36`} alt="" className="size-[18px] shrink-0 rounded-full bg-bg-3" />
@@ -98,7 +100,7 @@ export function GitHub({ app }: { app: AppModel }) {
 
         <Card title="Top owners">
           <ol className="space-y-1 text-sm">
-            {stats.topOwners.map((o) => (
+            {stats.topOwners.slice(0, TOP_LIMIT).map((o) => (
               <li key={o.owner}>
                 <button type="button" className={`${rowCls} w-full text-left`} onClick={() => gh.setFilter({ owner: o.owner })}>
                   <img src={`https://github.com/${o.owner}.png?size=36`} alt="" className="size-[18px] shrink-0 rounded-full bg-bg-3" />
@@ -113,7 +115,7 @@ export function GitHub({ app }: { app: AppModel }) {
 
         <Card title="Top Issues / PRs">
           <ol className="space-y-1.5 text-sm">
-            {stats.topItems.map((it) => {
+            {stats.topItems.slice(0, TOP_LIMIT).map((it) => {
               return (
                 <li key={it.url}>
                   <a className={`${rowCls} items-start`} href={it.url} target="_blank" rel="noreferrer">

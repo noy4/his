@@ -15,7 +15,7 @@ export class GithubModel {
   readonly monthKey = signal(dayjs().format('YYYY-MM'))
   readonly stats = signal<GithubStats | null>(null)
   readonly filter = signal<GithubFilter>(null)
-  readonly kind = signal<GithubVisitKind>('all')
+  readonly kind = signal<GithubVisitKind>('repo')
   readonly visits = signal<HistoryItem[]>([])
   readonly nextCursor = signal<string | null>(null)
   readonly view = signal<GithubView>(localStorage.getItem(VIEW_KEY) === 'card' ? 'card' : 'list')
