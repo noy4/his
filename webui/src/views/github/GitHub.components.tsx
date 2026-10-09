@@ -61,8 +61,8 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
         </VisitsToolbarRoot>
         {groups.length === 0 && <VisitsEmptyMessage />}
         {groups.map((g) => (
-          <section key={g.label} className="mb-2">
-            <h3 className="sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted">{g.label}</h3>
+          <VisitsGroupRoot key={g.label}>
+            <VisitsGroupTitle>{g.label}</VisitsGroupTitle>
             {cards ? (
               <CardGrid>
                 {g.items.map((v) => (
@@ -74,17 +74,9 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
                 <Row key={v.id} item={v} icon={<KindAvatar owner={parseGithubUrl(v.url)?.owner ?? ''} kind={parseGithubUrl(v.url)?.kind} size={24} />} />
               ))
             )}
-          </section>
+          </VisitsGroupRoot>
         ))}
-        {hasMore && (
-          <button
-            type="button"
-            onClick={() => gh.loadMore()}
-            className="mt-2 w-full rounded py-1.5 text-sm text-muted hover:bg-bg-3 hover:text-text"
-          >
-            Show more
-          </button>
-        )}
+        {hasMore && <LoadMoreButton onClick={() => gh.loadMore()} />}
       </Card>
     </div>
   )
@@ -99,6 +91,19 @@ export function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>
   )
 }
 
+export function VisitsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
+  return <section {...props} className={cn('mb-2', className)} />
+}
+
+export function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
+  return (
+    <h3
+      {...props}
+      className={cn('sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted', className)}
+    />
+  )
+}
+
 export function VisitsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
   return <EmptyMessage {...props}>No visits</EmptyMessage>
 }
@@ -109,6 +114,18 @@ export function EmptyMessage({ className, ...props }: ComponentProps<'p'>) {
       {...props}
       className={cn('py-6 text-center text-sm text-muted', className)}
     />
+  )
+}
+
+export function LoadMoreButton({ children = 'Show more', className, ...props }: ComponentProps<'button'>) {
+  return (
+    <button
+      type="button"
+      {...props}
+      className={cn('mt-2 w-full rounded py-1.5 text-sm text-muted hover:bg-bg-3 hover:text-text', className)}
+    >
+      {children}
+    </button>
   )
 }
 
@@ -171,24 +188,46 @@ function ViewToggle({ gh }: { gh: GithubModel }) {
     { value: 'card', label: 'Cards', Icon: GridIcon },
   ] as const
   return (
-    <div className="inline-flex shrink-0 gap-0.5 rounded-sm bg-bg-3 p-0.5" role="group" aria-label="View">
+    <ToggleGroupRoot aria-label="View">
       {opts.map(({ value, label, Icon }) => (
-        <button
+        <ToggleGroupButton
           key={value}
-          type="button"
           title={label}
           aria-label={label}
-          aria-pressed={v === value}
+          selected={v === value}
           onClick={() => gh.setView(value)}
-          className={cn(
-            'rounded p-1 transition-colors',
-            v === value ? 'bg-bg-2 text-text' : 'text-muted hover:text-text',
-          )}
         >
           <Icon width={14} height={14} />
-        </button>
+        </ToggleGroupButton>
       ))}
-    </div>
+    </ToggleGroupRoot>
+  )
+}
+
+export function ToggleGroupRoot({ className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div
+      role="group"
+      {...props}
+      className={cn('inline-flex shrink-0 gap-0.5 rounded-sm bg-bg-3 p-0.5', className)}
+    />
+  )
+}
+
+export function ToggleGroupButton({ selected = false, className, ...props }: ComponentProps<'button'> & { selected?: boolean }) {
+  return (
+    <button
+      type="button"
+      {...props}
+      aria-pressed={selected}
+      className={cn(
+        'rounded p-1 transition-colors',
+        selected
+          ? 'bg-bg-2 text-text'
+          : 'text-muted hover:text-text',
+        className,
+      )}
+    />
   )
 }
 
