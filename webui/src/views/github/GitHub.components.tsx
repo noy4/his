@@ -79,50 +79,55 @@ export function RemovableChip({
   )
 }
 
-export function Avatar({ owner, size = 18 }: { owner: string; size?: number }) {
+type GitHubAvatarProps = {
+  owner: string
+  size?: number
+  className?: string
+}
+
+export function GitHubAvatar({ owner, size = 18, className }: GitHubAvatarProps) {
   return (
     <img
       src={`https://github.com/${owner}.png?size=${size * 2}`}
       alt=""
       width={size}
       height={size}
-      className="shrink-0 rounded-full bg-bg-3"
+      className={cn('shrink-0 rounded-full bg-bg-3', className)}
     />
   )
 }
 
-export function KindAvatar({ owner, kind, size = 18, className }: {
-  owner: string
-  kind?: GithubKind
-  size?: number
-  className?: string
-}) {
+export function GitHubKindAvatar({ owner, kind, size = 18, className }: GitHubAvatarProps & { kind: GithubKind }) {
   const Icon = kind === 'pull' ? PullIcon : IssueIcon
-  const badge = Math.round(size * 0.6)
+  const badgeSize = Math.round(size * 0.6)
   return (
     <span
       className={cn('relative block shrink-0', className)}
-      title={kind ? (kind === 'pull' ? 'Pull request' : 'Issue') : undefined}
+      title={kind === 'pull' ? 'Pull request' : 'Issue'}
     >
-      <Avatar owner={owner} size={size} />
-      {kind && (
-        <Icon
-          width={badge}
-          height={badge}
-          className={cn(
-            'absolute -right-1 -bottom-1 rounded-full bg-bg-2 p-px',
-            kind === 'pull' ? 'text-primary' : 'text-muted',
-          )}
-        />
-      )}
+      <GitHubAvatar owner={owner} size={size} />
+      <Icon
+        width={badgeSize}
+        height={badgeSize}
+        className={cn(
+          'absolute -right-1 -bottom-1 rounded-full bg-bg-2 p-px',
+          kind === 'pull' ? 'text-primary' : 'text-muted',
+        )}
+      />
     </span>
   )
 }
 
-export function Count({ n }: { n: number }) {
+export function GitHubItemAvatar({ kind, ...props }: GitHubAvatarProps & { kind?: GithubKind }) {
+  return kind
+    ? <GitHubKindAvatar {...props} kind={kind} />
+    : <GitHubAvatar {...props} />
+}
+
+export function VisitCount({ n }: { n: number }) {
   return (
     <span
-      title='visits count'
+      title='visit count'
       className="shrink-0 font-mono text-xs text-muted tabular-nums"
     >
       {fmtNum(n)}

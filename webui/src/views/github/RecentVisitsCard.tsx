@@ -12,7 +12,7 @@ import { CardGrid, VisitCard } from './GitHub.cards'
 import {
   EmptyMessage,
   FilterChip,
-  KindAvatar,
+  GitHubItemAvatar,
   LoadMoreButton,
   RemovableChip,
 } from './GitHub.components'
@@ -75,7 +75,7 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
                   key={v.id}
                   item={v}
                   avatar={(owner, size) => (
-                    <KindAvatar
+                    <GitHubItemAvatar
                       owner={owner}
                       kind={parseGithubUrl(v.url)?.kind}
                       size={size}
@@ -86,10 +86,11 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
             </CardGrid>
           ) : (
             g.items.map((v) => (
-              <Row key={v.id}
+              <Row
+                key={v.id}
                 item={v}
                 icon={(
-                  <KindAvatar
+                  <GitHubItemAvatar
                     owner={parseGithubUrl(v.url)?.owner ?? ''}
                     kind={parseGithubUrl(v.url)?.kind}
                     size={24}

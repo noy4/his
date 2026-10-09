@@ -1,6 +1,6 @@
 import { dateLabel } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
-import { Count } from './GitHub.components'
+import { VisitCount } from './GitHub.components'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/models/app'
 import { cn } from 'cn'
@@ -18,7 +18,7 @@ import {
   StatsHeaderRoot,
   StatsRoot,
 } from '../stats/Stats.components'
-import { Avatar, KindAvatar } from './GitHub.components'
+import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
 import { RecentVisitsCard } from './RecentVisitsCard'
 import { GithubModel } from './github.model'
 import { GitHubSkeleton } from './GitHub.skeleton'
@@ -105,11 +105,11 @@ function TopReposCard({ gh }: { gh: GithubModel }) {
                 repo: r.repo
               })}
             >
-              <Avatar owner={r.owner} />
+              <GitHubAvatar owner={r.owner} />
               <div className="min-w-0 flex-1 truncate text-text-2">
                 <span className="text-muted">{r.owner}/</span>{r.repo}
               </div>
-              <Count n={r.visits} />
+              <VisitCount n={r.visits} />
             </button>
           </li>
         ))}
@@ -132,14 +132,14 @@ function TopOwnersCard({ gh }: { gh: GithubModel }) {
               className={cn(rowCls, 'w-full text-left')}
               onClick={() => gh.setFilter({ owner: o.owner })}
             >
-              <Avatar owner={o.owner} />
+              <GitHubAvatar owner={o.owner} />
               <span className="min-w-0 flex-1 truncate text-text-2">
                 {o.owner}
               </span>
               <span className="shrink-0 text-xs text-muted">
                 {o.repos} repos
               </span>
-              <Count n={o.visits} />
+              <VisitCount n={o.visits} />
             </button>
           </li>
         ))}
@@ -164,7 +164,7 @@ function TopItemsCard({ gh }: { gh: GithubModel }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                <KindAvatar
+                <GitHubKindAvatar
                   owner={it.owner}
                   kind={it.kind}
                   className="mt-0.5"
@@ -175,7 +175,7 @@ function TopItemsCard({ gh }: { gh: GithubModel }) {
                     {it.owner}/{it.repo}#{it.number}
                   </div>
                 </div>
-                <Count n={it.visits} />
+                <VisitCount n={it.visits} />
               </a>
             </li>
           )
