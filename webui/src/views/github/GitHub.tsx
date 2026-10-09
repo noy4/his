@@ -3,13 +3,13 @@ import { fmtNum } from '@/lib/format'
 import { Count } from './GitHub.components'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/models/app'
-import dayjs from 'dayjs'
 import AccountIcon from '~icons/mdi/account-group-outline'
 import EyeIcon from '~icons/mdi/eye-outline'
 import PullIcon from '~icons/octicon/git-pull-request-16'
 import RepoIcon from '~icons/octicon/repo-16'
 import {
   Card,
+  CardTitle,
   MonthNav,
   SegmentedControl,
   Stat,
@@ -72,7 +72,8 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
   const totals = stats.totals
   const monthly = gh.mode.value === 'month'
   return (
-    <Card title="Overview">
+    <Card>
+      <CardTitle>Overview</CardTitle>
       <div className="grid grid-cols-2 gap-4">
         <Stat label="visits" value={fmtNum(totals.visits)} icon={EyeIcon} />
         <Stat label="repos" value={fmtNum(totals.repos)} icon={RepoIcon} />
@@ -90,11 +91,16 @@ function TopReposCard({ gh }: { gh: GithubModel }) {
   const stats = gh.stats.value
   if (!stats) return null
   return (
-    <Card title="Top repos">
+    <Card>
+      <CardTitle>Top repos</CardTitle>
       <ol className="space-y-1 text-sm">
         {stats.topRepos.slice(0, TOP_LIMIT).map((r) => (
           <li key={`${r.owner}/${r.repo}`}>
-            <button type="button" className={`${rowCls} w-full text-left`} onClick={() => gh.setFilter({ owner: r.owner, repo: r.repo })}>
+            <button
+              type="button"
+              className={`${rowCls} w-full text-left`}
+              onClick={() => gh.setFilter({ owner: r.owner, repo: r.repo })}
+            >
               <Avatar owner={r.owner} />
               <span className="min-w-0 flex-1 truncate text-text-2">
                 <span className="text-muted">{r.owner}/</span>{r.repo}
@@ -112,11 +118,16 @@ function TopOwnersCard({ gh }: { gh: GithubModel }) {
   const stats = gh.stats.value
   if (!stats) return null
   return (
-    <Card title="Top owners">
+    <Card>
+      <CardTitle>Top owners</CardTitle>
       <ol className="space-y-1 text-sm">
         {stats.topOwners.slice(0, TOP_LIMIT).map((o) => (
           <li key={o.owner}>
-            <button type="button" className={`${rowCls} w-full text-left`} onClick={() => gh.setFilter({ owner: o.owner })}>
+            <button
+              type="button"
+              className={`${rowCls} w-full text-left`}
+              onClick={() => gh.setFilter({ owner: o.owner })}
+            >
               <Avatar owner={o.owner} />
               <span className="min-w-0 flex-1 truncate text-text-2">{o.owner}</span>
               <span className="shrink-0 text-xs text-muted">{o.repos} repos</span>
@@ -133,7 +144,8 @@ function TopItemsCard({ gh }: { gh: GithubModel }) {
   const stats = gh.stats.value
   if (!stats) return null
   return (
-    <Card title="Top Issues / PRs">
+    <Card>
+      <CardTitle>Top Issues / PRs</CardTitle>
       <ol className="space-y-1.5 text-sm">
         {stats.topItems.slice(0, TOP_LIMIT).map((it) => {
           return (

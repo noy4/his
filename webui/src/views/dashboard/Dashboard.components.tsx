@@ -1,4 +1,4 @@
-import { Card, ListSkeleton, Sk, StatsContentRoot, StatsHeaderRoot, StatsRoot } from '../stats/Stats.components'
+import { Card, CardTitle, ListSkeleton, Sk, StatsContentRoot, StatsHeaderRoot, StatsRoot } from '../stats/Stats.components'
 
 export function DashboardSkeleton() {
   return (
@@ -8,7 +8,8 @@ export function DashboardSkeleton() {
         <Sk className="h-8 w-44" />
       </StatsHeaderRoot>
       <StatsContentRoot>
-        <Card title="Overview">
+        <Card>
+          <CardTitle>Overview</CardTitle>
           <div className="grid grid-cols-2 gap-4">
             {Array.from({ length: 4 }, (_, i) => (
               <div key={i} className="space-y-1.5">
@@ -20,11 +21,23 @@ export function DashboardSkeleton() {
           <Sk className="mt-3 h-3 w-32" />
         </Card>
         <div className="grid gap-4">
-          <Card title="By hour of day"><Sk className="h-32" /></Card>
-          <Card title="By day of week"><Sk className="h-32" /></Card>
+          <Card>
+            <CardTitle>By hour of day</CardTitle>
+            <Sk className="h-32" />
+          </Card>
+          <Card>
+            <CardTitle>By day of week</CardTitle>
+            <Sk className="h-32" />
+          </Card>
         </div>
-        <Card title="Top domains"><ListSkeleton /></Card>
-        <Card title="Busiest days"><ListSkeleton /></Card>
+        <Card>
+          <CardTitle>Top domains</CardTitle>
+          <ListSkeleton />
+        </Card>
+        <Card>
+          <CardTitle>Busiest days</CardTitle>
+          <ListSkeleton />
+        </Card>
       </StatsContentRoot>
     </StatsRoot>
   )

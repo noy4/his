@@ -7,7 +7,7 @@ import GridIcon from '~icons/mdi/view-grid-outline'
 import PullIcon from '~icons/octicon/git-pull-request-16'
 import IssueIcon from '~icons/octicon/issue-opened-16'
 import { Row } from '../Row'
-import { Card } from '../stats/Stats.components'
+import { Card, CardTitle } from '../stats/Stats.components'
 import { CardGrid, VisitCard } from './GitHub.cards'
 import { GithubModel } from './github.model'
 import { fmtNum } from '@/lib/format'
@@ -36,7 +36,8 @@ export function RecentVisits({ gh }: { gh: GithubModel }) {
 
   return (
     <div className="col-span-full">
-      <Card title="Recent visits">
+      <Card>
+        <CardTitle>Recent visits</CardTitle>
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
           {KIND_OPTIONS.map((o) => (
             <button

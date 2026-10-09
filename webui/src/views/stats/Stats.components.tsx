@@ -30,13 +30,16 @@ export function StatsContentRoot({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function Card({ title, children }: { title: string; children: React.ReactNode }) {
+export function Card({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-lg border bg-bg-2 p-4">
-      <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted uppercase">{title}</h2>
       {children}
     </div>
   )
+}
+
+export function CardTitle({ children }: { children: ReactNode }) {
+  return <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted uppercase">{children}</h2>
 }
 
 export function Stat({ label, value, icon: Icon }: { label: string; value: string; icon?: IconComponent }) {

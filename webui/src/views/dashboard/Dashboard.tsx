@@ -14,6 +14,7 @@ import { DashboardSkeleton } from './Dashboard.components'
 import {
   Bars,
   Card,
+  CardTitle,
   MonthNav,
   SegmentedControl,
   Stat,
@@ -67,7 +68,8 @@ export function Dashboard({ app }: { app: AppModel }) {
       </StatsHeaderRoot>
 
       <StatsContentRoot>
-        <Card title="Overview">
+        <Card>
+          <CardTitle>Overview</CardTitle>
           <div className="grid grid-cols-2 gap-4">
             <Stat label="visits" value={fmtNum(totals.visits)} icon={EyeIcon} />
             <Stat label="URLs" value={fmtNum(totals.items)} icon={LinkIcon} />
@@ -80,15 +82,18 @@ export function Dashboard({ app }: { app: AppModel }) {
         </Card>
 
         <div className="grid gap-4">
-          <Card title="By hour of day">
+          <Card>
+            <CardTitle>By hour of day</CardTitle>
             <Bars data={byHour} labels={byHourLabels} />
           </Card>
-          <Card title="By day of week">
+          <Card>
+            <CardTitle>By day of week</CardTitle>
             <Bars data={byDow} labels={DOW} />
           </Card>
         </div>
 
-        <Card title="Top domains">
+        <Card>
+          <CardTitle>Top domains</CardTitle>
           <ol className="space-y-1 text-sm">
             {topDomains.map((d) => (
               <li
@@ -103,7 +108,8 @@ export function Dashboard({ app }: { app: AppModel }) {
           </ol>
         </Card>
 
-        <Card title="Busiest days">
+        <Card>
+          <CardTitle>Busiest days</CardTitle>
           <ol className="space-y-1 text-sm">
             {busiestDays.map((d) => (
               <li key={d.day} className="flex items-center justify-between gap-2">

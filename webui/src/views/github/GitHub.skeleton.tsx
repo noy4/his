@@ -1,4 +1,4 @@
-import { Card, ListSkeleton, Sk, StatsContentRoot, StatsHeaderRoot, StatsRoot } from '../stats/Stats.components'
+import { Card, CardTitle, ListSkeleton, Sk, StatsContentRoot, StatsHeaderRoot, StatsRoot } from '../stats/Stats.components'
 
 export function GitHubSkeleton() {
   return (
@@ -8,7 +8,8 @@ export function GitHubSkeleton() {
         <Sk className="h-8 w-44" />
       </StatsHeaderRoot>
       <StatsContentRoot>
-        <Card title="Overview">
+        <Card>
+          <CardTitle>Overview</CardTitle>
           <div className="grid grid-cols-2 gap-4">
             {Array.from({ length: 4 }, (_, i) => (
               <div key={i} className="space-y-1.5">
@@ -19,11 +20,21 @@ export function GitHubSkeleton() {
           </div>
           <Sk className="mt-3 h-3 w-32" />
         </Card>
-        <Card title="Top repos"><ListSkeleton /></Card>
-        <Card title="Top owners"><ListSkeleton /></Card>
-        <Card title="Top Issues / PRs"><ListSkeleton /></Card>
+        <Card>
+          <CardTitle>Top repos</CardTitle>
+          <ListSkeleton />
+        </Card>
+        <Card>
+          <CardTitle>Top owners</CardTitle>
+          <ListSkeleton />
+        </Card>
+        <Card>
+          <CardTitle>Top Issues / PRs</CardTitle>
+          <ListSkeleton />
+        </Card>
         <div className="col-span-full">
-          <Card title="Recent visits">
+          <Card>
+            <CardTitle>Recent visits</CardTitle>
             <div className="mb-3 flex gap-1.5">
               {Array.from({ length: 4 }, (_, i) => <Sk key={i} className="h-5 w-12 rounded-full" />)}
             </div>
