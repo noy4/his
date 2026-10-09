@@ -1,4 +1,5 @@
 import type { GithubVisitKind, HistoryItem } from '@/api'
+import { ToggleGroupButton, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { relativeDateLabel } from '@/lib/date'
 import { parseGithubUrl } from '@his/core/github'
 import { cn } from 'cn'
@@ -14,8 +15,6 @@ import {
   KindAvatar,
   LoadMoreButton,
   RemovableChip,
-  ToggleGroupButton,
-  ToggleGroupRoot,
 } from './GitHub.components'
 import type { GithubModel } from './github.model'
 
