@@ -26,18 +26,11 @@ const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
 ]
 
 export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
-  const f = gh.filter.value
-  const k = gh.kind.value
-  const shown = gh.visits.value
+  const filter = gh.filter.value
+  const kind = gh.kind.value
   const hasMore = gh.nextCursor.value !== null
-  const cards = gh.view.value === 'card'
-  const groups: { label: string; items: HistoryItem[] }[] = []
-  for (const v of shown) {
-    const label = relativeDateLabel(v.lastVisit)
-    const last = groups.at(-1)
-    if (last?.label === label) last.items.push(v)
-    else groups.push({ label, items: [v] })
-  }
+  const isCardView = gh.view.value === 'card'
+  const groups = groupVisitsByDate(gh.visits.value)
 
   return (
     <Card className="mt-4">
@@ -46,18 +39,18 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
         {KIND_OPTIONS.map((o) => (
           <FilterChip
             key={o.value}
-            selected={k === o.value}
+            selected={kind === o.value}
             onClick={() => gh.setKind(o.value)}
           >
             {o.label}
           </FilterChip>
         ))}
         <span className="ml-auto" />
-        {f && (
+        {filter && (
           <RemovableChip
             onRemove={() => gh.setFilter(null)}
-            removeLabel={`Remove filter: ${f.repo ? `${f.owner}/${f.repo}` : f.owner}`}
-            label={f.repo ? `${f.owner}/${f.repo}` : f.owner}
+            removeLabel={`Remove filter: ${filter.repo ? `${filter.owner}/${filter.repo}` : filter.owner}`}
+            label={filter.repo ? `${filter.owner}/${filter.repo}` : filter.owner}
           />
         )}
         <ViewToggle gh={gh} />
@@ -68,7 +61,7 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
       {groups.map((g) => (
         <VisitsGroupRoot key={g.label}>
           <VisitsGroupTitle>{g.label}</VisitsGroupTitle>
-          {cards ? (
+          {isCardView ? (
             <CardGrid>
               {g.items.map((v) => (
                 <VisitCard
@@ -104,6 +97,17 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
       {hasMore && <LoadMoreButton onClick={() => gh.loadMore()} />}
     </Card>
   )
+}
+
+function groupVisitsByDate(visits: HistoryItem[]) {
+  const groups: { label: string; items: HistoryItem[] }[] = []
+  for (const v of visits) {
+    const label = relativeDateLabel(v.lastVisit)
+    const last = groups.at(-1)
+    if (last?.label === label) last.items.push(v)
+    else groups.push({ label, items: [v] })
+  }
+  return groups
 }
 
 export function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
