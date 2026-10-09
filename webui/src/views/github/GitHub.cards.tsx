@@ -21,9 +21,9 @@ export function VisitCard({ item, avatar }: { item: HistoryItem; avatar: (owner:
       : ref.owner
   return (
     <a className={cardCls} href={item.url} target="_blank" rel="noreferrer">
-      <div className="flex min-w-0 items-center gap-2.5">
+      <div className="flex min-w-0 flex-col items-start gap-2.5">
         {avatar(ref.owner, ref.root ? 36 : 28)}
-        <div className="grid min-w-0 flex-1 leading-[1.35]">
+        <div className="grid w-full min-w-0 leading-[1.35]">
           <span className={`text-sm font-semibold text-text ${ref.root ? 'truncate' : 'line-clamp-2'}`}>{t.name}</span>
           <span className="truncate font-mono text-[0.7rem] text-muted">{org}</span>
         </div>
