@@ -26,8 +26,6 @@ const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
 ]
 
 export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
-  const filter = gh.filter.value
-  const kind = gh.kind.value
   const hasMore = gh.nextCursor.value !== null
   const isCardView = gh.view.value === 'card'
   const groups = groupVisitsByDate(gh.visits.value)
@@ -36,27 +34,9 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
     <Card className="mt-4">
       <CardTitle>Recent Visits</CardTitle>
       <VisitsToolbarRoot>
-        {KIND_OPTIONS.map((o) => (
-          <FilterChip
-            key={o.value}
-            selected={kind === o.value}
-            onClick={() => gh.setKind(o.value)}
-          >
-            {o.label}
-          </FilterChip>
-        ))}
+        <VisitsKindFilter gh={gh} />
         <span className="ml-auto" />
-        {filter && (
-          <RemovableChip
-            onRemove={() => gh.setFilter(null)}
-            removeLabel={`Remove filter: ${filter.repo
-              ? `${filter.owner}/${filter.repo}`
-              : filter.owner}`}
-            label={filter.repo
-              ? `${filter.owner}/${filter.repo}`
-              : filter.owner}
-          />
-        )}
+        <VisitsActiveFilter gh={gh} />
         <VisitsViewToggle gh={gh} />
       </VisitsToolbarRoot>
 
@@ -99,6 +79,36 @@ export function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>
     <div
       {...props}
       className={cn('mb-2 flex flex-wrap items-center gap-1.5', className)}
+    />
+  )
+}
+
+function VisitsKindFilter({ gh }: { gh: GithubModel }) {
+  const kind = gh.kind.value
+  return (
+    <>
+      {KIND_OPTIONS.map(({ value, label }) => (
+        <FilterChip
+          key={value}
+          selected={kind === value}
+          onClick={() => gh.setKind(value)}
+        >
+          {label}
+        </FilterChip>
+      ))}
+    </>
+  )
+}
+
+function VisitsActiveFilter({ gh }: { gh: GithubModel }) {
+  const filter = gh.filter.value
+  if (!filter) return null
+  const label = filter.repo ? `${filter.owner}/${filter.repo}` : filter.owner
+  return (
+    <RemovableChip
+      onRemove={() => gh.setFilter(null)}
+      removeLabel={`Remove filter: ${label}`}
+      label={label}
     />
   )
 }
