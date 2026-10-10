@@ -8,7 +8,7 @@ import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
 import { HistoryRow } from '../HistoryRow'
 import { Card, CardTitle } from '../stats/Stats.components'
-import { CardGrid, GitHubVisitCard } from './GitHub.cards'
+import { GitHubVisitCard, GitHubVisitCardGrid } from './GitHub.cards'
 import {
   EmptyMessage,
   FilterChip,
@@ -143,11 +143,11 @@ function VisitsGroup({ label, items, isCardView }: {
     <VisitsGroupRoot>
       <VisitsGroupTitle>{label}</VisitsGroupTitle>
       {isCardView ? (
-        <CardGrid>
+        <GitHubVisitCardGrid>
           {items.map((item) => (
             <GitHubVisitCard key={item.id} item={item} />
           ))}
-        </CardGrid>
+        </GitHubVisitCardGrid>
       ) : (
         items.map((item) => (
           <GitHubVisitRow key={item.id} item={item} />

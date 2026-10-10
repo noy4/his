@@ -11,7 +11,7 @@ export interface GitHubUrlInfo {
   repo?: string
   root?: true // exactly /:owner/:repo
   kind?: GithubKind
-  number?: number
+  number?: number // PR or Issue number
 }
 
 // top-level paths that are not owners
@@ -31,15 +31,24 @@ export function parseGithubUrl(url: string): GitHubUrlInfo | null {
   } catch {
     return null
   }
-  if (u.hostname !== 'github.com' && u.hostname !== 'www.github.com') return null
+  if (u.hostname !== 'github.com' && u.hostname !== 'www.github.com')
+    return null
   const [owner, repo, type, num] = u.pathname.toLowerCase().split('/').filter(Boolean)
   if (!owner || RESERVED.has(owner)) return null
   if (!repo) return { owner }
   if (!type) return { owner, repo, root: true }
-  const n = num !== undefined && /^\d+$/.test(num) ? Number(num) : undefined
-  const kind: GithubKind | undefined =
-    n === undefined ? undefined : type === 'pull' ? 'pull' : type === 'issues' ? 'issue' : undefined
-  return kind ? { owner, repo, kind, number: n } : { owner, repo }
+  if (num === undefined || !/^\d+$/.test(num))
+    return { owner, repo }
+
+  const number = Number(num)
+  const kind = type === 'pull'
+    ? 'pull'
+    : type === 'issues'
+      ? 'issue'
+      : undefined
+  return kind
+    ? { owner, repo, kind, number }
+    : { owner, repo }
 }
 
 interface VisitLike {
@@ -65,7 +74,10 @@ export function mergeRepoRoots<T extends VisitLike>(rows: { item: T; urlInfo: Gi
     const key = `${row.urlInfo.owner}/${row.urlInfo.repo}`
     const prev = roots.get(key)
     if (!prev) {
-      roots.set(key, { item: { ...row.item, url: stripUrl(row.item.url) }, urlInfo: row.urlInfo })
+      roots.set(key, {
+        item: { ...row.item, url: stripUrl(row.item.url) },
+        urlInfo: row.urlInfo,
+      })
       continue
     }
     const a = prev.item
@@ -89,10 +101,10 @@ function stripUrl(url: string): string {
   return `${u.origin}${u.pathname.replace(/\/+$/, '')}`
 }
 
-export function matchesKind(urlInfo: GitHubUrlInfo, k: GithubVisitKind): boolean {
-  if (k === 'all') return true
-  if (k === 'repo') return urlInfo.root === true
-  if (k === 'code') return urlInfo.repo !== undefined && !urlInfo.root && !urlInfo.kind
+export function matchesKind(urlInfo: GitHubUrlInfo, kind: GithubVisitKind): boolean {
+  if (kind === 'all') return true
+  if (kind === 'repo') return urlInfo.root === true
+  if (kind === 'code') return urlInfo.repo !== undefined && !urlInfo.root && !urlInfo.kind
   return urlInfo.kind !== undefined
 }
 
@@ -109,8 +121,13 @@ export interface GithubTitle {
 export function parseGithubTitle(title: string, urlInfo: GitHubUrlInfo): GithubTitle {
   const t = title.trim()
   if (urlInfo.root && urlInfo.repo) {
-    const m = /^([^/\s]+)\/([^:\s]+)(?::\s*(.*))?$/s.exec(t)
-    if (m && m[2]) return { name: m[2], desc: m[3]?.trim() || undefined }
+    // Match "owner/repo" with optional ": description" (s allows multiline descriptions).
+    const groups = /^(?<owner>[^/\s]+)\/(?<repo>[^:\s]+)(?::\s*(?<desc>.*))?$/s.exec(t)?.groups
+    if (groups?.repo)
+      return {
+        name: groups.repo,
+        desc: groups.desc?.trim() || undefined,
+      }
     return { name: urlInfo.repo }
   }
   if (urlInfo.kind) {
