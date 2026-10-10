@@ -46,6 +46,8 @@ export function GitHubVisitCard({ item }: { item: HistoryItem }) {
   )
 }
 
+// --- components ---
+
 export function GitHubVisitCardRoot({ className, ...props }: ComponentProps<'a'>) {
   return (
     <a
@@ -77,7 +79,7 @@ export function GitHubVisitCardTitle({ text, className, ...props }: Omit<Compone
 
 export function GitHubVisitCardMeta({ text, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { text: string }) {
   return (
-    <span {...props} className={cn('truncate font-mono text-xs text-muted', className)}>{text}</span>
+    <span {...props} className={cn('truncate font-mono text-[11px] text-muted', className)}>{text}</span>
   )
 }
 

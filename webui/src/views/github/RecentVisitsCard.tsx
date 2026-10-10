@@ -8,7 +8,7 @@ import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
 import { HistoryRow } from '../HistoryRow'
 import { Card, CardTitle } from '../stats/Stats.components'
-import { GitHubVisitCard, GitHubVisitCardGrid } from './GitHub.cards'
+import { GitHubVisitCard, GitHubVisitCardGrid } from './GitHubVisitCard'
 import {
   EmptyMessage,
   FilterChip,
