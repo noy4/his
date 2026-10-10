@@ -18,13 +18,6 @@ import {
 } from './GitHub.components'
 import type { GithubModel } from './github.model'
 
-const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'repo', label: 'Repos' },
-  { value: 'code', label: 'Code' },
-  { value: 'issue_pr', label: 'Issues/PRs' },
-]
-
 export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
   const hasMore = gh.nextCursor.value !== null
   const isCardView = gh.view.value === 'card'
@@ -42,26 +35,20 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
 
       {groups.length === 0 && <VisitsEmptyMessage />}
 
-      {groups.map((g) => (
-        <VisitsGroupRoot key={g.label}>
-          <VisitsGroupTitle>{g.label}</VisitsGroupTitle>
-          {isCardView ? (
-            <CardGrid>
-              {g.items.map((item) => (
-                <GitHubVisitCard key={item.id} item={item} />
-              ))}
-            </CardGrid>
-          ) : (
-            g.items.map((item) => (
-              <GitHubVisitRow key={item.id} item={item} />
-            ))
-          )}
-        </VisitsGroupRoot>
+      {groups.map((group) => (
+        <VisitsGroup
+          key={group.label}
+          label={group.label}
+          items={group.items}
+          isCardView={isCardView}
+        />
       ))}
       {hasMore && <LoadMoreButton onClick={() => gh.loadMore()} />}
     </Card>
   )
 }
+
+// --- components ---
 
 function groupVisitsByDate(visits: HistoryItem[]) {
   const groups: { label: string; items: HistoryItem[] }[] = []
@@ -82,6 +69,13 @@ export function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>
     />
   )
 }
+
+const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'repo', label: 'Repos' },
+  { value: 'code', label: 'Code' },
+  { value: 'issue_pr', label: 'Issues/PRs' },
+]
 
 function VisitsKindFilter({ gh }: { gh: GithubModel }) {
   const kind = gh.kind.value
@@ -138,6 +132,29 @@ function VisitsViewToggle({ gh }: { gh: GithubModel }) {
 
 export function VisitsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
   return <EmptyMessage {...props}>No visits</EmptyMessage>
+}
+
+function VisitsGroup({ label, items, isCardView }: {
+  label: string
+  items: HistoryItem[]
+  isCardView: boolean
+}) {
+  return (
+    <VisitsGroupRoot>
+      <VisitsGroupTitle>{label}</VisitsGroupTitle>
+      {isCardView ? (
+        <CardGrid>
+          {items.map((item) => (
+            <GitHubVisitCard key={item.id} item={item} />
+          ))}
+        </CardGrid>
+      ) : (
+        items.map((item) => (
+          <GitHubVisitRow key={item.id} item={item} />
+        ))
+      )}
+    </VisitsGroupRoot>
+  )
 }
 
 export function VisitsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
