@@ -11,7 +11,7 @@ function hostOf(url: string): string {
   }
 }
 
-export function HistoryRow({ item, icon }: { item: HistoryItem; icon?: ReactNode }) {
+export function HistoryRow({ item, icon, title }: { item: HistoryItem; icon?: ReactNode; title?: ReactNode }) {
   const host = hostOf(item.url)
   return (
     <a
@@ -23,7 +23,7 @@ export function HistoryRow({ item, icon }: { item: HistoryItem; icon?: ReactNode
       {icon ?? <Favicon host={host} />}
       <span className="grid min-w-0 flex-1 leading-[1.45]">
         <span className="truncate text-[0.88rem] font-medium">
-          {item.title || item.url}
+          {title ?? (item.title || item.url)}
         </span>
         <span className="truncate font-mono text-[0.7rem] text-muted">{item.url}</span>
       </span>

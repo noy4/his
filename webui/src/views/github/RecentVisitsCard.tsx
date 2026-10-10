@@ -1,7 +1,7 @@
 import type { GithubVisitKind, HistoryItem } from '@/api'
 import { ToggleGroupButton, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { relativeDateLabel } from '@/lib/date'
-import { parseGithubUrl } from '@his/core/github'
+import { parseGithubTitle, parseGithubUrl } from '@his/core/github'
 import { cn } from 'cn'
 import type { ComponentProps } from 'react'
 import ListIcon from '~icons/mdi/format-list-bulleted'
@@ -173,9 +173,18 @@ export function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) 
 function GitHubVisitRow({ item }: { item: HistoryItem }) {
   const urlInfo = parseGithubUrl(item.url)
   if (!urlInfo) return null
+  const titleInfo = urlInfo.root ? parseGithubTitle(item.title || item.url, urlInfo) : undefined
   return (
     <HistoryRow
       item={item}
+      title={titleInfo && (
+        <>
+          <span>{urlInfo.owner}/{titleInfo.name}</span>
+          {titleInfo.desc && (
+            <span className="font-normal italic text-text-2">: {titleInfo.desc}</span>
+          )}
+        </>
+      )}
       icon={(
         <GitHubItemAvatar
           owner={urlInfo.owner}

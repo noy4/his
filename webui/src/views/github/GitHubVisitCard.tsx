@@ -20,6 +20,7 @@ export function GitHubVisitCard({ item }: { item: HistoryItem }) {
     : urlInfo.repo && !urlInfo.root
       ? `${urlInfo.owner}/${urlInfo.repo}`
       : urlInfo.owner
+
   return (
     <GitHubVisitCardRoot href={item.url}>
       <GitHubVisitCardHeader>
