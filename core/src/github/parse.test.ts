@@ -36,7 +36,7 @@ describe('parseGithubUrl', () => {
 describe('mergeRepoRoots', () => {
   const row = (id: number, url: string, lastVisit: number) => ({
     item: { id, url, title: `t${id}`, visitCount: 1, typedCount: 0, firstVisit: lastVisit, lastVisit },
-    ref: parseGithubUrl(url)!,
+    urlInfo: parseGithubUrl(url)!,
   })
 
   it('collapses root variants, keeps other pages', () => {

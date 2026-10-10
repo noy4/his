@@ -1,6 +1,6 @@
 import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { isoDay } from '@/lib/date'
-import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubRef } from '@his/core/github'
+import { matchesKind, mergeRepoRoots, parseGithubUrl, type GitHubUrlInfo } from '@his/core/github'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -105,9 +105,9 @@ const stats = computeStats()
 // --- github ---
 
 const GITHUB_TOP = 20
-const GITHUB_ITEMS: { item: HistoryItem; ref: GithubRef }[] = MOCK_ITEMS.flatMap((item) => {
-  const ref = parseGithubUrl(item.url)
-  return ref ? [{ item, ref }] : []
+const GITHUB_ITEMS: { item: HistoryItem; urlInfo: GitHubUrlInfo }[] = MOCK_ITEMS.flatMap((item) => {
+  const urlInfo = parseGithubUrl(item.url)
+  return urlInfo ? [{ item, urlInfo }] : []
 })
 
 // month → item narrowed to that month's visits (visitCount / first / last), or null if unvisited
@@ -118,10 +118,10 @@ function inPeriod(item: HistoryItem, month?: string): HistoryItem | null {
   return { ...item, visitCount: times.length, firstVisit: Math.min(...times), lastVisit: Math.max(...times) }
 }
 
-function githubPeriod(month?: string): { item: HistoryItem; ref: GithubRef }[] {
-  return GITHUB_ITEMS.flatMap(({ item, ref }) => {
+function githubPeriod(month?: string): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
+  return GITHUB_ITEMS.flatMap(({ item, urlInfo }) => {
     const it = inPeriod(item, month)
-    return it ? [{ item: it, ref }] : []
+    return it ? [{ item: it, urlInfo }] : []
   })
 }
 
@@ -138,28 +138,28 @@ function computeGithubStats(month?: string): GithubStats {
   let firstVisit = Number.POSITIVE_INFINITY
   let lastVisit = 0
 
-  for (const { item, ref } of githubPeriod(month)) {
+  for (const { item, urlInfo } of githubPeriod(month)) {
     const n = item.visitCount
     visits += n
     firstVisit = Math.min(firstVisit, item.firstVisit)
     lastVisit = Math.max(lastVisit, item.lastVisit)
-    const o = owners.get(ref.owner) ?? { visits: 0, repos: new Set<string>() }
+    const o = owners.get(urlInfo.owner) ?? { visits: 0, repos: new Set<string>() }
     o.visits += n
-    owners.set(ref.owner, o)
-    if (!ref.repo) continue
-    o.repos.add(ref.repo)
-    const rk = `${ref.owner}/${ref.repo}`
-    const r = repos.get(rk) ?? { owner: ref.owner, repo: ref.repo, visits: 0 }
+    owners.set(urlInfo.owner, o)
+    if (!urlInfo.repo) continue
+    o.repos.add(urlInfo.repo)
+    const rk = `${urlInfo.owner}/${urlInfo.repo}`
+    const r = repos.get(rk) ?? { owner: urlInfo.owner, repo: urlInfo.repo, visits: 0 }
     r.visits += n
     repos.set(rk, r)
-    if (!ref.kind || ref.number === undefined) continue
-    const ik = `${rk}/${ref.kind}/${ref.number}`
+    if (!urlInfo.kind || urlInfo.number === undefined) continue
+    const ik = `${rk}/${urlInfo.kind}/${urlInfo.number}`
     const cur = items.get(ik)
     if (cur) {
       cur.visits += n
       if (item.lastVisit > cur.last) Object.assign(cur, { title: cleanTitle(item.title), url: item.url, last: item.lastVisit })
     } else {
-      items.set(ik, { owner: ref.owner, repo: ref.repo, kind: ref.kind, number: ref.number, title: cleanTitle(item.title), url: item.url, visits: n, last: item.lastVisit })
+      items.set(ik, { owner: urlInfo.owner, repo: urlInfo.repo, kind: urlInfo.kind, number: urlInfo.number, title: cleanTitle(item.title), url: item.url, visits: n, last: item.lastVisit })
     }
   }
 
@@ -190,7 +190,7 @@ function githubVisits(params: GithubVisitsParams): SearchPage {
   const repo = params.repo?.toLowerCase()
   const kind = params.kind ?? 'all'
   const rows = mergeRepoRoots(githubPeriod(params.month))
-    .filter(({ ref }) => (!owner || ref.owner === owner) && (!repo || ref.repo === repo) && matchesKind(ref, kind))
+    .filter(({ urlInfo }) => (!owner || urlInfo.owner === owner) && (!repo || urlInfo.repo === repo) && matchesKind(urlInfo, kind))
     .map(({ item }) => item)
     .sort(byLastVisitDesc)
   return paginate(rows, params.cursor, params.limit)

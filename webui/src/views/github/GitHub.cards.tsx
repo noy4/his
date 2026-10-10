@@ -12,24 +12,24 @@ export function CardGrid({ children }: { children: ReactNode }) {
 }
 
 export function GitHubVisitCard({ item }: { item: HistoryItem }) {
-  const ref = parseGithubUrl(item.url)
-  if (!ref) return null
-  const t = parseGithubTitle(item.title || item.url, ref)
-  const org = ref.kind
-    ? `${ref.owner}/${ref.repo}#${ref.number}${t.meta ? ` · ${t.meta}` : ''}`
-    : ref.repo && !ref.root
-      ? `${ref.owner}/${ref.repo}`
-      : ref.owner
+  const urlInfo = parseGithubUrl(item.url)
+  if (!urlInfo) return null
+  const t = parseGithubTitle(item.title || item.url, urlInfo)
+  const org = urlInfo.kind
+    ? `${urlInfo.owner}/${urlInfo.repo}#${urlInfo.number}${t.meta ? ` · ${t.meta}` : ''}`
+    : urlInfo.repo && !urlInfo.root
+      ? `${urlInfo.owner}/${urlInfo.repo}`
+      : urlInfo.owner
   return (
     <a className={cardCls} href={item.url} target="_blank" rel="noreferrer">
       <div className="flex min-w-0 flex-col items-start gap-2.5">
         <GitHubItemAvatar
-          owner={ref.owner}
-          kind={ref.kind}
-          size={ref.root ? 36 : 28}
+          owner={urlInfo.owner}
+          kind={urlInfo.kind}
+          size={urlInfo.root ? 36 : 28}
         />
         <div className="grid w-full min-w-0 leading-[1.35]">
-          <span className={`text-sm font-semibold text-text ${ref.root ? 'truncate' : 'line-clamp-2'}`}>{t.name}</span>
+          <span className={`text-sm font-semibold text-text ${urlInfo.root ? 'truncate' : 'line-clamp-2'}`}>{t.name}</span>
           <span className="truncate font-mono text-[0.7rem] text-muted">{org}</span>
         </div>
       </div>

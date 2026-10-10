@@ -49,8 +49,12 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
         {filter && (
           <RemovableChip
             onRemove={() => gh.setFilter(null)}
-            removeLabel={`Remove filter: ${filter.repo ? `${filter.owner}/${filter.repo}` : filter.owner}`}
-            label={filter.repo ? `${filter.owner}/${filter.repo}` : filter.owner}
+            removeLabel={`Remove filter: ${filter.repo
+              ? `${filter.owner}/${filter.repo}`
+              : filter.owner}`}
+            label={filter.repo
+              ? `${filter.owner}/${filter.repo}`
+              : filter.owner}
           />
         )}
         <VisitsViewToggle gh={gh} />
@@ -140,14 +144,15 @@ export function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) 
 }
 
 function GitHubVisitRow({ item }: { item: HistoryItem }) {
-  const ref = parseGithubUrl(item.url)
+  const urlInfo = parseGithubUrl(item.url)
+  if (!urlInfo) return null
   return (
     <HistoryRow
       item={item}
       icon={(
         <GitHubItemAvatar
-          owner={ref?.owner ?? ''}
-          kind={ref?.kind}
+          owner={urlInfo.owner}
+          kind={urlInfo.kind}
           size={24}
         />
       )}

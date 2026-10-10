@@ -1,10 +1,12 @@
-// github.com URL → owner / repo / PR・Issue. Pure (no node:*) so the WebUI can import it.
+// github.com URL → owner / repo / PR・Issue
 
 export type GithubKind = 'pull' | 'issue'
-// 'repo' = repo root only · 'code' = other repo pages except PR/Issue · 'issue_pr' = single PR/Issue
+// 'repo' = repo root only
+// 'issue_pr' = single PR/Issue
+// 'code' = other repo pages
 export type GithubVisitKind = 'all' | 'repo' | 'code' | 'issue_pr'
 
-export interface GithubRef {
+export interface GitHubUrlInfo {
   owner: string
   repo?: string
   root?: true // exactly /:owner/:repo
@@ -22,7 +24,7 @@ const RESERVED = new Set([
 
 // 'https://github.com/Foo/Bar/pull/12/files?x#y' → { owner: 'foo', repo: 'bar', kind: 'pull', number: 12 }
 // gist.github.com etc. → null
-export function parseGithubUrl(url: string): GithubRef | null {
+export function parseGithubUrl(url: string): GitHubUrlInfo | null {
   let u: URL
   try {
     u = new URL(url)
@@ -52,18 +54,18 @@ interface VisitLike {
 
 // Collapse repo-root variants (?tab=…, #readme, trailing /) into one row per repo.
 // Newest variant wins id/title; url drops query/hash; counts are summed.
-export function mergeRepoRoots<T extends VisitLike>(rows: { item: T; ref: GithubRef }[]): { item: T; ref: GithubRef }[] {
-  const roots = new Map<string, { item: T; ref: GithubRef }>()
-  const out: { item: T; ref: GithubRef }[] = []
+export function mergeRepoRoots<T extends VisitLike>(rows: { item: T; urlInfo: GitHubUrlInfo }[]): { item: T; urlInfo: GitHubUrlInfo }[] {
+  const roots = new Map<string, { item: T; urlInfo: GitHubUrlInfo }>()
+  const out: { item: T; urlInfo: GitHubUrlInfo }[] = []
   for (const row of rows) {
-    if (!row.ref.root) {
+    if (!row.urlInfo.root) {
       out.push(row)
       continue
     }
-    const key = `${row.ref.owner}/${row.ref.repo}`
+    const key = `${row.urlInfo.owner}/${row.urlInfo.repo}`
     const prev = roots.get(key)
     if (!prev) {
-      roots.set(key, { item: { ...row.item, url: stripUrl(row.item.url) }, ref: row.ref })
+      roots.set(key, { item: { ...row.item, url: stripUrl(row.item.url) }, urlInfo: row.urlInfo })
       continue
     }
     const a = prev.item
@@ -87,11 +89,11 @@ function stripUrl(url: string): string {
   return `${u.origin}${u.pathname.replace(/\/+$/, '')}`
 }
 
-export function matchesKind(ref: GithubRef, k: GithubVisitKind): boolean {
+export function matchesKind(urlInfo: GitHubUrlInfo, k: GithubVisitKind): boolean {
   if (k === 'all') return true
-  if (k === 'repo') return ref.root === true
-  if (k === 'code') return ref.repo !== undefined && !ref.root && !ref.kind
-  return ref.kind !== undefined
+  if (k === 'repo') return urlInfo.root === true
+  if (k === 'code') return urlInfo.repo !== undefined && !urlInfo.root && !urlInfo.kind
+  return urlInfo.kind !== undefined
 }
 
 export interface GithubTitle {
@@ -104,16 +106,16 @@ export interface GithubTitle {
 // repo:     'owner/repo: A fast bundler'                       → { name: 'repo', desc: 'A fast bundler' }
 // pull:     'Fix X by alice · Pull Request #12 · owner/repo'   → { name: 'Fix X', meta: 'alice' }
 // issue:    'Bug Y · Issue #3 · owner/repo'                    → { name: 'Bug Y' }
-export function parseGithubTitle(title: string, ref: GithubRef): GithubTitle {
+export function parseGithubTitle(title: string, urlInfo: GitHubUrlInfo): GithubTitle {
   const t = title.trim()
-  if (ref.root && ref.repo) {
+  if (urlInfo.root && urlInfo.repo) {
     const m = /^([^/\s]+)\/([^:\s]+)(?::\s*(.*))?$/s.exec(t)
     if (m && m[2]) return { name: m[2], desc: m[3]?.trim() || undefined }
-    return { name: ref.repo }
+    return { name: urlInfo.repo }
   }
-  if (ref.kind) {
+  if (urlInfo.kind) {
     const head = t.split(' · ')[0] ?? t
-    const by = ref.kind === 'pull' ? / by (\S+)$/.exec(head) : null
+    const by = urlInfo.kind === 'pull' ? / by (\S+)$/.exec(head) : null
     const name = (by ? head.slice(0, by.index) : head).trim()
     return { name: name || t, meta: by?.[1] }
   }

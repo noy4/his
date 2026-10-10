@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GithubRef, type GithubVisitKind } from '../github/parse.ts'
+import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from '../github/parse.ts'
 import type { EpochMs, HistoryItem } from '../model.ts'
 import { clampLimit, decodeCursor, encodeCursor, type SearchPage } from './query.ts'
 import { MONTH_BUCKET, MONTH_RE } from './stats.ts'
@@ -33,25 +33,25 @@ export function githubStats(db: DatabaseSync, month?: string): GithubStats {
   let firstVisit = 0
   let lastVisit = 0
 
-  for (const { item, ref } of githubRows(db, month)) {
+  for (const { item, urlInfo } of githubRows(db, month)) {
     const n = item.visitCount
     visits += n
     firstVisit = firstVisit === 0 || item.firstVisit < firstVisit ? item.firstVisit : firstVisit
     lastVisit = Math.max(lastVisit, item.lastVisit)
-    const o = owners.get(ref.owner) ?? { visits: 0, repos: new Set<string>() }
+    const o = owners.get(urlInfo.owner) ?? { visits: 0, repos: new Set<string>() }
     o.visits += n
-    owners.set(ref.owner, o)
-    if (ref.repo === undefined) continue
-    o.repos.add(ref.repo)
-    const rk = `${ref.owner}/${ref.repo}`
-    const r = repos.get(rk) ?? { owner: ref.owner, repo: ref.repo, visits: 0 }
+    owners.set(urlInfo.owner, o)
+    if (urlInfo.repo === undefined) continue
+    o.repos.add(urlInfo.repo)
+    const rk = `${urlInfo.owner}/${urlInfo.repo}`
+    const r = repos.get(rk) ?? { owner: urlInfo.owner, repo: urlInfo.repo, visits: 0 }
     r.visits += n
     repos.set(rk, r)
-    if (ref.kind === undefined || ref.number === undefined) continue
-    const ik = `${rk}/${ref.kind}/${ref.number}`
+    if (urlInfo.kind === undefined || urlInfo.number === undefined) continue
+    const ik = `${rk}/${urlInfo.kind}/${urlInfo.number}`
     const cur = items.get(ik)
     if (cur === undefined) {
-      items.set(ik, { owner: ref.owner, repo: ref.repo, kind: ref.kind, number: ref.number, title: cleanTitle(item.title), url: item.url, visits: n, last: item.lastVisit })
+      items.set(ik, { owner: urlInfo.owner, repo: urlInfo.repo, kind: urlInfo.kind, number: urlInfo.number, title: cleanTitle(item.title), url: item.url, visits: n, last: item.lastVisit })
     } else {
       cur.visits += n
       // latest visit wins for title / url
@@ -75,7 +75,7 @@ export function githubVisits(db: DatabaseSync, filter: GithubVisitsFilter = {}):
   const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
 
   const rows = mergeRepoRoots(githubRows(db, filter.month))
-    .filter(({ ref }) => (owner === undefined || ref.owner === owner) && (repo === undefined || ref.repo === repo) && matchesKind(ref, kind))
+    .filter(({ urlInfo }) => (owner === undefined || urlInfo.owner === owner) && (repo === undefined || urlInfo.repo === repo) && matchesKind(urlInfo, kind))
     .map(({ item }) => item)
     .sort((a, b) => b.lastVisit - a.lastVisit || b.id - a.id)
   const keyed = cursor === null
@@ -105,7 +105,7 @@ interface Row {
 const GITHUB_URL = "(urls.url LIKE 'https://github.com/%' OR urls.url LIKE 'https://www.github.com/%' OR urls.url LIKE 'http://github.com/%')"
 
 // github.com rows; with month, visitCount / first / last are narrowed to that month
-function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; ref: GithubRef }[] {
+function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
   let rows: Row[]
   if (month === undefined) {
     rows = db.prepare(
@@ -123,8 +123,8 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; ref:
     ).all(month) as unknown as Row[]
   }
   return rows.flatMap((row) => {
-    const ref = parseGithubUrl(row.url)
-    if (ref === null) return []
+    const urlInfo = parseGithubUrl(row.url)
+    if (urlInfo === null) return []
     const item: HistoryItem = {
       id: row.id,
       url: row.url,
@@ -134,7 +134,7 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; ref:
       firstVisit: row.first_visit_time,
       lastVisit: row.last_visit_time,
     }
-    return [{ item, ref }]
+    return [{ item, urlInfo }]
   })
 }
 
