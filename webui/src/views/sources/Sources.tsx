@@ -3,6 +3,7 @@ import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/models/app'
 import { SourcesModel, sourceKey } from './sources.model'
 import type { SyncSummary } from '@/api'
+import { cn } from 'cn'
 import CheckNetwork from '~icons/mdi/check-network-outline'
 import Close from '~icons/mdi/close'
 import Loading from '~icons/mdi/loading'
@@ -96,7 +97,7 @@ function ToolbarButton({ icon, label, onClick, disabled }: { icon: ReactNode; la
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-mono text-[0.75rem] text-muted transition-colors hover:text-text disabled:pointer-events-none disabled:opacity-40"
+      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-mono text-xs text-muted transition hover:bg-bg-3 hover:text-text active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-40"
     >
       {icon}
       {label}
@@ -110,7 +111,10 @@ function SyncSelectedButton({ children, onClick, disabled, running }: { children
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-white transition-opacity disabled:pointer-events-none disabled:opacity-40 ${running ? 'opacity-80' : 'hover:opacity-90'}`}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-white transition-opacity disabled:pointer-events-none disabled:opacity-40',
+        running ? 'opacity-80' : 'hover:opacity-90',
+      )}
     >
       {children}
     </button>
@@ -121,7 +125,7 @@ function RunSummary({ run }: { run: SyncSummary | null }) {
   if (run === null) return null
   const synced = run.attempted - run.failures
   return (
-    <p className="mt-2 font-mono text-[0.72rem] text-muted">
+    <p className="mt-2 font-mono text-xs text-muted">
       {synced}/{run.attempted} synced · {run.skipped} skipped · +{run.insertedVisits.toLocaleString()} visits
     </p>
   )
