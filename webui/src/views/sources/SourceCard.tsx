@@ -54,7 +54,7 @@ function SourceCardCheck({ selected }: { selected: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`absolute top-3 right-3 inline-flex h-[18px] w-[18px] items-center justify-center rounded-[5px] border transition-colors ${selected
+      className={`absolute top-3 right-3 inline-flex h-4.5 w-4.5 items-center justify-center rounded-[5px] border transition-colors ${selected
         ? 'border-primary bg-primary text-white'
         : 'border-border bg-bg-3'}`}
     >

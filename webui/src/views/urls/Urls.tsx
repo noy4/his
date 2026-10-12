@@ -47,11 +47,11 @@ function UrlsList({ className, ...props }: ComponentProps<'div'>) {
 }
 
 function UrlsLoading() {
-  return <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>
+  return <p className="py-4 text-center font-mono text-xs text-muted">Loading…</p>
 }
 
 function UrlsEmpty() {
-  return <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
+  return <p className="py-4 text-center font-mono text-xs text-muted">No history</p>
 }
 
 function UrlsLoadMoreSentinel(props: ComponentProps<'div'>) {
