@@ -1,4 +1,4 @@
-import { historyDbPath, initDb } from '@his/core'
+import { historyDbPath, initDb } from '@his/core/node'
 import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
 import { spawn } from 'node:child_process'
 import http from 'node:http'

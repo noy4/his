@@ -1,4 +1,4 @@
-import { defaultHome } from '@his/core'
+import { defaultHome } from '@his/core/node'
 
 export interface Context {
   home: string

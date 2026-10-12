@@ -1,5 +1,5 @@
-import type { EpochMs, SyncLastRun, SyncOptions, SyncSummary } from '@his/core'
-import { runSync } from '@his/core'
+import type { EpochMs, SyncLastRun, SyncOptions, SyncSummary } from '@his/core/node'
+import { runSync } from '@his/core/node'
 
 const SYNC_INTERVAL = 6 * 60 * 60 * 1000
 

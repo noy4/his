@@ -409,10 +409,12 @@
     </p>
 
     <pre>his/
-├── 🧠 core/                      <span class="c"># model · sync · db</span>
+├── 🧠 core/                      <span class="c"># types · sync · db</span>
 │   ├── package.json
 │   └── src/
-│       ├── model.ts              <span class="c"># HistoryItem · VisitItem · Transition enum · epoch ms</span>
+│       ├── index.ts              <span class="c"># package root · browser-safe → types + github/parse</span>
+│       ├── node.ts               <span class="c"># node entry → index · db · sync · paths · state</span>
+│       ├── types.ts              <span class="c"># HistoryItem · VisitItem · Transition enum · epoch ms</span>
 │       ├── db/
 │       │   ├── migrations/       <span class="c"># 000_initial_schema · 00N_*.sql/ts · user_version driven</span>
 │       │   ├── db.ts             <span class="c"># migration types · initDb · open · migrate (scan)</span>

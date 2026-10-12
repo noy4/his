@@ -1,6 +1,6 @@
 import type { HistoryItem } from '@/api'
 import { timeLabel } from '@/lib/date'
-import { parseGithubTitle, parseGithubUrl } from '@his/core/github'
+import { parseGithubTitle, parseGithubUrl } from '@his/core'
 import { cn } from 'cn'
 import type { ComponentProps, ReactNode } from 'react'
 import { GitHubItemAvatar } from './GitHub.components'

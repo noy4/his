@@ -5,15 +5,14 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./node": "./src/node.ts",
     "./state": "./src/state.ts",
-    "./paths": "./src/paths.ts",
-    "./types": "./src/types.ts",
-    "./github": "./src/github/parse.ts"
+    "./paths": "./src/paths.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
-    "test": "node --test src/**/*.test.ts"
+    "test": "node --test \"src/**/*.test.ts\""
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

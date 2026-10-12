@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { GithubVisitsFilter, SearchFilter, SyncOptions } from '@his/core'
+import type { GithubVisitsFilter, SearchFilter, SyncOptions } from '@his/core/node'
 import {
   getItem,
   githubStats,
@@ -9,7 +9,7 @@ import {
   search,
   searchVisits,
   stats,
-} from '@his/core'
+} from '@his/core/node'
 import type { Handler } from './rpc.ts'
 import type { SyncRunner } from './sync-runner.ts'
 
