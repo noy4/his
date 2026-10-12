@@ -63,7 +63,7 @@ export function ListSkeleton() {
     <div className="space-y-2">
       {Array.from({ length: 8 }, (_, i) => (
         <div key={i} className="flex items-center gap-2">
-          <Sk className="size-[18px]" />
+          <Sk className="size-4.5" />
           <Sk className="h-4 flex-1" />
           <Sk className="h-3 w-8" />
         </div>
