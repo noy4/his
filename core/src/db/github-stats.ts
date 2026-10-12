@@ -113,20 +113,20 @@ export function githubVisits(db: DatabaseSync, filter: GithubVisitsFilter = {}):
   const limit = clampLimit(filter.limit)
   const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
 
-  const rows = mergeRepoRoots(githubRows(db, filter.month))
+  const matchingRows = githubRows(db, filter.month)
     .filter(({ urlInfo }) => (
       owner === undefined || urlInfo.owner === owner)
       && (repo === undefined || urlInfo.repo === repo)
       && matchesKind(urlInfo, kind)
     )
-    .map(({ item }) => item)
-    .sort((a, b) => b.lastVisit - a.lastVisit || b.id - a.id)
+  const rows = mergeRepoRoots(matchingRows).map(({ item }) => item)
   const rowsAfterCursor = cursor === null
     ? rows
     : rows.filter((it) =>
       it.lastVisit < cursor[0]
       || (it.lastVisit === cursor[0] && it.id < cursor[1])
     )
+  rowsAfterCursor.sort((a, b) => b.lastVisit - a.lastVisit || b.id - a.id)
   const items = rowsAfterCursor.slice(0, limit)
   const last = items.at(-1)
   return {

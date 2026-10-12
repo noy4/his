@@ -156,4 +156,63 @@ describe('githubVisits', () => {
     } while (cursor)
     assert.deepEqual(seen, urls({}))
   })
+
+  it('preserves merged counts and cursor ordering with owner / repo / kind filters', async () => {
+    const rootsDb = new DatabaseSync(':memory:')
+    try {
+      await migrate(rootsDb)
+      rootsDb.prepare("INSERT INTO source_profiles (id, browser, profile, kind, profile_path) VALUES (1, 'chrome', 'Default', 'chromium', '/x')").run()
+      const rows = [
+        ['https://github.com/foo/bar?tab=readme', '2026-10-10T10:00', 'typed'],
+        ['https://github.com/foo/bar#readme', '2026-10-01T10:00', 'link'],
+        ['https://github.com/foo/bar/', '2026-10-10T10:00', 'typed'],
+        ['https://github.com/foo/baz', '2026-10-04T10:00', 'link'],
+        ['https://github.com/qux/bar', '2026-10-03T10:00', 'link'],
+        ['https://github.com/foo/bar/tree/main', '2026-10-02T10:00', 'link'],
+        ['https://github.com/foo/bar/pull/1', '2026-10-02T10:00', 'link'],
+      ] as const
+      for (const [index, [url, time, transition]] of rows.entries()) {
+        const id = index + 1
+        rootsDb.prepare('INSERT INTO urls (id, url, title, first_visit_time, last_visit_time, visit_count, typed_count) VALUES (?, ?, ?, ?, ?, 1, ?)')
+          .run(id, url, `title${id}`, at(time), at(time), transition === 'typed' ? 1 : 0)
+        rootsDb.prepare('INSERT INTO visits (url_id, visit_time, transition, source_profile_id, source_visit_id) VALUES (?, ?, ?, 1, ?)')
+          .run(id, at(time), transition, id)
+      }
+      const root = 'https://github.com/foo/bar'
+      const baz = 'https://github.com/foo/baz'
+      const qux = 'https://github.com/qux/bar'
+      const pull = 'https://github.com/foo/bar/pull/1'
+      const code = 'https://github.com/foo/bar/tree/main'
+      const cases: [NonNullable<Parameters<typeof githubVisits>[1]>, string[]][] = [
+        [{}, [root, baz, qux, pull, code]],
+        [{ owner: 'FOO', repo: 'BAR' }, [root, pull, code]],
+        [{ kind: 'repo' }, [root, baz, qux]],
+        [{ owner: 'foo', kind: 'repo' }, [root, baz]],
+        [{ repo: 'bar', kind: 'repo' }, [root, qux]],
+        [{ kind: 'other' }, [code]],
+        [{ kind: 'issue_pr' }, [pull]],
+      ]
+      for (const month of [undefined, '2026-10']) {
+        const [merged] = githubVisits(rootsDb, { month, owner: 'foo', repo: 'bar', kind: 'repo' }).items
+        assert.deepEqual(merged, {
+          id: 3, url: root, title: 'title3', visitCount: 3, typedCount: 2,
+          firstVisit: at('2026-10-01T10:00'), lastVisit: at('2026-10-10T10:00'),
+        })
+        for (const [filter, expectedUrls] of cases) {
+          const expected = githubVisits(rootsDb, { ...filter, month }).items
+          assert.deepEqual(expected.map((item) => item.url), expectedUrls)
+          const seen = []
+          let cursor: string | undefined
+          do {
+            const page = githubVisits(rootsDb, { ...filter, month, limit: 1, cursor })
+            seen.push(...page.items)
+            cursor = page.nextCursor ?? undefined
+          } while (cursor)
+          assert.deepEqual(seen, expected)
+        }
+      }
+    } finally {
+      rootsDb.close()
+    }
+  })
 })
