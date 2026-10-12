@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
-import { migrate } from './db.ts'
-import { decodeCursor, encodeCursor, getVisits, search, searchVisits } from './query.ts'
+import { migrate } from '../db.ts'
+import { decodeCursor, encodeCursor, getVisits, search, searchVisits } from '../query.ts'
 
 let db: DatabaseSync
 

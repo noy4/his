@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { before, describe, it } from 'node:test'
-import { migrate } from './db.ts'
-import { githubStats, githubVisits } from './github-stats.ts'
+import { migrate } from '../db.ts'
+import { githubStats, githubVisits } from '../github-stats.ts'
 
 // local-time ms so month buckets ('localtime') line up
 const at = (iso: string) => new Date(iso).getTime()

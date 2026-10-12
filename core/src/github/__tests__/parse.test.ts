@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { matchesKind, mergeRepoRoots, parseGithubTitle, parseGithubUrl } from './parse.ts'
+import { matchesKind, mergeRepoRoots, parseGithubTitle, parseGithubUrl } from '../parse.ts'
 
 describe('parseGithubUrl', () => {
   const cases: [string, ReturnType<typeof parseGithubUrl>][] = [

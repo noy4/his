@@ -4,9 +4,9 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
-import { migrate } from '../db/db.ts'
-import { probeFingerprint } from './fingerprint.ts'
-import { listSourceProfiles } from './watermarks.ts'
+import { migrate } from '../../db/db.ts'
+import { probeFingerprint } from '../fingerprint.ts'
+import { listSourceProfiles } from '../watermarks.ts'
 
 let db: DatabaseSync
 let dir: string

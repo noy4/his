@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { describe, it } from 'node:test'
-import { migrate } from './db.ts'
-import { githubStats, githubVisits } from './github-stats.ts'
-import { monthRange, stats } from './stats.ts'
+import { migrate } from '../db.ts'
+import { githubStats, githubVisits } from '../github-stats.ts'
+import { monthRange, stats } from '../stats.ts'
 
 describe('monthRange', () => {
   const cases = [
