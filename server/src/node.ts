@@ -4,8 +4,6 @@ import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import type { ReadableStream as NodeWebReadableStream } from 'node:stream/web'
 
-// --- contract ---
-
 export interface NodeAdapterOptions {
   onError?: (error: unknown) => void
 }

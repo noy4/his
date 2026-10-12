@@ -1,4 +1,4 @@
-import { serve } from './server/index.ts'
+import { serve } from '@his/server'
 import type { Context } from './context.ts'
 
 const DEFAULT_PORT = 4477

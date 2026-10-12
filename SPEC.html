@@ -432,15 +432,18 @@
 │   ├── package.json              <span class="c"># "bin": { "his": "./bin.ts" }</span>
 │   ├── bin.ts                    <span class="c"># arg parsing only · delegates per command</span>
 │   └── src/
-│       ├── home.ts               <span class="c"># --home / HIS_HOME · paths</span>
+│       ├── context.ts            <span class="c"># --home / HIS_HOME · paths</span>
 │       ├── sync.ts               <span class="c"># sync command</span>
 │       ├── query.ts              <span class="c"># query command</span>
-│       ├── serve.ts              <span class="c"># serve command · binds, prints, waits</span>
-│       ├── status.ts             <span class="c"># status · stop commands</span>
-│       └── server/
-│           ├── index.ts          <span class="c"># HTTP server: static dist · binds 127.0.0.1</span>
-│           ├── rpc.ts            <span class="c"># JSON-RPC 2.0 over WS · dispatch to core</span>
-│           └── state.ts          <span class="c"># state.json · pid liveness · atomic write</span>
+│       ├── serve.ts              <span class="c"># serve command · delegates to @his/server</span>
+│       └── status.ts             <span class="c"># status · stop commands</span>
+├── 🔌 server/                    <span class="c"># @his/server — transport over core</span>
+│   ├── package.json
+│   └── src/
+│       ├── index.ts              <span class="c"># serve(): HTTP + RPC · binds 127.0.0.1 · state.json</span>
+│       ├── rpc.ts                <span class="c"># JSON-RPC 2.0 over WS · heartbeat</span>
+│       ├── sync-runner.ts        <span class="c"># in-process sync · 6h schedule</span>
+│       └── static.ts             <span class="c"># dist resolution · MIME · cache-control</span>
 ├── 🌐 webui/                     <span class="c"># React + @preact/signals SPA</span>
 │   ├── package.json
 │   ├── vite.config.ts            <span class="c"># dist/ → served by `his serve`</span>

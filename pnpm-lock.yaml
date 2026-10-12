@@ -11,19 +11,16 @@ importers:
       '@his/core':
         specifier: workspace:*
         version: link:../core
+      '@his/server':
+        specifier: workspace:*
+        version: link:../server
       cac:
         specifier: ^7.0.0
         version: 7.0.0
-      ws:
-        specifier: ^8.22.0
-        version: 8.22.0
     devDependencies:
       '@types/node':
         specifier: ^24.13.3
         version: 24.19.1
-      '@types/ws':
-        specifier: ^8.18.2
-        version: 8.18.2
       oxlint:
         specifier: ^1.81.0
         version: 1.86.0
@@ -58,6 +55,28 @@ importers:
       esbuild:
         specifier: ^0.27.3
         version: 0.27.7
+      oxlint:
+        specifier: ^1.81.0
+        version: 1.86.0
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
+
+  server:
+    dependencies:
+      '@his/core':
+        specifier: workspace:*
+        version: link:../core
+      ws:
+        specifier: ^8.22.0
+        version: 8.22.0
+    devDependencies:
+      '@types/node':
+        specifier: ^24.13.3
+        version: 24.19.1
+      '@types/ws':
+        specifier: ^8.18.2
+        version: 8.18.2
       oxlint:
         specifier: ^1.81.0
         version: 1.86.0
