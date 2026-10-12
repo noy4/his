@@ -1,3 +1,4 @@
+import { Card, CardTitle } from '@/components/ui/card'
 import { dateLabel } from '@/lib/date'
 import { isLocalDomain } from '@/lib/domain'
 import { fmtNum } from '@/lib/format'
@@ -9,18 +10,16 @@ import EyeIcon from '~icons/mdi/eye-outline'
 import LinkIcon from '~icons/mdi/link-variant'
 import WebIcon from '~icons/mdi/web'
 import { Favicon } from '../Favicon'
+import { ViewRoot } from '../View.components'
 import { DashboardModel } from './dashboard.model'
 import { DashboardSkeleton } from './Dashboard.components'
 import {
   Bars,
-  Card,
-  CardTitle,
   MonthNav,
   SegmentedControl,
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
-  StatsRoot,
 } from '../stats/Stats.components'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -46,7 +45,7 @@ export function Dashboard({ app }: { app: AppModel }) {
   const busiestDays = stats.busiestDays
 
   return (
-    <StatsRoot>
+    <ViewRoot>
       <StatsHeaderRoot>
         {monthly ? (
           <MonthNav
@@ -120,6 +119,6 @@ export function Dashboard({ app }: { app: AppModel }) {
           </ol>
         </Card>
       </StatsContentRoot>
-    </StatsRoot>
+    </ViewRoot>
   )
 }

@@ -5,15 +5,6 @@ import type { ComponentProps, ReactNode } from 'react'
 import type { IconComponent } from '@/components/icons'
 import { buttonBase } from '@/components/ui/button'
 import { fmtNum } from '@/lib/format'
-import { cn } from 'cn'
-
-export function StatsRoot({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="h-full overflow-y-auto px-4 pt-4 pb-10">
-      {children}
-    </div>
-  )
-}
 
 export function StatsHeaderRoot({ children }: { children: React.ReactNode }) {
   return (
@@ -29,16 +20,6 @@ export function StatsContentRoot({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   )
-}
-
-export function Card({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div {...props} className={cn('rounded-lg border bg-bg-2 p-4', className)} />
-  )
-}
-
-export function CardTitle({ children }: { children: ReactNode }) {
-  return <h2 className="mb-3 text-xs font-semibold tracking-wide text-muted">{children}</h2>
 }
 
 export function Stat({ label, value, icon: Icon }: { label: string; value: string; icon?: IconComponent }) {

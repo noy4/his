@@ -1,3 +1,4 @@
+import { Card, CardTitle } from '@/components/ui/card'
 import { dateLabel } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
 import { VisitCount } from './GitHub.components'
@@ -9,15 +10,13 @@ import EyeIcon from '~icons/mdi/eye-outline'
 import PullIcon from '~icons/octicon/git-pull-request-16'
 import RepoIcon from '~icons/octicon/repo-16'
 import {
-  Card,
-  CardTitle,
   MonthNav,
   SegmentedControl,
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
-  StatsRoot,
 } from '../stats/Stats.components'
+import { ViewRoot } from '../View.components'
 import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
 import { RecentVisitsCard } from './RecentVisitsCard'
 import { GithubModel } from './github.model'
@@ -33,7 +32,7 @@ export function GitHub({ app }: { app: AppModel }) {
   const monthly = gh.mode.value === 'month'
 
   return (
-    <StatsRoot>
+    <ViewRoot>
       <StatsHeaderRoot>
         {monthly ? (
           <MonthNav
@@ -61,7 +60,7 @@ export function GitHub({ app }: { app: AppModel }) {
         <TopItemsCard gh={gh} />
       </StatsContentRoot>
       <RecentVisitsCard gh={gh} />
-    </StatsRoot>
+    </ViewRoot>
   )
 }
 

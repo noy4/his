@@ -4,6 +4,8 @@ import { AppModel } from '@/models/app'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryRow } from '@/views/HistoryRow'
 import type { HistoryItem } from '@/api'
+import { Card, CardTitle } from '@/components/ui/card'
+import { ViewRoot } from '../View.components'
 
 export function Timeline({ app }: { app: AppModel }) {
   const {
@@ -14,16 +16,17 @@ export function Timeline({ app }: { app: AppModel }) {
   } = useModel(() => app.history)
   const groups = groupByDay(items.value)
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="shrink-0 px-4 pt-4 pb-3">
-        <SearchBar app={app} />
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-10">
+    <ViewRoot>
+      <Card>
+        <CardTitle>Timeline</CardTitle>
+        <div className="mb-3">
+          <SearchBar app={app} />
+        </div>
         {groups.map((g) => (
-          <section className="mb-5" key={g.key}>
-            <h2 className="mb-1 border-b pb-1.5 font-mono text-[0.7rem] font-semibold tracking-[0.1em] text-muted uppercase">
+          <section className="mb-2" key={g.key}>
+            <h3 className="sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted">
               {g.label}
-            </h2>
+            </h3>
             <div className="grid">
               {g.items.map((it) => (
                 <HistoryRow key={it.id} item={it} />
@@ -38,8 +41,8 @@ export function Timeline({ app }: { app: AppModel }) {
           <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
         )}
         <div ref={(el) => setSentinel(el)} aria-hidden="true" />
-      </div>
-    </div>
+      </Card>
+    </ViewRoot>
   )
 }
 

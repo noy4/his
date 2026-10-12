@@ -1,4 +1,5 @@
 import type { GithubVisitKind, HistoryItem } from '@/api'
+import { Card, CardTitle } from '@/components/ui/card'
 import { ToggleGroupButton, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { relativeDateLabel } from '@/lib/date'
 import { parseGithubTitle, parseGithubUrl } from '@his/core/github'
@@ -7,7 +8,6 @@ import type { ComponentProps } from 'react'
 import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
 import { HistoryRow } from '../HistoryRow'
-import { Card, CardTitle } from '../stats/Stats.components'
 import { GitHubVisitCard, GitHubVisitCardGrid } from './GitHubVisitCard'
 import {
   EmptyMessage,

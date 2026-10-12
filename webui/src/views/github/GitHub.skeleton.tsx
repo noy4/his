@@ -1,8 +1,10 @@
-import { Card, CardTitle, ListSkeleton, Sk, StatsContentRoot, StatsHeaderRoot, StatsRoot } from '../stats/Stats.components'
+import { Card, CardTitle } from '@/components/ui/card'
+import { ListSkeleton, Sk, StatsContentRoot, StatsHeaderRoot } from '../stats/Stats.components'
+import { ViewRoot } from '../View.components'
 
 export function GitHubSkeleton() {
   return (
-    <StatsRoot>
+    <ViewRoot>
       <StatsHeaderRoot>
         <Sk className="h-8 w-36" />
         <Sk className="h-8 w-44" />
@@ -53,6 +55,6 @@ export function GitHubSkeleton() {
           </div>
         </Card>
       </div>
-    </StatsRoot>
+    </ViewRoot>
   )
 }
