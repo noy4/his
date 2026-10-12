@@ -1,7 +1,7 @@
 import { SourceCard } from './SourceCard'
 import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/models/app'
-import { sourceKey } from '@/models/sources'
+import { SourcesModel, sourceKey } from './sources.model'
 import type { SyncSummary } from '@/api'
 import CheckNetwork from '~icons/mdi/check-network-outline'
 import Close from '~icons/mdi/close'
@@ -11,7 +11,7 @@ import SelectAll from '~icons/mdi/select-all'
 import { type ReactNode } from 'react'
 
 export function Sources({ app }: { app: AppModel }) {
-  const model = useModel(() => app.sources)
+  const model = useModel(() => new SourcesModel(app.api))
   const sources = model.sources.value
   const selected = model.selected.value
   const running = model.running.value
