@@ -1,6 +1,6 @@
 import { SourceCard } from './SourceCard'
 import { useModel } from '@/lib/useModel'
-import { AppModel } from '@/models/app'
+import { AppModel } from '@/app/app'
 import { SourcesModel, sourceKey } from './sources.model'
 import type { SyncSummary } from '@/app/api'
 import { cn } from 'cn'

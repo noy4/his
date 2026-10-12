@@ -1,5 +1,5 @@
 import type { HisApi, HistoryVisit } from '@/app/api'
-import { FilterModel } from '../../models/filters.ts'
+import { FilterModel } from '@/lib/signal/filter'
 import { batch, effect, signal } from '@preact/signals-react'
 
 const PAGE_SIZE = 60

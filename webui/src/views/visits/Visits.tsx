@@ -1,6 +1,6 @@
 import { useModel } from '@/lib/useModel'
 import { isoDay, relativeDateLabel } from '@/lib/date'
-import { AppModel } from '@/models/app'
+import { AppModel } from '@/app/app'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryRow } from '@/views/HistoryRow'
 import type { HistoryVisit } from '@/app/api'

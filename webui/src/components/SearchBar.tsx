@@ -1,5 +1,5 @@
 import Magnify from '~icons/mdi/magnify'
-import type { FilterModel } from '@/models/filters'
+import type { FilterModel } from '@/lib/signal/filter'
 
 export function SearchBar({ filters }: { filters: FilterModel }) {
   return (

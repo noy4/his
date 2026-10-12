@@ -1,5 +1,5 @@
 import { useModel } from '@/lib/useModel'
-import { AppModel } from '@/models/app'
+import { AppModel } from '@/app/app'
 import { UrlsModel } from './urls.model'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryRow } from '@/views/HistoryRow'

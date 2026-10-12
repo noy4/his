@@ -1,4 +1,4 @@
-import type { HistoryItem, SourceProfile, Transition, VisitItem } from '../api'
+import type { HistoryItem, SourceProfile, Transition, VisitItem } from '../types'
 
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE

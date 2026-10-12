@@ -1,5 +1,5 @@
 import type { IconComponent } from '@/components/icons'
-import { AppModel } from '@/models/app'
+import { AppModel } from '@/app/app'
 import { Dashboard } from '@/views/dashboard/Dashboard'
 import { GitHub } from '@/views/github/GitHub'
 import { Urls } from '@/views/urls/Urls'
