@@ -33,6 +33,41 @@ before(async () => {
   seed('https://example.com/foo/bar', 'other', ['2026-10-07T10:00'])
 })
 
+describe('GitHub URL variants', () => {
+  for (const month of [undefined, '2026-10']) {
+    it(`accepts HTTP/HTTPS with and without www (${month ?? 'all time'})`, async () => {
+      const variantsDb = new DatabaseSync(':memory:')
+      try {
+        await migrate(variantsDb)
+        variantsDb.prepare("INSERT INTO source_profiles (id, browser, profile, kind, profile_path) VALUES (1, 'chrome', 'Default', 'chromium', '/x')").run()
+        const urls = [
+          'https://github.com/foo/bar/tree/main',
+          'https://www.github.com/foo/bar/tree/main',
+          'http://github.com/foo/bar/tree/main',
+          'http://www.github.com/foo/bar/tree/main',
+        ]
+        const times = [at('2026-09-01T10:00'), at('2026-10-01T10:00')]
+        for (const [index, url] of urls.entries()) {
+          const id = index + 1
+          variantsDb.prepare('INSERT INTO urls (id, url, first_visit_time, last_visit_time, visit_count) VALUES (?, ?, ?, ?, 2)')
+            .run(id, url, times[0]!, times[1]!)
+          for (const [visitIndex, time] of times.entries()) {
+            variantsDb.prepare('INSERT INTO visits (url_id, visit_time, transition, source_profile_id, source_visit_id) VALUES (?, ?, ?, 1, ?)')
+              .run(id, time, 'link', index * 2 + visitIndex)
+          }
+        }
+        const visitCount = month === undefined ? 2 : 1
+        const page = githubVisits(variantsDb, { month })
+        assert.deepEqual(page.items.map((item) => item.url).sort(), [...urls].sort())
+        assert.deepEqual(page.items.map((item) => item.visitCount), [visitCount, visitCount, visitCount, visitCount])
+        assert.equal(githubStats(variantsDb, month).totals.visits, urls.length * visitCount)
+      } finally {
+        variantsDb.close()
+      }
+    })
+  }
+})
+
 describe('githubStats', () => {
   it('all time', () => {
     const s = githubStats(db)

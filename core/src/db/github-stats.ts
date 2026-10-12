@@ -150,7 +150,7 @@ interface Row {
 }
 
 // LIKE is ASCII case-insensitive; parseGithubUrl does the exact host check
-const GITHUB_URL = "(urls.url LIKE 'https://github.com/%' OR urls.url LIKE 'https://www.github.com/%' OR urls.url LIKE 'http://github.com/%')"
+const GITHUB_URL = "(urls.url LIKE 'https://github.com/%' OR urls.url LIKE 'https://www.github.com/%' OR urls.url LIKE 'http://github.com/%' OR urls.url LIKE 'http://www.github.com/%')"
 
 // github.com rows; with month, visitCount / first / last are narrowed to that month
 function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
