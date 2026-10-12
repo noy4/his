@@ -12,7 +12,6 @@ export class TimelineModel {
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
   #api: Pick<HisApi, 'searchVisits'>
-  #filterKey: string | null = null
   #requestId = 0
 
   constructor(api: Pick<HisApi, 'searchVisits'>) {
@@ -25,7 +24,7 @@ export class TimelineModel {
 
   subscribe(): () => void {
     const unsubs = [
-      this.watchFilters(),
+      this.filters.subscribe(() => this.reload()),
       this.watchSentinel(),
     ]
     return () => unsubs.forEach((unsub) => unsub())
@@ -64,19 +63,6 @@ export class TimelineModel {
     } finally {
       if (requestId === this.#requestId) this.loading.value = false
     }
-  }
-
-  private watchFilters(): () => void {
-    return effect(() => {
-      const key = JSON.stringify([
-        this.filters.query.value,
-        this.filters.from.value,
-        this.filters.to.value,
-      ])
-      if (key === this.#filterKey) return
-      this.#filterKey = key
-      void this.reload()
-    })
   }
 
   private watchSentinel(): () => void {

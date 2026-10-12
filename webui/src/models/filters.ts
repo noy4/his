@@ -1,4 +1,4 @@
-import { signal } from '@preact/signals-react'
+import { effect, signal } from '@preact/signals-react'
 
 const SEARCH_DEBOUNCE_MS = 300
 
@@ -8,6 +8,7 @@ export class FilterModel {
   readonly from = signal<number | null>(null)
   readonly to = signal<number | null>(null)
   #debounce: ReturnType<typeof setTimeout> | undefined
+  #key: string | null = null
 
   setInput(next: string): void {
     this.input.value = next
@@ -28,5 +29,18 @@ export class FilterModel {
     this.query.value = ''
     this.from.value = null
     this.to.value = null
+  }
+
+  subscribe(onChange: () => void): () => void {
+    return effect(() => {
+      const key = JSON.stringify([
+        this.query.value,
+        this.from.value,
+        this.to.value,
+      ])
+      if (key === this.#key) return
+      this.#key = key
+      onChange()
+    })
   }
 }

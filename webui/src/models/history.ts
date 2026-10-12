@@ -12,8 +12,6 @@ export class HistoryModel {
   readonly loading = signal(false)
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
-  #filterKey: string | null = null
-  #started = false
   #pending: Promise<void> = Promise.resolve()
 
   constructor(api: HisApi) {
@@ -26,13 +24,9 @@ export class HistoryModel {
 
   subscribe(): () => void {
     const unsubs: (() => void)[] = [
-      this.watchFilters(),
+      this.filters.subscribe(() => this.reload()),
       this.watchSentinel(),
     ]
-    if (!this.#started) {
-      this.#started = true
-      void this.loadFirst()
-    }
     return () => {
       unsubs.forEach((fn) => fn())
     }
@@ -47,10 +41,6 @@ export class HistoryModel {
     this.items.value = []
     this.cursor.value = null
     this.done.value = false
-    await this.fetchNext()
-  }
-
-  async loadFirst(): Promise<void> {
     await this.fetchNext()
   }
 
@@ -88,23 +78,6 @@ export class HistoryModel {
     } finally {
       this.loading.value = false
     }
-  }
-
-  private watchFilters(): () => void {
-    return effect(() => {
-      const key = [
-        this.filters.query.value,
-        this.filters.from.value,
-        this.filters.to.value,
-      ].join('|')
-      if (this.#filterKey === null) {
-        this.#filterKey = key
-        return
-      }
-      if (key === this.#filterKey) return
-      this.#filterKey = key
-      void this.reload()
-    })
   }
 
   private watchSentinel(): () => void {
