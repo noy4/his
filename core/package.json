@@ -7,7 +7,7 @@
     ".": "./src/index.ts",
     "./state": "./src/state.ts",
     "./paths": "./src/paths.ts",
-    "./model": "./src/model.ts",
+    "./types": "./src/types.ts",
     "./github": "./src/github/parse.ts"
   },
   "scripts": {

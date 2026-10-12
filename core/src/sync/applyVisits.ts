@@ -1,5 +1,5 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite'
-import type { EpochMs, SourceKind, Transition, Watermark } from '../model.ts'
+import type { EpochMs, SourceKind, Transition, Watermark } from '../types.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
 
 // id semantics: rowid is comparable, hash is not

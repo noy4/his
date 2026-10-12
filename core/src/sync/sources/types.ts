@@ -1,4 +1,4 @@
-import type { SourceKind } from '../../model.ts'
+import type { SourceKind } from '../../types.ts'
 import type { IdMode, NativeVisit } from '../applyVisits.ts'
 
 // one discovered profile to sync

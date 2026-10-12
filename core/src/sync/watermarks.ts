@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, RegisteredSource, SourceKind, Watermark } from '../model.ts'
+import type { EpochMs, RegisteredSource, SourceKind, Watermark } from '../types.ts'
 import { probeFingerprint } from './fingerprint.ts'
 
 export interface WatermarkPatch {

@@ -1,4 +1,4 @@
-import type { SyncOptions, SyncSummary } from '../model.ts'
+import type { SyncOptions, SyncSummary } from '../types.ts'
 import { initDb } from '../db/db.ts'
 import { historyDbPath } from '../paths.ts'
 import { resolveTargets } from './discover.ts'

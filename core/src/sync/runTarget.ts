@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { SyncOptions } from '../model.ts'
+import type { SyncOptions } from '../types.ts'
 import type { ApplyVisitsResult } from './applyVisits.ts'
 import { applyVisits } from './applyVisits.ts'
 import { snapshot } from './snapshot.ts'

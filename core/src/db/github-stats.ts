@@ -1,6 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from '../github/parse.ts'
-import type { EpochMs, HistoryItem } from '../model.ts'
+import type { EpochMs, HistoryItem } from '../types.ts'
 import { clampLimit, decodeCursor, encodeCursor, type SearchPage } from './query.ts'
 import { MONTH_RANGE, monthRange } from './stats.ts'
 

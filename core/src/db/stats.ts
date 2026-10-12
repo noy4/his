@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { EpochMs } from '../model.ts'
+import type { EpochMs } from '../types.ts'
 
 // Dashboard aggregates; shape mirrors the WebUI Stats 1:1.
 // Buckets use server-local time, days 'YYYY-MM-DD'; month ('YYYY-MM') scopes

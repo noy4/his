@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../model.ts'
+import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../types.ts'
 
 export interface SearchFilter {
   query?: string
