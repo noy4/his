@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { batch } from '@preact/signals-react'
 import type { HisApi, HistoryVisit, SearchParams, SearchVisitsPage } from '@/api'
-import { HistoryModel } from '../../models/history.ts'
-import { TimelineModel } from './timeline.model.ts'
+import { UrlsModel } from '../../models/urls.ts'
+import { VisitsModel } from './visits.model.ts'
 
 function visit(id: number, visitTime = id): HistoryVisit {
   return { id, urlId: 1, url: 'https://example.com', title: 'Example', visitTime, transition: 'link', visitCount: 3 }
@@ -16,10 +16,10 @@ function deferred<T>() {
   return { promise, resolve }
 }
 
-describe('TimelineModel', () => {
+describe('VisitsModel', () => {
   it('keeps repeated URL visits across pages and their cumulative count', async () => {
     const calls: SearchParams[] = []
-    const model = new TimelineModel({
+    const model = new VisitsModel({
       async searchVisits(params) {
         calls.push(params)
         return params.cursor
@@ -43,7 +43,7 @@ describe('TimelineModel', () => {
   it('does not start another page request while one is pending', async () => {
     const response = deferred<SearchVisitsPage>()
     let calls = 0
-    const model = new TimelineModel({
+    const model = new VisitsModel({
       searchVisits() {
         calls += 1
         return response.promise
@@ -61,7 +61,7 @@ describe('TimelineModel', () => {
     const initial = deferred<SearchVisitsPage>()
     const current = deferred<SearchVisitsPage>()
     const calls: SearchParams[] = []
-    const model = new TimelineModel({
+    const model = new VisitsModel({
       searchVisits(params) {
         calls.push(params)
         return calls.length === 1 ? initial.promise : current.promise
@@ -92,7 +92,7 @@ describe('TimelineModel', () => {
 
   it('retains loaded visits on resubscription but reloads when filters changed while unsubscribed', async () => {
     let calls = 0
-    const model = new TimelineModel({
+    const model = new VisitsModel({
       async searchVisits() {
         calls += 1
         return { items: [visit(calls)], nextCursor: null }
@@ -118,7 +118,7 @@ describe('TimelineModel', () => {
 
   it('clears loading after a failed request and allows retry', async () => {
     let calls = 0
-    const model = new TimelineModel({
+    const model = new VisitsModel({
       async searchVisits() {
         if (++calls === 1) throw new Error('offline')
         return { items: [], nextCursor: null }
@@ -153,7 +153,7 @@ describe('TimelineModel', () => {
       { items: [visit(1)], nextCursor: null },
     ]
     let failNext = false
-    const model = new TimelineModel({
+    const model = new VisitsModel({
       async searchVisits() {
         if (failNext) {
           failNext = false
@@ -188,37 +188,37 @@ describe('TimelineModel', () => {
     }
   })
 
-  it('owns filters independently from List and resets them for a new view instance', (t) => {
+  it('owns filters independently from Urls and resets them for a new view instance', (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] })
     const api = {
       async search() { return { items: [], nextCursor: null } },
       async searchVisits() { return { items: [], nextCursor: null } },
     } as unknown as HisApi
-    const list = new HistoryModel(api)
-    const timeline = new TimelineModel(api)
-    assert.notEqual(list.filters, timeline.filters)
+    const urls = new UrlsModel(api)
+    const visits = new VisitsModel(api)
+    assert.notEqual(urls.filters, visits.filters)
 
-    list.filters.setInput(' List ')
-    list.filters.setRange(100, 200)
+    urls.filters.setInput(' Urls ')
+    urls.filters.setRange(100, 200)
     t.mock.timers.tick(300)
-    assert.equal(list.filters.query.value, 'List')
-    assert.equal(timeline.filters.query.value, '')
-    assert.equal(timeline.filters.from.value, null)
+    assert.equal(urls.filters.query.value, 'Urls')
+    assert.equal(visits.filters.query.value, '')
+    assert.equal(visits.filters.from.value, null)
 
-    timeline.filters.setInput(' Timeline ')
-    timeline.filters.setRange(10, 20)
+    visits.filters.setInput(' Visits ')
+    visits.filters.setRange(10, 20)
     t.mock.timers.tick(300)
-    assert.equal(timeline.filters.query.value, 'Timeline')
-    assert.equal(list.filters.query.value, 'List')
-    assert.equal(list.filters.from.value, 100)
-    assert.equal(list.filters.to.value, 200)
+    assert.equal(visits.filters.query.value, 'Visits')
+    assert.equal(urls.filters.query.value, 'Urls')
+    assert.equal(urls.filters.from.value, 100)
+    assert.equal(urls.filters.to.value, 200)
 
-    const nextTimeline = new TimelineModel(api)
-    assert.equal(nextTimeline.filters.input.value, '')
-    assert.equal(nextTimeline.filters.query.value, '')
-    assert.equal(nextTimeline.filters.from.value, null)
-    assert.equal(nextTimeline.filters.to.value, null)
-    assert.equal(nextTimeline.items.value.length, 0)
-    assert.equal(nextTimeline.cursor.value, null)
+    const nextVisits = new VisitsModel(api)
+    assert.equal(nextVisits.filters.input.value, '')
+    assert.equal(nextVisits.filters.query.value, '')
+    assert.equal(nextVisits.filters.from.value, null)
+    assert.equal(nextVisits.filters.to.value, null)
+    assert.equal(nextVisits.items.value.length, 0)
+    assert.equal(nextVisits.cursor.value, null)
   })
 })

@@ -1,16 +1,17 @@
 import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/models/app'
+import { UrlsModel } from '@/models/urls'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryRow } from '@/views/HistoryRow'
 
-export function List({ app }: { app: AppModel }) {
+export function Urls({ app }: { app: AppModel }) {
   const {
     items,
     filters,
     loading,
     done,
     setSentinel,
-  } = useModel(() => app.history)
+  } = useModel(() => new UrlsModel(app.api))
 
   return (
     <div className="flex h-full min-h-0 flex-col">

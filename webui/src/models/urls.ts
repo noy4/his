@@ -4,7 +4,7 @@ import { FilterModel } from './filters.ts'
 
 const PAGE_SIZE = 60
 
-export class HistoryModel {
+export class UrlsModel {
   readonly api: HisApi
   readonly filters = new FilterModel()
   readonly items = signal<HistoryItem[]>([])

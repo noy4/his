@@ -4,7 +4,7 @@ import { batch, effect, signal } from '@preact/signals-react'
 
 const PAGE_SIZE = 60
 
-export class TimelineModel {
+export class VisitsModel {
   readonly filters = new FilterModel()
   readonly items = signal<HistoryVisit[]>([])
   readonly cursor = signal<string | null>(null)
@@ -24,7 +24,7 @@ export class TimelineModel {
 
   subscribe(): () => void {
     const unsubs = [
-      this.filters.subscribe(() => this.reload()),
+      this.filters.subscribe(() => void this.reload()),
       this.watchSentinel(),
     ]
     return () => unsubs.forEach((unsub) => unsub())

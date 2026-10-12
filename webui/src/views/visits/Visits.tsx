@@ -8,37 +8,37 @@ import { Card } from '@/components/ui/card'
 import { ViewRoot } from '../View.components'
 import { cn } from 'cn'
 import type { ComponentProps } from 'react'
-import { TimelineModel } from './timeline.model'
+import { VisitsModel } from './visits.model'
 
-export function Timeline({ app }: { app: AppModel }) {
+export function Visits({ app }: { app: AppModel }) {
   const {
     items,
     filters,
     loading,
     done,
     setSentinel,
-  } = useModel(() => new TimelineModel(app.api))
+  } = useModel(() => new VisitsModel(app.api))
   const groups = groupByDay(items.value)
 
   return (
     <ViewRoot>
       <Card>
-        <TimelineToolbarRoot>
+        <VisitsToolbarRoot>
           <SearchBar filters={filters} />
-        </TimelineToolbarRoot>
+        </VisitsToolbarRoot>
         {groups.map((g) => (
-          <TimelineGroupRoot key={g.key}>
-            <TimelineGroupTitle text={g.label} />
-            <TimelineGroupContent>
+          <VisitsGroupRoot key={g.key}>
+            <VisitsGroupTitle text={g.label} />
+            <VisitsGroupContent>
               {g.items.map((it) => (
                 <HistoryRow key={it.id} item={it} />
               ))}
-            </TimelineGroupContent>
-          </TimelineGroupRoot>
+            </VisitsGroupContent>
+          </VisitsGroupRoot>
         ))}
-        {loading.value && <TimelineLoading />}
-        {done.value && items.value.length === 0 && <TimelineEmpty />}
-        <TimelineLoadMoreSentinel ref={setSentinel} />
+        {loading.value && <VisitsLoading />}
+        {done.value && items.value.length === 0 && <VisitsEmpty />}
+        <VisitsLoadMoreSentinel ref={setSentinel} />
       </Card>
     </ViewRoot>
   )
@@ -46,17 +46,17 @@ export function Timeline({ app }: { app: AppModel }) {
 
 // --- components ---
 
-function TimelineToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
+function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div {...props} className={cn('mb-3', className)} />
   )
 }
 
-function TimelineGroupRoot({ className, ...props }: ComponentProps<'section'>) {
+function VisitsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
   return <section {...props} className={cn('mb-2', className)} />
 }
 
-function TimelineGroupTitle({ text, className, ...props }: Omit<ComponentProps<'h3'>, 'children'> & { text: string }) {
+function VisitsGroupTitle({ text, className, ...props }: Omit<ComponentProps<'h3'>, 'children'> & { text: string }) {
   return (
     <h3
       {...props}
@@ -67,19 +67,19 @@ function TimelineGroupTitle({ text, className, ...props }: Omit<ComponentProps<'
   )
 }
 
-function TimelineGroupContent({ className, ...props }: ComponentProps<'div'>) {
+function VisitsGroupContent({ className, ...props }: ComponentProps<'div'>) {
   return <div {...props} className={cn('grid', className)} />
 }
 
-function TimelineLoading() {
+function VisitsLoading() {
   return <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>
 }
 
-function TimelineEmpty() {
+function VisitsEmpty() {
   return <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
 }
 
-function TimelineLoadMoreSentinel(props: ComponentProps<'div'>) {
+function VisitsLoadMoreSentinel(props: ComponentProps<'div'>) {
   return <div {...props} aria-hidden="true" />
 }
 
