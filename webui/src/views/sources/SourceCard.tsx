@@ -66,7 +66,7 @@ function SourceCardCheck({ selected }: { selected: boolean }) {
 // SourceCardHead
 
 function SourceCardHead({ children }: { children: ReactNode }) {
-  return <span className="flex min-w-0 items-center gap-3">{children}</span>
+  return <span className="flex min-w-0 flex-col items-start gap-2">{children}</span>
 }
 
 function SourceCardIcon({ browser }: { browser: string }) {
