@@ -3,6 +3,10 @@ import { AppModel } from '@/models/app'
 import { UrlsModel } from './urls.model'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryRow } from '@/views/HistoryRow'
+import { Card } from '@/components/ui/card'
+import { ViewRoot } from '../View.components'
+import { cn } from 'cn'
+import type { ComponentProps } from 'react'
 
 export function Urls({ app }: { app: AppModel }) {
   const {
@@ -14,22 +18,42 @@ export function Urls({ app }: { app: AppModel }) {
   } = useModel(() => new UrlsModel(app.api))
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="shrink-0 px-4 pt-4 pb-3">
-        <SearchBar filters={filters} />
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-10">
-        <div className="grid">
+    <ViewRoot>
+      <Card>
+        <UrlsToolbarRoot>
+          <SearchBar filters={filters} />
+        </UrlsToolbarRoot>
+        <UrlsList>
           {items.value.map((it) => (
             <HistoryRow key={it.id} item={it} />
           ))}
-        </div>
-        {loading.value && <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>}
-        {done.value && items.value.length === 0 && (
-          <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
-        )}
-        <div ref={(el) => setSentinel(el)} aria-hidden="true" />
-      </div>
-    </div>
+        </UrlsList>
+        {loading.value && <UrlsLoading />}
+        {done.value && items.value.length === 0 && <UrlsEmpty />}
+        <UrlsLoadMoreSentinel ref={setSentinel} />
+      </Card>
+    </ViewRoot>
   )
+}
+
+// --- components ---
+
+function UrlsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
+  return <div {...props} className={cn('mb-3', className)} />
+}
+
+function UrlsList({ className, ...props }: ComponentProps<'div'>) {
+  return <div {...props} className={cn('grid', className)} />
+}
+
+function UrlsLoading() {
+  return <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>
+}
+
+function UrlsEmpty() {
+  return <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
+}
+
+function UrlsLoadMoreSentinel(props: ComponentProps<'div'>) {
+  return <div {...props} aria-hidden="true" />
 }
