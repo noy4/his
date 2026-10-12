@@ -44,13 +44,18 @@ export function dayEndMs(iso: string): number | null {
   return d.isValid() ? d.endOf('day').valueOf() : null
 }
 
+const MINUTE_MS = 60_000
+const HOUR_MS = 3_600_000
 const DAY_MS = 86_400_000
 
-// → 'today' · 'yesterday' · '5d ago' · '3mo ago' · '2y ago' · null → '—'
+// → 'just now' · '5m ago' · '3h ago' · 'yesterday' · '5d ago' · '3mo ago' · '2y ago' · null → '—'
 export function relativeAgo(epoch: number | null): string {
   if (epoch === null || epoch === 0) return '—'
-  const days = Math.floor((Date.now() - epoch) / DAY_MS)
-  if (days <= 0) return 'today'
+  const ms = Date.now() - epoch
+  if (ms < MINUTE_MS) return 'just now'
+  if (ms < HOUR_MS) return `${Math.floor(ms / MINUTE_MS)}m ago`
+  if (ms < DAY_MS) return `${Math.floor(ms / HOUR_MS)}h ago`
+  const days = Math.floor(ms / DAY_MS)
   if (days === 1) return 'yesterday'
   if (days < 30) return `${days}d ago`
   if (days < 365) return `${Math.floor(days / 30)}mo ago`

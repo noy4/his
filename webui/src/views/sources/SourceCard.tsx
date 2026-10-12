@@ -2,6 +2,7 @@ import type { SourceProfile } from '@/api'
 import { browserName } from '@/lib/browser/browser'
 import { BrowserIcon } from '@/lib/browser/BrowserIcon'
 import { relativeAgo } from '@/lib/date'
+import { cn } from 'cn'
 import Check from '~icons/mdi/check'
 import { type ReactNode } from 'react'
 
@@ -23,9 +24,9 @@ export function SourceCard({ source, selected, onToggle }: Props) {
       </SourceCardHead>
       <SourceCardStats
         visits={source.visits}
-        age={relativeAgo(source.lastVisit ?? source.watermark.lastRunAt)}
+        lastVisit={source.lastVisit}
       />
-      <SourceCardSynced lastRunAt={source.watermark.lastRunAt} />
+      <SourceCardChecked lastRunAt={source.watermark.lastRunAt} />
     </SourceCardRoot>
   )
 }
@@ -40,9 +41,12 @@ function SourceCardRoot({ selected, onToggle, children }: { selected: boolean; o
       type="button"
       aria-pressed={selected}
       onClick={onToggle}
-      className={`relative flex flex-col gap-2.5 rounded-lg border bg-bg-2 p-4 text-left transition-colors ${selected
-        ? 'border-primary ring-1 ring-primary'
-        : 'hover:border-border hover:bg-bg-3'}`}
+      className={cn(
+        'relative flex flex-col gap-2.5 rounded-lg border bg-bg-2 p-4 text-left transition-colors',
+        selected
+          ? 'border-primary ring-1 ring-primary'
+          : 'hover:border-border hover:bg-bg-3',
+      )}
     >
       {children}
       <SourceCardCheck selected={selected} />
@@ -54,9 +58,12 @@ function SourceCardCheck({ selected }: { selected: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className={`absolute top-3 right-3 inline-flex h-4.5 w-4.5 items-center justify-center rounded-[5px] border transition-colors ${selected
-        ? 'border-primary bg-primary text-white'
-        : 'border-border bg-bg-3'}`}
+      className={cn(
+        'absolute top-3 right-3 inline-flex h-4.5 w-4.5 items-center justify-center rounded-[5px] border transition-colors',
+        selected
+          ? 'border-primary bg-primary text-white'
+          : 'border-border bg-bg-3',
+      )}
     >
       {selected && <Check width={14} height={14} />}
     </span>
@@ -80,28 +87,31 @@ function SourceCardIcon({ browser }: { browser: string }) {
 function SourceCardName({ name, detail }: { name: string; detail: string }) {
   return (
     <span className="grid min-w-0">
-      <span className="truncate text-[0.9rem] font-medium">{name}</span>
-      <span className="truncate font-mono text-[0.7rem] text-muted">{detail}</span>
+      <span className="truncate text-sm font-medium">{name}</span>
+      <span className="truncate font-mono text-xs text-muted">{detail}</span>
     </span>
   )
 }
 
 // SourceCardStats
 
-function SourceCardStats({ visits, age }: { visits: number; age: string }) {
+function SourceCardStats({ visits, lastVisit }: { visits: number; lastVisit: number | null }) {
+  if (visits === 0) {
+    return <span className="font-mono text-xs text-muted">no visits</span>
+  }
   return (
-    <span className="flex items-center gap-1.5 font-mono text-[0.72rem] text-muted tabular-nums">
+    <span className="flex items-center gap-1.5 font-mono text-xs text-muted tabular-nums">
       <span>{visits.toLocaleString()} visits</span>
       <span className="text-muted/50">·</span>
-      <span>{age}</span>
+      <span>last visit {relativeAgo(lastVisit)}</span>
     </span>
   )
 }
 
-function SourceCardSynced({ lastRunAt }: { lastRunAt: number | null }) {
+function SourceCardChecked({ lastRunAt }: { lastRunAt: number | null }) {
   return (
-    <span className="font-mono text-[0.66rem] text-muted/70">
-      {lastRunAt === null ? 'not synced yet' : `synced ${relativeAgo(lastRunAt)}`}
+    <span className="font-mono text-[11px] text-muted/70">
+      {lastRunAt === null ? 'never checked' : `checked ${relativeAgo(lastRunAt)}`}
     </span>
   )
 }
