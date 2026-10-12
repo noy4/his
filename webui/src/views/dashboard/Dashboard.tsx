@@ -4,7 +4,6 @@ import { isLocalDomain } from '@/lib/domain'
 import { fmtNum } from '@/lib/format'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/app/app'
-import dayjs from 'dayjs'
 import CalendarIcon from '~icons/mdi/calendar-range'
 import EyeIcon from '~icons/mdi/eye-outline'
 import LinkIcon from '~icons/mdi/link-variant'
@@ -35,8 +34,7 @@ export function Dashboard({ app }: { app: AppModel }) {
 
   const { totals } = stats
   const monthly = dashboard.mode.value === 'month'
-  const month = dayjs(`${dashboard.monthKey.value}-01`)
-  const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY)
+  const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY) + 1
 
   const byHour = stats.byHour.map((h) => h.visits)
   const byHourLabels = stats.byHour.map((h) => (h.hour % 6 === 0 ? String(h.hour) : ''))
@@ -75,9 +73,15 @@ export function Dashboard({ app }: { app: AppModel }) {
             <Stat label="domains" value={fmtNum(totals.domains)} icon={WebIcon} />
             <Stat label="days tracked" value={fmtNum(days)} icon={CalendarIcon} />
           </div>
-          <p className="mt-3 text-xs text-muted">
-            {monthly ? month.format('MMM YYYY') : `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}
-          </p>
+          <div className="mt-4 flex items-center justify-between gap-2 border-t pt-3">
+            <span className="text-xs text-muted">Period</span>
+            <span className="flex items-center gap-1.5 text-xs text-muted">
+              <span className="font-mono tabular-nums">
+                {dateLabel(totals.firstVisit)} - {dateLabel(totals.lastVisit)}
+              </span>
+              <span className="font-mono tabular-nums">({days}d)</span>
+            </span>
+          </div>
         </Card>
 
         <div className="grid gap-4">

@@ -23,6 +23,7 @@ import { GithubModel } from './github.model'
 import { GitHubSkeleton } from './GitHub.skeleton'
 
 const rowCls = '-mx-1 flex items-center gap-2 rounded px-1 hover:bg-bg-3'
+const DAY = 86_400_000
 
 export function GitHub({ app }: { app: AppModel }) {
   const gh = useModel(() => new GithubModel(app.api))
@@ -70,7 +71,7 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
   const stats = gh.stats.value
   if (!stats) return null
   const totals = stats.totals
-  const monthly = gh.mode.value === 'month'
+  const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY) + 1
   return (
     <Card>
       <CardTitle>Overview</CardTitle>
@@ -80,9 +81,15 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
         <Stat label="owners" value={fmtNum(totals.owners)} icon={AccountIcon} />
         <Stat label="Issues / PRs" value={fmtNum(totals.items)} icon={PullIcon} />
       </div>
-      <p className="mt-3 text-xs text-muted">
-        {!monthly && `${dateLabel(totals.firstVisit)} → ${dateLabel(totals.lastVisit)}`}
-      </p>
+      <div className="mt-4 flex items-center justify-between gap-2 border-t pt-3">
+        <span className="text-xs text-muted">Period</span>
+        <span className="flex items-center gap-1.5 text-xs text-muted">
+          <span className="font-mono tabular-nums">
+            {dateLabel(totals.firstVisit)} - {dateLabel(totals.lastVisit)}
+          </span>
+          <span className="font-mono tabular-nums">({days}d)</span>
+        </span>
+      </div>
     </Card>
   )
 }

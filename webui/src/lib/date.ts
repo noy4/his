@@ -5,9 +5,9 @@ dayjs.extend(calendar)
 
 const DATE_FORMAT = 'ddd, MMM D, YYYY'
 
-// 1791039600000 → 'Sun, Oct 4, 2026'
+// 1791039600000 → '2026/10/04'
 export function dateLabel(epoch: number): string {
-  return dayjs(epoch).format(DATE_FORMAT)
+  return dayjs(epoch).format('YYYY/MM/DD')
 }
 
 // → 'Today' · 'Yesterday' · 'Sun, Oct 4, 2026'
