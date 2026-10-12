@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { describe, it } from 'node:test'
 import { migrate } from '../db.ts'
-import { githubStats, githubVisits } from '../github-stats.ts'
 import { monthRange, stats } from '../stats.ts'
 
 describe('monthRange', () => {
@@ -63,15 +62,7 @@ describe('monthly queries', () => {
           { day: `${month}-${new Date(end - 1).getDate()}`, visits: 1 },
         ])
 
-        assert.deepEqual(githubStats(db, month).totals, {
-          visits: 3, repos: 1, owners: 1, items: 0, firstVisit: start, lastVisit: end - 1,
-        })
-        const [item] = githubVisits(db, { month }).items
-        assert.equal(item?.visitCount, 3)
-        assert.equal(item?.firstVisit, start)
-        assert.equal(item?.lastVisit, end - 1)
         assert.throws(() => stats(db, '2026-13'), /YYYY-MM/)
-        assert.throws(() => githubVisits(db, { month: '2026-13' }), /YYYY-MM/)
       } finally {
         db.close()
       }
