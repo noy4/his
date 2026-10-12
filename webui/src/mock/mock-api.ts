@@ -110,12 +110,19 @@ const GITHUB_ITEMS: { item: HistoryItem; urlInfo: GitHubUrlInfo }[] = MOCK_ITEMS
   return urlInfo ? [{ item, urlInfo }] : []
 })
 
-// month → item narrowed to that month's visits (visitCount / first / last), or null if unvisited
+// month → item narrowed to that month's visits (counts / first / last), or null if unvisited
 function inPeriod(item: HistoryItem, month?: string): HistoryItem | null {
   if (month === undefined) return item
-  const times = (MOCK_VISITS.get(item.id) ?? []).map((v) => v.visitTime).filter((t) => isoDay(t).slice(0, 7) === month)
-  if (times.length === 0) return null
-  return { ...item, visitCount: times.length, firstVisit: Math.min(...times), lastVisit: Math.max(...times) }
+  const visits = (MOCK_VISITS.get(item.id) ?? []).filter((visit) => isoDay(visit.visitTime).slice(0, 7) === month)
+  if (visits.length === 0) return null
+  const times = visits.map((visit) => visit.visitTime)
+  return {
+    ...item,
+    visitCount: visits.length,
+    typedCount: visits.filter((visit) => visit.transition === 'typed').length,
+    firstVisit: Math.min(...times),
+    lastVisit: Math.max(...times),
+  }
 }
 
 function githubPeriod(month?: string): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {

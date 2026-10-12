@@ -46,20 +46,22 @@ describe('GitHub URL variants', () => {
           'http://github.com/foo/bar/tree/main',
           'http://www.github.com/foo/bar/tree/main',
         ]
-        const times = [at('2026-09-01T10:00'), at('2026-10-01T10:00')]
+        const times = [at('2026-09-01T10:00'), at('2026-10-01T10:00'), at('2026-10-02T10:00'), at('2026-11-01T10:00')]
         for (const [index, url] of urls.entries()) {
           const id = index + 1
-          variantsDb.prepare('INSERT INTO urls (id, url, first_visit_time, last_visit_time, visit_count) VALUES (?, ?, ?, ?, 2)')
-            .run(id, url, times[0]!, times[1]!)
+          variantsDb.prepare('INSERT INTO urls (id, url, first_visit_time, last_visit_time, visit_count, typed_count) VALUES (?, ?, ?, ?, 4, 3)')
+            .run(id, url, times[0]!, times.at(-1)!)
           for (const [visitIndex, time] of times.entries()) {
             variantsDb.prepare('INSERT INTO visits (url_id, visit_time, transition, source_profile_id, source_visit_id) VALUES (?, ?, ?, 1, ?)')
-              .run(id, time, 'link', index * 2 + visitIndex)
+              .run(id, time, visitIndex === 2 ? 'link' : 'typed', index * times.length + visitIndex)
           }
         }
-        const visitCount = month === undefined ? 2 : 1
+        const visitCount = month === undefined ? 4 : 2
+        const typedCount = month === undefined ? 3 : 1
         const page = githubVisits(variantsDb, { month })
         assert.deepEqual(page.items.map((item) => item.url).sort(), [...urls].sort())
         assert.deepEqual(page.items.map((item) => item.visitCount), [visitCount, visitCount, visitCount, visitCount])
+        assert.deepEqual(page.items.map((item) => item.typedCount), [typedCount, typedCount, typedCount, typedCount])
         assert.equal(githubStats(variantsDb, month).totals.visits, urls.length * visitCount)
       } finally {
         variantsDb.close()
@@ -141,6 +143,7 @@ describe('githubVisits', () => {
       ['https://github.com/foo/baz/issues/3', 1],
       ['https://github.com/Foo/Bar', 1],
     ])
+    assert.deepEqual(page.items.map((item) => item.typedCount), [0, 0])
   })
 
   it('cursor pages without overlap', () => {

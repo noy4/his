@@ -152,7 +152,7 @@ interface Row {
 // LIKE is ASCII case-insensitive; parseGithubUrl does the exact host check
 const GITHUB_URL = "(urls.url LIKE 'https://github.com/%' OR urls.url LIKE 'https://www.github.com/%' OR urls.url LIKE 'http://github.com/%' OR urls.url LIKE 'http://www.github.com/%')"
 
-// github.com rows; with month, visitCount / first / last are narrowed to that month
+// github.com rows; with month, counts / first / last are narrowed to that month
 function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
   let rows: Row[]
   if (month === undefined) {
@@ -163,7 +163,8 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlI
   } else {
     const [start, end] = monthRange(month)
     rows = db.prepare(
-      `SELECT urls.id AS id, urls.url AS url, urls.title AS title, COUNT(*) AS visit_count, urls.typed_count AS typed_count,
+      `SELECT urls.id AS id, urls.url AS url, urls.title AS title, COUNT(*) AS visit_count,
+              SUM(CASE WHEN visits.transition = 'typed' THEN 1 ELSE 0 END) AS typed_count,
               MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
        FROM visits JOIN urls ON urls.id = visits.url_id
        WHERE ${GITHUB_URL} AND ${MONTH_RANGE}
