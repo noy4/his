@@ -4,8 +4,10 @@ import { AppModel } from '@/models/app'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryRow } from '@/views/HistoryRow'
 import type { HistoryItem } from '@/api'
-import { Card, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { ViewRoot } from '../View.components'
+import { cn } from 'cn'
+import type { ComponentProps } from 'react'
 
 export function Timeline({ app }: { app: AppModel }) {
   const {
@@ -18,32 +20,64 @@ export function Timeline({ app }: { app: AppModel }) {
   return (
     <ViewRoot>
       <Card>
-        <CardTitle>Timeline</CardTitle>
-        <div className="mb-3">
+        <TimelineToolbarRoot>
           <SearchBar app={app} />
-        </div>
+        </TimelineToolbarRoot>
         {groups.map((g) => (
-          <section className="mb-2" key={g.key}>
-            <h3 className="sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted">
-              {g.label}
-            </h3>
-            <div className="grid">
+          <TimelineGroupRoot key={g.key}>
+            <TimelineGroupTitle text={g.label} />
+            <TimelineGroupContent>
               {g.items.map((it) => (
                 <HistoryRow key={it.id} item={it} />
               ))}
-            </div>
-          </section>
+            </TimelineGroupContent>
+          </TimelineGroupRoot>
         ))}
-        {loading.value && (
-          <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>
-        )}
-        {done.value && items.value.length === 0 && (
-          <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
-        )}
-        <div ref={(el) => setSentinel(el)} aria-hidden="true" />
+        {loading.value && <TimelineLoading />}
+        {done.value && items.value.length === 0 && <TimelineEmpty />}
+        <TimelineLoadMoreSentinel ref={setSentinel} />
       </Card>
     </ViewRoot>
   )
+}
+
+// --- components ---
+
+function TimelineToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div {...props} className={cn('mb-3', className)} />
+  )
+}
+
+function TimelineGroupRoot({ className, ...props }: ComponentProps<'section'>) {
+  return <section {...props} className={cn('mb-2', className)} />
+}
+
+function TimelineGroupTitle({ text, className, ...props }: Omit<ComponentProps<'h3'>, 'children'> & { text: string }) {
+  return (
+    <h3
+      {...props}
+      className={cn('sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted', className)}
+    >
+      {text}
+    </h3>
+  )
+}
+
+function TimelineGroupContent({ className, ...props }: ComponentProps<'div'>) {
+  return <div {...props} className={cn('grid', className)} />
+}
+
+function TimelineLoading() {
+  return <p className="py-4 text-center font-mono text-[0.75rem] text-muted">Loading…</p>
+}
+
+function TimelineEmpty() {
+  return <p className="py-4 text-center font-mono text-[0.75rem] text-muted">No history</p>
+}
+
+function TimelineLoadMoreSentinel(props: ComponentProps<'div'>) {
+  return <div {...props} aria-hidden="true" />
 }
 
 // --- helpers ---
