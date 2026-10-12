@@ -1,9 +1,9 @@
 export * from './index.ts'
 
 export * from './db/db.ts'
-export * from './db/github.ts'
 export * from './db/query.ts'
 export * from './db/stats.ts'
+export * from './github/db.ts'
 export * from './paths.ts'
 export * from './state.ts'
 export * from './sync/applyVisits.ts'

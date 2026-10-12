@@ -1,8 +1,8 @@
 import type { DatabaseSync } from 'node:sqlite'
-import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from '../github/parse.ts'
+import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from './parse.ts'
 import type { EpochMs, HistoryItem } from '../types.ts'
-import { clampLimit, decodeCursor, encodeCursor, type SearchPage } from './query.ts'
-import { MONTH_RANGE, monthRange } from './stats.ts'
+import { clampLimit, decodeCursor, encodeCursor, type SearchPage } from '../db/query.ts'
+import { MONTH_RANGE, monthRange } from '../db/stats.ts'
 
 // GitHub Insights. SQL only narrows to github.com rows; path parsing / grouping is JS
 // (parse.ts) so it stays testable. month ('YYYY-MM') scopes to that month's visits.
