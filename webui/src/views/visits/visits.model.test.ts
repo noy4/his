@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { batch } from '@preact/signals-react'
 import type { HisApi, HistoryVisit, SearchParams, SearchVisitsPage } from '@/api'
-import { UrlsModel } from '../../models/urls.ts'
+import { UrlsModel } from '../urls/urls.model.ts'
 import { VisitsModel } from './visits.model.ts'
 
 function visit(id: number, visitTime = id): HistoryVisit {

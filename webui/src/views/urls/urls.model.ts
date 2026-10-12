@@ -1,6 +1,6 @@
 import { effect, signal } from '@preact/signals-react'
 import type { HisApi, HistoryItem, Stats } from '@/api'
-import { FilterModel } from './filters.ts'
+import { FilterModel } from '../../models/filters.ts'
 
 const PAGE_SIZE = 60
 
