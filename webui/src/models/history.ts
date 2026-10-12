@@ -1,30 +1,23 @@
 import { effect, signal } from '@preact/signals-react'
-import type { Signal } from '@preact/signals-react'
 import type { HisApi, HistoryItem, Stats } from '@/api'
+import { FilterModel } from './filters.ts'
 
 const PAGE_SIZE = 60
 
-export interface HistoryFilters {
-  query: Signal<string>
-  from: Signal<number | null>
-  to: Signal<number | null>
-}
-
 export class HistoryModel {
   readonly api: HisApi
+  readonly filters = new FilterModel()
   readonly items = signal<HistoryItem[]>([])
   readonly cursor = signal<string | null>(null)
   readonly loading = signal(false)
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
-  #filters: HistoryFilters
   #filterKey: string | null = null
   #started = false
   #pending: Promise<void> = Promise.resolve()
 
-  constructor(api: HisApi, filters: HistoryFilters) {
+  constructor(api: HisApi) {
     this.api = api
-    this.#filters = filters
   }
 
   setSentinel = (el: Element | null): void => {
@@ -81,9 +74,9 @@ export class HistoryModel {
     this.loading.value = true
     try {
       const page = await this.api.search({
-        query: this.#filters.query.value || undefined,
-        from: this.#filters.from.value ?? undefined,
-        to: this.#filters.to.value ?? undefined,
+        query: this.filters.query.value || undefined,
+        from: this.filters.from.value ?? undefined,
+        to: this.filters.to.value ?? undefined,
         cursor: this.cursor.value ?? undefined,
         limit: PAGE_SIZE,
       })
@@ -100,9 +93,9 @@ export class HistoryModel {
   private watchFilters(): () => void {
     return effect(() => {
       const key = [
-        this.#filters.query.value,
-        this.#filters.from.value,
-        this.#filters.to.value,
+        this.filters.query.value,
+        this.filters.from.value,
+        this.filters.to.value,
       ].join('|')
       if (this.#filterKey === null) {
         this.#filterKey = key

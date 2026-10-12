@@ -1,4 +1,4 @@
-import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
+import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { isoDay } from '@/lib/date'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GitHubUrlInfo } from '@his/core/github'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -260,15 +260,15 @@ async function syncRun(params: SyncRunParams): Promise<SyncSummary> {
   }
 }
 
-function encodeCursor(item: HistoryItem): string {
-  return btoa(`v1.${item.lastVisit}.${item.id}`)
+function encodeCursor(time: number, id: number): string {
+  return btoa(`v1.${time}.${id}`)
 }
 
-function decodeCursor(cursor: string): { lastVisit: number; id: number } | null {
+function decodeCursor(cursor: string): { time: number; id: number } | null {
   try {
     const m = /^v1\.(\d+)\.(\d+)$/.exec(atob(cursor))
     if (m === null) return null
-    return { lastVisit: Number(m[1]), id: Number(m[2]) }
+    return { time: Number(m[1]), id: Number(m[2]) }
   } catch {
     return null
   }
@@ -292,16 +292,53 @@ function findVisible(params: SearchParams): HistoryItem[] {
 function paginate(rows: HistoryItem[], cursorText?: string, limit = DEFAULT_LIMIT): SearchPage {
   const cursor = cursorText ? decodeCursor(cursorText) : null
   const keyed = cursor
-    ? rows.filter((it) => it.lastVisit < cursor.lastVisit || (it.lastVisit === cursor.lastVisit && it.id < cursor.id))
+    ? rows.filter((it) => it.lastVisit < cursor.time || (it.lastVisit === cursor.time && it.id < cursor.id))
     : rows
   const page = keyed.slice(0, limit)
-  const nextCursor = keyed.length > limit && page.length > 0 ? encodeCursor(page[page.length - 1]) : null
+  const last = page.at(-1)
+  const nextCursor = keyed.length > limit && last
+    ? encodeCursor(last.lastVisit, last.id)
+    : null
   return { items: page, nextCursor }
+}
+
+function searchVisits(params: SearchParams): SearchVisitsPage {
+  const query = params.query?.trim().toLowerCase() ?? ''
+  const from = params.from ?? -Infinity
+  const to = params.to ?? Infinity
+  const cursor = params.cursor ? decodeCursor(params.cursor) : null
+  const limit = Number.isFinite(params.limit)
+    ? Math.min(200, Math.max(1, Math.trunc(params.limit!)))
+    : DEFAULT_LIMIT
+  const rows: HistoryVisit[] = MOCK_ITEMS.flatMap((item) => {
+    if (query && !item.title.toLowerCase().includes(query) && !item.url.toLowerCase().includes(query)) return []
+    return (MOCK_VISITS.get(item.id) ?? []).map((visit) => ({
+      ...visit,
+      url: item.url,
+      title: item.title,
+      visitCount: item.visitCount,
+    }))
+  }).filter((visit) =>
+    visit.visitTime >= from && visit.visitTime <= to &&
+    (!cursor || visit.visitTime < cursor.time || (visit.visitTime === cursor.time && visit.id < cursor.id)),
+  ).sort((a, b) => b.visitTime - a.visitTime || b.id - a.id)
+  const items = rows.slice(0, limit)
+  const last = items.at(-1)
+  return {
+    items,
+    nextCursor: rows.length > limit && last
+      ? encodeCursor(last.visitTime, last.id)
+      : null,
+  }
 }
 
 export const mockApi: HisApi = {
   async search(params: SearchParams): Promise<SearchPage> {
     return paginate(findVisible(params), params.cursor, params.limit)
+  },
+
+  async searchVisits(params: SearchParams): Promise<SearchVisitsPage> {
+    return searchVisits(params)
   },
 
   async getVisits(urlId: number, limit?: number): Promise<VisitItem[]> {
@@ -337,5 +374,5 @@ export const mockApi: HisApi = {
     return lastRunRecord === null ? null : { ...lastRunRecord }
   },
 
-  on: () => () => {},
+  on: () => () => { },
 }

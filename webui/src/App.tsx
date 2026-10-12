@@ -22,9 +22,9 @@ type ViewDef = {
 
 const VIEWS: ViewDef[] = [
   { id: 'dashboard', label: 'Dashboard', icon: ChartBoxOutline, content: Dashboard },
-  { id: 'github', label: 'GitHub', icon: GithubIcon, content: GitHub },
   { id: 'timeline', label: 'Timeline', icon: History, content: Timeline },
   { id: 'list', label: 'List', icon: FormatListBulleted, content: List },
+  { id: 'github', label: 'GitHub', icon: GithubIcon, content: GitHub },
   { id: 'sources', label: 'Sources', icon: DatabaseImport, content: Sources },
 ]
 

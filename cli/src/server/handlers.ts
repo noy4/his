@@ -7,6 +7,7 @@ import {
   getVisits,
   listSourceProfiles,
   search,
+  searchVisits,
   stats,
 } from '@his/core'
 import type { Handler } from './rpc.ts'
@@ -18,6 +19,7 @@ export function createHandlers({ db, runner }: {
 }): Record<string, Handler> {
   const handlers: Record<string, Handler> = {
     'history.search': (params) => search(db, params as SearchFilter),
+    'history.searchVisits': (params) => searchVisits(db, params as SearchFilter),
     'history.getVisits': (params) => getVisits(db, params.urlId, params.limit),
     'history.getItem': (params) => getItem(db, params.id),
     'history.stats': (params) => stats(db, params.month),

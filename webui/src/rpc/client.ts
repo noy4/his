@@ -1,4 +1,4 @@
-import type { GithubStats, GithubVisitsParams, HisApi, HisEvents, ItemDetail, SearchPage, SearchParams, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
+import type { GithubStats, GithubVisitsParams, HisApi, HisEvents, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { mockApi } from '@/mock/mock-api'
 import { RpcTransport } from '@/rpc/transport'
 
@@ -7,6 +7,7 @@ export function createApi(): HisApi {
   const transport = new RpcTransport<HisEvents>()
   return {
     search: (params: SearchParams) => transport.call<SearchPage>('history.search', params),
+    searchVisits: (params: SearchParams) => transport.call<SearchVisitsPage>('history.searchVisits', params),
     getVisits: (urlId: number, limit?: number) => transport.call<VisitItem[]>('history.getVisits', { urlId, limit }),
     getItem: (id: number) => transport.call<ItemDetail | null>('history.getItem', { id }),
     stats: (month?: string) => transport.call<Stats>('history.stats', { month }),

@@ -1,7 +1,7 @@
 import Magnify from '~icons/mdi/magnify'
-import type { AppModel } from '@/models/app'
+import type { FilterModel } from '@/models/filters'
 
-export function SearchBar({ app }: { app: AppModel }) {
+export function SearchBar({ filters }: { filters: FilterModel }) {
   return (
     <label className="flex w-fit items-center gap-1.5 text-muted">
       <Magnify width={15} height={15} />
@@ -9,8 +9,8 @@ export function SearchBar({ app }: { app: AppModel }) {
         type="search"
         placeholder="Search titles & URLs…"
         className="w-72 rounded-sm border-0 bg-bg-3 px-2 py-1 text-sm  outline-0 ring-1 ring-border-2 placeholder:text-muted focus:ring-primary [&::-webkit-search-cancel-button]:appearance-none"
-        value={app.filters.input.value}
-        onInput={(e) => app.filters.setInput(e.currentTarget.value)}
+        value={filters.input.value}
+        onInput={(e) => filters.setInput(e.currentTarget.value)}
       />
     </label>
   )

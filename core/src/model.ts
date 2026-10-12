@@ -34,6 +34,13 @@ export interface VisitItem {
   visitTime: EpochMs
 }
 
+export type HistoryVisit = VisitItem & {
+  url: string
+  title: string
+  /** Cumulative URL visits, independent of the selected visit range. */
+  visitCount: number
+}
+
 export type SourceKind = 'chromium' | 'firefox' | 'safari' | 'takeout'
 
 export interface Watermark {

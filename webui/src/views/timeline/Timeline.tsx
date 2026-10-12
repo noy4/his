@@ -3,25 +3,28 @@ import { isoDay, relativeDateLabel } from '@/lib/date'
 import { AppModel } from '@/models/app'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryRow } from '@/views/HistoryRow'
-import type { HistoryItem } from '@/api'
+import type { HistoryVisit } from '@/api'
 import { Card } from '@/components/ui/card'
 import { ViewRoot } from '../View.components'
 import { cn } from 'cn'
 import type { ComponentProps } from 'react'
+import { TimelineModel } from './timeline.model'
 
 export function Timeline({ app }: { app: AppModel }) {
   const {
     items,
+    filters,
     loading,
     done,
     setSentinel,
-  } = useModel(() => app.history)
+  } = useModel(() => new TimelineModel(app.api))
   const groups = groupByDay(items.value)
+
   return (
     <ViewRoot>
       <Card>
         <TimelineToolbarRoot>
-          <SearchBar app={app} />
+          <SearchBar filters={filters} />
         </TimelineToolbarRoot>
         {groups.map((g) => (
           <TimelineGroupRoot key={g.key}>
@@ -85,17 +88,17 @@ function TimelineLoadMoreSentinel(props: ComponentProps<'div'>) {
 interface DayGroup {
   key: string
   label: string
-  items: HistoryItem[]
+  items: HistoryVisit[]
 }
 
-function groupByDay(items: HistoryItem[]): DayGroup[] {
+function groupByDay(items: HistoryVisit[]): DayGroup[] {
   const groups: DayGroup[] = []
   const byKey = new Map<string, DayGroup>()
   for (const item of items) {
-    const key = isoDay(item.lastVisit)
+    const key = isoDay(item.visitTime)
     let g = byKey.get(key)
     if (!g) {
-      g = { key, label: relativeDateLabel(item.lastVisit), items: [] }
+      g = { key, label: relativeDateLabel(item.visitTime), items: [] }
       byKey.set(key, g)
       groups.push(g)
     }

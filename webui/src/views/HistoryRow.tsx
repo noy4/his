@@ -1,4 +1,4 @@
-import type { HistoryItem } from '@/api'
+import type { HistoryItem, HistoryVisit } from '@/api'
 import type { ReactNode } from 'react'
 import { timeLabel } from '@/lib/date'
 import { Favicon } from './Favicon'
@@ -11,8 +11,10 @@ function hostOf(url: string): string {
   }
 }
 
-export function HistoryRow({ item, icon, title }: { item: HistoryItem; icon?: ReactNode; title?: ReactNode }) {
+export function HistoryRow({ item, icon, title }: { item: HistoryItem | HistoryVisit; icon?: ReactNode; title?: ReactNode }) {
   const host = hostOf(item.url)
+  const isVisit = 'visitTime' in item
+  const time = isVisit ? item.visitTime : item.lastVisit
   return (
     <a
       className="flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-2 text-inherit no-underline hover:bg-bg-3 cursor-default"
@@ -29,11 +31,11 @@ export function HistoryRow({ item, icon, title }: { item: HistoryItem; icon?: Re
       </span>
       <span className="inline-flex shrink-0 items-center gap-2">
         {item.visitCount > 1 && (
-          <span title={`${item.visitCount} visits`} className="min-w-5 rounded bg-primary-soft px-1.5 py-px text-center font-mono text-[0.68rem] font-semibold text-primary">
+          <span title={`${item.visitCount} ${isVisit ? 'total visits to this URL' : 'visits'}`} className="min-w-5 rounded bg-primary-soft px-1.5 py-px text-center font-mono text-[0.68rem] font-semibold text-primary">
             {item.visitCount}
           </span>
         )}
-        <time className="font-mono text-[0.7rem] text-muted">{timeLabel(item.lastVisit)}</time>
+        <time className="font-mono text-[0.7rem] text-muted">{timeLabel(time)}</time>
       </span>
     </a>
   )

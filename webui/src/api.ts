@@ -1,8 +1,8 @@
 import type { GithubKind, GithubVisitKind } from '@his/core/github'
-import type { HistoryItem, RegisteredSource, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core/model'
+import type { HistoryItem, HistoryVisit, RegisteredSource, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core/model'
 
 export { TRANSITIONS } from '@his/core/model'
-export type { HistoryItem, Transition, VisitItem }
+export type { HistoryItem, HistoryVisit, Transition, VisitItem }
 export type { SyncLastRun, SyncSummary }
 
 // sources.list row — RegisteredSource (source_profiles + watermark) + listing aggregates
@@ -26,6 +26,11 @@ export interface SearchParams {
 
 export interface SearchPage {
   items: HistoryItem[]
+  nextCursor: string | null
+}
+
+export interface SearchVisitsPage {
+  items: HistoryVisit[]
   nextCursor: string | null
 }
 
@@ -73,6 +78,7 @@ export interface HisEvents {
 
 export interface HisApi {
   search(params: SearchParams): Promise<SearchPage>
+  searchVisits(params: SearchParams): Promise<SearchVisitsPage>
   getVisits(urlId: number, limit?: number): Promise<VisitItem[]>
   getItem(id: number): Promise<ItemDetail | null>
   stats(month?: string): Promise<Stats>

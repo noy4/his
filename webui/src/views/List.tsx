@@ -6,6 +6,7 @@ import { HistoryRow } from '@/views/HistoryRow'
 export function List({ app }: { app: AppModel }) {
   const {
     items,
+    filters,
     loading,
     done,
     setSentinel,
@@ -14,7 +15,7 @@ export function List({ app }: { app: AppModel }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="shrink-0 px-4 pt-4 pb-3">
-        <SearchBar app={app} />
+        <SearchBar filters={filters} />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-10">
         <div className="grid">

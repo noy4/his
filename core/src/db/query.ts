@@ -1,5 +1,5 @@
 import type { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, HistoryItem, Transition, VisitItem } from '../model.ts'
+import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../model.ts'
 
 export interface SearchFilter {
   query?: string
@@ -12,6 +12,11 @@ export interface SearchFilter {
 
 export interface SearchPage {
   items: HistoryItem[]
+  nextCursor: string | null
+}
+
+export interface SearchVisitsPage {
+  items: HistoryVisit[]
   nextCursor: string | null
 }
 
@@ -43,6 +48,12 @@ interface VisitRow {
   transition: string
 }
 
+type HistoryVisitRow = VisitRow & {
+  url: string
+  title: string | null
+  visit_count: number
+}
+
 // --- queries ---
 
 // sql text kept together with its positional params
@@ -53,50 +64,38 @@ interface Fragment {
 
 export function search(db: DatabaseSync, filter: SearchFilter = {}): SearchPage {
   const limit = clampLimit(filter.limit)
-  const fragments: Fragment[] = []
-
-  const url = filter.url
-  if (url !== undefined) {
-    fragments.push({ sql: 'url = ?', params: [url] })
-  }
-
-  const from = filter.from
-  if (from !== undefined) {
-    fragments.push({ sql: 'last_visit_time >= ?', params: [from] })
-  }
-
-  const to = filter.to
-  if (to !== undefined) {
-    fragments.push({ sql: 'last_visit_time <= ?', params: [to] })
-  }
-
-  const query = filter.query?.trim() ?? ''
-  let ftsJoin: Fragment | null = null
-  if (query.length !== 0) {
-    if (codePoints(query) >= 3) {
-      ftsJoin = { sql: 'JOIN (SELECT rowid AS fts_id FROM urls_fts WHERE urls_fts MATCH ?) fts ON fts.fts_id = urls.id', params: [ftsPattern(query)] }
-    } else {
-      const pattern = likePattern(query)
-      fragments.push({ sql: '(title LIKE ? ESCAPE ? OR url LIKE ? ESCAPE ?)', params: [pattern, '\\', pattern, '\\'] })
-    }
-  }
-
-  const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
-  if (cursor !== null) {
-    fragments.push({ sql: '(last_visit_time < ? OR (last_visit_time = ? AND id < ?))', params: [cursor[0], cursor[0], cursor[1]] })
-  }
-
-  const clauses = fragments.map((fragment) => fragment.sql).join(' AND ')
-  const where = clauses === '' ? '' : ` WHERE ${clauses}`
+  const { join, where, params } = buildSearch(filter, 'urls.last_visit_time', 'urls.id')
   const statement = db.prepare(
-    `SELECT ${URL_COLUMNS} FROM urls ${ftsJoin?.sql ?? ''}${where} ORDER BY last_visit_time DESC, id DESC LIMIT ?`,
+    `SELECT ${URL_COLUMNS} FROM urls ${join}${where} ORDER BY last_visit_time DESC, id DESC LIMIT ?`,
   )
-  const rows = statement.all(...(ftsJoin?.params ?? []), ...fragments.flatMap((fragment) => fragment.params ?? []), limit + 1) as unknown as UrlRow[]
+  const rows = statement.all(...params, limit + 1) as unknown as UrlRow[]
   const items = rows.slice(0, limit).map(toHistoryItem)
   const last = items.at(-1)
   return {
     items,
     nextCursor: rows.length > limit && last !== undefined ? encodeCursor(last.lastVisit, last.id) : null,
+  }
+}
+
+export function searchVisits(db: DatabaseSync, filter: SearchFilter = {}): SearchVisitsPage {
+  const limit = clampLimit(filter.limit)
+  const { join, where, params } = buildSearch(filter, 'visits.visit_time', 'visits.id')
+  const statement = db.prepare(
+    `SELECT visits.id, visits.url_id, visits.visit_time, visits.transition, urls.url, urls.title, urls.visit_count
+     FROM visits JOIN urls ON urls.id = visits.url_id ${join}${where}
+     ORDER BY visits.visit_time DESC, visits.id DESC LIMIT ?`,
+  )
+  const rows = statement.all(...params, limit + 1) as unknown as HistoryVisitRow[]
+  const items = rows.slice(0, limit).map((row): HistoryVisit => ({
+    ...toVisitItem(row),
+    url: row.url,
+    title: row.title ?? '',
+    visitCount: row.visit_count,
+  }))
+  const last = items.at(-1)
+  return {
+    items,
+    nextCursor: rows.length > limit && last !== undefined ? encodeCursor(last.visitTime, last.id) : null,
   }
 }
 
@@ -121,6 +120,35 @@ export function getItem(db: DatabaseSync, id: number): ItemDetail | null {
 }
 
 // --- helpers ---
+
+function buildSearch(filter: SearchFilter, timeColumn: string, idColumn: string) {
+  const fragments: Fragment[] = []
+  if (filter.url !== undefined) fragments.push({ sql: 'urls.url = ?', params: [filter.url] })
+  if (filter.from !== undefined) fragments.push({ sql: `${timeColumn} >= ?`, params: [filter.from] })
+  if (filter.to !== undefined) fragments.push({ sql: `${timeColumn} <= ?`, params: [filter.to] })
+
+  const query = filter.query?.trim() ?? ''
+  let ftsJoin: Fragment | null = null
+  if (query.length !== 0) {
+    if (codePoints(query) >= 3) {
+      ftsJoin = { sql: 'JOIN (SELECT rowid AS fts_id FROM urls_fts WHERE urls_fts MATCH ?) fts ON fts.fts_id = urls.id', params: [ftsPattern(query)] }
+    } else {
+      const pattern = likePattern(query)
+      fragments.push({ sql: '(urls.title LIKE ? ESCAPE ? OR urls.url LIKE ? ESCAPE ?)', params: [pattern, '\\', pattern, '\\'] })
+    }
+  }
+
+  const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
+  if (cursor !== null) {
+    fragments.push({ sql: `(${timeColumn} < ? OR (${timeColumn} = ? AND ${idColumn} < ?))`, params: [cursor[0], cursor[0], cursor[1]] })
+  }
+  const clauses = fragments.map((fragment) => fragment.sql).join(' AND ')
+  return {
+    join: ftsJoin?.sql ?? '',
+    where: clauses === '' ? '' : ` WHERE ${clauses}`,
+    params: [...(ftsJoin?.params ?? []), ...fragments.flatMap((fragment) => fragment.params ?? [])],
+  }
+}
 
 function toHistoryItem(row: UrlRow): HistoryItem {
   return {
@@ -160,20 +188,20 @@ function likePattern(query: string): string {
   return `%${query.replace(/[\\%_]/g, '\\$&')}%`
 }
 
-/** Encodes a pagination cursor as `v1:<base64url(JSON([lastVisit, id]))>` (lastVisit: epoch ms). */
-export function encodeCursor(lastVisit: EpochMs, id: number): string {
-  return `${CURSOR_VERSION}:${Buffer.from(JSON.stringify([lastVisit, id]), 'utf8').toString('base64url')}`
+/** Encodes `v1:<base64url(JSON([time, id]))>` using the endpoint's timestamp and row ID. */
+export function encodeCursor(time: EpochMs, id: number): string {
+  return `${CURSOR_VERSION}:${Buffer.from(JSON.stringify([time, id]), 'utf8').toString('base64url')}`
 }
 
-/** Decodes `v1:<base64url(JSON([lastVisit, id]))>`; returns null if invalid. */
+/** Decodes `v1:<base64url(JSON([time, id]))>`; returns null if invalid. */
 export function decodeCursor(cursor: string): [EpochMs, number] | null {
   if (!cursor.startsWith(`${CURSOR_VERSION}:`)) return null
   try {
     const pair: unknown = JSON.parse(Buffer.from(cursor.slice(CURSOR_VERSION.length + 1), 'base64url').toString('utf8'))
     if (!Array.isArray(pair) || pair.length !== 2) return null
-    const [lastVisit, id] = pair
-    if (typeof lastVisit !== 'number' || typeof id !== 'number') return null
-    return [lastVisit, id]
+    const [time, id] = pair
+    if (typeof time !== 'number' || typeof id !== 'number') return null
+    return [time, id]
   } catch {
     return null
   }
