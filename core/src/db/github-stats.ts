@@ -34,36 +34,75 @@ export function githubStats(db: DatabaseSync, month?: string): GithubStats {
   let lastVisit = 0
 
   for (const { item, urlInfo } of githubRows(db, month)) {
-    const n = item.visitCount
-    visits += n
-    firstVisit = firstVisit === 0 || item.firstVisit < firstVisit ? item.firstVisit : firstVisit
+    const visitCount = item.visitCount
+    visits += visitCount
+    firstVisit = firstVisit === 0 || item.firstVisit < firstVisit
+      ? item.firstVisit
+      : firstVisit
     lastVisit = Math.max(lastVisit, item.lastVisit)
-    const o = owners.get(urlInfo.owner) ?? { visits: 0, repos: new Set<string>() }
-    o.visits += n
-    owners.set(urlInfo.owner, o)
+
+    const ownerStats = owners.get(urlInfo.owner) ?? {
+      visits: 0,
+      repos: new Set<string>(),
+    }
+    ownerStats.visits += visitCount
+    owners.set(urlInfo.owner, ownerStats)
     if (urlInfo.repo === undefined) continue
-    o.repos.add(urlInfo.repo)
-    const rk = `${urlInfo.owner}/${urlInfo.repo}`
-    const r = repos.get(rk) ?? { owner: urlInfo.owner, repo: urlInfo.repo, visits: 0 }
-    r.visits += n
-    repos.set(rk, r)
+    ownerStats.repos.add(urlInfo.repo)
+
+    const repoKey = `${urlInfo.owner}/${urlInfo.repo}`
+    const repoStats = repos.get(repoKey) ?? {
+      owner: urlInfo.owner,
+      repo: urlInfo.repo,
+      visits: 0,
+    }
+    repoStats.visits += visitCount
+    repos.set(repoKey, repoStats)
+
     if (urlInfo.kind === undefined || urlInfo.number === undefined) continue
-    const ik = `${rk}/${urlInfo.kind}/${urlInfo.number}`
-    const cur = items.get(ik)
-    if (cur === undefined) {
-      items.set(ik, { owner: urlInfo.owner, repo: urlInfo.repo, kind: urlInfo.kind, number: urlInfo.number, title: cleanTitle(item.title), url: item.url, visits: n, last: item.lastVisit })
+    const itemKey = `${repoKey}/${urlInfo.kind}/${urlInfo.number}`
+    const itemStats = items.get(itemKey)
+    if (itemStats === undefined) {
+      items.set(itemKey, {
+        owner: urlInfo.owner,
+        repo: urlInfo.repo,
+        kind: urlInfo.kind,
+        number: urlInfo.number,
+        title: cleanTitle(item.title),
+        url: item.url,
+        visits: visitCount,
+        last: item.lastVisit,
+      })
     } else {
-      cur.visits += n
+      itemStats.visits += visitCount
       // latest visit wins for title / url
-      if (item.lastVisit > cur.last) Object.assign(cur, { title: cleanTitle(item.title), url: item.url, last: item.lastVisit })
+      if (item.lastVisit > itemStats.last)
+        Object.assign(itemStats, {
+          title: cleanTitle(item.title),
+          url: item.url,
+          last: item.lastVisit,
+        })
     }
   }
 
   return {
-    totals: { visits, repos: repos.size, owners: owners.size, items: items.size, firstVisit, lastVisit },
-    topRepos: top([...repos.values()], (r) => `${r.owner}/${r.repo}`),
-    topOwners: top([...owners].map(([owner, o]) => ({ owner, repos: o.repos.size, visits: o.visits })), (o) => o.owner),
-    topItems: top([...items.values()], (it) => it.url).map(({ owner, repo, kind, number, title, url, visits }) => ({ owner, repo, kind, number, title, url, visits })),
+    totals: {
+      visits,
+      repos: repos.size,
+      owners: owners.size,
+      items: items.size,
+      firstVisit,
+      lastVisit,
+    },
+    topRepos: top([...repos.values()], (repoStats) => `${repoStats.owner}/${repoStats.repo}`),
+    topOwners: top([...owners].map(([owner, ownerStats]) => ({
+      owner,
+      repos: ownerStats.repos.size,
+      visits: ownerStats.visits
+    })), (ownerStats) => ownerStats.owner),
+    topItems: top([...items.values()], (itemStats) => itemStats.url)
+      .map(({ owner, repo, kind, number, title, url, visits }) =>
+        ({ owner, repo, kind, number, title, url, visits })),
   }
 }
 
@@ -75,17 +114,26 @@ export function githubVisits(db: DatabaseSync, filter: GithubVisitsFilter = {}):
   const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
 
   const rows = mergeRepoRoots(githubRows(db, filter.month))
-    .filter(({ urlInfo }) => (owner === undefined || urlInfo.owner === owner) && (repo === undefined || urlInfo.repo === repo) && matchesKind(urlInfo, kind))
+    .filter(({ urlInfo }) => (
+      owner === undefined || urlInfo.owner === owner)
+      && (repo === undefined || urlInfo.repo === repo)
+      && matchesKind(urlInfo, kind)
+    )
     .map(({ item }) => item)
     .sort((a, b) => b.lastVisit - a.lastVisit || b.id - a.id)
-  const keyed = cursor === null
+  const rowsAfterCursor = cursor === null
     ? rows
-    : rows.filter((it) => it.lastVisit < cursor[0] || (it.lastVisit === cursor[0] && it.id < cursor[1]))
-  const items = keyed.slice(0, limit)
+    : rows.filter((it) =>
+      it.lastVisit < cursor[0]
+      || (it.lastVisit === cursor[0] && it.id < cursor[1])
+    )
+  const items = rowsAfterCursor.slice(0, limit)
   const last = items.at(-1)
   return {
     items,
-    nextCursor: keyed.length > limit && last !== undefined ? encodeCursor(last.lastVisit, last.id) : null,
+    nextCursor: rowsAfterCursor.length > limit && last !== undefined
+      ? encodeCursor(last.lastVisit, last.id)
+      : null,
   }
 }
 
@@ -113,7 +161,8 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlI
        FROM urls WHERE ${GITHUB_URL}`,
     ).all() as unknown as Row[]
   } else {
-    if (!MONTH_RE.test(month)) throw new Error(`month: 'YYYY-MM' required, got ${month}`)
+    if (!MONTH_RE.test(month))
+      throw new Error(`month: 'YYYY-MM' required, got ${month}`)
     rows = db.prepare(
       `SELECT urls.id AS id, urls.url AS url, urls.title AS title, COUNT(*) AS visit_count, urls.typed_count AS typed_count,
               MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
@@ -138,11 +187,16 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlI
   })
 }
 
+// --- utils ---
+
 // 'Fix foo by bar · Pull Request #12 · o/r' → 'Fix foo by bar'
 function cleanTitle(title: string): string {
   return title.split(' · ')[0] ?? title
 }
 
 function top<T extends { visits: number }>(rows: T[], key: (row: T) => string): T[] {
-  return rows.sort((a, b) => b.visits - a.visits || key(a).localeCompare(key(b))).slice(0, TOP)
+  return rows.sort((a, b) =>
+    b.visits - a.visits
+    || key(a).localeCompare(key(b))
+  ).slice(0, TOP)
 }

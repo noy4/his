@@ -16,7 +16,7 @@ export function GitHubVisitCard({ item }: { item: HistoryItem }) {
   // Issue/PR: owner/repo#number (+ author).
   // Other repo pages: owner/repo; repo roots and profiles: owner.
   const metaText = urlInfo.kind
-    ? `${urlInfo.owner}/${urlInfo.repo}#${urlInfo.number}${titleInfo.meta ? ` · ${titleInfo.meta}` : ''}`
+    ? `${urlInfo.owner}/${urlInfo.repo}#${urlInfo.number}`
     : urlInfo.repo && !urlInfo.root
       ? `${urlInfo.owner}/${urlInfo.repo}`
       : urlInfo.owner

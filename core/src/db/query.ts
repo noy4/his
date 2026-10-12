@@ -1,8 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, HistoryItem, Transition, VisitItem } from '../model.ts'
 
-// --- contract ---
-
 export interface SearchFilter {
   query?: string
   url?: string
@@ -162,10 +160,12 @@ function likePattern(query: string): string {
   return `%${query.replace(/[\\%_]/g, '\\$&')}%`
 }
 
+/** Encodes a pagination cursor as `v1:<base64url(JSON([lastVisit, id]))>` (lastVisit: epoch ms). */
 export function encodeCursor(lastVisit: EpochMs, id: number): string {
   return `${CURSOR_VERSION}:${Buffer.from(JSON.stringify([lastVisit, id]), 'utf8').toString('base64url')}`
 }
 
+/** Decodes `v1:<base64url(JSON([lastVisit, id]))>`; returns null if invalid. */
 export function decodeCursor(cursor: string): [EpochMs, number] | null {
   if (!cursor.startsWith(`${CURSOR_VERSION}:`)) return null
   try {
