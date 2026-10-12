@@ -3,8 +3,8 @@
 export type GithubKind = 'pull' | 'issue'
 // 'repo' = repo root only
 // 'issue_pr' = single PR/Issue
-// 'code' = other repo pages
-export type GithubVisitKind = 'all' | 'repo' | 'code' | 'issue_pr'
+// 'other' = owner pages and repo pages without root / PR / Issue
+export type GithubVisitKind = 'all' | 'repo' | 'issue_pr' | 'other'
 
 export interface GitHubUrlInfo {
   owner: string
@@ -104,7 +104,7 @@ function stripUrl(url: string): string {
 export function matchesKind(urlInfo: GitHubUrlInfo, kind: GithubVisitKind): boolean {
   if (kind === 'all') return true
   if (kind === 'repo') return urlInfo.root === true
-  if (kind === 'code') return urlInfo.repo !== undefined && !urlInfo.root && !urlInfo.kind
+  if (kind === 'other') return !urlInfo.root && !urlInfo.kind
   return urlInfo.kind !== undefined
 }
 

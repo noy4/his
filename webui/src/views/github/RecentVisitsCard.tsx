@@ -73,8 +73,8 @@ export function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>
 const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'repo', label: 'Repos' },
-  { value: 'code', label: 'Code' },
   { value: 'issue_pr', label: 'Issues/PRs' },
+  { value: 'other', label: 'Other' },
 ]
 
 function VisitsKindFilter({ gh }: { gh: GithubModel }) {

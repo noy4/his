@@ -92,7 +92,7 @@ describe('githubVisits', () => {
 
   it('kind filter', () => {
     assert.deepEqual(urls({ kind: 'repo' }), ['https://github.com/Foo/Bar'])
-    assert.deepEqual(urls({ kind: 'code' }), [])
+    assert.deepEqual(urls({ kind: 'other' }), ['https://github.com/qux'])
     assert.deepEqual(urls({ kind: 'issue_pr' }), [
       'https://github.com/foo/bar/pull/12/files',
       'https://github.com/foo/bar/pull/12',

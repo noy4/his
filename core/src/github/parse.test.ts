@@ -67,8 +67,8 @@ describe('matchesKind', () => {
   it('repo = repo root only', () => {
     assert.deepEqual(all.map((r) => matchesKind(r, 'repo')), [false, true, false, false, false])
   })
-  it('code = repo pages without root / PR / Issue', () => {
-    assert.deepEqual(all.map((r) => matchesKind(r, 'code')), [false, false, true, false, false])
+  it('other = owner pages and repo pages without root / PR / Issue', () => {
+    assert.deepEqual(all.map((r) => matchesKind(r, 'other')), [true, false, true, false, false])
   })
   it('issue_pr = PR + Issue', () => {
     assert.deepEqual(all.map((r) => matchesKind(r, 'issue_pr')), [false, false, false, true, true])
