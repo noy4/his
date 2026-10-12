@@ -2,7 +2,7 @@ import type { DatabaseSync } from 'node:sqlite'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from '../github/parse.ts'
 import type { EpochMs, HistoryItem } from '../model.ts'
 import { clampLimit, decodeCursor, encodeCursor, type SearchPage } from './query.ts'
-import { MONTH_BUCKET, MONTH_RE } from './stats.ts'
+import { MONTH_RANGE, monthRange } from './stats.ts'
 
 // GitHub Insights. SQL only narrows to github.com rows; path parsing / grouping is JS
 // (parse.ts) so it stays testable. month ('YYYY-MM') scopes to that month's visits.
@@ -161,15 +161,14 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlI
        FROM urls WHERE ${GITHUB_URL}`,
     ).all() as unknown as Row[]
   } else {
-    if (!MONTH_RE.test(month))
-      throw new Error(`month: 'YYYY-MM' required, got ${month}`)
+    const [start, end] = monthRange(month)
     rows = db.prepare(
       `SELECT urls.id AS id, urls.url AS url, urls.title AS title, COUNT(*) AS visit_count, urls.typed_count AS typed_count,
               MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
        FROM visits JOIN urls ON urls.id = visits.url_id
-       WHERE ${GITHUB_URL} AND ${MONTH_BUCKET}
+       WHERE ${GITHUB_URL} AND ${MONTH_RANGE}
        GROUP BY urls.id`,
-    ).all(month) as unknown as Row[]
+    ).all(start, end) as unknown as Row[]
   }
   return rows.flatMap((row) => {
     const urlInfo = parseGithubUrl(row.url)

@@ -21,14 +21,27 @@ export interface Stats {
   busiestDays: { day: string; visits: number }[]
 }
 
-export const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
-export const MONTH_BUCKET =
-  "strftime('%Y-%m', visit_time / 1000, 'unixepoch', 'localtime') = ?"
+const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
+export const MONTH_RANGE = 'visits.visit_time >= ? AND visits.visit_time < ?'
+
+/** Returns local month boundaries as epoch ms: [inclusive start, exclusive end]. */
+export function monthRange(month: string): [EpochMs, EpochMs] {
+  if (!MONTH_RE.test(month))
+    throw new Error(`month: 'YYYY-MM' required, got ${month}`)
+  const year = Number(month.slice(0, 4))
+  const monthIndex = Number(month.slice(5)) - 1
+  // setFullYear preserves years 0000-0099 instead of interpreting them as 1900-1999.
+  const start = new Date(0)
+  start.setFullYear(year, monthIndex, 1)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(0)
+  end.setFullYear(year, monthIndex + 1, 1)
+  end.setHours(0, 0, 0, 0)
+  return [start.getTime(), end.getTime()]
+}
 
 export function stats(db: DatabaseSync, month?: string): Stats {
   if (month === undefined) return allTimeStats(db)
-  if (!MONTH_RE.test(month))
-    throw new Error(`month: 'YYYY-MM' required, got ${month}`)
   return monthStats(db, month)
 }
 
@@ -119,13 +132,14 @@ function allTimeStats(db: DatabaseSync): Stats {
 }
 
 function monthStats(db: DatabaseSync, month: string): Stats {
+  const [start, end] = monthRange(month)
   const urlGroups = db.prepare(
     `SELECT urls.url AS url, COUNT(*) AS visits,
             MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_BUCKET}
+     WHERE ${MONTH_RANGE}
      GROUP BY urls.url`,
-  ).all(month) as unknown as MonthUrlRow[]
+  ).all(start, end) as unknown as MonthUrlRow[]
 
   const byDomain = new Map<string, number>()
   let visits = 0
@@ -151,9 +165,9 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   for (const bucket of db.prepare(
     `SELECT strftime('%H', visit_time / 1000, 'unixepoch', 'localtime') AS hour, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_BUCKET}
+     WHERE ${MONTH_RANGE}
      GROUP BY hour`,
-  ).all(month) as unknown as HourRow[]) {
+  ).all(start, end) as unknown as HourRow[]) {
     byHour[Number(bucket.hour)] = Number(bucket.visits)
   }
 
@@ -161,19 +175,19 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   for (const bucket of db.prepare(
     `SELECT strftime('%w', visit_time / 1000, 'unixepoch', 'localtime') AS dow, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_BUCKET}
+     WHERE ${MONTH_RANGE}
      GROUP BY dow`,
-  ).all(month) as unknown as DowRow[]) {
+  ).all(start, end) as unknown as DowRow[]) {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
   }
 
   const busiestDays = (db.prepare(
     `SELECT DATE(visit_time / 1000, 'unixepoch', 'localtime') AS day, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_BUCKET}
+     WHERE ${MONTH_RANGE}
      GROUP BY day
      ORDER BY visits DESC, day LIMIT 5`,
-  ).all(month) as unknown as DayRow[]).map((row) => ({ day: row.day, visits: Number(row.visits) }))
+  ).all(start, end) as unknown as DayRow[]).map((row) => ({ day: row.day, visits: Number(row.visits) }))
 
   return {
     totals,
