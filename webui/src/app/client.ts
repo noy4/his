@@ -1,6 +1,6 @@
-import type { GithubStats, GithubVisitsParams, HisApi, HisEvents, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
-import { mockApi } from '@/mock/mock-api'
-import { RpcTransport } from '@/rpc/transport'
+import type { GithubStats, GithubVisitsParams, HisApi, HisEvents, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from './api'
+import { mockApi } from './mock/client'
+import { RpcTransport } from '@/lib/rpc-transport'
 
 export function createApi(): HisApi {
   if (import.meta.env.VITE_USE_MOCK_API === 'true') return mockApi

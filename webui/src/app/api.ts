@@ -1,7 +1,6 @@
 import type { GithubKind, GithubVisitKind } from '@his/core'
 import type { HistoryItem, HistoryVisit, RegisteredSource, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core'
 
-export { TRANSITIONS } from '@his/core'
 export type { HistoryItem, HistoryVisit, Transition, VisitItem }
 export type { SyncLastRun, SyncSummary }
 

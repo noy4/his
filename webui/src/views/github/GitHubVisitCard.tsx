@@ -1,4 +1,4 @@
-import type { HistoryItem } from '@/api'
+import type { HistoryItem } from '@/app/api'
 import { timeLabel } from '@/lib/date'
 import { parseGithubTitle, parseGithubUrl } from '@his/core'
 import { cn } from 'cn'

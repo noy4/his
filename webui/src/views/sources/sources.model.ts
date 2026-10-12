@@ -1,5 +1,5 @@
 import { signal } from '@preact/signals-react'
-import type { HisApi, SourceProfile, SyncSummary } from '@/api'
+import type { HisApi, SourceProfile, SyncSummary } from '@/app/api'
 
 export function sourceKey(source: SourceProfile): string {
   return `${source.browser}:${source.profile}`

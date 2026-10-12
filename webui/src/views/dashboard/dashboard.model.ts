@@ -1,5 +1,5 @@
 import { signal } from '@preact/signals-react'
-import type { HisApi, Stats } from '@/api'
+import type { HisApi, Stats } from '@/app/api'
 import dayjs from 'dayjs'
 
 export type DashboardMode = 'month' | 'all'

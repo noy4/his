@@ -1,4 +1,4 @@
-import type { HistoryItem, HistoryVisit } from '@/api'
+import type { HistoryItem, HistoryVisit } from '@/app/api'
 import type { ReactNode } from 'react'
 import { timeLabel } from '@/lib/date'
 import { Favicon } from './Favicon'

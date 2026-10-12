@@ -1,4 +1,4 @@
-import type { GithubVisitKind, HistoryItem } from '@/api'
+import type { GithubVisitKind, HistoryItem } from '@/app/api'
 import { Card, CardTitle } from '@/components/ui/card'
 import { ToggleGroupButton, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { relativeDateLabel } from '@/lib/date'

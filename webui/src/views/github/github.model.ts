@@ -1,5 +1,5 @@
 import { signal } from '@preact/signals-react'
-import type { GithubStats, GithubVisitKind, HisApi, HistoryItem } from '@/api'
+import type { GithubStats, GithubVisitKind, HisApi, HistoryItem } from '@/app/api'
 import dayjs from 'dayjs'
 
 export type GithubMode = 'month' | 'all'

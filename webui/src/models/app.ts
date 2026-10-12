@@ -1,6 +1,6 @@
-import type { HisApi } from '@/api'
+import type { HisApi } from '@/app/api'
 import { signal } from '@preact/signals-react'
-import { createApi } from '@/rpc/client'
+import { createApi } from '@/app/client'
 
 export class AppModel {
   readonly api: HisApi

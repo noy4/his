@@ -1,4 +1,4 @@
-import type { SourceProfile } from '@/api'
+import type { SourceProfile } from '@/app/api'
 import { browserName } from '@/lib/browser/browser'
 import { BrowserIcon } from '@/lib/browser/BrowserIcon'
 import { relativeAgo } from '@/lib/date'

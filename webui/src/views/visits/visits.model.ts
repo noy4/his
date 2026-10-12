@@ -1,4 +1,4 @@
-import type { HisApi, HistoryVisit } from '@/api'
+import type { HisApi, HistoryVisit } from '@/app/api'
 import { FilterModel } from '../../models/filters.ts'
 import { batch, effect, signal } from '@preact/signals-react'
 

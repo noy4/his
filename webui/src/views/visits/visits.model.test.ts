@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { batch } from '@preact/signals-react'
-import type { HisApi, HistoryVisit, SearchParams, SearchVisitsPage } from '@/api'
+import type { HisApi, HistoryVisit, SearchParams, SearchVisitsPage } from '@/app/api'
 import { UrlsModel } from '../urls/urls.model.ts'
 import { VisitsModel } from './visits.model.ts'
 
