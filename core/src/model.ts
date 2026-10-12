@@ -60,6 +60,8 @@ export interface RegisteredSource {
   /** listing aggregates over the profile's visits (sources.list) */
   visits: number
   lastVisit: EpochMs | null
+  /** source changed since the last sync; null when not checked (sources.list check) */
+  pending: boolean | null
 }
 
 // one sync execution — returned by runSync / sync.run RPC

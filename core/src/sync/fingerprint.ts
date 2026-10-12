@@ -1,13 +1,14 @@
 import fs from 'node:fs'
 
-const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
+// -shm excluded: volatile WAL index (no data), rewritten on open.
+const DATA_SIDECARS = ['-wal', '-journal']
 
 // mtime/size probe of the target's source files (main + sidecars, or the
 // takeout json) serialized for cross-run comparison.
 export function probeFingerprint(dbPath: string): string {
   const files = dbPath.endsWith('.json')
     ? [dbPath]
-    : [dbPath, ...SQLITE_SIDECARS.map((ext) => dbPath + ext)]
+    : [dbPath, ...DATA_SIDECARS.map((ext) => dbPath + ext)]
   return JSON.stringify(files.map(statEntry))
 }
 

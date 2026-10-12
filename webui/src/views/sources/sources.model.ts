@@ -26,7 +26,7 @@ export class SourcesModel {
   }
 
   async reload(): Promise<void> {
-    this.sources.value = await this.api.sourcesList()
+    this.sources.value = await this.api.sourcesList({ check: true })
   }
 
   syncAll(): void {

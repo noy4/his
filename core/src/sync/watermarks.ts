@@ -1,5 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs, RegisteredSource, SourceKind, Watermark } from '../model.ts'
+import { probeFingerprint } from './fingerprint.ts'
 
 export interface WatermarkPatch {
   lastSourceVisitId: number
@@ -34,10 +35,15 @@ export function setWatermark(db: DatabaseSync, sourceProfileId: number, patch: W
   ).run(sourceProfileId, patch.lastSourceVisitId, patch.sourceIdOffset, patch.lastRunAt ?? null)
 }
 
-export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
+export interface ListSourceProfilesOptions {
+  /** probe each profile's source files and report whether it changed since the last sync */
+  check?: boolean
+}
+
+export function listSourceProfiles(db: DatabaseSync, options: ListSourceProfilesOptions = {}): RegisteredSource[] {
   const rows = db
     .prepare(
-      `SELECT sp.id, sp.browser, sp.profile, sp.kind, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at, COUNT(v.id) AS visits, MAX(v.visit_time) AS last_visit_time
+      `SELECT sp.id, sp.browser, sp.profile, sp.kind, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at, pw.last_fingerprint, COUNT(v.id) AS visits, MAX(v.visit_time) AS last_visit_time
        FROM source_profiles sp
        LEFT JOIN profile_watermarks pw ON pw.source_profile_id = sp.id
        LEFT JOIN visits v ON v.source_profile_id = sp.id
@@ -59,7 +65,14 @@ export function listSourceProfiles(db: DatabaseSync): RegisteredSource[] {
     },
     visits: Number(row.visits),
     lastVisit: row.last_visit_time === null ? null : Number(row.last_visit_time),
+    pending: options.check ? isPending(row) : null,
   }))
+}
+
+// probe the source files now and compare to the fingerprint saved at the last sync
+function isPending(row: SourceProfileJoinRow): boolean {
+  if (row.last_fingerprint === null) return true
+  return probeFingerprint(row.profile_path) !== row.last_fingerprint
 }
 
 interface SourceProfileJoinRow {
@@ -71,6 +84,7 @@ interface SourceProfileJoinRow {
   last_source_visit_id: number | null
   source_id_offset: number | null
   last_run_at: number | null
+  last_fingerprint: string | null
   visits: number | bigint
   last_visit_time: number | null
 }

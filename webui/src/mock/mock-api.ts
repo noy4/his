@@ -1,4 +1,4 @@
-import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
+import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '@/api'
 import { isoDay } from '@/lib/date'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GitHubUrlInfo } from '@his/core/github'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -364,8 +364,8 @@ export const mockApi: HisApi = {
     return githubVisits(params)
   },
 
-  async sourcesList(): Promise<SourceProfile[]> {
-    return sources.map((s) => ({ ...s }))
+  async sourcesList(params?: SourcesListParams): Promise<SourceProfile[]> {
+    return sources.map((s) => ({ ...s, pending: params?.check ? s.pending : null }))
   },
 
   syncRun: (params: SyncRunParams) => syncRun(params),

@@ -25,7 +25,7 @@ export function createHandlers({ db, runner }: {
     'history.stats': (params) => stats(db, params.month),
     'history.githubStats': (params) => githubStats(db, params.month),
     'history.githubVisits': (params) => githubVisits(db, params as GithubVisitsFilter),
-    'sources.list': () => listSourceProfiles(db),
+    'sources.list': (params) => listSourceProfiles(db, { check: params?.check === true }),
     'sync.run': (params) => runner.run(params as SyncOptions),
     'sync.status': () => runner.lastRun(),
   }

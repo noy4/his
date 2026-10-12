@@ -21,6 +21,12 @@
     var(--color-primary) 15%,
     transparent
   );
+  --color-warn: #d29922;
+  --color-warn-soft: color-mix(
+    in oklab,
+    var(--color-warn) 15%,
+    transparent
+  );
 }
 
 :root {
@@ -41,6 +47,12 @@
     --color-primary-soft: color-mix(
       in oklab,
       var(--color-primary) 10%,
+      transparent
+    );
+    --color-warn: #9a6700;
+    --color-warn-soft: color-mix(
+      in oklab,
+      var(--color-warn) 10%,
       transparent
     );
     color-scheme: light;

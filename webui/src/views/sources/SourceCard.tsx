@@ -26,7 +26,7 @@ export function SourceCard({ source, selected, onToggle }: Props) {
         visits={source.visits}
         lastVisit={source.lastVisit}
       />
-      <SourceCardChecked lastRunAt={source.watermark.lastRunAt} />
+      <SourceCardStatus pending={source.pending} lastRunAt={source.watermark.lastRunAt} />
     </SourceCardRoot>
   )
 }
@@ -93,6 +93,28 @@ function SourceCardName({ name, detail }: { name: string; detail: string }) {
   )
 }
 
+// SourceCardStatus
+
+function SourceCardStatus({ pending, lastRunAt }: { pending: boolean | null; lastRunAt: number | null }) {
+  if (lastRunAt === null) return <SourceCardStatusDot label="never synced" />
+  if (pending === null) return null
+  return <SourceCardStatusDot label={pending ? 'sync needed' : 'up to date'} warn={pending} />
+}
+
+function SourceCardStatusDot({ label, warn }: { label: string; warn?: boolean }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex w-fit items-center gap-1.5 rounded px-1.5 py-px font-mono text-xs',
+        warn ? 'bg-warn-soft text-warn' : 'bg-bg-3 text-muted',
+      )}
+    >
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+      {label}
+    </span>
+  )
+}
+
 // SourceCardStats
 
 function SourceCardStats({ visits, lastVisit }: { visits: number; lastVisit: number | null }) {
@@ -103,15 +125,7 @@ function SourceCardStats({ visits, lastVisit }: { visits: number; lastVisit: num
     <span className="flex items-center gap-1.5 font-mono text-xs text-muted tabular-nums">
       <span>{visits.toLocaleString()} visits</span>
       <span className="text-muted/50">·</span>
-      <span>last visit {relativeAgo(lastVisit)}</span>
-    </span>
-  )
-}
-
-function SourceCardChecked({ lastRunAt }: { lastRunAt: number | null }) {
-  return (
-    <span className="font-mono text-[11px] text-muted/70">
-      {lastRunAt === null ? 'never checked' : `checked ${relativeAgo(lastRunAt)}`}
+      <span>{relativeAgo(lastVisit)}</span>
     </span>
   )
 }

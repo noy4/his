@@ -70,6 +70,11 @@ export interface GithubVisitsParams {
   limit?: number
 }
 
+export interface SourcesListParams {
+  /** probe each source and report whether it changed since the last sync */
+  check?: boolean
+}
+
 // notifications — sync.progress is on hold (see SPEC); db.changed pending
 // open-ended so new server events can arrive before the map lists them
 export interface HisEvents {
@@ -84,7 +89,7 @@ export interface HisApi {
   stats(month?: string): Promise<Stats>
   githubStats(month?: string): Promise<GithubStats>
   githubVisits(params: GithubVisitsParams): Promise<SearchPage>
-  sourcesList(): Promise<SourceProfile[]>
+  sourcesList(params?: SourcesListParams): Promise<SourceProfile[]>
   syncRun(params: SyncRunParams): Promise<SyncSummary>
   syncStatus(): Promise<SyncLastRun | null>
   on<K extends keyof HisEvents & string>(event: K, handler: HisEvents[K]): () => void

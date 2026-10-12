@@ -231,6 +231,7 @@ export const MOCK_SOURCES: SourceProfile[] = [
     watermark: { sourceProfileId: 1, lastSourceVisitId: 26463, sourceIdOffset: 0, lastRunAt: NOW - 4 * HOUR },
     visits: 26463,
     lastVisit: NOW - 4 * HOUR,
+    pending: false,
   },
   {
     id: 2,
@@ -241,6 +242,7 @@ export const MOCK_SOURCES: SourceProfile[] = [
     watermark: { sourceProfileId: 2, lastSourceVisitId: 185, sourceIdOffset: 0, lastRunAt: NOW - 23 * DAY },
     visits: 185,
     lastVisit: NOW - 23 * DAY,
+    pending: true,
   },
   {
     id: 3,
@@ -251,6 +253,7 @@ export const MOCK_SOURCES: SourceProfile[] = [
     watermark: { sourceProfileId: 3, lastSourceVisitId: 23, sourceIdOffset: 0, lastRunAt: NOW - 5 * DAY },
     visits: 23,
     lastVisit: NOW - 5 * DAY,
+    pending: true,
   },
   {
     id: 4,
@@ -261,6 +264,7 @@ export const MOCK_SOURCES: SourceProfile[] = [
     watermark: { sourceProfileId: 4, lastSourceVisitId: 7, sourceIdOffset: 0, lastRunAt: NOW - 60 * DAY },
     visits: 7,
     lastVisit: NOW - 87 * DAY,
+    pending: true,
   },
   {
     id: 5,
@@ -271,6 +275,7 @@ export const MOCK_SOURCES: SourceProfile[] = [
     watermark: { sourceProfileId: 5, lastSourceVisitId: 2, sourceIdOffset: 0, lastRunAt: NOW - 40 * DAY },
     visits: 2,
     lastVisit: NOW - 300 * DAY,
+    pending: false,
   },
   {
     id: 6,
@@ -281,5 +286,6 @@ export const MOCK_SOURCES: SourceProfile[] = [
     watermark: { sourceProfileId: 6, lastSourceVisitId: 0, sourceIdOffset: 0, lastRunAt: null },
     visits: 0,
     lastVisit: null,
+    pending: true,
   },
 ]
