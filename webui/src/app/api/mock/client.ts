@@ -1,4 +1,4 @@
-import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
+import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
 import { isoDay } from '@/lib/date'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GitHubUrlInfo } from '@his/core'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -25,8 +25,52 @@ function topN(map: Map<string, number>, n: number): { key: string; visits: numbe
     .map(([key, visits]) => ({ key, visits }))
 }
 
+// --- hide patterns (settings) ---
+
+let hiddenPatterns: string[] = []
+
+function rawHost(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase()
+  } catch {
+    return url.toLowerCase()
+  }
+}
+
+function globToRegExp(glob: string): RegExp {
+  const escaped = glob.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')
+  return new RegExp(`^${escaped}$`, 'i')
+}
+
+// bare token → host (subdomains too); slash/scheme → whole-URL glob
+function matchesHidden(url: string, patterns: string[]): boolean {
+  if (patterns.length === 0) return false
+  const host = rawHost(url)
+  return patterns.some((pattern) =>
+    !pattern.includes('*') && !pattern.includes('/') && !pattern.includes(':')
+      ? host === pattern || host.endsWith(`.${pattern}`)
+      : globToRegExp(pattern).test(pattern.includes('/') || pattern.includes(':') ? url.toLowerCase() : host),
+  )
+}
+
+function visibleItems(): HistoryItem[] {
+  if (hiddenPatterns.length === 0) return [...MOCK_ITEMS]
+  return MOCK_ITEMS.filter((item) => !matchesHidden(item.url, hiddenPatterns))
+}
+
+function cleanPatterns(input: unknown): string[] {
+  if (!Array.isArray(input)) return []
+  const seen = new Set<string>()
+  for (const value of input) {
+    if (typeof value !== 'string') continue
+    const pattern = value.trim().toLowerCase()
+    if (pattern) seen.add(pattern)
+  }
+  return [...seen].slice(0, 500)
+}
+
 function computeStats(): Stats {
-  const visible = MOCK_ITEMS
+  const visible = visibleItems()
   const byHour = new Array<number>(24).fill(0)
   const byDow = new Array<number>(7).fill(0)
   const byDay = new Map<string, number>()
@@ -69,7 +113,7 @@ function computeMonthlyStats(month: string): Stats {
   let firstVisit = Number.POSITIVE_INFINITY
   let lastVisit = 0
 
-  for (const it of MOCK_ITEMS) {
+  for (const it of visibleItems()) {
     const host = hostOf(it.url)
     for (const v of MOCK_VISITS.get(it.id) ?? []) {
       const day = isoDay(v.visitTime)
@@ -100,15 +144,16 @@ function computeMonthlyStats(month: string): Stats {
   }
 }
 
-const stats = computeStats()
-
 // --- github ---
 
 const GITHUB_TOP = 20
-const GITHUB_ITEMS: { item: HistoryItem; urlInfo: GitHubUrlInfo }[] = MOCK_ITEMS.flatMap((item) => {
-  const urlInfo = parseGithubUrl(item.url)
-  return urlInfo ? [{ item, urlInfo }] : []
-})
+
+function githubItems(): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
+  return visibleItems().flatMap((item) => {
+    const urlInfo = parseGithubUrl(item.url)
+    return urlInfo ? [{ item, urlInfo }] : []
+  })
+}
 
 // month → item narrowed to that month's visits (counts / first / last), or null if unvisited
 function inPeriod(item: HistoryItem, month?: string): HistoryItem | null {
@@ -126,7 +171,7 @@ function inPeriod(item: HistoryItem, month?: string): HistoryItem | null {
 }
 
 function githubPeriod(month?: string): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
-  return GITHUB_ITEMS.flatMap(({ item, urlInfo }) => {
+  return githubItems().flatMap(({ item, urlInfo }) => {
     const it = inPeriod(item, month)
     return it ? [{ item: it, urlInfo }] : []
   })
@@ -278,7 +323,7 @@ function findVisible(params: SearchParams): HistoryItem[] {
   const q = params.query?.trim().toLowerCase() ?? ''
   const from = params.from ?? -Infinity
   const to = params.to ?? Infinity
-  const rows = MOCK_ITEMS.filter(
+  const rows = visibleItems().filter(
     (it) =>
       it.lastVisit >= from &&
       it.lastVisit <= to &&
@@ -310,7 +355,7 @@ function searchVisits(params: SearchParams): SearchVisitsPage {
   const limit = Number.isFinite(params.limit)
     ? Math.min(200, Math.max(1, Math.trunc(params.limit!)))
     : DEFAULT_LIMIT
-  const rows: HistoryVisit[] = MOCK_ITEMS.flatMap((item) => {
+  const rows: HistoryVisit[] = visibleItems().flatMap((item) => {
     if (query && !item.title.toLowerCase().includes(query) && !item.url.toLowerCase().includes(query)) return []
     return (MOCK_VISITS.get(item.id) ?? []).map((visit) => ({
       ...visit,
@@ -353,7 +398,7 @@ export const mockApi: HisApi = {
   },
 
   async stats(month?: string): Promise<Stats> {
-    return month === undefined ? stats : computeMonthlyStats(month)
+    return month === undefined ? computeStats() : computeMonthlyStats(month)
   },
 
   async githubStats(month?: string): Promise<GithubStats> {
@@ -372,6 +417,16 @@ export const mockApi: HisApi = {
 
   async syncStatus(): Promise<SyncLastRun | null> {
     return lastRunRecord === null ? null : { ...lastRunRecord }
+  },
+
+  settings: {
+    async get(): Promise<SettingsInfo> {
+      return { hiddenPatterns: [...hiddenPatterns] }
+    },
+    async set(params: { hiddenPatterns: string[] }): Promise<SettingsInfo> {
+      hiddenPatterns = cleanPatterns(params.hiddenPatterns)
+      return { hiddenPatterns: [...hiddenPatterns] }
+    },
   },
 
   on: () => () => { },

@@ -6,8 +6,10 @@ import { GitHub } from '@/views/github/GitHub'
 import { Urls } from '@/views/urls/Urls'
 import { Sources } from '@/views/sources/Sources'
 import { Visits } from '@/views/visits/Visits'
+import { Settings } from '@/views/settings/Settings'
 import { type ComponentType, type ReactNode } from 'react'
 import ChartBoxOutline from '~icons/mdi/chart-box-outline'
+import Cog from '~icons/mdi/cog-outline'
 import DatabaseImport from '~icons/mdi/database-import'
 import GithubIcon from '~icons/mdi/github'
 import LinkVariant from '~icons/mdi/link-variant'
@@ -27,6 +29,7 @@ const VIEWS: ViewDef[] = [
   { id: 'urls', label: 'URLs', icon: LinkVariant, content: Urls },
   { id: 'github', label: 'GitHub', icon: GithubIcon, content: GitHub },
   { id: 'sources', label: 'Sources', icon: DatabaseImport, content: Sources },
+  { id: 'settings', label: 'Settings', icon: Cog, content: Settings },
 ]
 
 export default function App() {

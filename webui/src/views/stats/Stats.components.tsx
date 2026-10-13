@@ -4,7 +4,7 @@ import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
 import type { ComponentProps, ReactNode } from 'react'
 import type { IconComponent } from '@/components/icons'
-import { buttonBase } from '@/components/ui/button'
+import { buttonSmGhost } from '@/components/ui/button'
 import { ToggleGroupItem, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { fmtNum } from '@/lib/format'
 
@@ -136,7 +136,7 @@ function NavButton({
   return (
     <button
       type="button"
-      className={cn(buttonBase, 'text-muted hover:bg-bg-3 hover:text-text')}
+      className={buttonSmGhost}
       {...props}
     >
       {icon}

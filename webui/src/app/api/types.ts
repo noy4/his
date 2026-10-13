@@ -74,6 +74,13 @@ export interface SourcesListParams {
   check?: boolean
 }
 
+// --- settings ---
+
+export interface SettingsInfo {
+  /** user "hide" patterns — one per line in the UI */
+  hiddenPatterns: string[]
+}
+
 // notifications — sync.progress is on hold (see SPEC); db.changed pending
 // open-ended so new server events can arrive before the map lists them
 export interface HisEvents {
@@ -91,5 +98,9 @@ export interface HisApi {
   sourcesList(params?: SourcesListParams): Promise<SourceProfile[]>
   syncRun(params: SyncRunParams): Promise<SyncSummary>
   syncStatus(): Promise<SyncLastRun | null>
+  settings: {
+    get(): Promise<SettingsInfo>
+    set(params: { hiddenPatterns: string[] }): Promise<SettingsInfo>
+  }
   on<K extends keyof HisEvents & string>(event: K, handler: HisEvents[K]): () => void
 }

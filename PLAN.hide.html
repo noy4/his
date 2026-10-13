@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="created_at" content="2026-10-13T11:13:00+09:00">
+<title>his | Hide URL patterns</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0B0E14;
+    --surface: #151A23;
+    --surface-2: #21252F;
+    --border: #2C313F;
+    --border-strong: #383F50;
+    --text: #C3CDDC;
+    --text-strong: #F7F9FC;
+    --muted: #7E8A9E;
+    --primary: #4465DB;
+    --primary-soft: rgba(68, 101, 219, 0.15);
+    --accent: #F08A59;
+    --accent-soft: rgba(240, 138, 89, 0.15);
+    --green: #4ADE80;
+    --green-soft: rgba(74, 222, 128, 0.15);
+    --cyan: #38BDF8;
+    --purple: #A78BFA;
+    --mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface-2: #F1F5F9;
+      --border: #E2E8F0;
+      --border-strong: #CBD5E1;
+      --text: #334155;
+      --text-strong: #0F172A;
+      --muted: #64748B;
+      --primary: #2563EB;
+      --primary-soft: rgba(37, 99, 235, 0.1);
+      --accent: #EA580C;
+      --accent-soft: rgba(234, 88, 12, 0.1);
+      --green: #16A34A;
+      --green-soft: rgba(22, 163, 74, 0.1);
+      --cyan: #0284C7;
+      --purple: #7C3AED;
+      color-scheme: light;
+    }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    padding: 0 16px;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 0 80px;
+  }
+
+  section { scroll-margin-top: 24px; }
+  .toc {
+    display: none;
+    position: fixed;
+    top: 96px;
+    left: calc(50% + 420px);
+    width: 200px;
+    max-height: calc(100vh - 128px);
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  @media (min-width: 1240px) {
+    .toc { display: block; }
+  }
+  .toc-title {
+    padding-left: 14px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .toc iconify-icon { font-size: 13px; width: 13px; height: 13px; vertical-align: -2px; margin-right: 5px; }
+  .toc a.active iconify-icon { color: inherit; }
+  .toc a {
+    display: block;
+    padding: 3px 8px 3px 12px;
+    border-left: 2px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .toc a:hover { color: var(--text-strong); }
+  .toc a.active { color: var(--primary); border-left-color: var(--primary); }
+  .toc a.toc-h3 { padding-left: 24px; font-size: 11px; }
+
+  /* Hero */
+  .hero {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .badge-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  h1 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  .tagline {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-family: var(--mono);
+  }
+
+  /* Sections */
+  section { margin-top: 48px; }
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  h2 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin: 24px 0 8px;
+  }
+  h3 iconify-icon { color: var(--accent); font-size: 18px; flex-shrink: 0; }
+  p { margin-bottom: 12px; }
+  p strong { color: var(--text); }
+  .section-desc {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+  }
+
+  /* Inline code & blocks */
+  code {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    color: var(--text);
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.77rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin: 14px 0;
+  }
+  pre .c { color: var(--muted); }
+  pre .k { color: var(--accent); }
+  blockquote {
+    margin: 10px 0;
+    padding: 8px 14px;
+    border-left: 2px solid var(--primary);
+    background: var(--surface-2);
+    border-radius: 0 8px 8px 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.65;
+  }
+  blockquote a { color: var(--primary); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 14px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    text-align: left;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+    background: var(--surface);
+  }
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    background: var(--surface);
+  }
+  tr:last-child td { border-bottom: none; }
+  td code { font-size: 0.74rem; }
+
+  /* Grid & Cards */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .grid-2 > * { min-width: 0; }
+  @media (max-width: 620px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card .card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .card .card-head iconify-icon {
+    font-size: 22px;
+    color: var(--primary);
+    flex-shrink: 0;
+  }
+  .card h4 {
+    font-size: 0.95rem;
+    color: var(--text-strong);
+    font-weight: 600;
+    margin: 0;
+  }
+  .card p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.65;
+    margin: 0;
+  }
+  .card p strong { color: var(--text); }
+  .card p code { font-size: 0.74rem; }
+  .card ul { margin: 0; padding-left: 16px; }
+  .card li { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    vertical-align: 1px;
+  }
+  .tag.d { color: var(--primary); border-color: var(--primary); background: var(--primary-soft); }
+
+  /* Timeline (phase cards) */
+  .timeline { position: relative; padding-left: 28px; margin: 20px 0; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: 2px;
+    background: var(--border-strong);
+  }
+  .timeline-step { position: relative; margin-bottom: 20px; }
+  .timeline-step:last-child { margin-bottom: 0; }
+  .step-check {
+    position: absolute;
+    left: -30px;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 50%;
+  }
+  .step-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .step-head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .step-title {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-title iconify-icon { font-size: 22px; }
+  .step-meta {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface-2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    margin-left: auto;
+  }
+  .step-body {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .tasks {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .task {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .task > iconify-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--muted);
+  }
+  .task.done { background: transparent; }
+  .task.done > iconify-icon { color: var(--green); }
+  .task.done::after {
+    content: '✓';
+    position: absolute;
+    top: 0px;
+    right: 8px;
+    font-family: var(--mono);
+    color: var(--green);
+  }
+  .task-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    line-height: 1.4;
+  }
+  .task-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  @media (max-width: 620px) {
+    .tasks { grid-template-columns: 1fr; }
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-strong);
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  footer strong { color: var(--text); }
+  footer ul { list-style: none; }
+  footer li { padding: 2px 0; }
+  footer li iconify-icon { color: var(--muted); font-size: 14px; vertical-align: -2px; margin-right: 6px; }
+  footer a { color: var(--primary); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .f-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .f-title iconify-icon { color: var(--primary); }
+  .colophon {
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="badge-top">
+      <iconify-icon icon="mdi:filter-variant-remove" noobserver></iconify-icon>
+      IMPLEMENTATION PLAN
+    </div>
+    <h1><iconify-icon icon="mdi:eye-off-outline" width="30" noobserver></iconify-icon>his · hide URL patterns</h1>
+    <p class="tagline">指定 URL パターンにマッチする履歴を全ビュー・集計から除外する設定 — settings テーブル + <code>urls.is_hidden</code> フラグ。</p>
+    <p class="tagline" style="margin-top:8px">
+      <span class="tag d">status</span> WebUI（settings ビュー + mock フィルタ）実装済 · <code>core</code> / <code>server</code> 未着手
+    </p>
+  </header>
+
+  <!-- OVERVIEW -->
+  <section>
+    <h2><iconify-icon icon="mdi:information-outline" width="24" noobserver></iconify-icon>Overview</h2>
+    <p class="section-desc">
+      ユーザーが指定した URL / ホスト名パターンを「非表示」として扱い、Urls・Visits・Dashboard・GitHub・検索の全表示と集計から除外する。設定は <code>settings</code> テーブルに保存し、<code>urls.is_hidden</code> フラグでフィルタする方式。
+    </p>
+    <p class="section-desc">
+      <strong>現状</strong>: WebUI 側は実装済（settings ビュー、API 型、mock の除外フィルタ）。ただし実 RPC の <code>settings.get/set</code> と <code>is_hidden</code> フィルタは未実装のため、除外が実際に効くのは <code>VITE_USE_MOCK_API=true</code> のモックモードのみ。
+    </p>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:target" noobserver></iconify-icon>
+          <h4>目的</h4>
+        </div>
+        <p>見せたくないサイトをアーカイブに残したまま、UI と集計から隠す。<code>SPEC</code> の「Hidden rows are never returned.」を実装する。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:vector-selection" noobserver></iconify-icon>
+          <h4>範囲</h4>
+        </div>
+        <p><code>core</code> のルール評価・DB フラグ・全読取りクエリ、<code>server</code> の RPC 2 本、<code>webui</code> の Settings ビュー。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:close-circle-outline" noobserver></iconify-icon>
+          <h4>非対象</h4>
+        </div>
+        <p>private ルール(liveness / AI 送信)は今回入れない。favicons 等 on-hold 機能との連携もしない。依存追加なし。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-cog-outline" noobserver></iconify-icon>
+          <h4>保存</h4>
+        </div>
+        <p><code>history.db</code> 内の <code>settings</code> テーブル。1 home = 1 archive = 1 設定。CLI / server / sync が同一データを参照。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DECISIONS -->
+  <section>
+    <h2><iconify-icon icon="mdi:source-branch-check" width="24" noobserver></iconify-icon>Decisions</h2>
+    <p class="section-desc">
+      各 <span class="tag d">D</span> は Decision(設計判断)。番号は討議・引用用のラベルで、却下時は「D2 を却下」のように参照する。
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
+          <h4><span class="tag d">D1</span> 設定の保存場所</h4>
+        </div>
+        <p><code>history.db</code> に <code>settings(key TEXT PRIMARY KEY, value TEXT)</code> を新設(migration <code>006</code>)。key <code>hidden_patterns</code> = JSON <code>string[]</code>。per-home archive に閉じ、server / CLI / sync が同一データを参照する。外部 <code>~/.his/config.json</code> 案は不採用。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:regex" noobserver></iconify-icon>
+          <h4><span class="tag d">D2</span> マッチ規則</h4>
+        </div>
+        <p>case-insensitive / trim / 空行無視 / 重複排除 / 上限 500。壊れたパターンでも throw しない。hostname マッチと URL glob の二段構え(下の Syntax 参照)。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:filter-variant" noobserver></iconify-icon>
+          <h4><span class="tag d">D3</span> フィルタ方式</h4>
+        </div>
+        <p><code>urls.is_hidden INTEGER NOT NULL DEFAULT 0</code> + index を追加(保存フラグ方式)。読取り SQL に <code>is_hidden = 0</code> を足すだけで FTS join・集計・GitHub に一律適用でき、per-query の JS 走査が不要。query-time 動的評価は不採用。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
+          <h4><span class="tag d">D4</span> RPC</h4>
+        </div>
+        <p><code>settings.get</code> → <code>{ hiddenPatterns }</code> / <code>settings.set { hiddenPatterns }</code> → 正規化して保存し <code>{ hiddenPatterns }</code>。counts / changed は持たない。client は <code>settings.get()</code> / <code>settings.set()</code> の名前空間で呼ぶ。保存後 <code>broadcast('settings.changed')</code>(任意)。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:web" noobserver></iconify-icon>
+          <h4><span class="tag d">D5</span> UI</h4>
+        </div>
+        <p>nav に新 View <code>settings</code>。ページ見出しは置かず「セクション見出し＋行」構成（<code>SettingsSection*</code> / <code>SettingsRow*</code>）。textarea(1 行 1 パターン)＋右寄せ Save、件数/状態は <code>SettingsMeta</code>。ボタンは <code>ui/button</code> の preset（<code>buttonPrimary</code> / <code>buttonSmGhost</code>）。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:sync" noobserver></iconify-icon>
+          <h4><span class="tag d">D6</span> 再計算タイミング</h4>
+        </div>
+        <p>(a) ingest 時に新規 URL を判定、(b) 設定保存時に全 row を再計算(変更行のみ UPDATE・1 transaction)。(a) があるため「設定変更 → 新規取り込み」も正しい。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SYNTAX -->
+  <section>
+    <h2><iconify-icon icon="mdi:code-braces" width="24" noobserver></iconify-icon>Pattern syntax</h2>
+    <p class="section-desc">1 行 1 パターン。判定はパターンに <code>/</code> も scheme も含まないかで分岐する。</p>
+    <pre><span class="c"># hostname マッチ — スラッシュ・scheme なし</span>
+example.com          <span class="c">→ example.com と全サブドメイン</span>
+*.bank.com           <span class="c">→ bank.com の任意サブドメイン</span>
+10.0.*               <span class="c">→ ワイルドカード</span>
+
+<span class="c"># URL 全体 glob — スラッシュ or scheme あり</span>
+github.com/*/pull/*  <span class="c">→ path まで含めてマッチ</span>
+https://*.example.com/*
+
+<span class="c"># 正規表現メタ文字は自動エスケープ · * のみワイルドカード</span></pre>
+    <blockquote>
+      <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
+      bare ドメインはサブドメインも含む(<code>example.com</code> ≒ <code>example.com</code> + <code>*.example.com</code>)。厳密一致にしたい場合は URL glob 側を使う。
+    </blockquote>
+  </section>
+
+  <!-- ROADMAP -->
+  <section>
+    <h2><iconify-icon icon="mdi:format-list-numbered" width="24" noobserver></iconify-icon>Roadmap</h2>
+    <p class="section-desc">
+      依存順: ルール評価 → DB スキーマ → 読取りフィルタ → ingest → RPC → WebUI。core が先、frontend が後。
+    </p>
+
+    <div class="timeline">
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:regex" style="color:var(--purple)" noobserver></iconify-icon>
+              Step 1 — Rules core
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            マッチ評価と再計算を 1 モジュールに閉じる。UI / RPC から独立してテスト可能。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:file-code-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">migration 006</div>
+                <div class="task-desc"><code>settings</code> テーブル + <code>urls.is_hidden</code> 列 + index</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:code-braces" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">settings.ts</div>
+                <div class="task-desc">型 · <code>get/setHiddenPatterns</code> · <code>cleanPatterns</code> · <code>matchesHidden(url,patterns)</code> · <code>recomputeHidden(db)</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:test-tube" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">settings.test.ts</div>
+                <div class="task-desc">hostname / glob / subdomain / 空行 / 重複 / 500 上限 · 再計算の changed 件数</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:table-search" style="color:var(--primary)" noobserver></iconify-icon>
+              Step 2 — Read filtering
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            すべての読取り SQL に <code>is_hidden = 0</code> を足す。RPC の戻り値の形は変えない(hidden は UI に現れない)。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:magnify" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">query.ts</div>
+                <div class="task-desc"><code>buildSearch</code> の基底条件に <code>urls.is_hidden = 0</code>(search / searchVisits)</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:chart-box-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">stats.ts</div>
+                <div class="task-desc">allTime / month の各 SQL に <code>is_hidden = 0</code> — totals・byHour・byDow・topDomains・busiestDays</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:github" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">github/db.ts</div>
+                <div class="task-desc"><code>githubRows</code> の WHERE に <code>urls.is_hidden = 0</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:test-tube" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">exclusion tests</div>
+                <div class="task-desc">hidden 行が search / searchVisits / stats / github から出ないこと</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:database-import-outline" style="color:var(--green)" noobserver></iconify-icon>
+              Step 3 — Ingest
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            新規 URL は作成時に現在のルールで判定して挿入。既存行は設定保存時の再計算に任せる。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:content-save-plus-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">applyVisits.ts</div>
+                <div class="task-desc"><code>insertUrl</code> に <code>is_hidden</code> を追加 · ルールを 1 回読み新規 URL を判定</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:broadcast" style="color:var(--accent)" noobserver></iconify-icon>
+              Step 4 — RPC &amp; WebUI
+            </span>
+            <span class="step-meta">P2 · server + webui</span>
+          </div>
+          <div class="step-body">
+            RPC 2 本を handlers に登録し、Settings ビュー + API 型 + モックを追加する。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:server" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">handlers.ts</div>
+                <div class="task-desc"><code>settings.get</code> / <code>settings.set</code> · set は再計算 + broadcast <span class="tag">pending</span></div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">api types + client</div>
+                <div class="task-desc"><code>SettingsInfo</code> 型 · <code>HisApi.settings.{get,set}</code> · <code>settings.{get,set}</code> 配線</div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:web" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Settings view</div>
+                <div class="task-desc"><code>views/settings/{Settings.tsx,settings.model.ts}</code> · App.tsx の VIEWS に追加</div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:flask-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">mock</div>
+                <div class="task-desc">mock/client.ts に settings + 除外フィルタ（search / visits / stats / github）</div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:gesture-tap-button" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">ui/button</div>
+                <div class="task-desc"><code>buttonBase</code> + preset（<code>buttonPrimary</code> / <code>buttonSmGhost</code>）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FILES -->
+  <section>
+    <h2><iconify-icon icon="mdi:file-tree-outline" width="24" noobserver></iconify-icon>Affected files</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Package</th><th>File</th><th>Change</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>core</td><td><code>src/db/migrations/006_settings_hidden.sql</code></td><td><span class="tag">new</span> <code>settings</code> + <code>is_hidden</code> + index</td></tr>
+          <tr><td>core</td><td><code>src/settings.ts</code></td><td><span class="tag">new</span> 型 / get|set / cleanPatterns / matchesHidden / recomputeHidden</td></tr>
+          <tr><td>core</td><td><code>src/db/__tests__/settings.test.ts</code></td><td><span class="tag">new</span> マッチ・再計算・除外</td></tr>
+          <tr><td>core</td><td><code>src/db/query.ts</code></td><td><code>buildSearch</code> に <code>is_hidden = 0</code></td></tr>
+          <tr><td>core</td><td><code>src/db/stats.ts</code></td><td>allTime / month の SQL に <code>is_hidden = 0</code></td></tr>
+          <tr><td>core</td><td><code>src/github/db.ts</code></td><td><code>githubRows</code> の WHERE に <code>is_hidden = 0</code></td></tr>
+          <tr><td>core</td><td><code>src/sync/applyVisits.ts</code></td><td><code>insertUrl</code> に <code>is_hidden</code>、新規 URL を判定</td></tr>
+          <tr><td>core</td><td><code>src/index.ts</code> / <code>src/node.ts</code></td><td>settings の export</td></tr>
+          <tr><td>server</td><td><code>src/handlers.ts</code></td><td><code>settings.get</code> / <code>settings.set</code> 登録 <span class="tag">pending</span></td></tr>
+          <tr><td>webui</td><td><code>src/app/api/types.ts</code></td><td><span class="tag">done</span> <code>SettingsInfo</code> 型 + <code>HisApi.settings.{get,set}</code></td></tr>
+          <tr><td>webui</td><td><code>src/app/api/client.ts</code></td><td><span class="tag">done</span> <code>settings.{get,set}</code> 実装</td></tr>
+          <tr><td>webui</td><td><code>src/app/api/mock/client.ts</code></td><td><span class="tag">done</span> settings + 除外フィルタ（search / visits / stats / github）</td></tr>
+          <tr><td>webui</td><td><code>src/views/settings/{Settings.tsx,settings.model.ts}</code></td><td><span class="tag">done</span> <span class="tag">new</span> Settings ビュー</td></tr>
+          <tr><td>webui</td><td><code>src/App.tsx</code></td><td><span class="tag">done</span> VIEWS に <code>settings</code> 追加</td></tr>
+          <tr><td>webui</td><td><code>src/components/ui/button.ts</code></td><td><span class="tag">done</span> <code>buttonBase</code> + preset（<code>buttonPrimary</code> / <code>buttonSmGhost</code>）</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- VERIFICATION -->
+  <section>
+    <h2><iconify-icon icon="mdi:check-decagram-outline" width="24" noobserver></iconify-icon>Verification</h2>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:test-tube" noobserver></iconify-icon>
+          <h4>Automated</h4>
+        </div>
+        <p>WebUI 実装済: <code>tsc -b</code> / <code>oxlint</code> 通過。<code>core</code> 実装後: <code>node --test</code>(新テスト含む) · <code>pnpm -r typecheck</code> · <code>pnpm -r lint</code>。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:hand-pointing-right" noobserver></iconify-icon>
+          <h4>Manual</h4>
+        </div>
+        <p>モックモード（<code>VITE_USE_MOCK_API=true</code>）でパターン追加 → Urls / Visits / Dashboard / GitHub から消える。解除で戻る。<code>core</code>/<code>server</code> 実装後: 既存 archive で migration、新規 sync の URL が即 hidden。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPEN QUESTIONS -->
+  <section>
+    <h2><iconify-icon icon="mdi:help-circle-outline" width="24" noobserver></iconify-icon>Open questions</h2>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <h4>Q1 マッチ対象</h4>
+        </div>
+        <p>hostname のみか、URL glob 併用か。本プランは <span class="tag d">D2</span> の併用。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <h4>Q2 private ルール</h4>
+        </div>
+        <p>liveness / AI 用の private も同時に入れるか。本プランは hidden のみ。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <h4>Q3 直叩き</h4>
+        </div>
+        <p><code>history.getItem</code> 直叩きで hidden を返すか。本プランは返す(ローカル単一ユーザー前提)。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <h4>Q4 CLI</h4>
+        </div>
+        <p><code>his hide add|list|remove</code> を付けるか。本プランは RPC/UI のみ、CLI は scope 外。</p>
+      </div>
+    </div>
+    <blockquote>
+      <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
+      Q1〜Q4 の回答次第で <span class="tag d">D2</span> / <span class="tag d">D4</span> のスコープを調整する。
+    </blockquote>
+  </section>
+
+  <footer>
+    <div class="f-title"><iconify-icon icon="mdi:information-outline" noobserver></iconify-icon>his · hide URL patterns</div>
+    <ul>
+      <li><iconify-icon icon="mdi:text-box-check-outline" noobserver></iconify-icon>SPEC 前提: <em>Hidden rows are never returned.</em></li>
+    </ul>
+    <div class="colophon">his hide plan · created 2026-10-13</div>
+  </footer>
+</div>
+
+<nav id="toc" class="toc" aria-label="On this page">
+  <div class="toc-title">On this page</div>
+</nav>
+
+<script>
+(() => {
+  const toc = document.getElementById("toc")
+  const headings = [...document.querySelectorAll(".container h2, .container h3")]
+  const seen = {}
+  for (const h of headings) {
+    const text = h.textContent.trim()
+    if (!h.id) {
+      const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+      seen[base] = (seen[base] ?? 0) + 1
+      h.id = seen[base] > 1 ? `${base}-${seen[base]}` : base
+    }
+    const a = document.createElement("a")
+    a.href = `#${h.id}`
+    a.innerHTML = h.innerHTML
+    a.querySelector("iconify-icon")?.removeAttribute("width")
+    if (h.tagName === "H3") a.className = "toc-h3"
+    a.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+      e.preventDefault()
+      h.scrollIntoView({ behavior: "smooth" })
+      history.replaceState(null, "", `#${h.id}`)
+    })
+    toc.append(a)
+  }
+  const links = new Map([...toc.querySelectorAll("a")].map((a) => [a.getAttribute("href").slice(1), a]))
+  const update = () => {
+    let current = headings[0]
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= 96) current = h
+    }
+    for (const a of links.values()) a.classList.remove("active")
+    links.get(current.id)?.classList.add("active")
+  }
+  addEventListener("scroll", update, { passive: true })
+  update()
+})()
+</script>
+</body>
+</html>
