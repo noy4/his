@@ -4,7 +4,7 @@ import type { HisApp } from './app.ts'
 
 // Menubar tray: Sync Now (RPC), Open, Quit his. HisApp owns the instance.
 export function createTray(host: HisApp): Tray {
-  const icon = nativeImage.createFromPath(path.join(__dirname, '../assets/trayTemplate@2x.png'))
+  const icon = nativeImage.createFromPath(path.join(import.meta.dirname, '../assets/trayTemplate@2x.png'))
   icon.setTemplateImage(true)
   const tray = new Tray(icon)
   tray.setToolTip('his')

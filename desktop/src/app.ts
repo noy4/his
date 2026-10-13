@@ -88,7 +88,7 @@ export class HisApp {
   // --- serve controller ---
 
   #spawnServe(): ChildProcess {
-    const cliEntry = process.env.HIS_CLI ?? path.join(__dirname, '../../cli/bin.ts')
+    const cliEntry = process.env.HIS_CLI ?? path.join(import.meta.dirname, '../../cli/bin.ts')
     const proc = spawn('node', [cliEntry, 'serve'], { stdio: 'ignore', env: process.env })
     proc.on('exit', () => {
       if (this.#serveProc === proc) this.#serveProc = undefined
