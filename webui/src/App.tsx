@@ -1,4 +1,5 @@
 import type { IconComponent } from '@/components/icons'
+import { cn } from 'cn'
 import { AppModel } from '@/app/app'
 import { Dashboard } from '@/views/dashboard/Dashboard'
 import { GitHub } from '@/views/github/GitHub'
@@ -112,8 +113,10 @@ function ViewNavItem({
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-1.5 rounded px-3 pl-2.5 py-1 font-medium transition-colors ${active ? 'bg-bg-2 text-text' : 'text-muted hover:text-text'
-        }`}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded px-3 pl-2.5 py-1 font-medium transition-colors',
+        active ? 'bg-bg-2 text-text' : 'text-muted hover:text-text',
+      )}
       aria-pressed={active}
       onClick={onClick}
     >

@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import dayjs from 'dayjs'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
@@ -56,7 +57,7 @@ export function Bars({ data, labels }: { data: number[]; labels?: string[] }) {
 }
 
 export function Sk({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse rounded bg-bg-3 ${className}`} />
+  return <div className={cn('animate-pulse rounded bg-bg-3', className)} />
 }
 
 export function ListSkeleton() {
@@ -135,7 +136,7 @@ function NavButton({
   return (
     <button
       type="button"
-      className={`${buttonBase} text-muted hover:bg-bg-3 hover:text-text`}
+      className={cn(buttonBase, 'text-muted hover:bg-bg-3 hover:text-text')}
       {...props}
     >
       {icon}

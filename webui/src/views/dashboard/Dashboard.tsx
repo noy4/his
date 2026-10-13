@@ -1,4 +1,5 @@
 import { Card, CardTitle } from '@/components/ui/card'
+import { cn } from 'cn'
 import { dateLabel } from '@/lib/date'
 import { isLocalDomain } from '@/lib/domain'
 import { fmtNum } from '@/lib/format'
@@ -101,7 +102,7 @@ export function Dashboard({ app }: { app: AppModel }) {
             {topDomains.map((d) => (
               <li
                 key={d.domain}
-                className={`-mx-1 flex items-center gap-2 rounded px-1 ${isLocalDomain(d.domain) ? 'bg-primary-soft' : ''}`}
+                className={cn('-mx-1 flex items-center gap-2 rounded px-1', isLocalDomain(d.domain) && 'bg-primary-soft')}
               >
                 <Favicon host={d.domain} size={18} />
                 <span className="min-w-0 flex-1 truncate text-text-2">{d.domain}</span>
