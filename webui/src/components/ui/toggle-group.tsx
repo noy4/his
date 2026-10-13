@@ -11,7 +11,7 @@ export function ToggleGroupRoot({ className, ...props }: ComponentProps<'div'>) 
   )
 }
 
-export function ToggleGroupButton({ selected = false, className, ...props }: ComponentProps<'button'> & { selected?: boolean }) {
+export function ToggleGroupItem({ selected = false, className, ...props }: ComponentProps<'button'> & { selected?: boolean }) {
   return (
     <button
       type="button"

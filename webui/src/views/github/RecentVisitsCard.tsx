@@ -1,6 +1,6 @@
 import type { GithubVisitKind, HistoryItem } from '@/app/api'
 import { Card, CardTitle } from '@/components/ui/card'
-import { ToggleGroupButton, ToggleGroupRoot } from '@/components/ui/toggle-group'
+import { ToggleGroupItem, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { relativeDateLabel } from '@/lib/date'
 import { parseGithubTitle, parseGithubUrl } from '@his/core'
 import { cn } from 'cn'
@@ -116,7 +116,7 @@ function VisitsViewToggle({ gh }: { gh: GithubModel }) {
   return (
     <ToggleGroupRoot aria-label="View">
       {opts.map(({ value, label, Icon }) => (
-        <ToggleGroupButton
+        <ToggleGroupItem
           key={value}
           title={label}
           aria-label={label}
@@ -124,7 +124,7 @@ function VisitsViewToggle({ gh }: { gh: GithubModel }) {
           onClick={() => gh.setView(value)}
         >
           <Icon width={14} height={14} />
-        </ToggleGroupButton>
+        </ToggleGroupItem>
       ))}
     </ToggleGroupRoot>
   )

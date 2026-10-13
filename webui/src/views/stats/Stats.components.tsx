@@ -4,6 +4,7 @@ import ChevronRight from '~icons/mdi/chevron-right'
 import type { ComponentProps, ReactNode } from 'react'
 import type { IconComponent } from '@/components/icons'
 import { buttonBase } from '@/components/ui/button'
+import { ToggleGroupItem, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { fmtNum } from '@/lib/format'
 
 export function StatsHeaderRoot({ children }: { children: React.ReactNode }) {
@@ -72,7 +73,7 @@ export function ListSkeleton() {
   )
 }
 
-export function SegmentedControl<T extends string>({
+export function PeriodToggle<T extends string>({
   value,
   onChange,
   options,
@@ -82,19 +83,18 @@ export function SegmentedControl<T extends string>({
   options: { value: T; label: string }[]
 }) {
   return (
-    <div className="inline-flex shrink-0 gap-1 rounded-sm bg-bg-3 p-0.5 text-sm" role="group" aria-label="Stats period">
+    <ToggleGroupRoot aria-label="Stats period" className="gap-1 text-sm">
       {options.map((o) => (
-        <button
+        <ToggleGroupItem
           key={o.value}
-          type="button"
-          aria-pressed={value === o.value}
+          selected={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`rounded px-3 py-1 font-medium transition-colors ${value === o.value ? 'bg-bg-2 text-text' : 'text-muted hover:text-text'}`}
+          className="px-3 py-1 font-medium"
         >
           {o.label}
-        </button>
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroupRoot>
   )
 }
 

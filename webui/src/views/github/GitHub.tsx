@@ -11,7 +11,7 @@ import PullIcon from '~icons/octicon/git-pull-request-16'
 import RepoIcon from '~icons/octicon/repo-16'
 import {
   MonthNav,
-  SegmentedControl,
+  PeriodToggle,
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
@@ -44,7 +44,7 @@ export function GitHub({ app }: { app: AppModel }) {
         ) : (
           <div />
         )}
-        <SegmentedControl
+        <PeriodToggle
           value={gh.mode.value}
           onChange={(m) => gh.setMode(m)}
           options={[

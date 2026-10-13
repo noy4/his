@@ -15,7 +15,7 @@ import { DashboardSkeleton } from './Dashboard.components'
 import {
   Bars,
   MonthNav,
-  SegmentedControl,
+  PeriodToggle,
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
@@ -54,7 +54,7 @@ export function Dashboard({ app }: { app: AppModel }) {
         ) : (
           <div />
         )}
-        <SegmentedControl
+        <PeriodToggle
           value={dashboard.mode.value}
           onChange={(m) => dashboard.setMode(m)}
           options={[
