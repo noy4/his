@@ -1,6 +1,6 @@
 import type { GithubVisitKind, HistoryItem } from '@/app/api'
 import { Card, CardTitle } from '@/components/ui/card'
-import { ToggleGroupItem, ToggleGroupRoot } from '@/components/ui/toggle-group'
+import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-group'
 import { relativeDateLabel } from '@/lib/date'
 import { parseGithubTitle, parseGithubUrl } from '@his/core'
 import { cn } from 'cn'
@@ -107,26 +107,19 @@ function VisitsActiveFilter({ gh }: { gh: GithubModel }) {
   )
 }
 
+const VIEW_OPTIONS: IconToggleOption[] = [
+  { value: 'list', label: 'List', Icon: ListIcon },
+  { value: 'card', label: 'Cards', Icon: GridIcon },
+]
+
 function VisitsViewToggle({ gh }: { gh: GithubModel }) {
-  const v = gh.view.value
-  const opts = [
-    { value: 'list', label: 'List', Icon: ListIcon },
-    { value: 'card', label: 'Cards', Icon: GridIcon },
-  ] as const
   return (
-    <ToggleGroupRoot aria-label="View">
-      {opts.map(({ value, label, Icon }) => (
-        <ToggleGroupItem
-          key={value}
-          title={label}
-          aria-label={label}
-          selected={v === value}
-          onClick={() => gh.setView(value)}
-        >
-          <Icon width={14} height={14} />
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroupRoot>
+    <IconToggleGroup
+      aria-label="View"
+      value={gh.view.value}
+      onChange={(v) => gh.setView(v)}
+      options={VIEW_OPTIONS}
+    />
   )
 }
 

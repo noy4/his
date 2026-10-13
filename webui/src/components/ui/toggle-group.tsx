@@ -1,5 +1,41 @@
 import { cn } from 'cn'
 import type { ComponentProps } from 'react'
+import type { IconComponent } from '@/components/icons'
+
+export type IconToggleOption<T extends string = string> = {
+  value: T
+  label: string
+  Icon: IconComponent
+}
+
+export function IconToggleGroup<T extends string>({
+  value,
+  onChange,
+  options,
+  ...props
+}: Omit<ComponentProps<'div'>, 'children' | 'value' | 'onChange'> & {
+  value: T
+  onChange: (next: T) => void
+  options: readonly IconToggleOption<T>[]
+}) {
+  return (
+    <ToggleGroupRoot {...props}>
+      {options.map((o) => (
+        <ToggleGroupItem
+          key={o.value}
+          title={o.label}
+          aria-label={o.label}
+          selected={value === o.value}
+          onClick={() => onChange(o.value)}
+        >
+          <o.Icon width={14} height={14} />
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroupRoot>
+  )
+}
+
+// --- components ---
 
 export function ToggleGroupRoot({ className, ...props }: ComponentProps<'div'>) {
   return (
