@@ -42,15 +42,18 @@ function globToRegExp(glob: string): RegExp {
   return new RegExp(`^${escaped}$`, 'i')
 }
 
-// bare token → host (subdomains too); slash/scheme → whole-URL glob
+// bare token → host (subdomains too); `*` glob; slash pattern → path glob
 function matchesHidden(url: string, patterns: string[]): boolean {
   if (patterns.length === 0) return false
   const host = rawHost(url)
-  return patterns.some((pattern) =>
-    !pattern.includes('*') && !pattern.includes('/') && !pattern.includes(':')
-      ? host === pattern || host.endsWith(`.${pattern}`)
-      : globToRegExp(pattern).test(pattern.includes('/') || pattern.includes(':') ? url.toLowerCase() : host),
-  )
+  const full = url.toLowerCase()
+  const pathUrl = full.replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
+  return patterns.some((pattern) => {
+    if (pattern.includes('/'))
+      return globToRegExp(pattern).test(pattern.includes('://') ? full : pathUrl)
+    if (!pattern.includes('*')) return host === pattern || host.endsWith(`.${pattern}`)
+    return globToRegExp(pattern).test(host)
+  })
 }
 
 function visibleItems(): HistoryItem[] {
@@ -67,6 +70,11 @@ function cleanPatterns(input: unknown): string[] {
     if (pattern) seen.add(pattern)
   }
   return [...seen].slice(0, 500)
+}
+
+function hiddenCount(patterns: string[]): number {
+  if (patterns.length === 0) return 0
+  return MOCK_ITEMS.filter((item) => matchesHidden(item.url, patterns)).length
 }
 
 function computeStats(): Stats {
@@ -421,11 +429,11 @@ export const mockApi: HisApi = {
 
   settings: {
     async get(): Promise<SettingsInfo> {
-      return { hiddenPatterns: [...hiddenPatterns] }
+      return { hiddenPatterns: [...hiddenPatterns], hiddenCount: hiddenCount(hiddenPatterns) }
     },
     async set(params: { hiddenPatterns: string[] }): Promise<SettingsInfo> {
       hiddenPatterns = cleanPatterns(params.hiddenPatterns)
-      return { hiddenPatterns: [...hiddenPatterns] }
+      return { hiddenPatterns: [...hiddenPatterns], hiddenCount: hiddenCount(hiddenPatterns) }
     },
   },
 

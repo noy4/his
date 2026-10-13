@@ -1,7 +1,7 @@
 import type { GithubKind, GithubVisitKind } from '@his/core'
-import type { HistoryItem, HistoryVisit, RegisteredSource, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core'
+import type { HistoryItem, HistoryVisit, RegisteredSource, SettingsInfo, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core'
 
-export type { HistoryItem, HistoryVisit, Transition, VisitItem }
+export type { HistoryItem, HistoryVisit, SettingsInfo, Transition, VisitItem }
 export type { SyncLastRun, SyncSummary }
 
 // sources.list row — RegisteredSource (source_profiles + watermark) + listing aggregates
@@ -72,13 +72,6 @@ export interface GithubVisitsParams {
 export interface SourcesListParams {
   /** probe each source and report whether it changed since the last sync */
   check?: boolean
-}
-
-// --- settings ---
-
-export interface SettingsInfo {
-  /** user "hide" patterns — one per line in the UI */
-  hiddenPatterns: string[]
 }
 
 // notifications — sync.progress is on hold (see SPEC); db.changed pending

@@ -1,5 +1,6 @@
 import type { DatabaseSync, StatementSync } from 'node:sqlite'
 import type { EpochMs, SourceKind, Transition, Watermark } from '../types.ts'
+import { getSettings, matchesHidden } from '../settings.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
 
 // id semantics: rowid is comparable, hash is not
@@ -94,6 +95,11 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
   // sql
   const stmts = prepareApplyStatements(db)
 
+  // new URLs are flagged hidden at insert time, so sync needs no full recompute
+  const { hiddenPatterns } = getSettings(db)
+  const insertHidden = db.prepare('INSERT OR IGNORE INTO hidden_urls (url_id) VALUES (?)')
+  const checkedHidden = new Set<number>()
+
   const urlIds = new Map<string, number>()
   const touched = new Set<number>()
   let insertedVisits = 0
@@ -107,6 +113,12 @@ export function applyVisits(params: ApplyVisitsParams): ApplyVisitsResult {
 
       // find or create the url row
       const urlId = resolveUrlId(stmts, urlIds, visit)
+
+      // flag a URL hidden once per batch if it matches the user's patterns
+      if (hiddenPatterns.length > 0 && !checkedHidden.has(urlId)) {
+        checkedHidden.add(urlId)
+        if (matchesHidden(visit.url, hiddenPatterns)) insertHidden.run(urlId)
+      }
 
       // insert visits
       const inserted = stmts.insertVisit.run(

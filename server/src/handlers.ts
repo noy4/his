@@ -2,12 +2,14 @@ import type { DatabaseSync } from 'node:sqlite'
 import type { GithubVisitsFilter, SearchFilter, SyncOptions } from '@his/core/node'
 import {
   getItem,
+  getSettings,
   githubStats,
   githubVisits,
   getVisits,
   listSourceProfiles,
   search,
   searchVisits,
+  setSettings,
   stats,
 } from '@his/core/node'
 import type { Handler } from './rpc.ts'
@@ -28,6 +30,8 @@ export function createHandlers({ db, runner }: {
     'sources.list': (params) => listSourceProfiles(db, { check: params?.check === true }),
     'sync.run': (params) => runner.run(params as SyncOptions),
     'sync.status': () => runner.lastRun(),
+    'settings.get': () => getSettings(db),
+    'settings.set': (params) => setSettings(db, params.hiddenPatterns),
   }
   return handlers
 }

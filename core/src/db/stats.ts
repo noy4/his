@@ -1,5 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite'
 import type { EpochMs } from '../types.ts'
+import { HIDDEN_URLS_EXCLUDED } from './query.ts'
 
 // Dashboard aggregates; shape mirrors the WebUI Stats 1:1.
 // Buckets use server-local time, days 'YYYY-MM-DD'; month ('YYYY-MM') scopes
@@ -78,7 +79,7 @@ interface DayRow {
 
 function allTimeStats(db: DatabaseSync): Stats {
   const rows = db
-    .prepare('SELECT url, visit_count, first_visit_time, last_visit_time FROM urls')
+    .prepare(`SELECT url, visit_count, first_visit_time, last_visit_time FROM urls WHERE ${HIDDEN_URLS_EXCLUDED}`)
     .all() as unknown as UrlRow[]
 
   const byDomain = new Map<string, number>()
@@ -103,7 +104,7 @@ function allTimeStats(db: DatabaseSync): Stats {
   const byHour = Array.from({ length: 24 }, () => 0)
   for (const bucket of db.prepare(
     `SELECT strftime('%H', visit_time / 1000, 'unixepoch', 'localtime') AS hour, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id GROUP BY hour`,
+     FROM visits JOIN urls ON urls.id = visits.url_id WHERE ${HIDDEN_URLS_EXCLUDED} GROUP BY hour`,
   ).all() as unknown as HourRow[]) {
     byHour[Number(bucket.hour)] = Number(bucket.visits)
   }
@@ -111,14 +112,14 @@ function allTimeStats(db: DatabaseSync): Stats {
   const byDow = Array.from({ length: 7 }, () => 0)
   for (const bucket of db.prepare(
     `SELECT strftime('%w', visit_time / 1000, 'unixepoch', 'localtime') AS dow, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id GROUP BY dow`,
+     FROM visits JOIN urls ON urls.id = visits.url_id WHERE ${HIDDEN_URLS_EXCLUDED} GROUP BY dow`,
   ).all() as unknown as DowRow[]) {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
   }
 
   const busiestDays = (db.prepare(
     `SELECT DATE(visit_time / 1000, 'unixepoch', 'localtime') AS day, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id GROUP BY day
+     FROM visits JOIN urls ON urls.id = visits.url_id WHERE ${HIDDEN_URLS_EXCLUDED} GROUP BY day
      ORDER BY visits DESC, day LIMIT 5`,
   ).all() as unknown as DayRow[]).map((row) => ({ day: row.day, visits: Number(row.visits) }))
 
@@ -137,7 +138,7 @@ function monthStats(db: DatabaseSync, month: string): Stats {
     `SELECT urls.url AS url, COUNT(*) AS visits,
             MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_RANGE}
+     WHERE ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
      GROUP BY urls.url`,
   ).all(start, end) as unknown as MonthUrlRow[]
 
@@ -165,7 +166,7 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   for (const bucket of db.prepare(
     `SELECT strftime('%H', visit_time / 1000, 'unixepoch', 'localtime') AS hour, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_RANGE}
+     WHERE ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
      GROUP BY hour`,
   ).all(start, end) as unknown as HourRow[]) {
     byHour[Number(bucket.hour)] = Number(bucket.visits)
@@ -175,7 +176,7 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   for (const bucket of db.prepare(
     `SELECT strftime('%w', visit_time / 1000, 'unixepoch', 'localtime') AS dow, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_RANGE}
+     WHERE ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
      GROUP BY dow`,
   ).all(start, end) as unknown as DowRow[]) {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
@@ -184,7 +185,7 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   const busiestDays = (db.prepare(
     `SELECT DATE(visit_time / 1000, 'unixepoch', 'localtime') AS day, COUNT(*) AS visits
      FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_RANGE}
+     WHERE ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
      GROUP BY day
      ORDER BY visits DESC, day LIMIT 5`,
   ).all(start, end) as unknown as DayRow[]).map((row) => ({ day: row.day, visits: Number(row.visits) }))

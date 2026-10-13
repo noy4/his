@@ -1,7 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from './parse.ts'
 import type { EpochMs, HistoryItem } from '../types.ts'
-import { clampLimit, decodeCursor, encodeCursor, type SearchPage } from '../db/query.ts'
+import { clampLimit, decodeCursor, encodeCursor, HIDDEN_URLS_EXCLUDED, type SearchPage } from '../db/query.ts'
 import { MONTH_RANGE, monthRange } from '../db/stats.ts'
 
 // GitHub Insights. SQL only narrows to github.com rows; path parsing / grouping is JS
@@ -158,7 +158,7 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlI
   if (month === undefined) {
     rows = db.prepare(
       `SELECT id, url, title, visit_count, typed_count, first_visit_time, last_visit_time
-       FROM urls WHERE ${GITHUB_URL}`,
+       FROM urls WHERE ${GITHUB_URL} AND ${HIDDEN_URLS_EXCLUDED}`,
     ).all() as unknown as Row[]
   } else {
     const [start, end] = monthRange(month)
@@ -167,7 +167,7 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlI
               SUM(CASE WHEN visits.transition = 'typed' THEN 1 ELSE 0 END) AS typed_count,
               MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
        FROM visits JOIN urls ON urls.id = visits.url_id
-       WHERE ${GITHUB_URL} AND ${MONTH_RANGE}
+       WHERE ${GITHUB_URL} AND ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
        GROUP BY urls.id`,
     ).all(start, end) as unknown as Row[]
   }

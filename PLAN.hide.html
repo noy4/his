@@ -443,9 +443,9 @@
       IMPLEMENTATION PLAN
     </div>
     <h1><iconify-icon icon="mdi:eye-off-outline" width="30" noobserver></iconify-icon>his · hide URL patterns</h1>
-    <p class="tagline">指定 URL パターンにマッチする履歴を全ビュー・集計から除外する設定 — settings テーブル + <code>urls.is_hidden</code> フラグ。</p>
+    <p class="tagline">指定 URL パターンにマッチする履歴を全ビュー・集計から除外する設定 — <code>settings</code> テーブル + <code>hidden_urls</code> テーブル。</p>
     <p class="tagline" style="margin-top:8px">
-      <span class="tag d">status</span> WebUI（settings ビュー + mock フィルタ）実装済 · <code>core</code> / <code>server</code> 未着手
+      <span class="tag d">status</span> 実装済 — <code>core</code> / <code>server</code> / <code>webui</code>。実 RPC で動作（テスト 10/10）
     </p>
   </header>
 
@@ -453,10 +453,10 @@
   <section>
     <h2><iconify-icon icon="mdi:information-outline" width="24" noobserver></iconify-icon>Overview</h2>
     <p class="section-desc">
-      ユーザーが指定した URL / ホスト名パターンを「非表示」として扱い、Urls・Visits・Dashboard・GitHub・検索の全表示と集計から除外する。設定は <code>settings</code> テーブルに保存し、<code>urls.is_hidden</code> フラグでフィルタする方式。
+      ユーザーが指定した URL / ホスト名パターンを「非表示」として扱い、Urls・Visits・Dashboard・GitHub・検索の全表示と集計から除外する。設定は <code>settings</code> テーブルに保存し、該当 URL を <code>hidden_urls</code> テーブルに materialize してフィルタする方式。
     </p>
     <p class="section-desc">
-      <strong>現状</strong>: WebUI 側は実装済（settings ビュー、API 型、mock の除外フィルタ）。ただし実 RPC の <code>settings.get/set</code> と <code>is_hidden</code> フィルタは未実装のため、除外が実際に効くのは <code>VITE_USE_MOCK_API=true</code> のモックモードのみ。
+      <strong>実装</strong>: <code>settings</code>（KV）+ <code>hidden_urls</code>（派生）を migration <code>006</code> で追加。読取りは全クエリで <code>hidden_urls</code> を除外、書込みは保存時の全再計算と sync 時の新規判定。WebUI は Settings ビューで編集。
     </p>
     <div class="grid-2">
       <div class="card">
@@ -503,7 +503,7 @@
           <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
           <h4><span class="tag d">D1</span> 設定の保存場所</h4>
         </div>
-        <p><code>history.db</code> に <code>settings(key TEXT PRIMARY KEY, value TEXT)</code> を新設(migration <code>006</code>)。key <code>hidden_patterns</code> = JSON <code>string[]</code>。per-home archive に閉じ、server / CLI / sync が同一データを参照する。外部 <code>~/.his/config.json</code> 案は不採用。</p>
+        <p><code>history.db</code> に <code>settings(key TEXT PRIMARY KEY, value TEXT NOT NULL)</code> を新設(migration <code>006</code>)。key <code>hidden_patterns</code> に JSON <code>string[]</code> を格納（trim / 小文字化 / 重複排除 / 上限 500 の正規化はコード側）。1 home = 1 archive = 1 設定で、server / CLI / sync が同一データを参照。<code>~/.his/config.json</code> 案は不採用。</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -517,14 +517,14 @@
           <iconify-icon icon="mdi:filter-variant" noobserver></iconify-icon>
           <h4><span class="tag d">D3</span> フィルタ方式</h4>
         </div>
-        <p><code>urls.is_hidden INTEGER NOT NULL DEFAULT 0</code> + index を追加(保存フラグ方式)。読取り SQL に <code>is_hidden = 0</code> を足すだけで FTS join・集計・GitHub に一律適用でき、per-query の JS 走査が不要。query-time 動的評価は不採用。</p>
+        <p>派生は <code>hidden_urls(url_id INTEGER PRIMARY KEY REFERENCES urls(id))</code> に materialize（<code>urls</code> の列ではなく別テーブル）。読取りは <code>NOT EXISTS (SELECT 1 FROM hidden_urls WHERE url_id = urls.id)</code> を足すだけで FTS join・集計・GitHub に一律適用。列方式を避ける理由は、<code>urls</code> の <code>AFTER UPDATE</code> FTS トリガが再計算のたびに無駄な再インデックスを起こすため。query-time 動的評価は不採用。</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
           <h4><span class="tag d">D4</span> RPC</h4>
         </div>
-        <p><code>settings.get</code> → <code>{ hiddenPatterns }</code> / <code>settings.set { hiddenPatterns }</code> → 正規化して保存し <code>{ hiddenPatterns }</code>。counts / changed は持たない。client は <code>settings.get()</code> / <code>settings.set()</code> の名前空間で呼ぶ。保存後 <code>broadcast('settings.changed')</code>(任意)。</p>
+        <p><code>settings.get</code> → <code>{ hiddenPatterns, hiddenCount }</code> / <code>settings.set { hiddenPatterns }</code> → 正規化して保存・<code>hidden_urls</code> 再計算し同じ形を返す。client は <code>settings.get()</code> / <code>settings.set()</code> の名前空間で呼ぶ。<code>hiddenCount</code> は Settings 画面の表示のみに使い、集計には混ぜない。保存後 <code>broadcast('settings.changed')</code>(任意)。</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -546,21 +546,22 @@
   <!-- SYNTAX -->
   <section>
     <h2><iconify-icon icon="mdi:code-braces" width="24" noobserver></iconify-icon>Pattern syntax</h2>
-    <p class="section-desc">1 行 1 パターン。判定はパターンに <code>/</code> も scheme も含まないかで分岐する。</p>
-    <pre><span class="c"># hostname マッチ — スラッシュ・scheme なし</span>
+    <p class="section-desc">1 行 1 パターン。判定はパターンに <code>/</code> があるかで分岐する。</p>
+    <pre><span class="c"># hostname マッチ — スラッシュなし</span>
 example.com          <span class="c">→ example.com と全サブドメイン</span>
 *.bank.com           <span class="c">→ bank.com の任意サブドメイン</span>
 10.0.*               <span class="c">→ ワイルドカード</span>
 
-<span class="c"># URL 全体 glob — スラッシュ or scheme あり</span>
-github.com/*/pull/*  <span class="c">→ path まで含めてマッチ</span>
+<span class="c"># path glob — スラッシュあり（scheme を除いた URL に照合）</span>
+github.com/*/pull/*  <span class="c">→ github.com/o/r/pull/12 にマッチ</span>
+
+<span class="c"># scheme を含むパターンは URL 全体に照合</span>
 https://*.example.com/*
 
 <span class="c"># 正規表現メタ文字は自動エスケープ · * のみワイルドカード</span></pre>
     <blockquote>
       <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
-      bare ドメインはサブドメインも含む(<code>example.com</code> ≒ <code>example.com</code> + <code>*.example.com</code>)。厳密一致にしたい場合は URL glob 側を使う。
-    </blockquote>
+      bare ドメインはサブドメインも含む(<code>example.com</code> ≒ <code>example.com</code> + <code>*.example.com</code>)。slash パターンは先頭 <code>scheme://</code> を除いた URL に当てる（<code>github.com/*/pull/*</code> は <code>https://github.com/…</code> にマッチ）。</blockquote>
   </section>
 
   <!-- ROADMAP -->
@@ -586,25 +587,25 @@ https://*.example.com/*
             マッチ評価と再計算を 1 モジュールに閉じる。UI / RPC から独立してテスト可能。
           </div>
           <div class="tasks">
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:file-code-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">migration 006</div>
-                <div class="task-desc"><code>settings</code> テーブル + <code>urls.is_hidden</code> 列 + index</div>
+                <div class="task-desc"><code>settings(key,value)</code> + <code>hidden_urls(url_id)</code></div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:code-braces" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">settings.ts</div>
-                <div class="task-desc">型 · <code>get/setHiddenPatterns</code> · <code>cleanPatterns</code> · <code>matchesHidden(url,patterns)</code> · <code>recomputeHidden(db)</code></div>
+                <div class="task-desc"><code>SettingsInfo</code> · <code>getSettings</code> / <code>setSettings</code> · <code>cleanPatterns</code> · <code>matchesHidden</code> · <code>recomputeHidden</code></div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:test-tube" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">settings.test.ts</div>
-                <div class="task-desc">hostname / glob / subdomain / 空行 / 重複 / 500 上限 · 再計算の changed 件数</div>
+                <div class="task-desc">hostname / glob / subdomain / 空行 / 重複 / 500 上限 · 再計算の changed 件数（10/10）</div>
               </div>
             </div>
           </div>
@@ -622,35 +623,35 @@ https://*.example.com/*
             <span class="step-meta">P1 · core</span>
           </div>
           <div class="step-body">
-            すべての読取り SQL に <code>is_hidden = 0</code> を足す。RPC の戻り値の形は変えない(hidden は UI に現れない)。
+            すべての読取り SQL に <code>hidden_urls</code> 除外（<code>NOT EXISTS</code>）を足す。RPC の戻り値の形は変えない(hidden は UI に現れない)。
           </div>
           <div class="tasks">
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:magnify" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">query.ts</div>
-                <div class="task-desc"><code>buildSearch</code> の基底条件に <code>urls.is_hidden = 0</code>(search / searchVisits)</div>
+                <div class="task-desc"><code>buildSearch</code> の基底条件に <code>hidden_urls</code> 除外（search / searchVisits）</div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:chart-box-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">stats.ts</div>
-                <div class="task-desc">allTime / month の各 SQL に <code>is_hidden = 0</code> — totals・byHour・byDow・topDomains・busiestDays</div>
+                <div class="task-desc">allTime / month の各 SQL に <code>hidden_urls</code> 除外 — totals・byHour・byDow・topDomains・busiestDays</div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:github" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">github/db.ts</div>
-                <div class="task-desc"><code>githubRows</code> の WHERE に <code>urls.is_hidden = 0</code></div>
+                <div class="task-desc"><code>githubRows</code> の WHERE に <code>hidden_urls</code> 除外</div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:test-tube" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">exclusion tests</div>
-                <div class="task-desc">hidden 行が search / searchVisits / stats / github から出ないこと</div>
+                <div class="task-desc">hidden 行が search から出ないこと</div>
               </div>
             </div>
           </div>
@@ -671,11 +672,11 @@ https://*.example.com/*
             新規 URL は作成時に現在のルールで判定して挿入。既存行は設定保存時の再計算に任せる。
           </div>
           <div class="tasks">
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:content-save-plus-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">applyVisits.ts</div>
-                <div class="task-desc"><code>insertUrl</code> に <code>is_hidden</code> を追加 · ルールを 1 回読み新規 URL を判定</div>
+                <div class="task-desc">ルールを 1 回読み、新規 URL を判定して該当時に <code>hidden_urls</code> へ挿入</div>
               </div>
             </div>
           </div>
@@ -696,11 +697,11 @@ https://*.example.com/*
             RPC 2 本を handlers に登録し、Settings ビュー + API 型 + モックを追加する。
           </div>
           <div class="tasks">
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:server" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">handlers.ts</div>
-                <div class="task-desc"><code>settings.get</code> / <code>settings.set</code> · set は再計算 + broadcast <span class="tag">pending</span></div>
+                <div class="task-desc"><code>settings.get</code> / <code>settings.set</code> → core の <code>getSettings</code> / <code>setSettings</code></div>
               </div>
             </div>
             <div class="task done">
@@ -747,16 +748,16 @@ https://*.example.com/*
           <tr><th>Package</th><th>File</th><th>Change</th></tr>
         </thead>
         <tbody>
-          <tr><td>core</td><td><code>src/db/migrations/006_settings_hidden.sql</code></td><td><span class="tag">new</span> <code>settings</code> + <code>is_hidden</code> + index</td></tr>
-          <tr><td>core</td><td><code>src/settings.ts</code></td><td><span class="tag">new</span> 型 / get|set / cleanPatterns / matchesHidden / recomputeHidden</td></tr>
-          <tr><td>core</td><td><code>src/db/__tests__/settings.test.ts</code></td><td><span class="tag">new</span> マッチ・再計算・除外</td></tr>
-          <tr><td>core</td><td><code>src/db/query.ts</code></td><td><code>buildSearch</code> に <code>is_hidden = 0</code></td></tr>
-          <tr><td>core</td><td><code>src/db/stats.ts</code></td><td>allTime / month の SQL に <code>is_hidden = 0</code></td></tr>
-          <tr><td>core</td><td><code>src/github/db.ts</code></td><td><code>githubRows</code> の WHERE に <code>is_hidden = 0</code></td></tr>
-          <tr><td>core</td><td><code>src/sync/applyVisits.ts</code></td><td><code>insertUrl</code> に <code>is_hidden</code>、新規 URL を判定</td></tr>
-          <tr><td>core</td><td><code>src/index.ts</code> / <code>src/node.ts</code></td><td>settings の export</td></tr>
-          <tr><td>server</td><td><code>src/handlers.ts</code></td><td><code>settings.get</code> / <code>settings.set</code> 登録 <span class="tag">pending</span></td></tr>
-          <tr><td>webui</td><td><code>src/app/api/types.ts</code></td><td><span class="tag">done</span> <code>SettingsInfo</code> 型 + <code>HisApi.settings.{get,set}</code></td></tr>
+          <tr><td>core</td><td><code>src/db/migrations/006_settings_and_hidden_urls.sql</code></td><td><span class="tag">new</span> <code>settings</code> + <code>hidden_urls</code></td></tr>
+          <tr><td>core</td><td><code>src/settings.ts</code></td><td><span class="tag">new</span> <code>SettingsInfo</code> · <code>getSettings</code> / <code>setSettings</code> · <code>cleanPatterns</code> · <code>matchesHidden</code> · <code>recomputeHidden</code></td></tr>
+          <tr><td>core</td><td><code>src/db/__tests__/settings.test.ts</code></td><td><span class="tag">new</span> マッチ・再計算・除外（10/10）</td></tr>
+          <tr><td>core</td><td><code>src/db/query.ts</code></td><td><code>HIDDEN_URLS_EXCLUDED</code> 定義 + <code>buildSearch</code> に適用</td></tr>
+          <tr><td>core</td><td><code>src/db/stats.ts</code></td><td>allTime / month の SQL に <code>HIDDEN_URLS_EXCLUDED</code> 適用</td></tr>
+          <tr><td>core</td><td><code>src/github/db.ts</code></td><td><code>githubRows</code> の WHERE に <code>HIDDEN_URLS_EXCLUDED</code> 適用</td></tr>
+          <tr><td>core</td><td><code>src/sync/applyVisits.ts</code></td><td>新規 URL を判定し <code>hidden_urls</code> へ挿入</td></tr>
+          <tr><td>core</td><td><code>src/index.ts</code> / <code>src/node.ts</code></td><td><code>SettingsInfo</code> を type-only re-export / settings の export</td></tr>
+          <tr><td>server</td><td><code>src/handlers.ts</code></td><td><span class="tag">done</span> <code>settings.get</code> / <code>settings.set</code> 登録</td></tr>
+          <tr><td>webui</td><td><code>src/app/api/types.ts</code></td><td><span class="tag">done</span> <code>SettingsInfo</code> を <code>@his/core</code> から re-export · <code>HisApi.settings.{get,set}</code></td></tr>
           <tr><td>webui</td><td><code>src/app/api/client.ts</code></td><td><span class="tag">done</span> <code>settings.{get,set}</code> 実装</td></tr>
           <tr><td>webui</td><td><code>src/app/api/mock/client.ts</code></td><td><span class="tag">done</span> settings + 除外フィルタ（search / visits / stats / github）</td></tr>
           <tr><td>webui</td><td><code>src/views/settings/{Settings.tsx,settings.model.ts}</code></td><td><span class="tag">done</span> <span class="tag">new</span> Settings ビュー</td></tr>
@@ -776,14 +777,14 @@ https://*.example.com/*
           <iconify-icon icon="mdi:test-tube" noobserver></iconify-icon>
           <h4>Automated</h4>
         </div>
-        <p>WebUI 実装済: <code>tsc -b</code> / <code>oxlint</code> 通過。<code>core</code> 実装後: <code>node --test</code>(新テスト含む) · <code>pnpm -r typecheck</code> · <code>pnpm -r lint</code>。</p>
+        <p>core <code>node --test</code>（<code>settings.test.ts</code> 10/10）· 全パッケージ <code>tsc --noEmit</code> / <code>oxlint</code> 通過。</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:hand-pointing-right" noobserver></iconify-icon>
           <h4>Manual</h4>
         </div>
-        <p>モックモード（<code>VITE_USE_MOCK_API=true</code>）でパターン追加 → Urls / Visits / Dashboard / GitHub から消える。解除で戻る。<code>core</code>/<code>server</code> 実装後: 既存 archive で migration、新規 sync の URL が即 hidden。</p>
+        <p>実 RPC でパターン追加 → Urls / Visits / Dashboard / GitHub から消える。解除で戻る。設定変更後は各ビュー再取得で反映（<code>db.changed</code> は未配線）。既存 archive で migration が通り、新規 sync の URL は即 hidden。</p>
       </div>
     </div>
   </section>
@@ -795,9 +796,9 @@ https://*.example.com/*
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
-          <h4>Q1 マッチ対象</h4>
+          <h4>Q1 マッチ対象 — 解決</h4>
         </div>
-        <p>hostname のみか、URL glob 併用か。本プランは <span class="tag d">D2</span> の併用。</p>
+        <p>hostname と URL glob を併用で確定・実装済（<span class="tag d">D2</span>）。slash パターンは scheme 除去 URL、scheme 付きパターンは全 URL。</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -823,7 +824,7 @@ https://*.example.com/*
     </div>
     <blockquote>
       <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
-      Q1〜Q4 の回答次第で <span class="tag d">D2</span> / <span class="tag d">D4</span> のスコープを調整する。
+      Q2〜Q4 は未決。変更する場合は <span class="tag d">D4</span> / <span class="tag d">D5</span> のスコープに影響する。
     </blockquote>
   </section>
 

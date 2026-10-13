@@ -11,6 +11,7 @@ export function Settings({ app }: { app: AppModel }) {
   const text = model.text.value
   const saving = model.saving.value
   const status = model.status.value
+  const hiddenCount = model.hiddenCount.value
   const patternCount = parsePatterns(text).length
 
   return (
@@ -30,6 +31,7 @@ export function Settings({ app }: { app: AppModel }) {
               <SettingsTextArea value={text} onChange={model.setText} />
               <SettingsActionsRoot>
                 <SettingsMeta>
+                  {hiddenCount !== null ? `${hiddenCount} hidden · ` : ''}
                   {patternCount} pattern{patternCount === 1 ? '' : 's'}
                   {status ? ` · ${status}` : ''}
                 </SettingsMeta>

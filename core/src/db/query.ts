@@ -31,6 +31,9 @@ const CURSOR_VERSION = 'v1'
 const URL_COLUMNS = 'id, url, title, last_visit_time, visit_count, typed_count, first_visit_time'
 const VISIT_COLUMNS = 'id, url_id, visit_time, transition'
 
+// user-hidden URLs are excluded from every list / aggregate query
+export const HIDDEN_URLS_EXCLUDED = 'NOT EXISTS (SELECT 1 FROM hidden_urls WHERE url_id = urls.id)'
+
 interface UrlRow {
   id: number
   url: string
@@ -122,7 +125,9 @@ export function getItem(db: DatabaseSync, id: number): ItemDetail | null {
 // --- helpers ---
 
 function buildSearch(filter: SearchFilter, timeColumn: string, idColumn: string) {
-  const fragments: Fragment[] = []
+  const fragments: Fragment[] = [
+    { sql: HIDDEN_URLS_EXCLUDED },
+  ]
   if (filter.url !== undefined) fragments.push({ sql: 'urls.url = ?', params: [filter.url] })
   if (filter.from !== undefined) fragments.push({ sql: `${timeColumn} >= ?`, params: [filter.from] })
   if (filter.to !== undefined) fragments.push({ sql: `${timeColumn} <= ?`, params: [filter.to] })
