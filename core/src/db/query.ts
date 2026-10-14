@@ -1,5 +1,7 @@
-import type { DatabaseSync } from 'node:sqlite'
+import { sql, type Expression, type ExpressionBuilder, type RawBuilder, type SqlBool } from 'kysely'
 import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../types.ts'
+import type { KyselyDb } from './db.ts'
+import type { DB } from './schema.ts'
 
 export interface SearchFilter {
   query?: string
@@ -28,11 +30,6 @@ export interface ItemDetail {
 const DEFAULT_LIMIT = 50
 const MAX_LIMIT = 200
 const CURSOR_VERSION = 'v1'
-const URL_COLUMNS = 'id, url, title, last_visit_time, visit_count, typed_count, first_visit_time'
-const VISIT_COLUMNS = 'id, url_id, visit_time, transition'
-
-// user-hidden URLs are excluded from every list / aggregate query
-export const HIDDEN_URLS_EXCLUDED = 'NOT EXISTS (SELECT 1 FROM hidden_urls WHERE url_id = urls.id)'
 
 interface UrlRow {
   id: number
@@ -51,7 +48,8 @@ interface VisitRow {
   transition: string
 }
 
-type HistoryVisitRow = VisitRow & {
+// searchVisits joins the URL for the display fields.
+interface VisitUrlRow extends VisitRow {
   url: string
   title: string | null
   visit_count: number
@@ -59,100 +57,123 @@ type HistoryVisitRow = VisitRow & {
 
 // --- queries ---
 
-// sql text kept together with its positional params
-interface Fragment {
-  sql: string
-  params?: (string | number)[]
-}
-
-export function search(db: DatabaseSync, filter: SearchFilter = {}): SearchPage {
+// FTS matching and cursor paging use raw SQL fragments.
+export async function search(db: KyselyDb, filter: SearchFilter = {}): Promise<SearchPage> {
   const limit = clampLimit(filter.limit)
-  const { join, where, params } = buildSearch(filter, 'urls.last_visit_time', 'urls.id')
-  const statement = db.prepare(
-    `SELECT ${URL_COLUMNS} FROM urls ${join}${where} ORDER BY last_visit_time DESC, id DESC LIMIT ?`,
-  )
-  const rows = statement.all(...params, limit + 1) as unknown as UrlRow[]
-  const items = rows.slice(0, limit).map(toHistoryItem)
-  const last = items.at(-1)
-  return {
-    items,
-    nextCursor: rows.length > limit && last !== undefined ? encodeCursor(last.lastVisit, last.id) : null,
-  }
+  const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
+  const text = filter.query?.trim()
+  let builder = db
+    .selectFrom('urls')
+    .selectAll()
+    .where(hiddenExcluded)
+  if (filter.url)
+    builder = builder.where('urls.url', '=', filter.url)
+  if (filter.from !== undefined)
+    builder = builder.where('urls.last_visit_time', '>=', filter.from)
+  if (filter.to !== undefined)
+    builder = builder.where('urls.last_visit_time', '<=', filter.to)
+  if (text && hasFts(text))
+    builder = builder.where(ftsCondition(text))
+  if (text && hasLike(text))
+    builder = builder.where(likeCondition(text))
+  if (cursor)
+    builder = builder.where(afterCursor('urls.last_visit_time', 'urls.id', cursor))
+  const rows = await builder
+    .orderBy('urls.last_visit_time', 'desc')
+    .orderBy('urls.id', 'desc')
+    .limit(limit + 1)
+    .execute()
+  return paginate(rows.map(toHistoryItem), limit, (item) => [item.lastVisit, item.id])
 }
 
-export function searchVisits(db: DatabaseSync, filter: SearchFilter = {}): SearchVisitsPage {
+export async function searchVisits(db: KyselyDb, filter: SearchFilter = {}): Promise<SearchVisitsPage> {
   const limit = clampLimit(filter.limit)
-  const { join, where, params } = buildSearch(filter, 'visits.visit_time', 'visits.id')
-  const statement = db.prepare(
-    `SELECT visits.id, visits.url_id, visits.visit_time, visits.transition, urls.url, urls.title, urls.visit_count
-     FROM visits JOIN urls ON urls.id = visits.url_id ${join}${where}
-     ORDER BY visits.visit_time DESC, visits.id DESC LIMIT ?`,
-  )
-  const rows = statement.all(...params, limit + 1) as unknown as HistoryVisitRow[]
-  const items = rows.slice(0, limit).map((row): HistoryVisit => ({
-    ...toVisitItem(row),
-    url: row.url,
-    title: row.title ?? '',
-    visitCount: row.visit_count,
-  }))
-  const last = items.at(-1)
-  return {
-    items,
-    nextCursor: rows.length > limit && last !== undefined ? encodeCursor(last.visitTime, last.id) : null,
-  }
+  const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
+  const text = filter.query?.trim()
+  let builder = db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select(['visits.id', 'visits.url_id', 'visits.visit_time', 'visits.transition', 'urls.url', 'urls.title', 'urls.visit_count'])
+    .where(hiddenExcluded)
+  if (filter.url)
+    builder = builder.where('urls.url', '=', filter.url)
+  if (filter.from !== undefined)
+    builder = builder.where('visits.visit_time', '>=', filter.from)
+  if (filter.to !== undefined)
+    builder = builder.where('visits.visit_time', '<=', filter.to)
+  if (text && hasFts(text))
+    builder = builder.where(ftsCondition(text))
+  if (text && hasLike(text))
+    builder = builder.where(likeCondition(text))
+  if (cursor)
+    builder = builder.where(afterCursor('visits.visit_time', 'visits.id', cursor))
+  const rows = await builder
+    .orderBy('visits.visit_time', 'desc')
+    .orderBy('visits.id', 'desc')
+    .limit(limit + 1)
+    .execute()
+  return paginate(rows.map(toHistoryVisit), limit, (item) => [item.visitTime, item.id])
 }
 
-export function getVisits(db: DatabaseSync, urlId: number, limit?: number): VisitItem[] {
-  if (limit === undefined) {
-    const statement = db.prepare(`SELECT ${VISIT_COLUMNS} FROM visits WHERE url_id = ? ORDER BY visit_time DESC`)
-    return (statement.all(urlId) as unknown as VisitRow[]).map(toVisitItem)
-  }
-  const statement = db.prepare(
-    `SELECT ${VISIT_COLUMNS} FROM visits WHERE url_id = ? ORDER BY visit_time DESC LIMIT ?`,
-  )
-  return (statement.all(urlId, clampLimit(limit)) as unknown as VisitRow[]).map(toVisitItem)
+export async function getVisits(db: KyselyDb, urlId: number, limit?: number): Promise<VisitItem[]> {
+  const query = db
+    .selectFrom('visits')
+    .select(['id', 'url_id', 'visit_time', 'transition'])
+    .where('url_id', '=', urlId)
+    .orderBy('visit_time', 'desc')
+  const rows = limit === undefined
+    ? await query.execute()
+    : await query.limit(clampLimit(limit)).execute()
+  return rows.map(toVisitItem)
 }
 
-export function getItem(db: DatabaseSync, id: number): ItemDetail | null {
-  const statement = db.prepare(
-    `SELECT ${URL_COLUMNS} FROM urls WHERE id = ?`,
-  )
-  const row = statement.get(id) as unknown as UrlRow | undefined
+export async function getItem(db: KyselyDb, id: number): Promise<ItemDetail | null> {
+  const row = await db
+    .selectFrom('urls')
+    .selectAll()
+    .where('id', '=', id)
+    .executeTakeFirst()
   if (row === undefined) return null
-  return { item: toHistoryItem(row), visits: getVisits(db, id) }
+  return {
+    item: toHistoryItem(row),
+    visits: await getVisits(db, id),
+  }
 }
 
 // --- helpers ---
 
-function buildSearch(filter: SearchFilter, timeColumn: string, idColumn: string) {
-  const fragments: Fragment[] = [
-    { sql: HIDDEN_URLS_EXCLUDED },
-  ]
-  if (filter.url !== undefined) fragments.push({ sql: 'urls.url = ?', params: [filter.url] })
-  if (filter.from !== undefined) fragments.push({ sql: `${timeColumn} >= ?`, params: [filter.from] })
-  if (filter.to !== undefined) fragments.push({ sql: `${timeColumn} <= ?`, params: [filter.to] })
+// user-hidden URLs are excluded from every list / aggregate query
+export function hiddenExcluded(eb: ExpressionBuilder<DB, 'urls'>): Expression<SqlBool> {
+  return eb.not(
+    eb.exists(
+      eb.selectFrom('hidden_urls')
+        .select('url_id')
+        .whereRef('hidden_urls.url_id', '=', 'urls.id'),
+    ),
+  )
+}
 
-  const query = filter.query?.trim() ?? ''
-  let ftsJoin: Fragment | null = null
-  if (query.length !== 0) {
-    if (codePoints(query) >= 3) {
-      ftsJoin = { sql: 'JOIN (SELECT rowid AS fts_id FROM urls_fts WHERE urls_fts MATCH ?) fts ON fts.fts_id = urls.id', params: [ftsPattern(query)] }
-    } else {
-      const pattern = likePattern(query)
-      fragments.push({ sql: '(urls.title LIKE ? ESCAPE ? OR urls.url LIKE ? ESCAPE ?)', params: [pattern, '\\', pattern, '\\'] })
-    }
-  }
+function hasFts(query: string): boolean {
+  return query.length !== 0 && codePoints(query) >= 3
+}
 
-  const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
-  if (cursor !== null) {
-    fragments.push({ sql: `(${timeColumn} < ? OR (${timeColumn} = ? AND ${idColumn} < ?))`, params: [cursor[0], cursor[0], cursor[1]] })
-  }
-  const clauses = fragments.map((fragment) => fragment.sql).join(' AND ')
-  return {
-    join: ftsJoin?.sql ?? '',
-    where: clauses === '' ? '' : ` WHERE ${clauses}`,
-    params: [...(ftsJoin?.params ?? []), ...fragments.flatMap((fragment) => fragment.params ?? [])],
-  }
+function hasLike(query: string): boolean {
+  return !hasFts(query)
+}
+
+function ftsCondition(query: string): RawBuilder<SqlBool> {
+  return sql<SqlBool>`urls.id IN (SELECT rowid FROM urls_fts WHERE urls_fts MATCH ${ftsPattern(query)})`
+}
+
+function likeCondition(query: string): RawBuilder<SqlBool> {
+  const pattern = likePattern(query)
+  return sql<SqlBool>`(urls.title LIKE ${pattern} ESCAPE ${'\\'} OR urls.url LIKE ${pattern} ESCAPE ${'\\'})`
+}
+
+// Keyset condition over (time, id) desc: rows strictly after `cursor`.
+function afterCursor(timeColumn: string, idColumn: string, cursor: [EpochMs, number]): RawBuilder<SqlBool> {
+  const [time, id] = cursor
+  return sql<SqlBool>`(${sql.ref(timeColumn)} < ${time} OR (${sql.ref(timeColumn)} = ${time} AND ${sql.ref(idColumn)} < ${id}))`
 }
 
 function toHistoryItem(row: UrlRow): HistoryItem {
@@ -176,6 +197,15 @@ function toVisitItem(row: VisitRow): VisitItem {
   }
 }
 
+function toHistoryVisit(row: VisitUrlRow): HistoryVisit {
+  return {
+    ...toVisitItem(row),
+    url: row.url,
+    title: row.title ?? '',
+    visitCount: row.visit_count,
+  }
+}
+
 export function clampLimit(limit: number | undefined): number {
   if (limit === undefined || !Number.isFinite(limit)) return DEFAULT_LIMIT
   return Math.min(Math.max(Math.trunc(limit), 1), MAX_LIMIT)
@@ -191,6 +221,20 @@ function ftsPattern(query: string): string {
 
 function likePattern(query: string): string {
   return `%${query.replace(/[\\%_]/g, '\\$&')}%`
+}
+
+/** Splits a `limit + 1` fetch into a page: the extra row only signals that more follow. */
+export function paginate<T>(
+  rows: readonly T[],
+  limit: number,
+  keyOf: (last: T) => [EpochMs, number],
+): { items: T[]; nextCursor: string | null } {
+  const items = rows.slice(0, limit)
+  const last = items.at(-1)
+  if (last === undefined || rows.length <= limit)
+    return { items, nextCursor: null }
+  const [time, id] = keyOf(last)
+  return { items, nextCursor: encodeCursor(time, id) }
 }
 
 /** Encodes `v1:<base64url(JSON([time, id]))>` using the endpoint's timestamp and row ID. */

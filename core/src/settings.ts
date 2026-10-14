@@ -1,9 +1,4 @@
-import type { DatabaseSync } from 'node:sqlite'
-
-// User "hide" patterns, stored as a JSON string[] under one settings key.
-// Matching mirrors the WebUI mock: a bare token matches the host (and its
-// subdomains); `*` is a glob; a pattern with a slash matches the path
-// (scheme stripped unless the pattern includes one).
+import type { KyselyDb } from './db/db.ts'
 
 const KEY = 'hidden_patterns'
 const MAX_PATTERNS = 500
@@ -13,56 +8,64 @@ export interface SettingsInfo {
   hiddenCount: number
 }
 
-export function getSettings(db: DatabaseSync): SettingsInfo {
+export async function getSettings(db: KyselyDb): Promise<SettingsInfo> {
   return {
-    hiddenPatterns: readPatterns(db),
-    hiddenCount: countHidden(db),
+    hiddenPatterns: await readPatterns(db),
+    hiddenCount: await countHidden(db),
   }
 }
 
 // Store the patterns and materialize hidden_urls. Returns the cleaned list.
-export function setSettings(db: DatabaseSync, hiddenPatterns: unknown): SettingsInfo {
+export async function setSettings(db: KyselyDb, hiddenPatterns: unknown): Promise<SettingsInfo> {
   const patterns = cleanPatterns(hiddenPatterns)
-  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value')
-    .run(KEY, JSON.stringify(patterns))
-  recomputeHidden(db, patterns)
+  const value = JSON.stringify(patterns)
+  await db
+    .insertInto('settings')
+    .values({ key: KEY, value })
+    .onConflict((oc) => oc.column('key').doUpdateSet({ value }))
+    .execute()
+  await recomputeHidden(db, patterns)
   return {
     hiddenPatterns: patterns,
-    hiddenCount: countHidden(db),
+    hiddenCount: await countHidden(db),
   }
 }
 
 // Recompute hidden_urls for every URL. Only changed rows are written.
-export function recomputeHidden(db: DatabaseSync, patterns: string[] = readPatterns(db)): number {
-  const urls = db.prepare('SELECT id, url FROM urls').all() as unknown as { id: number; url: string }[]
+export async function recomputeHidden(db: KyselyDb, patterns?: string[]): Promise<number> {
+  const resolved = patterns ?? await readPatterns(db)
+  const urls = await db
+    .selectFrom('urls')
+    .select(['id', 'url'])
+    .execute()
   const matched = new Set<number>()
   for (const row of urls) {
-    if (matchesHidden(row.url, patterns)) matched.add(row.id)
+    if (matchesHidden(row.url, resolved))
+      matched.add(row.id)
   }
-  const current = new Set(
-    (db.prepare('SELECT url_id FROM hidden_urls').all() as unknown as { url_id: number }[]).map((row) => row.url_id),
-  )
+  const hiddenRows = await db
+    .selectFrom('hidden_urls')
+    .select('url_id')
+    .execute()
+  const current = new Set(hiddenRows.map((row) => row.url_id))
 
-  const insert = db.prepare('INSERT OR IGNORE INTO hidden_urls (url_id) VALUES (?)')
-  const remove = db.prepare('DELETE FROM hidden_urls WHERE url_id = ?')
   let changed = 0
-  db.exec('BEGIN')
-  try {
-    for (const id of matched) {
-      if (current.has(id)) continue
-      insert.run(id)
-      changed += 1
-    }
-    for (const id of current) {
-      if (matched.has(id)) continue
-      remove.run(id)
-      changed += 1
-    }
-    db.exec('COMMIT')
-  } catch (error) {
-    db.exec('ROLLBACK')
-    throw error
-  }
+  await db.transaction().execute(async (tx) => {
+    const toAdd = [...matched].filter((id) => !current.has(id))
+    const toRemove = [...current].filter((id) => !matched.has(id))
+    if (toAdd.length > 0)
+      await tx
+        .insertInto('hidden_urls')
+        .values(toAdd.map((url_id) => ({ url_id })))
+        .onConflict((oc) => oc.column('url_id').doNothing())
+        .execute()
+    if (toRemove.length > 0)
+      await tx
+        .deleteFrom('hidden_urls')
+        .where('url_id', 'in', toRemove)
+        .execute()
+    changed = toAdd.length + toRemove.length
+  })
   return changed
 }
 
@@ -74,9 +77,11 @@ export function matchesHidden(url: string, patterns: string[]): boolean {
   return patterns.some((pattern) => {
     // slash patterns are globs over the path (scheme stripped unless the pattern has one)
     if (pattern.includes('/'))
-      return globToRegExp(pattern).test(pattern.includes('://') ? full : pathUrl)
+      return globToRegExp(pattern)
+        .test(pattern.includes('://') ? full : pathUrl)
     // host-only patterns: bare tokens also match subdomains
-    if (!pattern.includes('*')) return host === pattern || host.endsWith(`.${pattern}`)
+    if (!pattern.includes('*'))
+      return host === pattern || host.endsWith(`.${pattern}`)
     return globToRegExp(pattern).test(host)
   })
 }
@@ -94,8 +99,12 @@ export function cleanPatterns(input: unknown): string[] {
 
 // --- helpers ---
 
-function readPatterns(db: DatabaseSync): string[] {
-  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(KEY) as { value: string } | undefined
+async function readPatterns(db: KyselyDb): Promise<string[]> {
+  const row = await db
+    .selectFrom('settings')
+    .select('value')
+    .where('key', '=', KEY)
+    .executeTakeFirst()
   if (row === undefined) return []
   try {
     return cleanPatterns(JSON.parse(row.value))
@@ -104,9 +113,12 @@ function readPatterns(db: DatabaseSync): string[] {
   }
 }
 
-function countHidden(db: DatabaseSync): number {
-  const row = db.prepare('SELECT COUNT(*) AS n FROM hidden_urls').get() as { n: number }
-  return Number(row.n)
+async function countHidden(db: KyselyDb): Promise<number> {
+  const row = await db
+    .selectFrom('hidden_urls')
+    .select((eb) => eb.fn.countAll().as('count'))
+    .executeTakeFirstOrThrow()
+  return Number(row.count)
 }
 
 function hostOf(url: string): string {

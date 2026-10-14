@@ -1,6 +1,7 @@
-import type { DatabaseSync } from 'node:sqlite'
+import { sql } from 'kysely'
 import type { EpochMs, RegisteredSource, SourceKind, Watermark } from '../types.ts'
 import { probeFingerprint } from './fingerprint.ts'
+import type { KyselyDb } from '../db/db.ts'
 
 export interface WatermarkPatch {
   lastSourceVisitId: number
@@ -8,31 +9,41 @@ export interface WatermarkPatch {
   lastRunAt?: EpochMs | null
 }
 
-interface WatermarkRow {
-  source_profile_id: number
-  last_source_visit_id: number
-  source_id_offset: number
-  last_run_at: number | null
-}
-
-export function getWatermark(db: DatabaseSync, sourceProfileId: number): Watermark {
-  const row = db
-    .prepare('SELECT source_profile_id, last_source_visit_id, source_id_offset, last_run_at FROM profile_watermarks WHERE source_profile_id = ?')
-    .get(sourceProfileId) as unknown as WatermarkRow | undefined
+// Accepts a transaction so the watermark advances with the same commit as the
+// visits it tracks.
+export async function getWatermark(db: KyselyDb, sourceProfileId: number): Promise<Watermark> {
+  const row = await db
+    .selectFrom('profile_watermarks')
+    .select(['source_profile_id', 'last_source_visit_id', 'source_id_offset', 'last_run_at'])
+    .where('source_profile_id', '=', sourceProfileId)
+    .executeTakeFirst()
   return row === undefined
-    ? { sourceProfileId, lastSourceVisitId: 0, sourceIdOffset: 0, lastRunAt: null }
+    ? {
+      sourceProfileId,
+      lastSourceVisitId: 0,
+      sourceIdOffset: 0,
+      lastRunAt: null,
+    }
     : {
-        sourceProfileId: row.source_profile_id,
-        lastSourceVisitId: row.last_source_visit_id,
-        sourceIdOffset: row.source_id_offset,
-        lastRunAt: row.last_run_at,
-      }
+      sourceProfileId: row.source_profile_id,
+      lastSourceVisitId: row.last_source_visit_id,
+      sourceIdOffset: row.source_id_offset,
+      lastRunAt: row.last_run_at,
+    }
 }
 
-export function setWatermark(db: DatabaseSync, sourceProfileId: number, patch: WatermarkPatch): void {
-  db.prepare(
-    'INSERT INTO profile_watermarks (source_profile_id, last_source_visit_id, source_id_offset, last_run_at) VALUES (?, ?, ?, ?) ON CONFLICT(source_profile_id) DO UPDATE SET last_source_visit_id = excluded.last_source_visit_id, source_id_offset = excluded.source_id_offset, last_run_at = excluded.last_run_at',
-  ).run(sourceProfileId, patch.lastSourceVisitId, patch.sourceIdOffset, patch.lastRunAt ?? null)
+export async function setWatermark(db: KyselyDb, sourceProfileId: number, patch: WatermarkPatch): Promise<void> {
+  const values = {
+    source_profile_id: sourceProfileId,
+    last_source_visit_id: patch.lastSourceVisitId,
+    source_id_offset: patch.sourceIdOffset,
+    last_run_at: patch.lastRunAt ?? null,
+  }
+  await db
+    .insertInto('profile_watermarks')
+    .values(values)
+    .onConflict((oc) => oc.column('source_profile_id').doUpdateSet(values))
+    .execute()
 }
 
 export interface ListSourceProfilesOptions {
@@ -40,17 +51,28 @@ export interface ListSourceProfilesOptions {
   check?: boolean
 }
 
-export function listSourceProfiles(db: DatabaseSync, options: ListSourceProfilesOptions = {}): RegisteredSource[] {
-  const rows = db
-    .prepare(
-      `SELECT sp.id, sp.browser, sp.profile, sp.kind, sp.profile_path, pw.last_source_visit_id, pw.source_id_offset, pw.last_run_at, pw.last_fingerprint, COUNT(v.id) AS visits, MAX(v.visit_time) AS last_visit_time
-       FROM source_profiles sp
-       LEFT JOIN profile_watermarks pw ON pw.source_profile_id = sp.id
-       LEFT JOIN visits v ON v.source_profile_id = sp.id
-       GROUP BY sp.id
-       ORDER BY sp.browser, sp.profile`,
-    )
-    .all() as unknown as SourceProfileJoinRow[]
+export async function listSourceProfiles(db: KyselyDb, options: ListSourceProfilesOptions = {}): Promise<RegisteredSource[]> {
+  const rows = await db
+    .selectFrom('source_profiles as sp')
+    .leftJoin('profile_watermarks as pw', 'pw.source_profile_id', 'sp.id')
+    .leftJoin('visits as v', 'v.source_profile_id', 'sp.id')
+    .select([
+      'sp.id',
+      'sp.browser',
+      'sp.profile',
+      'sp.kind',
+      'sp.profile_path',
+      'pw.last_source_visit_id',
+      'pw.source_id_offset',
+      'pw.last_run_at',
+      'pw.last_fingerprint',
+      sql<number>`COUNT(v.id)`.as('visits'),
+      sql<number | null>`MAX(v.visit_time)`.as('last_visit_time'),
+    ])
+    .groupBy('sp.id')
+    .orderBy('sp.browser')
+    .orderBy('sp.profile')
+    .execute()
   return rows.map((row) => ({
     id: row.id,
     browser: row.browser,
@@ -70,23 +92,9 @@ export function listSourceProfiles(db: DatabaseSync, options: ListSourceProfiles
 }
 
 // probe the source files now and compare to the fingerprint saved at the last sync
-function isPending(row: SourceProfileJoinRow): boolean {
+function isPending(row: { last_fingerprint: string | null; profile_path: string }): boolean {
   if (row.last_fingerprint === null) return true
   return probeFingerprint(row.profile_path) !== row.last_fingerprint
-}
-
-interface SourceProfileJoinRow {
-  id: number
-  browser: string
-  profile: string
-  kind: string
-  profile_path: string
-  last_source_visit_id: number | null
-  source_id_offset: number | null
-  last_run_at: number | null
-  last_fingerprint: string | null
-  visits: number | bigint
-  last_visit_time: number | null
 }
 
 export function detectCleared(watermark: Watermark, sourceMaxVisitId: number): boolean {
@@ -100,16 +108,22 @@ export function resetOffset(watermark: Watermark): number {
 // --- target fingerprint (change gate) ---
 
 // Read the change-gate fingerprint for a source profile (browser + profile).
-export function getTargetFingerprint(db: DatabaseSync, browser: string, profile: string): string | null {
-  const row = db
-    .prepare(
-      'SELECT pw.last_fingerprint AS fingerprint FROM source_profiles sp JOIN profile_watermarks pw ON pw.source_profile_id = sp.id WHERE sp.browser = ? AND sp.profile = ?',
-    )
-    .get(browser, profile) as unknown as { fingerprint: string | null } | undefined
+export async function getTargetFingerprint(db: KyselyDb, browser: string, profile: string): Promise<string | null> {
+  const row = await db
+    .selectFrom('source_profiles as sp')
+    .innerJoin('profile_watermarks as pw', 'pw.source_profile_id', 'sp.id')
+    .select('pw.last_fingerprint as fingerprint')
+    .where('sp.browser', '=', browser)
+    .where('sp.profile', '=', profile)
+    .executeTakeFirst()
   return row?.fingerprint ?? null
 }
 
 // Store the change-gate fingerprint for a source profile.
-export function setTargetFingerprint(db: DatabaseSync, sourceProfileId: number, fingerprint: string): void {
-  db.prepare('UPDATE profile_watermarks SET last_fingerprint = ? WHERE source_profile_id = ?').run(fingerprint, sourceProfileId)
+export async function setTargetFingerprint(db: KyselyDb, sourceProfileId: number, fingerprint: string): Promise<void> {
+  await db
+    .updateTable('profile_watermarks')
+    .set({ last_fingerprint: fingerprint })
+    .where('source_profile_id', '=', sourceProfileId)
+    .execute()
 }

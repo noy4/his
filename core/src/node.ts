@@ -1,6 +1,7 @@
 export * from './index.ts'
 
 export * from './db/db.ts'
+export * from './db/schema.ts'
 export * from './db/query.ts'
 export * from './db/stats.ts'
 export * from './github/db.ts'

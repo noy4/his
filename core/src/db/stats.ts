@@ -1,6 +1,8 @@
-import type { DatabaseSync } from 'node:sqlite'
+import { sql, type Expression, type ExpressionBuilder, type SqlBool } from 'kysely'
 import type { EpochMs } from '../types.ts'
-import { HIDDEN_URLS_EXCLUDED } from './query.ts'
+import { hiddenExcluded } from './query.ts'
+import type { KyselyDb } from './db.ts'
+import type { DB } from './schema.ts'
 
 // Dashboard aggregates; shape mirrors the WebUI Stats 1:1.
 // Buckets use server-local time, days 'YYYY-MM-DD'; month ('YYYY-MM') scopes
@@ -23,7 +25,6 @@ export interface Stats {
 }
 
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
-export const MONTH_RANGE = 'visits.visit_time >= ? AND visits.visit_time < ?'
 
 /** Returns local month boundaries as epoch ms: [inclusive start, exclusive end]. */
 export function monthRange(month: string): [EpochMs, EpochMs] {
@@ -41,46 +42,30 @@ export function monthRange(month: string): [EpochMs, EpochMs] {
   return [start.getTime(), end.getTime()]
 }
 
-export function stats(db: DatabaseSync, month?: string): Stats {
-  if (month === undefined) return allTimeStats(db)
-  return monthStats(db, month)
+// Shared visit-time window predicate: [inclusive start, exclusive end).
+export function monthWindow(start: EpochMs, end: EpochMs) {
+  return (eb: ExpressionBuilder<DB, 'visits'>): Expression<SqlBool> =>
+    eb.and([
+      eb('visits.visit_time', '>=', start),
+      eb('visits.visit_time', '<', end),
+    ])
+}
+
+// time bucketing uses plain SQL.
+export async function stats(db: KyselyDb, month?: string): Promise<Stats> {
+  return month === undefined
+    ? allTimeStats(db)
+    : monthStats(db, month)
 }
 
 // --- implementation ---
 
-interface UrlRow {
-  url: string
-  visit_count: number
-  first_visit_time: number
-  last_visit_time: number
-}
-
-interface MonthUrlRow {
-  url: string
-  visits: number | bigint
-  first_visit_time: number
-  last_visit_time: number
-}
-
-interface HourRow {
-  hour: string
-  visits: number | bigint
-}
-
-interface DowRow {
-  dow: string
-  visits: number | bigint
-}
-
-interface DayRow {
-  day: string
-  visits: number | bigint
-}
-
-function allTimeStats(db: DatabaseSync): Stats {
-  const rows = db
-    .prepare(`SELECT url, visit_count, first_visit_time, last_visit_time FROM urls WHERE ${HIDDEN_URLS_EXCLUDED}`)
-    .all() as unknown as UrlRow[]
+async function allTimeStats(db: KyselyDb): Promise<Stats> {
+  const rows = await db
+    .selectFrom('urls')
+    .select(['url', 'visit_count', 'first_visit_time', 'last_visit_time'])
+    .where(hiddenExcluded)
+    .execute()
 
   const byDomain = new Map<string, number>()
   let visits = 0
@@ -102,26 +87,46 @@ function allTimeStats(db: DatabaseSync): Stats {
   }
 
   const byHour = Array.from({ length: 24 }, () => 0)
-  for (const bucket of db.prepare(
-    `SELECT strftime('%H', visit_time / 1000, 'unixepoch', 'localtime') AS hour, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id WHERE ${HIDDEN_URLS_EXCLUDED} GROUP BY hour`,
-  ).all() as unknown as HourRow[]) {
+  for (const bucket of await db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select((eb) => [
+      sql<string>`strftime('%H', visit_time / 1000, 'unixepoch', 'localtime')`.as('hour'),
+      eb.fn.countAll().as('visits'),
+    ])
+    .where(hiddenExcluded)
+    .groupBy(sql`hour`)
+    .execute()) {
     byHour[Number(bucket.hour)] = Number(bucket.visits)
   }
 
   const byDow = Array.from({ length: 7 }, () => 0)
-  for (const bucket of db.prepare(
-    `SELECT strftime('%w', visit_time / 1000, 'unixepoch', 'localtime') AS dow, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id WHERE ${HIDDEN_URLS_EXCLUDED} GROUP BY dow`,
-  ).all() as unknown as DowRow[]) {
+  for (const bucket of await db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select((eb) => [
+      sql<string>`strftime('%w', visit_time / 1000, 'unixepoch', 'localtime')`.as('dow'),
+      eb.fn.countAll().as('visits'),
+    ])
+    .where(hiddenExcluded)
+    .groupBy(sql`dow`)
+    .execute()) {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
   }
 
-  const busiestDays = (db.prepare(
-    `SELECT DATE(visit_time / 1000, 'unixepoch', 'localtime') AS day, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id WHERE ${HIDDEN_URLS_EXCLUDED} GROUP BY day
-     ORDER BY visits DESC, day LIMIT 5`,
-  ).all() as unknown as DayRow[]).map((row) => ({ day: row.day, visits: Number(row.visits) }))
+  const busiestDays = (await db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select((eb) => [
+      sql<string>`DATE(visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
+      eb.fn.countAll().as('visits'),
+    ])
+    .where(hiddenExcluded)
+    .groupBy(sql`day`)
+    .orderBy(sql`visits`, 'desc')
+    .orderBy(sql`day`)
+    .limit(5)
+    .execute()).map((row) => ({ day: row.day, visits: Number(row.visits) }))
 
   return {
     totals,
@@ -132,15 +137,21 @@ function allTimeStats(db: DatabaseSync): Stats {
   }
 }
 
-function monthStats(db: DatabaseSync, month: string): Stats {
+async function monthStats(db: KyselyDb, month: string): Promise<Stats> {
   const [start, end] = monthRange(month)
-  const urlGroups = db.prepare(
-    `SELECT urls.url AS url, COUNT(*) AS visits,
-            MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
-     FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
-     GROUP BY urls.url`,
-  ).all(start, end) as unknown as MonthUrlRow[]
+  const urlGroups = await db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select((eb) => [
+      'urls.url as url',
+      eb.fn.countAll().as('visits'),
+      eb.fn.min('visits.visit_time').as('first_visit_time'),
+      eb.fn.max('visits.visit_time').as('last_visit_time'),
+    ])
+    .where(monthWindow(start, end))
+    .where(hiddenExcluded)
+    .groupBy('urls.url')
+    .execute()
 
   const byDomain = new Map<string, number>()
   let visits = 0
@@ -163,32 +174,49 @@ function monthStats(db: DatabaseSync, month: string): Stats {
   }
 
   const byHour = Array.from({ length: 24 }, () => 0)
-  for (const bucket of db.prepare(
-    `SELECT strftime('%H', visit_time / 1000, 'unixepoch', 'localtime') AS hour, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
-     GROUP BY hour`,
-  ).all(start, end) as unknown as HourRow[]) {
+  for (const bucket of await db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select((eb) => [
+      sql<string>`strftime('%H', visit_time / 1000, 'unixepoch', 'localtime')`.as('hour'),
+      eb.fn.countAll().as('visits'),
+    ])
+    .where(monthWindow(start, end))
+    .where(hiddenExcluded)
+    .groupBy(sql`hour`)
+    .execute()) {
     byHour[Number(bucket.hour)] = Number(bucket.visits)
   }
 
   const byDow = Array.from({ length: 7 }, () => 0)
-  for (const bucket of db.prepare(
-    `SELECT strftime('%w', visit_time / 1000, 'unixepoch', 'localtime') AS dow, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
-     GROUP BY dow`,
-  ).all(start, end) as unknown as DowRow[]) {
+  for (const bucket of await db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select((eb) => [
+      sql<string>`strftime('%w', visit_time / 1000, 'unixepoch', 'localtime')`.as('dow'),
+      eb.fn.countAll().as('visits'),
+    ])
+    .where(monthWindow(start, end))
+    .where(hiddenExcluded)
+    .groupBy(sql`dow`)
+    .execute()) {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
   }
 
-  const busiestDays = (db.prepare(
-    `SELECT DATE(visit_time / 1000, 'unixepoch', 'localtime') AS day, COUNT(*) AS visits
-     FROM visits JOIN urls ON urls.id = visits.url_id
-     WHERE ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
-     GROUP BY day
-     ORDER BY visits DESC, day LIMIT 5`,
-  ).all(start, end) as unknown as DayRow[]).map((row) => ({ day: row.day, visits: Number(row.visits) }))
+  const busiestDays = (await db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select((eb) => [
+      sql<string>`DATE(visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
+      eb.fn.countAll().as('visits'),
+    ])
+    .where(monthWindow(start, end))
+    .where(hiddenExcluded)
+    .groupBy(sql`day`)
+    .orderBy(sql`visits`, 'desc')
+    .orderBy(sql`day`)
+    .limit(5)
+    .execute()).map((row) => ({ day: row.day, visits: Number(row.visits) }))
 
   return {
     totals,

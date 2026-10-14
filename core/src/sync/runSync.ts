@@ -29,7 +29,7 @@ export async function runSync(
       hooks.onLog?.('no targets found')
 
     for (const target of targets) {
-      const result = runTarget({ db, home, target, options, hooks })
+      const result = await runTarget({ db, home, target, options, hooks })
       summary.attempted += 1
       switch (result.status) {
         case 'failure':
@@ -47,6 +47,6 @@ export async function runSync(
     }
     return summary
   } finally {
-    db.close()
+    await db.destroy()
   }
 }

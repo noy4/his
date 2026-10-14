@@ -50,7 +50,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     }
     writeState(home, instance)
   } catch (error) {
-    db.close()
+    await db.destroy()
     throw error
   }
 
@@ -66,9 +66,10 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     rpc.stop()
     server.closeAllConnections()
     server.close(() => {
-      db.close()
-      clearState(home)
-      finish()
+      db.destroy().finally(() => {
+        clearState(home)
+        finish()
+      })
     })
   }
   process.on('SIGINT', shutdown)

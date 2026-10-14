@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
-import { historyDbPath, search, type EpochMs, type SearchFilter } from '@his/core/node'
+import { createDb, historyDbPath, search, type EpochMs, type SearchFilter } from '@his/core/node'
 import type { Context } from './context.ts'
 
 export interface QueryOptions {
@@ -11,7 +11,7 @@ export interface QueryOptions {
   limit?: string
 }
 
-export function query(ctx: Context, opts: QueryOptions): void {
+export async function query(ctx: Context, opts: QueryOptions): Promise<void> {
   const dbPath = historyDbPath(ctx.home)
   if (!fs.existsSync(dbPath)) {
     throw new Error(`no archive at ${dbPath} — run "his sync" first`)
@@ -35,12 +35,12 @@ export function query(ctx: Context, opts: QueryOptions): void {
     if (limit === null) throw new Error(`invalid --limit: ${opts.limit} (positive integer)`)
     filter.limit = limit
   }
-  const db = new DatabaseSync(dbPath, { readOnly: true })
+  const db = createDb(new DatabaseSync(dbPath, { readOnly: true }))
   try {
-    const page = search(db, filter)
+    const page = await search(db, filter)
     console.log(JSON.stringify(page, null, 2))
   } finally {
-    db.close()
+    await db.destroy()
   }
 }
 

@@ -1,4 +1,4 @@
-import type { DatabaseSync } from 'node:sqlite'
+import type { KyselyDb } from '../db/db.ts'
 import type { SyncOptions } from '../types.ts'
 import type { ApplyVisitsResult } from './applyVisits.ts'
 import { applyVisits } from './applyVisits.ts'
@@ -10,7 +10,7 @@ import { probeFingerprint } from './fingerprint.ts'
 import { getTargetFingerprint, setTargetFingerprint } from './watermarks.ts'
 
 interface RunTargetParams {
-  db: DatabaseSync
+  db: KyselyDb
   home: string
   target: SyncTarget
   options: SyncOptions
@@ -22,7 +22,7 @@ type RunTargetResult =
   | { status: 'skipped' }
   | { status: 'failure'; error: string }
 
-export function runTarget(params: RunTargetParams): RunTargetResult {
+export async function runTarget(params: RunTargetParams): Promise<RunTargetResult> {
   const { db, home, target, options, hooks } = params
   const browser = browserOf(target.browser)
   const { engine } = browser
@@ -33,7 +33,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     const fingerprint = probeFingerprint(target.dbPath)
 
     if (!options.full) {
-      const stored = getTargetFingerprint(db, target.browser, target.profile)
+      const stored = await getTargetFingerprint(db, target.browser, target.profile)
       if (stored === fingerprint) {
         hooks.onLog?.(`${logLabel}: unchanged — skipped`)
         return { status: 'skipped' }
@@ -45,7 +45,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     const visits = engine.parse(snap.path)
 
     // upsert visits
-    const result: ApplyVisitsResult = applyVisits({
+    const result: ApplyVisitsResult = await applyVisits({
       db,
       profile: {
         browser: target.browser,
@@ -62,7 +62,7 @@ export function runTarget(params: RunTargetParams): RunTargetResult {
     })
 
     // save fingerprint
-    setTargetFingerprint(db, result.sourceProfileId, fingerprint)
+    await setTargetFingerprint(db, result.sourceProfileId, fingerprint)
 
     hooks.onLog?.(`${logLabel}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
 

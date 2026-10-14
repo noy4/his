@@ -1,5 +1,4 @@
-import type { DatabaseSync } from 'node:sqlite'
-import type { GithubVisitsFilter, SearchFilter, SyncOptions } from '@his/core/node'
+import type { KyselyDb, GithubVisitsFilter, SearchFilter, SyncOptions } from '@his/core/node'
 import {
   getItem,
   getSettings,
@@ -16,7 +15,7 @@ import type { Handler } from './rpc.ts'
 import type { SyncRunner } from './sync-runner.ts'
 
 export function createHandlers({ db, runner }: {
-  db: DatabaseSync,
+  db: KyselyDb,
   runner: SyncRunner,
 }): Record<string, Handler> {
   const handlers: Record<string, Handler> = {

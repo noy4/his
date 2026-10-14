@@ -1,31 +1,46 @@
 import fs from 'node:fs'
+import fsPromises from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { DatabaseSync } from 'node:sqlite'
+import { Kysely } from 'kysely'
+import { SqliteDialect } from 'kysely-sqlite'
+import { FileMigrationProvider, Migrator } from 'kysely/migration'
+import type { DB } from './schema.ts'
+
+// Archive DB handle for query helpers (the raw DatabaseSync is migration-only).
+export type KyselyDb = Kysely<DB>
 
 export interface OpenOptions {
   busyTimeout?: number
 }
 
-// one migration step: raw sql, or a code migration
-export type Migration = string | CodeMigration
+// migrations: db/migrations/NNN_name.ts, each exporting `up(db)`
+const MIGRATIONS_DIR = 'migrations'
+// last user_version the legacy runner wrote (migrations 000..006)
+const LEGACY_LATEST_VERSION = 7
+// version stamped after migrate; > LEGACY_LATEST_VERSION so the legacy runner no-ops
+const SCHEMA_VERSION = LEGACY_LATEST_VERSION + 1
+// squashed migration replacing 000..006 (see migrations/000_init.ts)
+const BASELINE_MIGRATION = '000_init'
 
-export interface CodeMigration {
-  // foreign keys must toggle off outside a transaction while rows move
-  foreignKeys?: false
-  up(db: DatabaseSync): void
+// ready-to-use archive: pragmas applied, migrations current
+export async function initDb(dbPath: string, options: OpenOptions = {}): Promise<KyselyDb> {
+  const handle = open(dbPath, options)
+  try {
+    await migrate(handle)
+  } catch (error) {
+    handle.close()
+    throw error
+  }
+  return createDb(handle)
 }
 
-// migrations live in db/migrations as NNN_name.sql (raw) or NNN_name.ts
-// (default-exported CodeMigration). Loaded per initDb() — keeps load-time
-// effects out of this module and lets bundlers drop it when unused.
-const MIGRATIONS_DIR = 'migrations'
-
-// archive db, ready to use: pragmas applied, migrations current
-export async function initDb(dbPath: string, options: OpenOptions = {}): Promise<DatabaseSync> {
-  const db = open(dbPath, options)
-  await migrate(db)
-  return db
+// Wrap an open, pragma-configured handle; the caller owns its lifecycle.
+export function createDb(handle: DatabaseSync): KyselyDb {
+  return new Kysely<DB>({
+    dialect: new SqliteDialect({ database: handle })
+  })
 }
 
 export function open(dbPath: string, options: OpenOptions = {}): DatabaseSync {
@@ -37,53 +52,41 @@ export function open(dbPath: string, options: OpenOptions = {}): DatabaseSync {
   return db
 }
 
-export async function migrate(db: DatabaseSync): Promise<void> {
-  const row = db.prepare('PRAGMA user_version').get()
-  let version = row === undefined ? 0 : Number(row.user_version)
-  const migrations = await loadMigrations()
-  while (version < migrations.length) {
-    const migration = migrations[version]
-    const toggleFk = typeof migration !== 'string' && migration.foreignKeys === false
-    if (toggleFk) db.exec('PRAGMA foreign_keys = OFF')
-    db.exec('BEGIN')
-    try {
-      if (typeof migration === 'string')
-        db.exec(migration)
-      else
-        migration.up(db)
-      version += 1
-      db.exec(`PRAGMA user_version = ${version}`)
-      db.exec('COMMIT')
-    } catch (error) {
-      db.exec('ROLLBACK')
-      throw error
-    } finally {
-      if (toggleFk) db.exec('PRAGMA foreign_keys = ON')
-    }
-  }
+// Apply pending migrations; the caller keeps the handle's lifecycle.
+export async function migrate(handle: DatabaseSync): Promise<void> {
+  baselineLegacy(handle)
+  const migrator = new Migrator({
+    db: createDb(handle),
+    provider: new FileMigrationProvider({
+      fs: fsPromises,
+      path,
+      migrationFolder: path.join(import.meta.dirname, MIGRATIONS_DIR),
+      // hand-written .ts migrations: load absolute paths as file URLs
+      import: (filePath) => import(pathToFileURL(filePath).href),
+    }),
+  })
+  const { error } = await migrator.migrateToLatest()
+  if (error !== undefined) throw error
+  // stamp the version so a rollback to the legacy runner no-ops
+  handle.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`)
 }
 
-async function loadMigrations(): Promise<readonly Migration[]> {
-  const dir = path.join(import.meta.dirname, MIGRATIONS_DIR)
-  const names = fs.readdirSync(dir).filter((name) => name.endsWith('.sql') || name.endsWith('.ts'))
-  // version order IS the sorted filename — a misnamed file would silently shift
-  // slots, so fail loudly instead of skipping
-  for (const name of names) {
-    if (!/^\d+_/.test(name))
-      throw new Error(`migration file must be named NNN_name: ${name}`)
-  }
-  names.sort()
-  const migrations: Migration[] = []
-  for (const name of names) {
-    const file = pathToFileURL(path.join(dir, name))
-    if (name.endsWith('.ts')) {
-      const module = await import(file.href)
-      if (module === null || typeof module !== 'object' || typeof module.default !== 'object' || module.default === null || typeof module.default.up !== 'function')
-        throw new Error(`migration ${name} must default-export an object with up(db)`)
-      migrations.push(module.default as CodeMigration)
-    } else {
-      migrations.push(fs.readFileSync(path.join(dir, name), 'utf8'))
-    }
-  }
-  return migrations
+// Baseline existing archives so the squashed init does not re-run:
+// - v7: record 000_init as applied, then stamp v8
+// - v0 (fresh) / v8+: let the migrator run normally
+// - v1..v6: fail loudly (the previous release finishes those)
+function baselineLegacy(handle: DatabaseSync): void {
+  const version = readUserVersion(handle)
+  if (version === 0 || version > LEGACY_LATEST_VERSION) return
+  if (version < LEGACY_LATEST_VERSION)
+    throw new Error(`archive is at legacy schema v${version}; run the previous release once to finish migrating, then retry`)
+  handle.exec('CREATE TABLE IF NOT EXISTS kysely_migration (name varchar(255) not null primary key, timestamp varchar(255) not null)')
+  // INSERT OR IGNORE: a concurrent first open may have baselined
+  handle.prepare('INSERT OR IGNORE INTO kysely_migration (name, timestamp) VALUES (?, ?)').run(BASELINE_MIGRATION, new Date().toISOString())
+  handle.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`)
+}
+
+function readUserVersion(handle: DatabaseSync): number {
+  const row = handle.prepare('PRAGMA user_version').get()
+  return row === undefined ? 0 : Number(row.user_version)
 }

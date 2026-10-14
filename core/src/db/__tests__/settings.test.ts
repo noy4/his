@@ -1,15 +1,9 @@
 import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
-import { describe, it } from 'node:test'
-import { migrate } from '../db.ts'
+import { afterEach, beforeEach, describe, it } from 'node:test'
+import { createDb, migrate, type KyselyDb } from '../db.ts'
 import { search } from '../query.ts'
 import { cleanPatterns, getSettings, matchesHidden, recomputeHidden, setSettings } from '../../settings.ts'
-
-function insertUrl(db: DatabaseSync, id: number, url: string, lastVisit: number): void {
-  db.prepare(
-    'INSERT INTO urls (id, url, title, visit_count, typed_count, first_visit_time, last_visit_time) VALUES (?, ?, ?, 1, 0, ?, ?)',
-  ).run(id, url, url, lastVisit, lastVisit)
-}
 
 describe('cleanPatterns', () => {
   it('trims, lowercases, drops empties and dedupes', () => {
@@ -54,59 +48,67 @@ describe('matchesHidden', () => {
 })
 
 describe('settings + recompute', () => {
+  let handle: DatabaseSync
+  let db: KyselyDb
+
+  beforeEach(async () => {
+    handle = new DatabaseSync(':memory:')
+    await migrate(handle)
+    db = createDb(handle)
+  })
+
+  afterEach(() => handle.close())
+
+  async function insertUrl(id: number, url: string, lastVisit: number): Promise<void> {
+    await db
+      .insertInto('urls')
+      .values({
+        id,
+        url,
+        title: url,
+        visit_count: 1,
+        typed_count: 0,
+        first_visit_time: lastVisit,
+        last_visit_time: lastVisit,
+      })
+      .execute()
+  }
+
   it('stores patterns, materializes hidden_urls and excludes them from search', async () => {
-    const db = new DatabaseSync(':memory:')
-    try {
-      await migrate(db)
-      insertUrl(db, 1, 'https://example.com/a', 1000)
-      insertUrl(db, 2, 'https://news.example.com/b', 2000)
-      insertUrl(db, 3, 'https://other.com/c', 3000)
+    await insertUrl(1, 'https://example.com/a', 1000)
+    await insertUrl(2, 'https://news.example.com/b', 2000)
+    await insertUrl(3, 'https://other.com/c', 3000)
 
-      const info = setSettings(db, ['Example.com'])
-      assert.deepEqual(info.hiddenPatterns, ['example.com'])
-      assert.equal(info.hiddenCount, 2)
+    const info = await setSettings(db, ['Example.com'])
+    assert.deepEqual(info.hiddenPatterns, ['example.com'])
+    assert.equal(info.hiddenCount, 2)
 
-      assert.deepEqual(getSettings(db).hiddenPatterns, ['example.com'])
-      assert.equal(getSettings(db).hiddenCount, 2)
+    assert.deepEqual((await getSettings(db)).hiddenPatterns, ['example.com'])
+    assert.equal((await getSettings(db)).hiddenCount, 2)
 
-      assert.deepEqual(search(db, {}).items.map((item) => item.url), ['https://other.com/c'])
-    } finally {
-      db.close()
-    }
+    assert.deepEqual((await search(db, {})).items.map((item) => item.url), ['https://other.com/c'])
   })
 
   it('unhides everything when patterns are cleared', async () => {
-    const db = new DatabaseSync(':memory:')
-    try {
-      await migrate(db)
-      insertUrl(db, 1, 'https://example.com/a', 1000)
-      insertUrl(db, 2, 'https://other.com/c', 2000)
+    await insertUrl(1, 'https://example.com/a', 1000)
+    await insertUrl(2, 'https://other.com/c', 2000)
 
-      setSettings(db, ['example.com'])
-      assert.equal(search(db, {}).items.length, 1)
+    await setSettings(db, ['example.com'])
+    assert.equal((await search(db, {})).items.length, 1)
 
-      const info = setSettings(db, [])
-      assert.equal(info.hiddenCount, 0)
-      assert.equal(search(db, {}).items.length, 2)
-    } finally {
-      db.close()
-    }
+    const info = await setSettings(db, [])
+    assert.equal(info.hiddenCount, 0)
+    assert.equal((await search(db, {})).items.length, 2)
   })
 
   it('recomputeHidden only counts changed rows', async () => {
-    const db = new DatabaseSync(':memory:')
-    try {
-      await migrate(db)
-      insertUrl(db, 1, 'https://example.com/a', 1000)
-      insertUrl(db, 2, 'https://news.example.com/b', 2000)
-      insertUrl(db, 3, 'https://other.com/c', 3000)
+    await insertUrl(1, 'https://example.com/a', 1000)
+    await insertUrl(2, 'https://news.example.com/b', 2000)
+    await insertUrl(3, 'https://other.com/c', 3000)
 
-      setSettings(db, ['example.com'])
-      assert.equal(recomputeHidden(db, ['example.com']), 0)
-      // remove 2 (example, news) + add 1 (other) = 3
-      assert.equal(recomputeHidden(db, ['other.com']), 3)
-    } finally {
-      db.close()
-    }
+    await setSettings(db, ['example.com'])
+    assert.equal(await recomputeHidden(db, ['example.com']), 0)
+    // remove 2 (example, news) + add 1 (other) = 3
+    assert.equal(await recomputeHidden(db, ['other.com']), 3)
   })
 })

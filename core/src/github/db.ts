@@ -1,8 +1,10 @@
-import type { DatabaseSync } from 'node:sqlite'
+import { sql, type Expression, type ExpressionBuilder, type SqlBool } from 'kysely'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from './parse.ts'
 import type { EpochMs, HistoryItem } from '../types.ts'
-import { clampLimit, decodeCursor, encodeCursor, HIDDEN_URLS_EXCLUDED, type SearchPage } from '../db/query.ts'
-import { MONTH_RANGE, monthRange } from '../db/stats.ts'
+import { clampLimit, decodeCursor, hiddenExcluded, paginate, type SearchPage } from '../db/query.ts'
+import { monthRange, monthWindow } from '../db/stats.ts'
+import type { KyselyDb } from '../db/db.ts'
+import type { DB } from '../db/schema.ts'
 
 // GitHub Insights. SQL only narrows to github.com rows; path parsing / grouping is JS
 // (parse.ts) so it stays testable. month ('YYYY-MM') scopes to that month's visits.
@@ -25,7 +27,7 @@ export interface GithubVisitsFilter {
 
 const TOP = 5
 
-export function githubStats(db: DatabaseSync, month?: string): GithubStats {
+export async function githubStats(db: KyselyDb, month?: string): Promise<GithubStats> {
   const repos = new Map<string, { owner: string; repo: string; visits: number }>()
   const owners = new Map<string, { visits: number; repos: Set<string> }>()
   const items = new Map<string, GithubStats['topItems'][number] & { last: EpochMs }>()
@@ -33,7 +35,7 @@ export function githubStats(db: DatabaseSync, month?: string): GithubStats {
   let firstVisit = 0
   let lastVisit = 0
 
-  for (const { item, urlInfo } of githubRows(db, month)) {
+  for (const { item, urlInfo } of await githubRows(db, month)) {
     const visitCount = item.visitCount
     visits += visitCount
     firstVisit = firstVisit === 0 || item.firstVisit < firstVisit
@@ -106,14 +108,14 @@ export function githubStats(db: DatabaseSync, month?: string): GithubStats {
   }
 }
 
-export function githubVisits(db: DatabaseSync, filter: GithubVisitsFilter = {}): SearchPage {
+export async function githubVisits(db: KyselyDb, filter: GithubVisitsFilter = {}): Promise<SearchPage> {
   const owner = filter.owner?.toLowerCase()
   const repo = filter.repo?.toLowerCase()
   const kind = filter.kind ?? 'all'
   const limit = clampLimit(filter.limit)
   const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
 
-  const matchingRows = githubRows(db, filter.month)
+  const matchingRows = (await githubRows(db, filter.month))
     .filter(({ urlInfo }) => (
       owner === undefined || urlInfo.owner === owner)
       && (repo === undefined || urlInfo.repo === repo)
@@ -127,14 +129,7 @@ export function githubVisits(db: DatabaseSync, filter: GithubVisitsFilter = {}):
       || (it.lastVisit === cursor[0] && it.id < cursor[1])
     )
   rowsAfterCursor.sort((a, b) => b.lastVisit - a.lastVisit || b.id - a.id)
-  const items = rowsAfterCursor.slice(0, limit)
-  const last = items.at(-1)
-  return {
-    items,
-    nextCursor: rowsAfterCursor.length > limit && last !== undefined
-      ? encodeCursor(last.lastVisit, last.id)
-      : null,
-  }
+  return paginate(rowsAfterCursor, limit, (item) => [item.lastVisit, item.id])
 }
 
 // --- implementation ---
@@ -150,27 +145,18 @@ interface Row {
 }
 
 // LIKE is ASCII case-insensitive; parseGithubUrl does the exact host check
-const GITHUB_URL = "(urls.url LIKE 'https://github.com/%' OR urls.url LIKE 'https://www.github.com/%' OR urls.url LIKE 'http://github.com/%' OR urls.url LIKE 'http://www.github.com/%')"
+function githubUrl(eb: ExpressionBuilder<DB, 'urls'>): Expression<SqlBool> {
+  return eb.or([
+    eb('urls.url', 'like', 'https://github.com/%'),
+    eb('urls.url', 'like', 'https://www.github.com/%'),
+  ])
+}
 
 // github.com rows; with month, counts / first / last are narrowed to that month
-function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
-  let rows: Row[]
-  if (month === undefined) {
-    rows = db.prepare(
-      `SELECT id, url, title, visit_count, typed_count, first_visit_time, last_visit_time
-       FROM urls WHERE ${GITHUB_URL} AND ${HIDDEN_URLS_EXCLUDED}`,
-    ).all() as unknown as Row[]
-  } else {
-    const [start, end] = monthRange(month)
-    rows = db.prepare(
-      `SELECT urls.id AS id, urls.url AS url, urls.title AS title, COUNT(*) AS visit_count,
-              SUM(CASE WHEN visits.transition = 'typed' THEN 1 ELSE 0 END) AS typed_count,
-              MIN(visits.visit_time) AS first_visit_time, MAX(visits.visit_time) AS last_visit_time
-       FROM visits JOIN urls ON urls.id = visits.url_id
-       WHERE ${GITHUB_URL} AND ${MONTH_RANGE} AND ${HIDDEN_URLS_EXCLUDED}
-       GROUP BY urls.id`,
-    ).all(start, end) as unknown as Row[]
-  }
+async function githubRows(db: KyselyDb, month?: string): Promise<{ item: HistoryItem; urlInfo: GitHubUrlInfo }[]> {
+  const rows: Row[] = month === undefined
+    ? await githubAllRows(db)
+    : await githubMonthRows(db, month)
   return rows.flatMap((row) => {
     const urlInfo = parseGithubUrl(row.url)
     if (urlInfo === null) return []
@@ -185,6 +171,36 @@ function githubRows(db: DatabaseSync, month?: string): { item: HistoryItem; urlI
     }
     return [{ item, urlInfo }]
   })
+}
+
+function githubAllRows(db: KyselyDb): Promise<Row[]> {
+  return db
+    .selectFrom('urls')
+    .select(['id', 'url', 'title', 'visit_count', 'typed_count', 'first_visit_time', 'last_visit_time'])
+    .where(githubUrl)
+    .where(hiddenExcluded)
+    .execute()
+}
+
+function githubMonthRows(db: KyselyDb, month: string): Promise<Row[]> {
+  const [start, end] = monthRange(month)
+  return db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select([
+      'urls.id',
+      'urls.url',
+      'urls.title',
+      sql<number>`COUNT(*)`.as('visit_count'),
+      sql<number>`SUM(CASE WHEN visits.transition = 'typed' THEN 1 ELSE 0 END)`.as('typed_count'),
+      sql<number>`MIN(visits.visit_time)`.as('first_visit_time'),
+      sql<number>`MAX(visits.visit_time)`.as('last_visit_time'),
+    ])
+    .where(githubUrl)
+    .where(monthWindow(start, end))
+    .where(hiddenExcluded)
+    .groupBy('urls.id')
+    .execute()
 }
 
 // --- utils ---
