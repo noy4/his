@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { before, describe, it } from 'node:test'
-import { createDb, migrate, type KyselyDb } from '../../db/db.ts'
+import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
 import { githubStats, githubVisits } from '../db.ts'
-import { monthRange } from '../../db/filters.ts'
-import { sourceProfile, seedUrl } from '../../testing/db.ts'
+import { monthRange } from '../../../db/filters.ts'
+import { sourceProfile, seedUrl } from '../../../testing/db.ts'
 
 // local-time ms so month buckets ('localtime') line up
 const at = (iso: string) => new Date(iso).getTime()

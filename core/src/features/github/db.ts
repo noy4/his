@@ -1,11 +1,11 @@
 import { sql, type Expression, type ExpressionBuilder, type SqlBool } from 'kysely'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from './parse.ts'
-import type { EpochMs, HistoryItem } from '../types.ts'
-import { clampLimit, decodeCursor, paginate } from '../db/paging.ts'
-import { hiddenExcluded, monthRange, monthWindow } from '../db/filters.ts'
-import type { SearchPage } from '../db/query.ts'
-import type { KyselyDb } from '../db/db.ts'
-import type { DB } from '../db/schema.ts'
+import type { EpochMs, HistoryItem } from '../../types.ts'
+import { clampLimit, decodeCursor, paginate } from '../../db/paging.ts'
+import { hiddenExcluded, monthRange, monthWindow } from '../../db/filters.ts'
+import type { SearchPage } from '../../db/query.ts'
+import type { KyselyDb } from '../../db/db.ts'
+import type { DB } from '../../db/schema.ts'
 
 // GitHub Insights. SQL only narrows to github.com rows; path parsing / grouping is JS
 // (parse.ts) so it stays testable. month ('YYYY-MM') scopes to that month's visits.
