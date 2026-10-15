@@ -1,4 +1,4 @@
-import type { EpochMs } from '../types.ts'
+import type { EpochMs } from '../../types.ts'
 
 // Cursor paging primitives shared by all list queries.
 

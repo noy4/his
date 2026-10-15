@@ -1,8 +1,8 @@
 import { matchesKind, mergeRepoRoots, type GithubKind, type GithubVisitKind } from './parse.ts'
 import { getGithubRows } from './githubRows.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
-import { clampLimit, decodeCursor, paginate } from '../../db/paging.ts'
-import type { Page } from '../../db/paging.ts'
+import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
+import type { Page } from '../../db/query/paging.ts'
 import { topBy } from '../../util/top.ts'
 import type { KyselyDb } from '../../db/db.ts'
 

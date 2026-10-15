@@ -1,7 +1,7 @@
 import { sql, type Expression, type ExpressionBuilder, type SqlBool } from 'kysely'
 import { parseGithubUrl, type GithubUrlInfo } from './parse.ts'
 import type { HistoryItem } from '../../types.ts'
-import { hiddenExcluded, monthRange, monthWindow } from '../../db/filters.ts'
+import { hiddenExcluded, monthRange, monthWindow } from '../../db/query/filters.ts'
 import type { KyselyDb } from '../../db/db.ts'
 import type { DB } from '../../db/schema.ts'
 

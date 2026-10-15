@@ -1,6 +1,6 @@
 import type { Expression, ExpressionBuilder, SqlBool } from 'kysely'
-import type { EpochMs } from '../types.ts'
-import type { DB } from './schema.ts'
+import type { EpochMs } from '../../types.ts'
+import type { DB } from '../schema.ts'
 
 // Shared row scoping: hidden exclusion + month window.
 

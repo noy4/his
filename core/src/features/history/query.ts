@@ -1,7 +1,7 @@
 import { sql, type RawBuilder, type SqlBool } from 'kysely'
 import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../../types.ts'
-import { hiddenExcluded } from '../../db/filters.ts'
-import { clampLimit, decodeCursor, paginate, type Page } from '../../db/paging.ts'
+import { hiddenExcluded } from '../../db/query/filters.ts'
+import { clampLimit, decodeCursor, paginate, type Page } from '../../db/query/paging.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
 export interface SearchFilter {

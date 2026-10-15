@@ -2,7 +2,7 @@ import { sql } from 'kysely'
 import type { EpochMs } from '../../types.ts'
 import { hostWithoutWww } from '../../util/url.ts'
 import { topBy } from '../../util/top.ts'
-import { hiddenExcluded, monthRange, monthWindow } from '../../db/filters.ts'
+import { hiddenExcluded, monthRange, monthWindow } from '../../db/query/filters.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
 // Dashboard aggregates; shape mirrors the WebUI Stats 1:1.

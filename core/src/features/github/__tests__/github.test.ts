@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { before, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
 import { githubStats, githubVisits } from '../github.ts'
-import { monthRange } from '../../../db/filters.ts'
+import { monthRange } from '../../../db/query/filters.ts'
 import { sourceProfile, seedUrl } from '../../../testing/db.ts'
 
 // local-time ms so month buckets ('localtime') line up

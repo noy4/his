@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
-import { decodeCursor, encodeCursor } from '../../../db/paging.ts'
+import { decodeCursor, encodeCursor } from '../../../db/query/paging.ts'
 import { getVisits, search, searchVisits } from '../query.ts'
 import { sourceProfile } from '../../../testing/db.ts'
 
