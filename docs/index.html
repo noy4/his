@@ -201,6 +201,22 @@
     @media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 560px) { .grid-3 { grid-template-columns: 1fr; } }
 
+    /* Sources table */
+    .table-wrap {
+      overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--surface);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    th {
+      text-align: left; padding: 9px 12px; color: var(--muted); font-family: var(--mono);
+      font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+    }
+    td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text); }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { color: var(--text-strong); }
+    .table-note { margin-top: 14px; color: var(--muted); font-size: 0.84rem; text-align: center; }
+
     /* Footer */
     footer {
       border-top: 1px solid var(--border-strong); padding: 32px 0 48px; margin-top: 24px;
@@ -375,6 +391,43 @@
           <p><code>his sync</code>, <code>his query</code>, <code>his serve</code> — or a macOS menu bar app.</p>
         </div>
       </div>
+    </section>
+
+    <section id="sources">
+      <div class="section-head">
+        <h2>Every browser you use</h2>
+        <p>his detects your installed browsers and reads all of them — or import a Google Takeout export.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Browser</th><th>History file</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Chrome · Chromium · Edge · Brave · Vivaldi · Arc · Opera</td>
+              <td><code>History</code></td>
+              <td>found automatically</td>
+            </tr>
+            <tr>
+              <td>Firefox</td>
+              <td><code>places.sqlite</code></td>
+              <td>found automatically</td>
+            </tr>
+            <tr>
+              <td>Safari</td>
+              <td><code>History.db</code></td>
+              <td>found automatically</td>
+            </tr>
+            <tr>
+              <td>Google Takeout</td>
+              <td><code>BrowserHistory.json</code></td>
+              <td>manual export</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">his reads from a copy it makes — it never writes to your browser's data.</p>
     </section>
   </div>
 
