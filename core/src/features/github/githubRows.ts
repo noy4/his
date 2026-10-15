@@ -1,5 +1,5 @@
 import { sql, type Expression, type ExpressionBuilder, type SqlBool } from 'kysely'
-import { parseGithubUrl, type GitHubUrlInfo } from './parse.ts'
+import { parseGithubUrl, type GithubUrlInfo } from './parse.ts'
 import type { HistoryItem } from '../../types.ts'
 import { hiddenExcluded, monthRange, monthWindow } from '../../db/filters.ts'
 import type { KyselyDb } from '../../db/db.ts'
@@ -7,7 +7,7 @@ import type { DB } from '../../db/schema.ts'
 
 // github.com rows, parsed to { item, urlInfo }. month ('YYYY-MM') narrows counts to that month.
 
-interface Row {
+interface GithubRow {
   id: number
   url: string
   title: string | null
@@ -25,8 +25,8 @@ function githubUrl(eb: ExpressionBuilder<DB, 'urls'>): Expression<SqlBool> {
   ])
 }
 
-export async function githubRows(db: KyselyDb, month?: string): Promise<{ item: HistoryItem; urlInfo: GitHubUrlInfo }[]> {
-  const rows: Row[] = month === undefined
+export async function getGithubRows(db: KyselyDb, month?: string): Promise<{ item: HistoryItem; urlInfo: GithubUrlInfo }[]> {
+  const rows: GithubRow[] = month === undefined
     ? await githubAllRows(db)
     : await githubMonthRows(db, month)
   return rows.flatMap((row) => {
@@ -45,7 +45,7 @@ export async function githubRows(db: KyselyDb, month?: string): Promise<{ item: 
   })
 }
 
-function githubAllRows(db: KyselyDb): Promise<Row[]> {
+function githubAllRows(db: KyselyDb): Promise<GithubRow[]> {
   return db
     .selectFrom('urls')
     .select(['id', 'url', 'title', 'visit_count', 'typed_count', 'first_visit_time', 'last_visit_time'])
@@ -54,7 +54,7 @@ function githubAllRows(db: KyselyDb): Promise<Row[]> {
     .execute()
 }
 
-function githubMonthRows(db: KyselyDb, month: string): Promise<Row[]> {
+function githubMonthRows(db: KyselyDb, month: string): Promise<GithubRow[]> {
   const [start, end] = monthRange(month)
   return db
     .selectFrom('visits')

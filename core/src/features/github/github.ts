@@ -1,5 +1,5 @@
 import { matchesKind, mergeRepoRoots, type GithubKind, type GithubVisitKind } from './parse.ts'
-import { githubRows } from './rows.ts'
+import { getGithubRows } from './githubRows.ts'
 import type { EpochMs } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/paging.ts'
 import type { SearchPage } from '../../db/query.ts'
@@ -25,6 +25,7 @@ export interface GithubVisitsFilter {
 
 const TOP = 5
 
+/** GitHub totals + top repos/owners/items (month-scoped when given). */
 export async function githubStats(db: KyselyDb, month?: string): Promise<GithubStats> {
   const repos = new Map<string, { owner: string; repo: string; visits: number }>()
   const owners = new Map<string, { visits: number; repos: Set<string> }>()
@@ -33,7 +34,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
   let firstVisit = 0
   let lastVisit = 0
 
-  for (const { item, urlInfo } of await githubRows(db, month)) {
+  for (const { item, urlInfo } of await getGithubRows(db, month)) {
     const visitCount = item.visitCount
     visits += visitCount
     firstVisit = firstVisit === 0 || item.firstVisit < firstVisit
@@ -41,6 +42,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
       : firstVisit
     lastVisit = Math.max(lastVisit, item.lastVisit)
 
+    // count visits per owner
     const ownerStats = owners.get(urlInfo.owner) ?? {
       visits: 0,
       repos: new Set<string>(),
@@ -50,6 +52,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
     if (urlInfo.repo === undefined) continue
     ownerStats.repos.add(urlInfo.repo)
 
+    // count visits per repo
     const repoKey = `${urlInfo.owner}/${urlInfo.repo}`
     const repoStats = repos.get(repoKey) ?? {
       owner: urlInfo.owner,
@@ -59,6 +62,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
     repoStats.visits += visitCount
     repos.set(repoKey, repoStats)
 
+    // only PR/Issue URLs become items
     if (urlInfo.kind === undefined || urlInfo.number === undefined) continue
     const itemKey = `${repoKey}/${urlInfo.kind}/${urlInfo.number}`
     const itemStats = items.get(itemKey)
@@ -85,6 +89,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
     }
   }
 
+  // take the top N of each
   return {
     totals: {
       visits,
@@ -106,6 +111,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
   }
 }
 
+/** Paged GitHub visits with owner/repo/kind filters (month optional). */
 export async function githubVisits(db: KyselyDb, filter: GithubVisitsFilter = {}): Promise<SearchPage> {
   const owner = filter.owner?.toLowerCase()
   const repo = filter.repo?.toLowerCase()
@@ -113,7 +119,7 @@ export async function githubVisits(db: KyselyDb, filter: GithubVisitsFilter = {}
   const limit = clampLimit(filter.limit)
   const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
 
-  const matchingRows = (await githubRows(db, filter.month))
+  const matchingRows = (await getGithubRows(db, filter.month))
     .filter(({ urlInfo }) => (
       owner === undefined || urlInfo.owner === owner)
       && (repo === undefined || urlInfo.repo === repo)

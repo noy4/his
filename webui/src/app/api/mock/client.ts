@@ -1,6 +1,6 @@
 import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
 import { isoDay } from '@/lib/date'
-import { matchesKind, mergeRepoRoots, parseGithubUrl, type GitHubUrlInfo } from '@his/core'
+import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubUrlInfo } from '@his/core'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -156,7 +156,7 @@ function computeMonthlyStats(month: string): Stats {
 
 const GITHUB_TOP = 20
 
-function githubItems(): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
+function githubItems(): { item: HistoryItem; urlInfo: GithubUrlInfo }[] {
   return visibleItems().flatMap((item) => {
     const urlInfo = parseGithubUrl(item.url)
     return urlInfo ? [{ item, urlInfo }] : []
@@ -178,7 +178,7 @@ function inPeriod(item: HistoryItem, month?: string): HistoryItem | null {
   }
 }
 
-function githubPeriod(month?: string): { item: HistoryItem; urlInfo: GitHubUrlInfo }[] {
+function githubPeriod(month?: string): { item: HistoryItem; urlInfo: GithubUrlInfo }[] {
   return githubItems().flatMap(({ item, urlInfo }) => {
     const it = inPeriod(item, month)
     return it ? [{ item: it, urlInfo }] : []

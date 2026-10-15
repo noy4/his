@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { before, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
-import { githubStats, githubVisits } from '../stats.ts'
+import { githubStats, githubVisits } from '../github.ts'
 import { monthRange } from '../../../db/filters.ts'
 import { sourceProfile, seedUrl } from '../../../testing/db.ts'
 

@@ -6,7 +6,7 @@ export type GithubKind = 'pull' | 'issue'
 // 'other' = owner pages and repo pages without root / PR / Issue
 export type GithubVisitKind = 'all' | 'repo' | 'issue_pr' | 'other'
 
-export interface GitHubUrlInfo {
+export interface GithubUrlInfo {
   owner: string
   repo?: string
   root?: true // exactly /:owner/:repo
@@ -24,7 +24,7 @@ const RESERVED = new Set([
 
 // 'https://github.com/Foo/Bar/pull/12/files?x#y' → { owner: 'foo', repo: 'bar', kind: 'pull', number: 12 }
 // gist.github.com etc. → null
-export function parseGithubUrl(url: string): GitHubUrlInfo | null {
+export function parseGithubUrl(url: string): GithubUrlInfo | null {
   let u: URL
   try {
     u = new URL(url)
@@ -63,9 +63,9 @@ interface VisitLike {
 
 // Collapse repo-root variants (?tab=…, #readme, trailing /) into one row per repo.
 // Newest variant wins id/title; url drops query/hash; counts are summed.
-export function mergeRepoRoots<T extends VisitLike>(rows: { item: T; urlInfo: GitHubUrlInfo }[]): { item: T; urlInfo: GitHubUrlInfo }[] {
-  const roots = new Map<string, { item: T; urlInfo: GitHubUrlInfo }>()
-  const out: { item: T; urlInfo: GitHubUrlInfo }[] = []
+export function mergeRepoRoots<T extends VisitLike>(rows: { item: T; urlInfo: GithubUrlInfo }[]): { item: T; urlInfo: GithubUrlInfo }[] {
+  const roots = new Map<string, { item: T; urlInfo: GithubUrlInfo }>()
+  const out: { item: T; urlInfo: GithubUrlInfo }[] = []
   for (const row of rows) {
     if (!row.urlInfo.root) {
       out.push(row)
@@ -101,7 +101,7 @@ function stripUrl(url: string): string {
   return `${u.origin}${u.pathname.replace(/\/+$/, '')}`
 }
 
-export function matchesKind(urlInfo: GitHubUrlInfo, kind: GithubVisitKind): boolean {
+export function matchesKind(urlInfo: GithubUrlInfo, kind: GithubVisitKind): boolean {
   if (kind === 'all') return true
   if (kind === 'repo') return urlInfo.root === true
   if (kind === 'other') return !urlInfo.root && !urlInfo.kind
@@ -118,7 +118,7 @@ export interface GithubTitle {
 // repo:     'owner/repo: A fast bundler'                       → { name: 'repo', desc: 'A fast bundler' }
 // pull:     'Fix X by alice · Pull Request #12 · owner/repo'   → { name: 'Fix X', meta: 'alice' }
 // issue:    'Bug Y · Issue #3 · owner/repo'                    → { name: 'Bug Y' }
-export function parseGithubTitle(title: string, urlInfo: GitHubUrlInfo): GithubTitle {
+export function parseGithubTitle(title: string, urlInfo: GithubUrlInfo): GithubTitle {
   const t = title.trim()
   if (urlInfo.root && urlInfo.repo) {
     // Match "owner/repo" with optional ": description" (s allows multiline descriptions).
