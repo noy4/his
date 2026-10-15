@@ -66,6 +66,10 @@
     a { color: var(--primary); text-decoration: none; }
     a:hover { text-decoration: underline; }
     code, pre, .mono { font-family: var(--mono); }
+    code {
+      font-size: 0.86em; color: var(--text); background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 5px; padding: 2px 6px;
+    }
     .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
 
     /* Nav */
@@ -175,6 +179,28 @@
       .mock-nav { display: none; }
     }
 
+    /* Sections */
+    section { padding: 48px 0; }
+    .section-head { text-align: center; margin-bottom: 32px; }
+    .section-head h2 {
+      font-size: clamp(24px, 3.6vw, 34px); margin: 0 0 10px;
+      letter-spacing: -0.02em; color: var(--text-strong);
+    }
+    .section-head p { color: var(--muted); margin: 0; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 22px; transition: border-color 0.15s ease, transform 0.1s ease;
+    }
+    .card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+    .card .ico { font-size: 24px; color: var(--primary); }
+    .card h3 { margin: 12px 0 7px; font-size: 17px; letter-spacing: -0.01em; color: var(--text-strong); }
+    .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+    @media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .grid-3 { grid-template-columns: 1fr; } }
+
     /* Footer */
     footer {
       border-top: 1px solid var(--border-strong); padding: 32px 0 48px; margin-top: 24px;
@@ -195,7 +221,6 @@
       his
     </a>
     <div class="nav-links">
-      <a href="#why">Why</a>
       <a href="#features">Features</a>
       <a href="#sources">Sources</a>
       <a href="#quickstart">Quickstart</a>
@@ -315,6 +340,42 @@
         </div>
       </div>
     </header>
+  </div>
+
+  <div class="wrap">
+    <section id="features">
+      <div class="section-head">
+        <h2>More than a history log</h2>
+        <p>his keeps everything — and more.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <iconify-icon class="ico" icon="mdi:chart-box-outline" width="24" noobserver></iconify-icon>
+          <h3>Browsing stats</h3>
+          <p>Turns your history into charts and totals, per month or all time.</p>
+        </div>
+        <div class="card">
+          <iconify-icon class="ico" icon="mdi:magnify" width="24" noobserver></iconify-icon>
+          <h3>Search everything</h3>
+          <p>Find any page by its title or URL.</p>
+        </div>
+        <div class="card">
+          <iconify-icon class="ico" icon="mdi:sync" width="24" noobserver></iconify-icon>
+          <h3>Automatic sync</h3>
+          <p>Runs on a schedule and reads only what is new.</p>
+        </div>
+        <div class="card">
+          <iconify-icon class="ico" icon="mdi:database-import-outline" width="24" noobserver></iconify-icon>
+          <h3>Every browser</h3>
+          <p>Chrome, Firefox, Safari, Edge, Brave and more — merged into one archive.</p>
+        </div>
+        <div class="card">
+          <iconify-icon class="ico" icon="mdi:console" width="24" noobserver></iconify-icon>
+          <h3>CLI and menu bar app</h3>
+          <p><code>his sync</code>, <code>his query</code>, <code>his serve</code> — or a macOS menu bar app.</p>
+        </div>
+      </div>
+    </section>
   </div>
 
   <footer>
