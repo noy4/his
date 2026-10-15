@@ -2,6 +2,11 @@ import type { EpochMs } from '../types.ts'
 
 // Cursor paging primitives shared by all list queries.
 
+export interface Page<T> {
+  items: T[]
+  nextCursor: string | null
+}
+
 const DEFAULT_LIMIT = 50
 const MAX_LIMIT = 200
 const CURSOR_VERSION = 'v1'

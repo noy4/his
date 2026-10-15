@@ -1,7 +1,7 @@
 import { sql, type Transaction } from 'kysely'
 import type { DB } from '../db/schema.ts'
 import type { EpochMs, SourceKind, Transition, Watermark } from '../types.ts'
-import { getSettings, matchesHidden } from '../features/settings.ts'
+import { getSettings, matchesHidden } from '../features/settings/settings.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
 import type { KyselyDb } from '../db/db.ts'
 

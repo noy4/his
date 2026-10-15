@@ -1,8 +1,8 @@
 import { sql, type RawBuilder, type SqlBool } from 'kysely'
-import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../types.ts'
-import { hiddenExcluded } from './filters.ts'
-import { clampLimit, decodeCursor, paginate } from './paging.ts'
-import type { KyselyDb } from './db.ts'
+import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../../types.ts'
+import { hiddenExcluded } from '../../db/filters.ts'
+import { clampLimit, decodeCursor, paginate, type Page } from '../../db/paging.ts'
+import type { KyselyDb } from '../../db/db.ts'
 
 export interface SearchFilter {
   query?: string
@@ -13,20 +13,13 @@ export interface SearchFilter {
   limit?: number
 }
 
-export interface SearchPage {
-  items: HistoryItem[]
-  nextCursor: string | null
-}
-
-export interface SearchVisitsPage {
-  items: HistoryVisit[]
-  nextCursor: string | null
-}
-
 export interface ItemDetail {
   item: HistoryItem
   visits: VisitItem[]
 }
+
+export type SearchPage = Page<HistoryItem>
+export type SearchVisitsPage = Page<HistoryVisit>
 
 interface UrlRow {
   id: number

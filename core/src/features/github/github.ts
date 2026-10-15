@@ -1,8 +1,8 @@
 import { matchesKind, mergeRepoRoots, type GithubKind, type GithubVisitKind } from './parse.ts'
 import { getGithubRows } from './githubRows.ts'
-import type { EpochMs } from '../../types.ts'
+import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/paging.ts'
-import type { SearchPage } from '../../db/query.ts'
+import type { Page } from '../../db/paging.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
 // GitHub Insights read API: githubStats (aggregate) + githubVisits (paged list).
@@ -112,7 +112,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
 }
 
 /** Paged GitHub visits with owner/repo/kind filters (month optional). */
-export async function githubVisits(db: KyselyDb, filter: GithubVisitsFilter = {}): Promise<SearchPage> {
+export async function githubVisits(db: KyselyDb, filter: GithubVisitsFilter = {}): Promise<Page<HistoryItem>> {
   const owner = filter.owner?.toLowerCase()
   const repo = filter.repo?.toLowerCase()
   const kind = filter.kind ?? 'all'

@@ -2,4 +2,4 @@
 export * from './types.ts'
 export * from './util/url.ts'
 export * from './features/github/parse.ts'
-export type { SettingsInfo } from './features/settings.ts'
+export type { SettingsInfo } from './features/settings/index.ts'

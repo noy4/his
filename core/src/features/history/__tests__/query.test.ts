@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
-import { createDb, migrate, type KyselyDb } from '../db.ts'
-import { decodeCursor, encodeCursor } from '../paging.ts'
+import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
+import { decodeCursor, encodeCursor } from '../../../db/paging.ts'
 import { getVisits, search, searchVisits } from '../query.ts'
-import { sourceProfile } from '../../testing/db.ts'
+import { sourceProfile } from '../../../testing/db.ts'
 
 let handle: DatabaseSync
 let db: KyselyDb

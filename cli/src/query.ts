@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
-import { createDb, historyDbPath, search, type EpochMs, type SearchFilter } from '@his/core/node'
+import { createDb, history, historyDbPath, type EpochMs, type SearchFilter } from '@his/core/node'
 import type { Context } from './context.ts'
 
 export interface QueryOptions {
@@ -37,7 +37,7 @@ export async function query(ctx: Context, opts: QueryOptions): Promise<void> {
   }
   const db = createDb(new DatabaseSync(dbPath, { readOnly: true }))
   try {
-    const page = await search(db, filter)
+    const page = await history.search(db, filter)
     console.log(JSON.stringify(page, null, 2))
   } finally {
     await db.destroy()

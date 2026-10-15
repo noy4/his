@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
-import { createDb, migrate, type KyselyDb } from '../db.ts'
-import { search } from '../query.ts'
-import { cleanPatterns, getSettings, matchesHidden, recomputeHidden, setSettings } from '../../features/settings.ts'
+import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
+import { search } from '../../history/query.ts'
+import { cleanPatterns, getSettings, matchesHidden, recomputeHidden, setSettings } from '../settings.ts'
 
 describe('cleanPatterns', () => {
   it('trims, lowercases, drops empties and dedupes', () => {
