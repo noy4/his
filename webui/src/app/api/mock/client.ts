@@ -1,6 +1,6 @@
 import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
 import { isoDay } from '@/lib/date'
-import { hostWithoutWww, hostOf, matchesKind, mergeRepoRoots, parseGithubUrl, type GithubUrlInfo } from '@his/core'
+import { cleanPatterns, hostWithoutWww, matchesHidden, matchesKind, mergeRepoRoots, parseGithubUrl, type GithubUrlInfo } from '@his/core'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -21,39 +21,9 @@ function topN(map: Map<string, number>, n: number): { key: string; visits: numbe
 
 let hiddenPatterns: string[] = []
 
-function globToRegExp(glob: string): RegExp {
-  const escaped = glob.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')
-  return new RegExp(`^${escaped}$`, 'i')
-}
-
-// bare token → host (subdomains too); `*` glob; slash pattern → path glob
-function matchesHidden(url: string, patterns: string[]): boolean {
-  if (patterns.length === 0) return false
-  const host = hostOf(url)
-  const full = url.toLowerCase()
-  const pathUrl = full.replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
-  return patterns.some((pattern) => {
-    if (pattern.includes('/'))
-      return globToRegExp(pattern).test(pattern.includes('://') ? full : pathUrl)
-    if (!pattern.includes('*')) return host === pattern || host.endsWith(`.${pattern}`)
-    return globToRegExp(pattern).test(host)
-  })
-}
-
 function visibleItems(): HistoryItem[] {
   if (hiddenPatterns.length === 0) return [...MOCK_ITEMS]
   return MOCK_ITEMS.filter((item) => !matchesHidden(item.url, hiddenPatterns))
-}
-
-function cleanPatterns(input: unknown): string[] {
-  if (!Array.isArray(input)) return []
-  const seen = new Set<string>()
-  for (const value of input) {
-    if (typeof value !== 'string') continue
-    const pattern = value.trim().toLowerCase()
-    if (pattern) seen.add(pattern)
-  }
-  return [...seen].slice(0, 500)
 }
 
 function hiddenCount(patterns: string[]): number {
