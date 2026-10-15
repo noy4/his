@@ -23,16 +23,6 @@ export interface MigrationProvider {
   getMigrations(): Promise<MigrationEntry[]>
 }
 
-export interface MigrationResult {
-  migrationName: string
-  status: 'Success' | 'Error'
-}
-
-export interface MigrationResultSet {
-  error?: Error
-  results: MigrationResult[]
-}
-
 export interface MigratorProps {
   handle: DatabaseSync
   db: KyselyDb
@@ -51,38 +41,26 @@ export class Migrator {
     this.#provider = props.provider
   }
 
-  async migrate(): Promise<MigrationResultSet> {
-    const results: MigrationResult[] = []
-    try {
-      const migrations = await this.#resolveMigrations()
-      ensureMigrationTable(this.#handle)
-      const executed = this.#getExecutedMigrations()
-      this.#ensureMigrationsInOrder(migrations, executed)
-      const pending = migrations.filter((migration) => !executed.includes(migration.name))
-      if (pending.length === 0) return { results }
+  async migrate(): Promise<void> {
+    const migrations = await this.#resolveMigrations()
+    ensureMigrationTable(this.#handle)
+    const executed = this.#getExecutedMigrations()
+    this.#ensureMigrationsInOrder(migrations, executed)
+    const pending = migrations.filter((migration) => !executed.includes(migration.name))
+    if (pending.length === 0) return
 
-      const ctx: MigrationContext = { handle: this.#handle, db: this.#db }
-      // one transaction for the whole run
-      this.#handle.exec('BEGIN')
-      try {
-        for (const { name, migration } of pending) {
-          try {
-            await migration.up(ctx)
-          } catch (error) {
-            results.push({ migrationName: name, status: 'Error' })
-            throw error
-          }
-          this.#recordMigration(name)
-          results.push({ migrationName: name, status: 'Success' })
-        }
-        this.#handle.exec('COMMIT')
-      } catch (error) {
-        this.#handle.exec('ROLLBACK')
-        return { error: asError(error), results }
+    const ctx: MigrationContext = { handle: this.#handle, db: this.#db }
+    // one transaction for the whole run
+    this.#handle.exec('BEGIN')
+    try {
+      for (const { name, migration } of pending) {
+        await migration.up(ctx)
+        this.#recordMigration(name)
       }
-      return { results }
+      this.#handle.exec('COMMIT')
     } catch (error) {
-      return { error: asError(error), results }
+      this.#handle.exec('ROLLBACK')
+      throw error
     }
   }
 
@@ -122,8 +100,4 @@ export class Migrator {
 
 export function ensureMigrationTable(handle: DatabaseSync): void {
   handle.exec(`CREATE TABLE IF NOT EXISTS ${MIGRATION_TABLE} (name varchar(255) not null primary key, timestamp varchar(255) not null)`)
-}
-
-function asError(value: unknown): Error {
-  return value instanceof Error ? value : new Error(String(value))
 }
