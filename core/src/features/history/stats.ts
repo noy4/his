@@ -1,6 +1,7 @@
 import { sql } from 'kysely'
 import type { EpochMs } from '../../types.ts'
 import { domainOf } from '../../util/url.ts'
+import { topBy } from '../../util/top.ts'
 import { hiddenExcluded, monthRange, monthWindow } from '../../db/filters.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
@@ -105,7 +106,7 @@ async function allTimeStats(db: KyselyDb): Promise<Stats> {
     totals,
     byHour: byHour.map((v, hour) => ({ hour, visits: v })),
     byDow: byDow.map((v, dow) => ({ dow, visits: v })),
-    topDomains: topN(byDomain, 8),
+    topDomains: rankDomains(byDomain),
     busiestDays,
   }
 }
@@ -195,16 +196,14 @@ async function monthStats(db: KyselyDb, month: string): Promise<Stats> {
     totals,
     byHour: byHour.map((v, hour) => ({ hour, visits: v })),
     byDow: byDow.map((v, dow) => ({ dow, visits: v })),
-    topDomains: topN(byDomain, 8),
+    topDomains: rankDomains(byDomain),
     busiestDays,
   }
 }
 
 // --- helpers ---
 
-function topN(map: Map<string, number>, n: number): { domain: string; visits: number }[] {
-  return [...map]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, n)
+function rankDomains(byDomain: Map<string, number>): { domain: string; visits: number }[] {
+  return topBy([...byDomain], { limit: 8, score: ([, visits]) => visits, key: ([domain]) => domain })
     .map(([domain, visits]) => ({ domain, visits }))
 }

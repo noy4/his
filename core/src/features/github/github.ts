@@ -3,6 +3,7 @@ import { getGithubRows } from './githubRows.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/paging.ts'
 import type { Page } from '../../db/paging.ts'
+import { topBy } from '../../util/top.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
 // GitHub Insights read API: githubStats (aggregate) + githubVisits (paged list).
@@ -89,7 +90,6 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
     }
   }
 
-  // take the top N of each
   return {
     totals: {
       visits,
@@ -99,13 +99,13 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
       firstVisit,
       lastVisit,
     },
-    topRepos: top([...repos.values()], (repoStats) => `${repoStats.owner}/${repoStats.repo}`),
-    topOwners: top([...owners].map(([owner, ownerStats]) => ({
+    topRepos: topVisited([...repos.values()], (s) => `${s.owner}/${s.repo}`),
+    topOwners: topVisited([...owners].map(([owner, ownerStats]) => ({
       owner,
       repos: ownerStats.repos.size,
       visits: ownerStats.visits
-    })), (ownerStats) => ownerStats.owner),
-    topItems: top([...items.values()], (itemStats) => itemStats.url)
+    })), (s) => s.owner),
+    topItems: topVisited([...items.values()], (s) => s.url)
       .map(({ owner, repo, kind, number, title, url, visits }) =>
         ({ owner, repo, kind, number, title, url, visits })),
   }
@@ -143,9 +143,7 @@ function cleanTitle(title: string): string {
   return title.split(' · ')[0] ?? title
 }
 
-function top<T extends { visits: number }>(rows: T[], key: (row: T) => string): T[] {
-  return rows.sort((a, b) =>
-    b.visits - a.visits
-    || key(a).localeCompare(key(b))
-  ).slice(0, TOP)
+// rank by visits desc, then key asc; keep the top N
+function topVisited<T extends { visits: number }>(items: readonly T[], key: (item: T) => string): T[] {
+  return topBy(items, { limit: TOP, score: (item) => item.visits, key })
 }
