@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="created_at" content="2026-10-16T05:56:00+09:00">
+  <title>his — browser history archive &amp; viewer</title>
+  <meta name="description" content="Chrome deletes your history after 90 days. his saves your history from all your browsers into one local archive, and shows your browsing stats.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="his — browser history archive & viewer">
+  <meta property="og:description" content="Chrome deletes your history after 90 days. his saves your history from all your browsers into one local archive, and shows your browsing stats.">
+  <meta property="og:url" content="https://noy.github.io/his/">
+  <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0B0E14;
+      --surface: #151A23;
+      --surface-2: #21252F;
+      --border: #2C313F;
+      --border-strong: #383F50;
+      --text: #C3CDDC;
+      --text-strong: #F7F9FC;
+      --muted: #7E8A9E;
+      --primary: #4465DB;
+      --primary-soft: rgba(68, 101, 219, 0.15);
+      --accent: #F08A59;
+      --accent-soft: rgba(240, 138, 89, 0.15);
+      --sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      --mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      --radius: 14px;
+      color-scheme: dark;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #F8FAFC;
+        --surface: #FFFFFF;
+        --surface-2: #F1F5F9;
+        --border: #E2E8F0;
+        --border-strong: #CBD5E1;
+        --text: #334155;
+        --text-strong: #0F172A;
+        --muted: #64748B;
+        --primary: #2563EB;
+        --primary-soft: rgba(37, 99, 235, 0.1);
+        --accent: #EA580C;
+        --accent-soft: rgba(234, 88, 12, 0.1);
+        color-scheme: light;
+      }
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(1100px 480px at 50% -180px, var(--primary-soft), transparent 70%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre, .mono { font-family: var(--mono); }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px; max-width: 1040px; margin: 0 auto;
+    }
+    .brand { display: flex; align-items: center; gap: 9px; font-weight: 650; letter-spacing: -0.01em; color: var(--text-strong); }
+    .brand iconify-icon { color: var(--primary); }
+    .nav-links { display: flex; gap: 22px; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 14.5px; }
+    .nav-links a:hover { color: var(--text-strong); text-decoration: none; }
+
+    /* Hero */
+    header.hero { text-align: center; padding: 52px 0 28px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--muted); background: var(--surface);
+      border: 1px solid var(--border); padding: 6px 14px; border-radius: 999px;
+      font-family: var(--mono);
+    }
+    h1 {
+      font-size: clamp(34px, 6vw, 58px); line-height: 1.06; margin: 22px 0 14px;
+      letter-spacing: -0.03em; font-weight: 700; color: var(--text-strong);
+    }
+    h1 .grad {
+      background: linear-gradient(100deg, var(--primary), var(--accent));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .sub { font-size: clamp(16px, 2.4vw, 19px); color: var(--muted); max-width: 640px; margin: 0 auto; }
+    .sub strong { color: var(--text); font-weight: 600; }
+    .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 30px 0 14px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 9px; padding: 12px 20px;
+      border-radius: 11px; font-weight: 600; font-size: 15px; border: 1px solid transparent;
+      transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn:hover { text-decoration: none; transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-ghost { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+    .btn-ghost:hover { background: var(--surface-2); }
+    .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    .badges img { height: 20px; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-strong); padding: 32px 0 48px; margin-top: 24px;
+      color: var(--muted); font-size: 14px;
+    }
+    .foot-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .foot-links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    @media (max-width: 560px) {
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="brand">
+      <iconify-icon icon="mdi:history" width="22" noobserver></iconify-icon>
+      his
+    </div>
+    <div class="nav-links">
+      <a href="#why">Why</a>
+      <a href="#features">Features</a>
+      <a href="#sources">Sources</a>
+      <a href="#quickstart">Quickstart</a>
+      <a href="https://github.com/noy/his" target="_blank" rel="noopener">GitHub ↗</a>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <header class="hero">
+      <span class="eyebrow">
+        <iconify-icon icon="mdi:shield-lock-outline" width="15" noobserver></iconify-icon>
+        Local-first
+      </span>
+      <h1>Keep your history.<br /><span class="grad">See what it says.</span></h1>
+      <p class="sub">
+        Chrome deletes your history after <strong>90 days</strong>. his saves your history from
+        all your browsers into <strong>one local archive</strong>, and shows your browsing stats.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/noy/his" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:github" width="18" noobserver></iconify-icon>
+          View on GitHub
+        </a>
+        <a class="btn btn-ghost" href="#quickstart">
+          <iconify-icon icon="mdi:lightning-bolt-outline" width="18" noobserver></iconify-icon>
+          Quickstart
+        </a>
+      </div>
+      <div class="badges">
+        <img src="https://img.shields.io/github/license/noy/his?color=4465DB" alt="MIT license">
+        <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
+        <img src="https://img.shields.io/github/stars/noy/his?style=flat&color=F08A59" alt="Stars">
+      </div>
+
+      <!-- STEP 2: WebUI mockup -->
+    </header>
+  </div>
+
+  <footer>
+    <div class="wrap foot-row">
+      <div>
+        © 2026 noy ·
+        <a href="https://github.com/noy/his/blob/main/LICENSE" target="_blank" rel="noopener">MIT licensed</a>
+      </div>
+      <div class="foot-links">
+        <a href="https://github.com/noy/his" target="_blank" rel="noopener">Repository</a>
+        <a href="https://github.com/noy/his/issues" target="_blank" rel="noopener">Issues</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
