@@ -1,3 +1,4 @@
+import { hostOf } from './util/url.ts'
 import type { KyselyDb } from './db/db.ts'
 
 const KEY = 'hidden_patterns'
@@ -119,14 +120,6 @@ async function countHidden(db: KyselyDb): Promise<number> {
     .select((eb) => eb.fn.countAll().as('count'))
     .executeTakeFirstOrThrow()
   return Number(row.count)
-}
-
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname.toLowerCase()
-  } catch {
-    return url.toLowerCase()
-  }
 }
 
 function globToRegExp(glob: string): RegExp {

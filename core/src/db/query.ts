@@ -1,7 +1,8 @@
-import { sql, type Expression, type ExpressionBuilder, type RawBuilder, type SqlBool } from 'kysely'
+import { sql, type RawBuilder, type SqlBool } from 'kysely'
 import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../types.ts'
+import { hiddenExcluded } from './filters.ts'
+import { clampLimit, decodeCursor, paginate } from './paging.ts'
 import type { KyselyDb } from './db.ts'
-import type { DB } from './schema.ts'
 
 export interface SearchFilter {
   query?: string
@@ -26,10 +27,6 @@ export interface ItemDetail {
   item: HistoryItem
   visits: VisitItem[]
 }
-
-const DEFAULT_LIMIT = 50
-const MAX_LIMIT = 200
-const CURSOR_VERSION = 'v1'
 
 interface UrlRow {
   id: number
@@ -142,17 +139,6 @@ export async function getItem(db: KyselyDb, id: number): Promise<ItemDetail | nu
 
 // --- helpers ---
 
-// user-hidden URLs are excluded from every list / aggregate query
-export function hiddenExcluded(eb: ExpressionBuilder<DB, 'urls'>): Expression<SqlBool> {
-  return eb.not(
-    eb.exists(
-      eb.selectFrom('hidden_urls')
-        .select('url_id')
-        .whereRef('hidden_urls.url_id', '=', 'urls.id'),
-    ),
-  )
-}
-
 function hasFts(query: string): boolean {
   return query.length !== 0 && codePoints(query) >= 3
 }
@@ -206,11 +192,6 @@ function toHistoryVisit(row: VisitUrlRow): HistoryVisit {
   }
 }
 
-export function clampLimit(limit: number | undefined): number {
-  if (limit === undefined || !Number.isFinite(limit)) return DEFAULT_LIMIT
-  return Math.min(Math.max(Math.trunc(limit), 1), MAX_LIMIT)
-}
-
 function codePoints(text: string): number {
   return Array.from(text).length
 }
@@ -221,37 +202,4 @@ function ftsPattern(query: string): string {
 
 function likePattern(query: string): string {
   return `%${query.replace(/[\\%_]/g, '\\$&')}%`
-}
-
-/** Splits a `limit + 1` fetch into a page: the extra row only signals that more follow. */
-export function paginate<T>(
-  rows: readonly T[],
-  limit: number,
-  keyOf: (last: T) => [EpochMs, number],
-): { items: T[]; nextCursor: string | null } {
-  const items = rows.slice(0, limit)
-  const last = items.at(-1)
-  if (last === undefined || rows.length <= limit)
-    return { items, nextCursor: null }
-  const [time, id] = keyOf(last)
-  return { items, nextCursor: encodeCursor(time, id) }
-}
-
-/** Encodes `v1:<base64url(JSON([time, id]))>` using the endpoint's timestamp and row ID. */
-export function encodeCursor(time: EpochMs, id: number): string {
-  return `${CURSOR_VERSION}:${Buffer.from(JSON.stringify([time, id]), 'utf8').toString('base64url')}`
-}
-
-/** Decodes `v1:<base64url(JSON([time, id]))>`; returns null if invalid. */
-export function decodeCursor(cursor: string): [EpochMs, number] | null {
-  if (!cursor.startsWith(`${CURSOR_VERSION}:`)) return null
-  try {
-    const pair: unknown = JSON.parse(Buffer.from(cursor.slice(CURSOR_VERSION.length + 1), 'base64url').toString('utf8'))
-    if (!Array.isArray(pair) || pair.length !== 2) return null
-    const [time, id] = pair
-    if (typeof time !== 'number' || typeof id !== 'number') return null
-    return [time, id]
-  } catch {
-    return null
-  }
 }

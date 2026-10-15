@@ -1,8 +1,9 @@
 import { sql, type Expression, type ExpressionBuilder, type SqlBool } from 'kysely'
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GitHubUrlInfo, type GithubVisitKind } from './parse.ts'
 import type { EpochMs, HistoryItem } from '../types.ts'
-import { clampLimit, decodeCursor, hiddenExcluded, paginate, type SearchPage } from '../db/query.ts'
-import { monthRange, monthWindow } from '../db/stats.ts'
+import { clampLimit, decodeCursor, paginate } from '../db/paging.ts'
+import { hiddenExcluded, monthRange, monthWindow } from '../db/filters.ts'
+import type { SearchPage } from '../db/query.ts'
 import type { KyselyDb } from '../db/db.ts'
 import type { DB } from '../db/schema.ts'
 
