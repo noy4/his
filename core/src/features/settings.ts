@@ -1,5 +1,5 @@
-import { hostOf } from './util/url.ts'
-import type { KyselyDb } from './db/db.ts'
+import { hostOf } from '../util/url.ts'
+import type { KyselyDb } from '../db/db.ts'
 
 const KEY = 'hidden_patterns'
 const MAX_PATTERNS = 500

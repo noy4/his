@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../db.ts'
 import { search } from '../query.ts'
-import { cleanPatterns, getSettings, matchesHidden, recomputeHidden, setSettings } from '../../settings.ts'
+import { cleanPatterns, getSettings, matchesHidden, recomputeHidden, setSettings } from '../../features/settings.ts'
 
 describe('cleanPatterns', () => {
   it('trims, lowercases, drops empties and dedupes', () => {
