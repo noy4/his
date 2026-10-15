@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, NativeVisit, Transition } from '../../../types.ts'
+import type { EpochMs, NormalizedVisit, Transition } from '../../../types.ts'
 import { listDirs, dirToProfileName } from '../dirs.ts'
 import type { Browser, Engine, SyncTarget } from '../types.ts'
 
@@ -50,7 +50,7 @@ interface PlacesRow {
   title: string | null
 }
 
-function parseFirefox(path: string): NativeVisit[] {
+function parseFirefox(path: string): NormalizedVisit[] {
   const db = new DatabaseSync(path, { readOnly: true })
   try {
     const statement = db.prepare(
@@ -58,7 +58,7 @@ function parseFirefox(path: string): NativeVisit[] {
     )
     statement.setReadBigInts(true)
     const rows = statement.all() as unknown as PlacesRow[]
-    return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+    return rows.map(toNormalizedVisit).filter((visit): visit is NormalizedVisit => visit !== null)
   } finally {
     db.close()
   }
@@ -74,7 +74,7 @@ const PLACES_TO_TRANSITION = new Map<number, Transition>([
   [9, 'reload'],
 ])
 
-function toNativeVisit(row: PlacesRow): NativeVisit | null {
+function toNormalizedVisit(row: PlacesRow): NormalizedVisit | null {
   // unset visit_date (0 = epoch) would pollute first/last_visit_time
   if (row.visitDate === 0n) return null
   const mapped = PLACES_TO_TRANSITION.get(Number(row.visitType))

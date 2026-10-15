@@ -1,6 +1,6 @@
 import { sql, type Transaction } from 'kysely'
 import type { DB } from '../../db/schema.ts'
-import type { EpochMs, IdMode, NativeVisit, SourceKind, Watermark } from '../../types.ts'
+import type { EpochMs, IdMode, NormalizedVisit, SourceKind, Watermark } from '../../types.ts'
 import { getSettings } from '../settings/settings.ts'
 import { matchesHidden } from '../settings/hidden-patterns.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
@@ -34,7 +34,7 @@ export interface ApplyVisitsResult {
 export interface ApplyVisitsParams {
   db: KyselyDb
   profile: SourceProfileRef
-  visits: NativeVisit[]
+  visits: NormalizedVisit[]
   options: ApplyVisitsOptions
 }
 
@@ -129,7 +129,7 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
 
 // find each url, creating the missing ones. New urls get batch min/max times as
 // a seed; applyDeltas() then folds in only the visits that were really inserted.
-async function resolveUrlIds(tx: Transaction<DB>, visits: NativeVisit[], urlIds: Map<string, number>): Promise<void> {
+async function resolveUrlIds(tx: Transaction<DB>, visits: NormalizedVisit[], urlIds: Map<string, number>): Promise<void> {
   // one pass over the batch: per-url seed (min/max time + latest title)
   const unique: string[] = []
   const seeds = new Map<string, {
@@ -224,10 +224,10 @@ async function insertVisits(
   tx: Transaction<DB>,
   sourceProfileId: number,
   offset: number,
-  visits: NativeVisit[],
+  visits: NormalizedVisit[],
   urlIds: Map<string, number>,
 ): Promise<Map<number, UrlDelta>> {
-  const bySourceId = new Map<number, NativeVisit>()
+  const bySourceId = new Map<number, NormalizedVisit>()
   for (const visit of visits)
     bySourceId.set(visit.sourceVisitId + offset, visit)
 

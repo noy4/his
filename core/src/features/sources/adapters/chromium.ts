@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, NativeVisit, Transition } from '../../../types.ts'
+import type { EpochMs, NormalizedVisit, Transition } from '../../../types.ts'
 import { listDirs, dirToProfileName } from '../dirs.ts'
 import type { Browser, Engine, SyncTarget } from '../types.ts'
 
@@ -58,7 +58,7 @@ interface ChromiumRow {
   title: string | null
 }
 
-function parseChromium(path: string): NativeVisit[] {
+function parseChromium(path: string): NormalizedVisit[] {
   const db = new DatabaseSync(path, { readOnly: true })
   try {
     const statement = db.prepare(
@@ -66,7 +66,7 @@ function parseChromium(path: string): NativeVisit[] {
     )
     statement.setReadBigInts(true)
     const rows = statement.all() as unknown as ChromiumRow[]
-    return rows.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+    return rows.map(toNormalizedVisit).filter((visit): visit is NormalizedVisit => visit !== null)
   } finally {
     db.close()
   }
@@ -88,7 +88,7 @@ const CORE_TO_TRANSITION = new Map<number, Transition>([
   [10, 'keyword_generated'],
 ])
 
-function toNativeVisit(row: ChromiumRow): NativeVisit | null {
+function toNormalizedVisit(row: ChromiumRow): NormalizedVisit | null {
   const visitTime = webkitTimeToMs(row.visitTime)
   // unset timestamps (0 or pre-Webkit garbage) would pollute first/last_visit_time
   if (visitTime <= 0) return null

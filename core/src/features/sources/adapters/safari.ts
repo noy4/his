@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import type { EpochMs, NativeVisit } from '../../../types.ts'
+import type { EpochMs, NormalizedVisit } from '../../../types.ts'
 import type { Browser, Engine, SyncTarget } from '../types.ts'
 
 export const safariEngine: Engine = {
@@ -34,19 +34,19 @@ interface SafariRow {
   url: string
 }
 
-function parseSafari(path: string): NativeVisit[] {
+function parseSafari(path: string): NormalizedVisit[] {
   const db = new DatabaseSync(path, { readOnly: true })
   try {
     const rows = db.prepare(
       'SELECT v.id AS visitId, v.visit_time AS visitTime, v.title AS title, i.url AS url FROM history_visits v JOIN history_items i ON i.id = v.history_item ORDER BY v.id',
     ).all() as unknown as SafariRow[]
-    return rows.map(toNativeVisit)
+    return rows.map(toNormalizedVisit)
   } finally {
     db.close()
   }
 }
 
-function toNativeVisit(row: SafariRow): NativeVisit {
+function toNormalizedVisit(row: SafariRow): NormalizedVisit {
   return {
     sourceVisitId: row.visitId,
     url: row.url,

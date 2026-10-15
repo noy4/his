@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { takeoutDir } from '../../../paths.ts'
-import type { EpochMs, NativeVisit, Transition } from '../../../types.ts'
+import type { EpochMs, NormalizedVisit, Transition } from '../../../types.ts'
 import type { Browser, Engine, SyncTarget } from '../types.ts'
 
 export const takeoutEngine: Engine = {
@@ -16,11 +16,11 @@ export const TAKEOUT_BROWSER: Browser = { name: 'takeout', label: 'Takeout', eng
 
 // --- parse ---
 
-function parseTakeout(path: string): NativeVisit[] {
+function parseTakeout(path: string): NormalizedVisit[] {
   const raw: unknown = JSON.parse(fs.readFileSync(path, 'utf8'))
   const items = extractVisitArray(raw)
   if (items === null) throw new Error(`no visit array found in ${path}`)
-  return items.map(toNativeVisit).filter((visit): visit is NativeVisit => visit !== null)
+  return items.map(toNormalizedVisit).filter((visit): visit is NormalizedVisit => visit !== null)
 }
 
 // --- discovery ---
@@ -108,7 +108,7 @@ function extractVisitArray(raw: unknown): unknown[] | null {
   return null
 }
 
-function toNativeVisit(item: unknown): NativeVisit | null {
+function toNormalizedVisit(item: unknown): NormalizedVisit | null {
   if (item === null || typeof item !== 'object') return null
   const entry = item as Record<string, unknown>
   const url = entry.url ?? entry.titleUrl

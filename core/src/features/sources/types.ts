@@ -1,4 +1,4 @@
-import type { IdMode, NativeVisit, SourceKind } from '../../types.ts'
+import type { IdMode, NormalizedVisit, SourceKind } from '../../types.ts'
 
 // one discovered profile to sync
 export interface SyncTarget {
@@ -15,7 +15,7 @@ export interface Engine {
   /** profiles of one browser; profile token selects one, undefined = all */
   discover(browser: Browser, home: string, profile: string | undefined): SyncTarget[]
   /** read one staging snapshot file */
-  parse(path: string): NativeVisit[]
+  parse(path: string): NormalizedVisit[]
 }
 
 // one browser: pure data pointing at its engine

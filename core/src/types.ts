@@ -46,8 +46,8 @@ export type SourceKind = 'chromium' | 'firefox' | 'safari' | 'takeout'
 // id semantics: rowid is comparable, hash is not
 export type IdMode = 'rowid' | 'hash'
 
-// one visit as parsed from a browser source
-export interface NativeVisit {
+// one visit parsed from a browser source
+export interface NormalizedVisit {
   sourceVisitId: number
   url: string
   title: string | null
