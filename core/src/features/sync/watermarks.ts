@@ -1,5 +1,5 @@
-import type { EpochMs, Watermark } from '../types.ts'
-import type { KyselyDb } from '../db/db.ts'
+import type { EpochMs, Watermark } from '../../types.ts'
+import type { KyselyDb } from '../../db/db.ts'
 
 export interface WatermarkPatch {
   lastSourceVisitId: number

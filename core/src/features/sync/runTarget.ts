@@ -1,12 +1,12 @@
-import type { KyselyDb } from '../db/db.ts'
-import type { SyncOptions } from '../types.ts'
+import type { KyselyDb } from '../../db/db.ts'
+import type { SyncOptions } from '../../types.ts'
 import type { ApplyVisitsResult } from './applyVisits.ts'
 import { applyVisits } from './applyVisits.ts'
 import { snapshot } from './snapshot.ts'
-import type { SyncTarget } from '../features/sources/types.ts'
-import { browserOf } from '../features/sources/browsers.ts'
+import type { SyncTarget } from '../sources/types.ts'
+import { browserOf } from '../sources/browsers.ts'
 import type { SyncHooks } from './runSync.ts'
-import { probeFingerprint } from '../features/sources/fingerprint.ts'
+import { probeFingerprint } from '../sources/fingerprint.ts'
 import { getTargetFingerprint, setTargetFingerprint } from './watermarks.ts'
 
 interface RunTargetParams {
