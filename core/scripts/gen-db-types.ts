@@ -11,7 +11,7 @@ await generate({
   dialect: getDialect('sqlite'),
   outFile: './src/db/schema.ts',
   // FTS shadow tables + the migrator's bookkeeping are not app tables
-  excludePattern: '{urls_fts*,kysely_migration*}',
+  excludePattern: '{urls_fts*,migrations}',
   verify: check,
 })
 handle.close()
