@@ -1,23 +1,16 @@
 import type { HistoryItem } from '@/app/api'
 import { timeLabel } from '@/lib/date'
 import { cn } from 'cn'
+import { hostWithoutWww } from '@his/core'
 import type { ComponentProps, ReactNode } from 'react'
 import { Favicon } from './Favicon'
-
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return url
-  }
-}
 
 export function HistoryCardGrid({ children }: { children: ReactNode }) {
   return <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-2">{children}</div>
 }
 
 export function HistoryCard({ item }: { item: HistoryItem }) {
-  const host = hostOf(item.url)
+  const host = hostWithoutWww(item.url)
   return (
     <HistoryCardRoot href={item.url}>
       <HistoryCardHeader>

@@ -8,7 +8,7 @@ export function hostOf(url: string): string {
 }
 
 /** Hostname with a leading `www.` stripped. */
-export function domainOf(url: string): string {
+export function hostWithoutWww(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '') || url
   } catch {

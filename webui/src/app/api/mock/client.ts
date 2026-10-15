@@ -1,6 +1,6 @@
 import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
 import { isoDay } from '@/lib/date'
-import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubUrlInfo } from '@his/core'
+import { hostWithoutWww, hostOf, matchesKind, mergeRepoRoots, parseGithubUrl, type GithubUrlInfo } from '@his/core'
 import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -8,14 +8,6 @@ const SYNC_DELAY_MS = 600
 
 function byLastVisitDesc(a: HistoryItem, b: HistoryItem): number {
   return b.lastVisit - a.lastVisit || b.id - a.id
-}
-
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return url
-  }
 }
 
 function topN(map: Map<string, number>, n: number): { key: string; visits: number }[] {
@@ -29,14 +21,6 @@ function topN(map: Map<string, number>, n: number): { key: string; visits: numbe
 
 let hiddenPatterns: string[] = []
 
-function rawHost(url: string): string {
-  try {
-    return new URL(url).hostname.toLowerCase()
-  } catch {
-    return url.toLowerCase()
-  }
-}
-
 function globToRegExp(glob: string): RegExp {
   const escaped = glob.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')
   return new RegExp(`^${escaped}$`, 'i')
@@ -45,7 +29,7 @@ function globToRegExp(glob: string): RegExp {
 // bare token → host (subdomains too); `*` glob; slash pattern → path glob
 function matchesHidden(url: string, patterns: string[]): boolean {
   if (patterns.length === 0) return false
-  const host = rawHost(url)
+  const host = hostOf(url)
   const full = url.toLowerCase()
   const pathUrl = full.replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
   return patterns.some((pattern) => {
@@ -91,7 +75,7 @@ function computeStats(): Stats {
     visits += it.visitCount
     firstVisit = Math.min(firstVisit, it.firstVisit)
     lastVisit = Math.max(lastVisit, it.lastVisit)
-    const host = hostOf(it.url)
+    const host = hostWithoutWww(it.url)
     byDomain.set(host, (byDomain.get(host) ?? 0) + it.visitCount)
     for (const v of MOCK_VISITS.get(it.id) ?? []) {
       const d = new Date(v.visitTime)
@@ -122,7 +106,7 @@ function computeMonthlyStats(month: string): Stats {
   let lastVisit = 0
 
   for (const it of visibleItems()) {
-    const host = hostOf(it.url)
+    const host = hostWithoutWww(it.url)
     for (const v of MOCK_VISITS.get(it.id) ?? []) {
       const day = isoDay(v.visitTime)
       if (day.slice(0, 7) !== month) continue

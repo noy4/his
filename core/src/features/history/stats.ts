@@ -1,6 +1,6 @@
 import { sql } from 'kysely'
 import type { EpochMs } from '../../types.ts'
-import { domainOf } from '../../util/url.ts'
+import { hostWithoutWww } from '../../util/url.ts'
 import { topBy } from '../../util/top.ts'
 import { hiddenExcluded, monthRange, monthWindow } from '../../db/filters.ts'
 import type { KyselyDb } from '../../db/db.ts'
@@ -49,7 +49,7 @@ async function allTimeStats(db: KyselyDb): Promise<Stats> {
     visits += row.visit_count
     firstVisit = firstVisit === 0 || row.first_visit_time < firstVisit ? row.first_visit_time : firstVisit
     lastVisit = row.last_visit_time > lastVisit ? row.last_visit_time : lastVisit
-    const host = domainOf(row.url)
+    const host = hostWithoutWww(row.url)
     byDomain.set(host, (byDomain.get(host) ?? 0) + row.visit_count)
   }
   const totals: StatTotals = {
@@ -136,7 +136,7 @@ async function monthStats(db: KyselyDb, month: string): Promise<Stats> {
     visits += groupVisits
     firstVisit = firstVisit === 0 || row.first_visit_time < firstVisit ? row.first_visit_time : firstVisit
     lastVisit = row.last_visit_time > lastVisit ? row.last_visit_time : lastVisit
-    const host = domainOf(row.url)
+    const host = hostWithoutWww(row.url)
     byDomain.set(host, (byDomain.get(host) ?? 0) + groupVisits)
   }
   const totals: StatTotals = {

@@ -1,18 +1,11 @@
 import type { HistoryItem, HistoryVisit } from '@/app/api'
+import { hostWithoutWww } from '@his/core'
 import type { ReactNode } from 'react'
 import { timeLabel } from '@/lib/date'
 import { Favicon } from './Favicon'
 
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return url
-  }
-}
-
 export function HistoryRow({ item, icon, title }: { item: HistoryItem | HistoryVisit; icon?: ReactNode; title?: ReactNode }) {
-  const host = hostOf(item.url)
+  const host = hostWithoutWww(item.url)
   const isVisit = 'visitTime' in item
   const time = isVisit ? item.visitTime : item.lastVisit
   return (
