@@ -1,8 +1,7 @@
-import type { KyselyDb, GithubVisitsFilter, SearchFilter, SyncOptions } from '@his/core/node'
+import type { KyselyDb, SearchFilter, SyncOptions } from '@his/core/node'
 import {
   getItem,
-  githubStats,
-  githubVisits,
+  github,
   getVisits,
   listSourceProfiles,
   search,
@@ -23,8 +22,8 @@ export function createHandlers({ db, runner }: {
     'history.getVisits': (params) => getVisits(db, params.urlId, params.limit),
     'history.getItem': (params) => getItem(db, params.id),
     'history.stats': (params) => stats(db, params.month),
-    'history.githubStats': (params) => githubStats(db, params.month),
-    'history.githubVisits': (params) => githubVisits(db, params as GithubVisitsFilter),
+    'history.githubStats': (params) => github.stats(db, params.month),
+    'history.githubVisits': (params) => github.visits(db, params as github.GithubVisitsFilter),
     'sources.list': (params) => listSourceProfiles(db, { check: params?.check === true }),
     'sync.run': (params) => runner.run(params as SyncOptions),
     'sync.status': () => runner.lastRun(),
