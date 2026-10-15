@@ -74,6 +74,7 @@
       padding: 20px 24px; max-width: 1040px; margin: 0 auto;
     }
     .brand { display: flex; align-items: center; gap: 9px; font-weight: 650; letter-spacing: -0.01em; color: var(--text-strong); }
+    .brand:hover { text-decoration: none; color: var(--text-strong); }
     .brand iconify-icon { color: var(--primary); }
     .nav-links { display: flex; gap: 22px; align-items: center; }
     .nav-links a { color: var(--muted); font-size: 14.5px; }
@@ -189,10 +190,10 @@
 </head>
 <body>
   <nav>
-    <div class="brand">
+    <a class="brand" href="./">
       <iconify-icon icon="mdi:history" width="22" noobserver></iconify-icon>
       his
-    </div>
+    </a>
     <div class="nav-links">
       <a href="#why">Why</a>
       <a href="#features">Features</a>
