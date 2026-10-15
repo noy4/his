@@ -10,7 +10,7 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="his — browser history archive & viewer">
   <meta property="og:description" content="Chrome deletes your history after 90 days. his saves your history from all your browsers into one local archive, and shows your browsing stats.">
-  <meta property="og:url" content="https://noy.github.io/his/">
+  <meta property="og:url" content="https://noy4.github.io/his/">
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -201,6 +201,15 @@
     @media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 560px) { .grid-3 { grid-template-columns: 1fr; } }
 
+    /* Quickstart */
+    pre {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 20px; overflow-x: auto; font-size: 0.82rem; line-height: 1.75; color: var(--text);
+    }
+    pre .c { color: var(--muted); }
+    pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+    .quick-note { margin-top: 14px; color: var(--muted); font-size: 0.86rem; text-align: center; }
+
     /* Footer */
     footer {
       border-top: 1px solid var(--border-strong); padding: 32px 0 48px; margin-top: 24px;
@@ -222,9 +231,8 @@
     </a>
     <div class="nav-links">
       <a href="#features">Features</a>
-      <a href="#sources">Sources</a>
       <a href="#quickstart">Quickstart</a>
-      <a href="https://github.com/noy/his" target="_blank" rel="noopener">GitHub ↗</a>
+      <a href="https://github.com/noy4/his" target="_blank" rel="noopener">GitHub ↗</a>
     </div>
   </nav>
 
@@ -240,7 +248,7 @@
         all your browsers into <strong>one local archive</strong>, and shows your browsing stats.
       </p>
       <div class="cta">
-        <a class="btn btn-primary" href="https://github.com/noy/his" target="_blank" rel="noopener">
+        <a class="btn btn-primary" href="https://github.com/noy4/his" target="_blank" rel="noopener">
           <iconify-icon icon="mdi:github" width="18" noobserver></iconify-icon>
           View on GitHub
         </a>
@@ -250,9 +258,9 @@
         </a>
       </div>
       <div class="badges">
-        <img src="https://img.shields.io/github/license/noy/his?color=4465DB" alt="MIT license">
+        <img src="https://img.shields.io/github/license/noy4/his?color=4465DB" alt="MIT license">
         <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
-        <img src="https://img.shields.io/github/stars/noy/his?style=flat&color=F08A59" alt="Stars">
+        <img src="https://img.shields.io/github/stars/noy4/his?style=flat&color=F08A59" alt="Stars">
       </div>
 
       <div class="mock" aria-hidden="true">
@@ -376,17 +384,37 @@
         </div>
       </div>
     </section>
+
+    <section id="quickstart">
+      <div class="section-head">
+        <h2>Quickstart</h2>
+        <p>Clone the repo, build the UI, and launch the menu bar app.</p>
+      </div>
+      <pre><span class="c"># clone &amp; install</span>
+git clone https://github.com/noy4/his
+cd his
+pnpm install
+
+<span class="c"># build the web UI</span>
+pnpm -C webui run build
+
+<span class="c"># launch the menu bar app</span>
+pnpm -C desktop run dev</pre>
+      <p class="quick-note">
+        The app starts the server for you. Your archive lives in <code>~/.his</code>.
+      </p>
+    </section>
   </div>
 
   <footer>
     <div class="wrap foot-row">
       <div>
-        © 2026 noy ·
-        <a href="https://github.com/noy/his/blob/main/LICENSE" target="_blank" rel="noopener">MIT licensed</a>
+        © 2026 noy4 ·
+        <a href="https://github.com/noy4/his/blob/main/LICENSE" target="_blank" rel="noopener">MIT licensed</a>
       </div>
       <div class="foot-links">
-        <a href="https://github.com/noy/his" target="_blank" rel="noopener">Repository</a>
-        <a href="https://github.com/noy/his/issues" target="_blank" rel="noopener">Issues</a>
+        <a href="https://github.com/noy4/his" target="_blank" rel="noopener">Repository</a>
+        <a href="https://github.com/noy4/his/issues" target="_blank" rel="noopener">Issues</a>
       </div>
     </div>
   </footer>
