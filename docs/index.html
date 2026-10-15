@@ -80,6 +80,11 @@
     .brand { display: flex; align-items: center; gap: 9px; font-weight: 650; letter-spacing: -0.01em; color: var(--text-strong); }
     .brand:hover { text-decoration: none; color: var(--text-strong); }
     .brand iconify-icon { color: var(--primary); }
+    .wip {
+      font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+      color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent);
+      border-radius: 999px; padding: 1px 7px;
+    }
     .nav-links { display: flex; gap: 22px; align-items: center; }
     .nav-links a { color: var(--muted); font-size: 14.5px; }
     .nav-links a:hover { color: var(--text-strong); text-decoration: none; }
@@ -228,6 +233,7 @@
     <a class="brand" href="./">
       <iconify-icon icon="mdi:history" width="22" noobserver></iconify-icon>
       his
+      <span class="wip">WIP</span>
     </a>
     <div class="nav-links">
       <a href="#features">Features</a>

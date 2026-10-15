@@ -1,6 +1,6 @@
 <img src="webui/public/favicon.svg" width="72" alt="his icon">
 
-# his
+# his (WIP)
 
 Browser history archive & viewer.
 
