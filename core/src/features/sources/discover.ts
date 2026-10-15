@@ -1,5 +1,5 @@
-import type { SyncTarget } from './sources/types.ts'
-import { browserOf, KNOWN_BROWSERS } from './sources/browsers.ts'
+import type { SyncTarget } from './types.ts'
+import { browserOf, KNOWN_BROWSERS } from './browsers.ts'
 
 export function resolveTargets(home: string, targets: string[] | undefined): SyncTarget[] {
   if (targets === undefined)

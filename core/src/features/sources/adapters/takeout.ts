@@ -2,8 +2,7 @@ import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { takeoutDir } from '../../../paths.ts'
-import type { EpochMs, Transition } from '../../../types.ts'
-import type { NativeVisit } from '../../applyVisits.ts'
+import type { EpochMs, NativeVisit, Transition } from '../../../types.ts'
 import type { Browser, Engine, SyncTarget } from '../types.ts'
 
 export const takeoutEngine: Engine = {

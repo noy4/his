@@ -1,5 +1,4 @@
-import type { SourceKind } from '../../types.ts'
-import type { IdMode, NativeVisit } from '../applyVisits.ts'
+import type { IdMode, NativeVisit, SourceKind } from '../../types.ts'
 
 // one discovered profile to sync
 export interface SyncTarget {

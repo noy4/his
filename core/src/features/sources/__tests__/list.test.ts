@@ -4,10 +4,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
-import { createDb, migrate, type KyselyDb } from '../../db/db.ts'
+import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
 import { probeFingerprint } from '../fingerprint.ts'
-import { listSourceProfiles } from '../watermarks.ts'
-import { sourceProfile } from '../../testing/db.ts'
+import { listSourceProfiles } from '../list.ts'
+import { sourceProfile } from '../../../testing/db.ts'
 
 let handle: DatabaseSync
 let db: KyselyDb

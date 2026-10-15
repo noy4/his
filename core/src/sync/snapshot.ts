@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import type { SyncTarget } from './sources/types.ts'
+import type { SyncTarget } from '../features/sources/types.ts'
 
 export interface SnapshotResult {
   path: string

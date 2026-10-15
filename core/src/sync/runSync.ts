@@ -1,7 +1,7 @@
 import type { SyncOptions, SyncSummary } from '../types.ts'
 import { initDb } from '../db/db.ts'
 import { historyDbPath } from '../paths.ts'
-import { resolveTargets } from './discover.ts'
+import { resolveTargets } from '../features/sources/discover.ts'
 import { runTarget } from './runTarget.ts'
 
 export interface SyncHooks {

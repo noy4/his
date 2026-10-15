@@ -1,23 +1,9 @@
 import { sql, type Transaction } from 'kysely'
 import type { DB } from '../db/schema.ts'
-import type { EpochMs, SourceKind, Transition, Watermark } from '../types.ts'
+import type { EpochMs, IdMode, NativeVisit, SourceKind, Watermark } from '../types.ts'
 import { getSettings, matchesHidden } from '../features/settings/settings.ts'
 import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
 import type { KyselyDb } from '../db/db.ts'
-
-// id semantics: rowid is comparable, hash is not
-// rowid: live browser dbs number visits with ordered rowids
-// hash: takeout synthesizes ids as content hashes, so magnitudes mean nothing
-export type IdMode = 'rowid' | 'hash'
-
-// one visit as parsed from a browser source
-export interface NativeVisit {
-  sourceVisitId: number
-  url: string
-  title: string | null
-  visitTime: EpochMs
-  transition: Transition
-}
 
 export interface SourceProfileRef {
   browser: string
