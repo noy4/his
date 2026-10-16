@@ -33,6 +33,10 @@ pnpm -C cli run his serve --open            # serve the WebUI
 
 `his sync` and `his serve` write to `~/.his` (override with `--home <dir>` or `HIS_HOME`).
 
+## 🔗 Related projects
+
+[joshuatownsend/chrome-history-explorer](https://github.com/joshuatownsend/chrome-history-explorer) — prior art: a browser history explorer (TypeScript). his skips some of those features (**AI interest maps**, **rabbit-hole detection**, **liveness checks**, etc.) and adds **continuous background sync** and a **macOS menu bar app**.
+
 ## ⚖️ License
 
 [MIT](./LICENSE)
