@@ -9,8 +9,10 @@ export type Broadcast = (method: string, params: unknown) => void
 export type HandlersFactory = (context: { broadcast: Broadcast }) => Record<string, Handler>
 
 export interface RpcOptions {
-  // The only path upgraded to a WebSocket (query strings allowed).
-  path: string
+  // Only this path upgrades to a WebSocket (default /rpc)
+  path?: string
+  // Browser origins allowed to connect, none by default
+  allowedOrigins?: readonly string[]
 }
 
 const OPEN = 1 // WebSocket.readyState value from the ws package
@@ -22,12 +24,14 @@ export class RpcServer {
   readonly #alive = new WeakMap<WebSocket, boolean>()
   readonly #handlers: Record<string, Handler>
   readonly #path: string
+  readonly #allowedOrigins: ReadonlySet<string>
   #heartbeat: NodeJS.Timeout | null = null
 
-  constructor(server: http.Server, handlers: HandlersFactory, options: RpcOptions) {
+  constructor(server: http.Server, handlers: HandlersFactory, options: RpcOptions = {}) {
     this.#server = server
     this.#handlers = handlers({ broadcast: this.broadcast })
-    this.#path = options.path
+    this.#path = options.path ?? '/rpc'
+    this.#allowedOrigins = new Set(options.allowedOrigins)
     server.on('upgrade', this.#onUpgrade)
     this.#startHeartbeat()
   }
@@ -39,6 +43,15 @@ export class RpcServer {
       socket.destroy()
       return
     }
+
+    // Only our own origins pass
+    const origin = req.headers.origin
+    if (origin !== undefined && !this.#allowedOrigins.has(origin)) {
+      socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n')
+      socket.destroy()
+      return
+    }
+
     this.#wss.handleUpgrade(req, socket, head, (ws) => this.#onConnection(ws))
   }
 

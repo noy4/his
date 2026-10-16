@@ -37,7 +37,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const app = createApp({ dist: distRoot })
   const server = http.createServer(createNodeHandler(app.fetch))
   const runner = new SyncRunner({ home })
-  const rpc = new RpcServer(server, () => createHandlers({ db, runner }), { path: '/rpc' })
 
   let instance: InstanceState
   try {
@@ -53,6 +52,11 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     await db.destroy()
     throw error
   }
+
+  // Origins need the bound port, so RPC is wired after bind
+  const rpc = new RpcServer(server, () => createHandlers({ db, runner }), {
+    allowedOrigins: allowedOrigins(instance.port),
+  })
 
   const { promise: done, resolve: finish } = Promise.withResolvers<void>()
 
@@ -86,6 +90,10 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
 }
 
 // --- bind & lifecycle ---
+
+function allowedOrigins(port: number): string[] {
+  return [`http://${HOST}:${port}`, `http://localhost:${port}`]
+}
 
 async function bind(server: http.Server, startPort: number): Promise<number> {
   for (let offset = 0; offset < PORT_ATTEMPTS; offset += 1) {
