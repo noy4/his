@@ -1,6 +1,7 @@
 import { historyDbPath, initDb } from '@his/core/node'
 import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
 import { spawn } from 'node:child_process'
+import { randomBytes } from 'node:crypto'
 import http from 'node:http'
 import { createApp } from './app.ts'
 import { createHandlers } from './handlers.ts'
@@ -34,7 +35,9 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   if (distRoot === null)
     console.error('his: webui dist not found — static routes will 503 (build webui or set HIS_DIST)')
 
-  const app = createApp({ dist: distRoot })
+  // Fresh token per start, injected into the WebUI
+  const token = randomBytes(32).toString('base64url')
+  const app = createApp({ dist: distRoot, token })
   const server = http.createServer(createNodeHandler(app.fetch))
   const runner = new SyncRunner({ home })
 
@@ -46,6 +49,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
       port,
       url: `http://${HOST}:${port}/`,
       db: historyDbPath(home),
+      token,
     }
     writeState(home, instance)
   } catch (error) {
@@ -56,6 +60,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   // Origins need the bound port, so RPC is wired after bind
   const rpc = new RpcServer(server, () => createHandlers({ db, runner }), {
     allowedOrigins: allowedOrigins(instance.port),
+    token,
   })
 
   const { promise: done, resolve: finish } = Promise.withResolvers<void>()

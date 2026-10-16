@@ -548,17 +548,17 @@
     <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>2. Origin ゲート</h3>
     <p class="section-desc">
       許可するのは起動時に確定した origin —<code>http://127.0.0.1:&lt;port&gt;</code> と <code>http://localhost:&lt;port&gt;</code>。port は衝突時に +1 されるため<b>実際に bind したポート</b>を使う。不一致は 403。<br />
-      <b>Origin ヘッダが無い場合</b>（スクリプト・CLI・手動クライアント）はトークン必須として救済する。
+      <b>Origin ヘッダが無い場合</b>（スクリプト・CLI・手動クライアント）は Origin 検証を素通りするため、次のトークンで絞る。
     </p>
 
     <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>3. トークン</h3>
     <p class="section-desc">
-      起動時に <code>crypto.randomBytes(32).toString('base64url')</code> を発行し <code>state.json</code> に <code>0600</code> で保存。検証は <code>crypto.timingSafeEqual</code>。運搬は <code>/rpc?token=…</code> を基本とする（ブラウザは WS ハンドシェイクに任意ヘッダを付けられないため）。
+      起動時に <code>crypto.randomBytes(32).toString('base64url')</code> を発行し <code>state.json</code> に <code>0600</code> で保存。検証は <code>crypto.timingSafeEqual</code>（長さ不一致は即 false）。運搬は <code>/rpc?token=…</code>（ブラウザは WS ハンドシェイクに任意ヘッダを付けられないため）。Origin の有無にかかわらず<b>全接続で必須</b>。
     </p>
 
     <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>4. WebUI への配布</h3>
     <p class="section-desc">
-      <code>server/src/static.ts:14-16</code> の <code>isEntry</code>（現状未使用）に乗せ、<code>index.html</code> へ bootstrap を注入して <code>window.__HIS__ = { token }</code> を渡す。既存の設計意図どおりの配線。
+      <code>server/src/app.ts</code> が entry（<code>isEntry</code>）応答時に <code>&lt;script&gt;window.__HIS__={token}&lt;/script&gt;</code> を <code>&lt;/head&gt;</code> 直前へ注入し、WebUI にトークンを渡す。dev は vite plugin が同じものを state から差し込む。
     </p>
 
     <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>5. state.json の権限</h3>
@@ -590,22 +590,22 @@
             <code>RpcServer</code> に許可 origin を渡し、upgrade 時に検証する。C の loopback 前提は変更しない。
           </div>
           <div class="tasks">
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">パス判定</div>
                 <div class="task-desc"><code>req.url</code> が <code>/rpc</code> 以外は <code>socket.destroy()</code></div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Origin 判定</div>
                 <div class="task-desc">一致しなければ 403 + close。比較は完全一致（scheme + host + port）</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">allow-list を実行時ポートで生成</div>
                 <div class="task-desc"><code>bind()</code> 後に確定した port から origin を組み立てて渡す</div>
@@ -626,32 +626,32 @@
             <span class="step-meta">core · server</span>
           </div>
           <div class="step-body">
-            Origin 欠落経路を閉じる。既存 state にトークンが無ければ発行して書き直す。
+            全接続にトークンを要求する。起動ごとに発行して state に保存する。
           </div>
           <div class="tasks">
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">トークン生成</div>
                 <div class="task-desc"><code>randomBytes(32)</code> → base64url。serve 起動時、無ければ発行</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">state.json を 0600 で書く</div>
                 <div class="task-desc"><code>writeState</code> に <code>mode</code> を追加 + 既存ファイルは <code>chmod</code></div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">検証</div>
                 <div class="task-desc"><code>timingSafeEqual</code> で照合。欠落・不一致は 403</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">state 破棄時の扱い</div>
                 <div class="task-desc"><code>stop</code> で <code>clearState</code> → 次回起動で再発行（トークンは揮発でよい）</div>
@@ -675,25 +675,25 @@
             トークンを WebUI に渡し、WS 接続時に付与する。既存の <code>isEntry</code> フックを使う。
           </div>
           <div class="tasks">
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">bootstrap 注入</div>
                 <div class="task-desc"><code>app.ts</code> の entry 応答時に <code>&lt;script&gt;window.__HIS__={token}&lt;/script&gt;</code> を差し込む</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">クライアント側</div>
-                <div class="task-desc"><code>webui/src/lib/rpc-transport.ts</code> で <code>?token=</code> を付与</div>
+                <div class="task-desc"><code>webui/src/app/api/client.ts</code> で <code>?token=</code> を付与（transport は汎用のまま）</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
-                <div class="task-title">dev 経路の確認</div>
-                <div class="task-desc">vite dev（別ポート）から serve へ繋ぐ場合の扱いを決める</div>
+                <div class="task-title">dev 経路</div>
+                <div class="task-desc">vite proxy が Origin を serve origin に書き換え + state からトークン注入</div>
               </div>
             </div>
           </div>
@@ -711,32 +711,32 @@
             <span class="step-meta">server · SPEC</span>
           </div>
           <div class="step-body">
-            <code>server</code> はまだテストランナー未設定。<code>node --test</code> を足し、ゲートの4ケースを固定する。
+            <code>server/package.json</code> に <code>node --test</code> を足し、ゲートの許可/拒否を固定する。
           </div>
           <div class="tasks">
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">test script 追加</div>
                 <div class="task-desc"><code>server/package.json</code> に <code>"test": "node --test \"src/**/*.test.ts\""</code></div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">拒否系</div>
-                <div class="task-desc">別パス / 別 Origin / トークン欠落 / トークン不一致 → 403</div>
+                <div class="task-desc">別パス（silent drop） / 別 Origin / トークン欠落 / 不一致 → 403</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">許可系</div>
                 <div class="task-desc">正規 Origin + 正規トークンで <code>history.stats</code> が通る</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">SPEC.html 更新</div>
                 <div class="task-desc">RPC surface と state file の記述を実装に合わせる</div>
@@ -760,29 +760,29 @@
             実ブラウザ・実プロセスで確認する。テストは通っても Origin 挙動は実機依存のため。
           </div>
           <div class="tasks">
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">別 Origin からの拒否</div>
                 <div class="task-desc"><code>ws://127.0.0.1:4477/rpc</code> を偽 Origin で叩き 403</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">WebUI 正常動作</div>
                 <div class="task-desc">Dashboard / Stats が読み込め、<code>db.changed</code> が届く</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Electron 起動</div>
                 <div class="task-desc">メニューバーアプリからウィンドウが開き RPC が通る</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+            <div class="task done">
+              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
               <div class="task-text">
                 <div class="task-title">権限確認</div>
                 <div class="task-desc"><code>stat -f %Lp ~/.his/state.json</code> が <code>600</code></div>
@@ -804,13 +804,15 @@
           <tr><th>ファイル</th><th>変更</th><th>Phase</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>server/src/rpc.ts</code></td><td>パス判定・Origin 判定・トークン検証</td><td>1, 2</td></tr>
-          <tr><td><code>server/src/index.ts</code></td><td>トークン発行、allow-list 生成、state 書き込み</td><td>1, 2</td></tr>
-          <tr><td><code>core/src/state.ts</code></td><td><code>writeState</code> の <code>mode: 0o600</code>、既存ファイルの chmod</td><td>2</td></tr>
-          <tr><td><code>server/src/app.ts</code></td><td>entry 応答への bootstrap 注入</td><td>3</td></tr>
-          <tr><td><code>webui/src/lib/rpc-transport.ts</code></td><td>接続 URL にトークン付与</td><td>3</td></tr>
+          <tr><td><code>server/src/rpc.ts</code></td><td>パス判定・Origin 判定・トークン検証（<code>RpcOptions</code>）</td><td>1, 2</td></tr>
+          <tr><td><code>server/src/index.ts</code></td><td>トークン発行、allow-list 生成、<code>bind</code> 後に RPC 配線</td><td>1, 2</td></tr>
+          <tr><td><code>core/src/state.ts</code></td><td><code>writeState</code> を <code>0600</code>（<code>mode</code> + <code>chmod</code>）</td><td>2</td></tr>
+          <tr><td><code>server/src/app.ts</code></td><td>entry 応答への <code>window.__HIS__</code> 注入</td><td>3</td></tr>
+          <tr><td><code>webui/src/app/api/client.ts</code></td><td>接続 URL にトークン付与</td><td>3</td></tr>
+          <tr><td><code>webui/src/lib/rpc-transport.ts</code></td><td><code>wsUrl</code> を必須化（汎用化）</td><td>3</td></tr>
+          <tr><td><code>webui/vite.config.ts</code></td><td>dev の Origin 書換 + トークン注入</td><td>3</td></tr>
           <tr><td><code>server/package.json</code></td><td><code>test</code> スクリプト追加</td><td>4</td></tr>
-          <tr><td><code>server/src/rpc.test.ts</code></td><td>新規 — ゲートの許可/拒否</td><td>4</td></tr>
+          <tr><td><code>server/src/__tests__/rpc.test.ts</code></td><td>新規 — ゲートの許可/拒否</td><td>4</td></tr>
           <tr><td><code>SPEC.html</code></td><td>RPC surface / state file の記述更新</td><td>4</td></tr>
         </tbody>
       </table>
@@ -829,9 +831,9 @@
         </thead>
         <tbody>
           <tr><td>トークンの運搬</td><td>クエリ / サブプロトコル / Cookie</td><td>クエリ。ブラウザはヘッダを足せず、Cookie は CSRF 面が広がる</td></tr>
-          <tr><td>Origin 欠落</td><td>拒否 / トークンあれば許可</td><td>トークン必須で許可（スクリプト用途を残す）</td></tr>
+          <tr><td>Origin 欠落</td><td>拒否 / トークンあれば許可</td><td>トークン必須（全接続共通）。スクリプト用途は残る</td></tr>
           <tr><td>許可オリジン</td><td><code>127.0.0.1</code> のみ / <code>localhost</code> も</td><td>両方。ブラウザは <code>localhost</code> で開かれ得る</td></tr>
-          <tr><td>vite dev</td><td>dev ポートも許可 / dev では無効化</td><td>要決定（Phase 3 で確認）</td></tr>
+          <tr><td>vite dev</td><td>dev ポートも許可 / proxy で書換</td><td>proxy で Origin を serve origin に書換 + state からトークン注入</td></tr>
         </tbody>
       </table>
     </div>

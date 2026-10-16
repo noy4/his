@@ -43,7 +43,7 @@ export class RpcTransport<T extends RpcEventsMap = RpcEventsMap> {
   #events = createNanoEvents<T>()
   #wsUrl: string
 
-  constructor(wsUrl = defaultWsUrl()) {
+  constructor(wsUrl: string) {
     this.#wsUrl = wsUrl
   }
 
@@ -129,8 +129,4 @@ export class RpcTransport<T extends RpcEventsMap = RpcEventsMap> {
     const backoffJitter = 0.7 + Math.random() * 0.6   // ±30% spread
     setTimeout(() => this.#connect(), backoff * backoffJitter)
   }
-}
-
-function defaultWsUrl(): string {
-  return `${location.origin.replace(/^http/, 'ws')}/rpc`
 }

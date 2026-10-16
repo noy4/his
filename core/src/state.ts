@@ -38,8 +38,10 @@ export function readState(home: string): InstanceState | null {
 export function writeState(home: string, state: InstanceState): void {
   const file = stateFilePath(home)
   const tmp = `${file}.${process.pid}.tmp`
-  fs.writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`)
+  // Holds the /rpc token, so only the owner can read it (0600)
+  fs.writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`, { mode: 0o600 })
   fs.renameSync(tmp, file)
+  fs.chmodSync(file, 0o600)
 }
 
 export function clearState(home: string): void {

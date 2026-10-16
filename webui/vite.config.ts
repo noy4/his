@@ -3,14 +3,23 @@ import react from '@vitejs/plugin-react'
 import Icons from 'unplugin-icons/vite'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import { defaultHome } from '@his/core/paths'
+import { readState } from '@his/core/state'
+import { defineConfig, type Plugin } from 'vite'
+
+const SERVE = 'http://127.0.0.1:4477'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // dev も same-origin(`/rpc` → his serve) — prod(dist + his serve)と同一経路
   server: {
     proxy: {
-      '/rpc': { target: 'http://127.0.0.1:4477', ws: true, changeOrigin: true },
+      // origin=SERVE so the server's Origin gate accepts the dev page
+      '/rpc': {
+        target: SERVE,
+        ws: true,
+        changeOrigin: true,
+        headers: { origin: SERVE },
+      },
     },
   },
   resolve: {
@@ -21,6 +30,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     react(),
+    hisState(),
     // Iconify icons inlined at build time (no runtime API)
     // https://github.com/unplugin/unplugin-icons
     Icons({ compiler: 'jsx', jsx: 'react' }),
@@ -34,3 +44,17 @@ export default defineConfig({
     }),
   ],
 })
+
+// dev only: hand the WebUI the running serve's /rpc token
+function hisState(): Plugin {
+  return {
+    name: 'his:state',
+    apply: 'serve',
+    transformIndexHtml(html) {
+      const state = readState(defaultHome())
+      if (state?.token === undefined) return html
+      const tag = `<script>window.__HIS__=${JSON.stringify({ token: state.token })}</script>`
+      return html.replace('</head>', `${tag}\n  </head>`)
+    },
+  }
+}

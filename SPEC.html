@@ -543,7 +543,7 @@
 
     <h3><iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>RPC surface</h3>
     <p class="section-desc">
-      JSON-RPC 2.0 over WS at <code>/rpc</code> — <code>history.*</code> mirrors the WebExtensions history API, with stats, GitHub insights and settings alongside; notifications push on the same socket. Same-origin + state-file token only.
+      JSON-RPC 2.0 over WS at <code>/rpc</code> — <code>history.*</code> mirrors the WebExtensions history API, with stats, GitHub insights and settings alongside; notifications push on the same socket. Origin allow-list (<code>127.0.0.1</code> / <code>localhost</code>) + state-file token, required on every connection.
     </p>
 
     <pre><span class="c"># request / response — id-matched</span>
@@ -589,7 +589,7 @@ db.changed           { }                                                 <span c
           <iconify-icon icon="mdi:map-marker-path" noobserver></iconify-icon>
           <h4>Location</h4>
         </div>
-        <p><code>~/.his/state.json</code> — pid, port, url, db path, /rpc token. A second <code>his serve</code> just reports the running URL. The home also holds <code>history.db</code> and staging copies; distinct archives = distinct homes (<code>HIS_HOME</code>).</p>
+        <p><code>~/.his/state.json</code> — pid, port, url, db path, /rpc token (mode <code>0600</code>). A second <code>his serve</code> just reports the running URL. The home also holds <code>history.db</code> and staging copies; distinct archives = distinct homes (<code>HIS_HOME</code>).</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -1054,7 +1054,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
         </div>
         <ul>
           <li>Sync runs both ways — standalone <code>his sync</code> writes directly, <code>sync.run</code> over RPC runs in-process; accidental overlap covered by WAL + <code>busy_timeout</code></li>
-          <li><code>/rpc</code> accepts same-origin + state-file token only</li>
+          <li><code>/rpc</code> accepts an allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) plus the state-file token</li>
           <li>Page bodies out of scope — metadata only, no WARC / WACZ</li>
           <li>Dedup key = <code>(source_profile_id, source_visit_id)</code> — watermark incremental with reset detection</li>
           <li>Sync cadence = 6h periodic + per-target fingerprint gate (unchanged targets skip snapshot) + a startup catch-up sync</li>
