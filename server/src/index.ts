@@ -37,7 +37,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const app = createApp({ dist: distRoot })
   const server = http.createServer(createNodeHandler(app.fetch))
   const runner = new SyncRunner({ home })
-  const rpc = new RpcServer(server, () => createHandlers({ db, runner }))
+  const rpc = new RpcServer(server, () => createHandlers({ db, runner }), { path: '/rpc' })
 
   let instance: InstanceState
   try {

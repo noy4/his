@@ -8,6 +8,11 @@ export type Handler = (params: Record<string, any>) => unknown | Promise<unknown
 export type Broadcast = (method: string, params: unknown) => void
 export type HandlersFactory = (context: { broadcast: Broadcast }) => Record<string, Handler>
 
+export interface RpcOptions {
+  // The only path upgraded to a WebSocket (query strings allowed).
+  path: string
+}
+
 const OPEN = 1 // WebSocket.readyState value from the ws package
 
 export class RpcServer {
@@ -16,20 +21,25 @@ export class RpcServer {
   readonly #clients = new Set<WebSocket>()
   readonly #alive = new WeakMap<WebSocket, boolean>()
   readonly #handlers: Record<string, Handler>
-  readonly #onUpgrade = (
-    req: http.IncomingMessage,
-    socket: Duplex,
-    head: Buffer,
-  ): void => {
-    this.#wss.handleUpgrade(req, socket, head, (ws) => this.#onConnection(ws))
-  }
+  readonly #path: string
   #heartbeat: NodeJS.Timeout | null = null
 
-  constructor(server: http.Server, handlers: HandlersFactory) {
+  constructor(server: http.Server, handlers: HandlersFactory, options: RpcOptions) {
     this.#server = server
     this.#handlers = handlers({ broadcast: this.broadcast })
+    this.#path = options.path
     server.on('upgrade', this.#onUpgrade)
     this.#startHeartbeat()
+  }
+
+  #onUpgrade = (req: http.IncomingMessage, socket: Duplex, head: Buffer): void => {
+    // Only the RPC path upgrades
+    const url = req.url ?? '/'
+    if (url !== this.#path && !url.startsWith(`${this.#path}?`)) {
+      socket.destroy()
+      return
+    }
+    this.#wss.handleUpgrade(req, socket, head, (ws) => this.#onConnection(ws))
   }
 
   broadcast: Broadcast = (method, params) => {
