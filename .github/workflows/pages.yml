@@ -32,24 +32,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build demo (mock API, /his/demo/)
-        working-directory: webui
-        run: pnpm run build
-        env:
-          HIS_BASE: /his/demo/
-          VITE_USE_MOCK_API: 'true'
-
-      - name: Assemble site (LP at root, demo at /demo/)
-        run: |
-          mkdir -p _site
-          cp -R docs/. _site/
-          mkdir -p _site/demo
-          cp -R webui/dist/. _site/demo/
+      - name: Build demo
+        run: pnpm -C webui run build:demo
 
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: _site
+          path: docs
 
   deploy:
     needs: build
@@ -59,4 +48,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

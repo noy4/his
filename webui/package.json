@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:demo": "tsc -b && VITE_USE_MOCK_API=true vite build --base=./ --outDir ../docs/demo --emptyOutDir",
     "lint": "oxlint",
     "preview": "vite preview"
   },
