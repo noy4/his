@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="created_at" content="2026-10-16T14:25:00+09:00">
+<title>his | RPC spec · hardening</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0B0E14;
+    --surface: #151A23;
+    --surface-2: #21252F;
+    --border: #2C313F;
+    --border-strong: #383F50;
+    --text: #C3CDDC;
+    --text-strong: #F7F9FC;
+    --muted: #7E8A9E;
+    --primary: #4465DB;
+    --primary-soft: rgba(68, 101, 219, 0.15);
+    --accent: #F08A59;
+    --accent-soft: rgba(240, 138, 89, 0.15);
+    --green: #4ADE80;
+    --green-soft: rgba(74, 222, 128, 0.15);
+    --cyan: #38BDF8;
+    --purple: #A78BFA;
+    --mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface-2: #F1F5F9;
+      --border: #E2E8F0;
+      --border-strong: #CBD5E1;
+      --text: #334155;
+      --text-strong: #0F172A;
+      --muted: #64748B;
+      --primary: #2563EB;
+      --primary-soft: rgba(37, 99, 235, 0.1);
+      --accent: #EA580C;
+      --accent-soft: rgba(234, 88, 12, 0.1);
+      --green: #16A34A;
+      --green-soft: rgba(22, 163, 74, 0.1);
+      --cyan: #0284C7;
+      --purple: #7C3AED;
+      color-scheme: light;
+    }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    padding: 0 16px;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 0 80px;
+  }
+
+  section { scroll-margin-top: 24px; }
+  .toc {
+    display: none;
+    position: fixed;
+    top: 96px;
+    left: calc(50% + 420px);
+    width: 200px;
+    max-height: calc(100vh - 128px);
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  @media (min-width: 1240px) {
+    .toc { display: block; }
+  }
+  .toc-title {
+    padding-left: 14px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .toc iconify-icon { font-size: 13px; width: 13px; height: 13px; vertical-align: -2px; margin-right: 5px; }
+  .toc a.active iconify-icon { color: inherit; }
+  .toc a {
+    display: block;
+    padding: 3px 8px 3px 12px;
+    border-left: 2px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .toc a:hover { color: var(--text-strong); }
+  .toc a.active { color: var(--primary); border-left-color: var(--primary); }
+  .toc a.toc-h3 { padding-left: 24px; font-size: 11px; }
+
+  /* Hero */
+  .hero {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .badge-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-family: var(--mono);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  h1 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  .tagline {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-family: var(--mono);
+  }
+
+  /* Sections */
+  section { margin-top: 48px; }
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  h2 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    margin: 24px 0 8px;
+  }
+  h3 iconify-icon { color: var(--accent); font-size: 18px; flex-shrink: 0; }
+  p { margin-bottom: 12px; }
+  p strong { color: var(--text); }
+  .section-desc {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+  }
+
+  /* Inline code & blocks */
+  code {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    color: var(--text);
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.77rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin: 14px 0;
+  }
+  pre .c { color: var(--muted); }
+  pre .k { color: var(--accent); }
+  blockquote {
+    margin: 10px 0;
+    padding: 8px 14px;
+    border-left: 2px solid var(--primary);
+    background: var(--surface-2);
+    border-radius: 0 8px 8px 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.65;
+  }
+  blockquote a { color: var(--primary); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 14px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    text-align: left;
+    padding: 8px 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+    background: var(--surface);
+  }
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    background: var(--surface);
+  }
+  tr:last-child td { border-bottom: none; }
+  td code { font-size: 0.74rem; }
+
+  /* Grid & Cards */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .grid-2 > * { min-width: 0; }
+  @media (max-width: 620px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card .card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .card .card-head iconify-icon {
+    font-size: 22px;
+    color: var(--primary);
+    flex-shrink: 0;
+  }
+  .card h4 {
+    font-size: 0.95rem;
+    color: var(--text-strong);
+    font-weight: 600;
+    margin: 0;
+  }
+  .card p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.65;
+    margin: 0;
+  }
+  .card p strong { color: var(--text); }
+  .card p code { font-size: 0.74rem; }
+  .card ul { margin: 0; padding-left: 16px; }
+  .card li { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    vertical-align: 1px;
+  }
+  .tag.d { color: var(--primary); border-color: var(--primary); background: var(--primary-soft); }
+
+  /* Timeline (phase cards) */
+  .timeline { position: relative; padding-left: 28px; margin: 20px 0; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: 2px;
+    background: var(--border-strong);
+  }
+  .timeline-step { position: relative; margin-bottom: 20px; }
+  .timeline-step:last-child { margin-bottom: 0; }
+  .step-check {
+    position: absolute;
+    left: -30px;
+    top: 2px;
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 50%;
+  }
+  .step-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .step-head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .step-title {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text-strong);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-title iconify-icon { font-size: 22px; }
+  .step-meta {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface-2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    margin-left: auto;
+  }
+  .step-body {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .tasks {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .task {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .task > iconify-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--muted);
+  }
+  .task.done { background: transparent; }
+  .task.done > iconify-icon { color: var(--green); }
+  .task.done::after {
+    content: '✓';
+    position: absolute;
+    top: 0px;
+    right: 8px;
+    font-family: var(--mono);
+    color: var(--green);
+  }
+  .task-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-strong);
+    line-height: 1.4;
+  }
+  .task-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  @media (max-width: 620px) {
+    .tasks { grid-template-columns: 1fr; }
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-strong);
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  footer strong { color: var(--text); }
+  footer ul { list-style: none; }
+  footer li { padding: 2px 0; }
+  footer li iconify-icon { color: var(--muted); font-size: 14px; vertical-align: -2px; margin-right: 6px; }
+  footer a { color: var(--primary); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .f-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .f-title iconify-icon { color: var(--primary); }
+  .colophon {
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="hero">
+    <div class="badge-top">
+      <iconify-icon icon="mdi:shield-key-outline" noobserver></iconify-icon>
+      SPEC
+    </div>
+    <h1><iconify-icon icon="mdi:shield-lock-outline" width="30" noobserver></iconify-icon>his · rpc</h1>
+    <p class="tagline"><code>/rpc</code>（JSON-RPC 2.0 over WS）にパス制限・Origin 検証・トークンを導入するための仕様とプラン。</p>
+  </header>
+
+  <!-- OVERVIEW -->
+  <section>
+    <h2><iconify-icon icon="mdi:information-outline" width="24" noobserver></iconify-icon>Overview</h2>
+    <p class="section-desc">
+      現状 <code>/rpc</code> は<b>どのパス・どの Origin からでも WebSocket を受理</b>する。ブラウザで開いた任意のサイトからローカル RPC を叩ける状態なので、ループバック前提をコードで強制する。
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:target" noobserver></iconify-icon>
+          <h4>目的</h4>
+        </div>
+        <p>任意サイトから <code>history.search</code> 等を呼べないようにする。same-origin を<b>サーバ側で検証</b>し、非ブラウザ経路はトークンで絞る。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:vector-selection" noobserver></iconify-icon>
+          <h4>範囲</h4>
+        </div>
+        <p>ゲートは <code>server/src/rpc.ts</code>、トークン発行は <code>server/src/index.ts</code>、保存権限は <code>core/src/state.ts</code>、WebUI への配布は <code>server/src/app.ts</code>。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <h4>非目標</h4>
+        </div>
+        <p>マルチユーザ認証・リモート公開・TLS。LAN へ出す場合はリバースプロキシ側で認証を付ける前提のまま。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:playlist-check" noobserver></iconify-icon>
+          <h4>完了条件</h4>
+        </div>
+        <p>悪意ある Origin からの WS が拒否され、WebUI / CLI / Electron は従来どおり動作し、<code>state.json</code> が <code>0600</code> になる。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- THREAT MODEL -->
+  <section>
+    <h2><iconify-icon icon="mdi:account-alert-outline" width="24" noobserver></iconify-icon>Threat model</h2>
+    <p class="section-desc">
+      守る対象は<b>履歴そのもの</b>（URL・title・訪問時刻・GitHub 可視情報）と、ローカル経路が漏らす情報。
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>攻撃者</th><th>現状</th><th>対策後</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A</td><td>ブラウザで開いた任意サイト（広告 iframe 含む）</td><td><b>接続でき、履歴を読み出せる</b></td><td>Origin 不一致を 403 で拒否</td></tr>
+          <tr><td>B</td><td>同一マシンの別プロセス・別ユーザ</td><td>接続できる</td><td>トークン必須</td></tr>
+          <tr><td>C</td><td>LAN / リモート</td><td>loopback 固定で到達不可</td><td>変更なし</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="section-desc" style="margin-top:12px">
+      A が本命。WebSocket は<b>同一生成元ポリシーの対象外</b>で、ブラウザは任意の Origin から <code>ws://127.0.0.1:4477/</code> に接続できてしまう。したがって防御線はサーバ側の Origin 検証だけになる。
+    </p>
+  </section>
+
+  <!-- CURRENT STATE -->
+  <section>
+    <h2><iconify-icon icon="mdi:file-search-outline" width="24" noobserver></iconify-icon>Current state</h2>
+    <p class="section-desc">
+      SPEC の記載と実装の差分（すべて現行コードで確認済み）。
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>項目</th><th>SPEC の記載</th><th>実装</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>bind</td><td><code>127.0.0.1</code> のみ</td><td>一致 — <code>server/src/index.ts:12</code></td></tr>
+          <tr><td>パス</td><td>WS <code>/rpc</code></td><td>未検証 — どのパスでも upgrade を受理 <code>server/src/rpc.ts:31</code></td></tr>
+          <tr><td>Origin</td><td>same-origin のみ</td><td>未検証 — <code>server/src/rpc.ts:24</code></td></tr>
+          <tr><td>token</td><td>state.json に保存し <code>/rpc</code> で要求</td><td>未発行・未検証（型だけ存在 <code>core/src/state.ts:10</code>）</td></tr>
+          <tr><td>state.json 権限</td><td>記載なし</td><td>mode 指定なし（umask 依存）<code>core/src/state.ts:38-43</code></td></tr>
+          <tr><td>公開メソッド</td><td>—</td><td><code>history.search</code> / <code>searchVisits</code> / <code>getVisits</code> / <code>getItem</code> / <code>stats</code> / <code>github*</code> / <code>sources.list</code> / <code>sync.run</code> / <code>sync.status</code> / <code>settings.*</code> — <code>server/src/handlers.ts:11-22</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DESIGN -->
+  <section>
+    <h2><iconify-icon icon="mdi:shield-check-outline" width="24" noobserver></iconify-icon>Design</h2>
+    <p class="section-desc">
+      3段のゲートを<b>上から順に</b>適用する（早い段で落とすほど安い）。
+    </p>
+
+    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>1. パスゲート</h3>
+    <p class="section-desc">
+      <code>req.url</code> が <code>/rpc</code> 以外なら <code>socket.destroy()</code>。surface を 1 経路に絞る。
+    </p>
+
+    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>2. Origin ゲート</h3>
+    <p class="section-desc">
+      許可するのは起動時に確定した origin —<code>http://127.0.0.1:&lt;port&gt;</code> と <code>http://localhost:&lt;port&gt;</code>。port は衝突時に +1 されるため<b>実際に bind したポート</b>を使う。不一致は 403。<br />
+      <b>Origin ヘッダが無い場合</b>（スクリプト・CLI・手動クライアント）はトークン必須として救済する。
+    </p>
+
+    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>3. トークン</h3>
+    <p class="section-desc">
+      起動時に <code>crypto.randomBytes(32).toString('base64url')</code> を発行し <code>state.json</code> に <code>0600</code> で保存。検証は <code>crypto.timingSafeEqual</code>。運搬は <code>/rpc?token=…</code> を基本とする（ブラウザは WS ハンドシェイクに任意ヘッダを付けられないため）。
+    </p>
+
+    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>4. WebUI への配布</h3>
+    <p class="section-desc">
+      <code>server/src/static.ts:14-16</code> の <code>isEntry</code>（現状未使用）に乗せ、<code>index.html</code> へ bootstrap を注入して <code>window.__HIS__ = { token }</code> を渡す。既存の設計意図どおりの配線。
+    </p>
+
+    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>5. state.json の権限</h3>
+    <p class="section-desc">
+      <code>fs.writeFileSync(file, data, { mode: 0o600 })</code>（既存ファイルは <code>chmod</code>）。トークンが入るため必須。
+    </p>
+  </section>
+
+  <!-- PLAN -->
+  <section>
+    <h2><iconify-icon icon="mdi:format-list-numbered" width="24" noobserver></iconify-icon>Plan</h2>
+    <p class="section-desc">
+      ゲート → トークン → 配布 → テスト/文書 → 検証。各 Phase は単独で <code>tsc</code> が通り、Phase 1-3 の間もアプリは動作し続ける。
+    </p>
+
+    <div class="timeline">
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:call-split" style="color:var(--primary)" noobserver></iconify-icon>
+              Phase 1 — Gate（パス + Origin）
+            </span>
+            <span class="step-meta">server</span>
+          </div>
+          <div class="step-body">
+            <code>RpcServer</code> に許可 origin を渡し、upgrade 時に検証する。C の loopback 前提は変更しない。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">パス判定</div>
+                <div class="task-desc"><code>req.url</code> が <code>/rpc</code> 以外は <code>socket.destroy()</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Origin 判定</div>
+                <div class="task-desc">一致しなければ 403 + close。比較は完全一致（scheme + host + port）</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">allow-list を実行時ポートで生成</div>
+                <div class="task-desc"><code>bind()</code> 後に確定した port から origin を組み立てて渡す</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:key-outline" style="color:var(--primary)" noobserver></iconify-icon>
+              Phase 2 — Token 発行・保存
+            </span>
+            <span class="step-meta">core · server</span>
+          </div>
+          <div class="step-body">
+            Origin 欠落経路を閉じる。既存 state にトークンが無ければ発行して書き直す。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">トークン生成</div>
+                <div class="task-desc"><code>randomBytes(32)</code> → base64url。serve 起動時、無ければ発行</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">state.json を 0600 で書く</div>
+                <div class="task-desc"><code>writeState</code> に <code>mode</code> を追加 + 既存ファイルは <code>chmod</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">検証</div>
+                <div class="task-desc"><code>timingSafeEqual</code> で照合。欠落・不一致は 403</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">state 破棄時の扱い</div>
+                <div class="task-desc"><code>stop</code> で <code>clearState</code> → 次回起動で再発行（トークンは揮発でよい）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:swap-horizontal" style="color:var(--primary)" noobserver></iconify-icon>
+              Phase 3 — 配布（WebUI 注入）
+            </span>
+            <span class="step-meta">server · webui</span>
+          </div>
+          <div class="step-body">
+            トークンを WebUI に渡し、WS 接続時に付与する。既存の <code>isEntry</code> フックを使う。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">bootstrap 注入</div>
+                <div class="task-desc"><code>app.ts</code> の entry 応答時に <code>&lt;script&gt;window.__HIS__={token}&lt;/script&gt;</code> を差し込む</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">クライアント側</div>
+                <div class="task-desc"><code>webui/src/lib/rpc-transport.ts</code> で <code>?token=</code> を付与</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">dev 経路の確認</div>
+                <div class="task-desc">vite dev（別ポート）から serve へ繋ぐ場合の扱いを決める</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:flask-outline" style="color:var(--primary)" noobserver></iconify-icon>
+              Phase 4 — Tests &amp; docs
+            </span>
+            <span class="step-meta">server · SPEC</span>
+          </div>
+          <div class="step-body">
+            <code>server</code> はまだテストランナー未設定。<code>node --test</code> を足し、ゲートの4ケースを固定する。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">test script 追加</div>
+                <div class="task-desc"><code>server/package.json</code> に <code>"test": "node --test \"src/**/*.test.ts\""</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">拒否系</div>
+                <div class="task-desc">別パス / 別 Origin / トークン欠落 / トークン不一致 → 403</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">許可系</div>
+                <div class="task-desc">正規 Origin + 正規トークンで <code>history.stats</code> が通る</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">SPEC.html 更新</div>
+                <div class="task-desc">RPC surface と state file の記述を実装に合わせる</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:playlist-check" style="color:var(--primary)" noobserver></iconify-icon>
+              Phase 5 — Verify
+            </span>
+            <span class="step-meta">manual</span>
+          </div>
+          <div class="step-body">
+            実ブラウザ・実プロセスで確認する。テストは通っても Origin 挙動は実機依存のため。
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">別 Origin からの拒否</div>
+                <div class="task-desc"><code>ws://127.0.0.1:4477/rpc</code> を偽 Origin で叩き 403</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">WebUI 正常動作</div>
+                <div class="task-desc">Dashboard / Stats が読み込め、<code>db.changed</code> が届く</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Electron 起動</div>
+                <div class="task-desc">メニューバーアプリからウィンドウが開き RPC が通る</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:checkbox-blank-outline" noobserver></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">権限確認</div>
+                <div class="task-desc"><code>stat -f %Lp ~/.his/state.json</code> が <code>600</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- AFFECTED FILES -->
+  <section>
+    <h2><iconify-icon icon="mdi:file-tree-outline" width="24" noobserver></iconify-icon>Affected files</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>ファイル</th><th>変更</th><th>Phase</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>server/src/rpc.ts</code></td><td>パス判定・Origin 判定・トークン検証</td><td>1, 2</td></tr>
+          <tr><td><code>server/src/index.ts</code></td><td>トークン発行、allow-list 生成、state 書き込み</td><td>1, 2</td></tr>
+          <tr><td><code>core/src/state.ts</code></td><td><code>writeState</code> の <code>mode: 0o600</code>、既存ファイルの chmod</td><td>2</td></tr>
+          <tr><td><code>server/src/app.ts</code></td><td>entry 応答への bootstrap 注入</td><td>3</td></tr>
+          <tr><td><code>webui/src/lib/rpc-transport.ts</code></td><td>接続 URL にトークン付与</td><td>3</td></tr>
+          <tr><td><code>server/package.json</code></td><td><code>test</code> スクリプト追加</td><td>4</td></tr>
+          <tr><td><code>server/src/rpc.test.ts</code></td><td>新規 — ゲートの許可/拒否</td><td>4</td></tr>
+          <tr><td><code>SPEC.html</code></td><td>RPC surface / state file の記述更新</td><td>4</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section>
+    <h2><iconify-icon icon="mdi:alert-circle-outline" width="24" noobserver></iconify-icon>Risks &amp; open questions</h2>
+
+    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>論点</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>論点</th><th>選択肢</th><th>現時点の判断</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>トークンの運搬</td><td>クエリ / サブプロトコル / Cookie</td><td>クエリ。ブラウザはヘッダを足せず、Cookie は CSRF 面が広がる</td></tr>
+          <tr><td>Origin 欠落</td><td>拒否 / トークンあれば許可</td><td>トークン必須で許可（スクリプト用途を残す）</td></tr>
+          <tr><td>許可オリジン</td><td><code>127.0.0.1</code> のみ / <code>localhost</code> も</td><td>両方。ブラウザは <code>localhost</code> で開かれ得る</td></tr>
+          <tr><td>vite dev</td><td>dev ポートも許可 / dev では無効化</td><td>要決定（Phase 3 で確認）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>リスク</h3>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <h4>既存 state.json との互換</h4>
+        </div>
+        <p>トークン無しの state が残っていると起動時に検証が揺れる。<b>起動時に読み直して無ければ発行</b>する順序にする。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <h4>壊したときの戻し</h4>
+        </div>
+        <p>ゲートは <code>rpc.ts</code> の 1 箇所なので、Phase 単位で revert 可能。Phase 1 のみでも A の脅威は消える。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <h4>トークンの寿命</h4>
+        </div>
+        <p>揮発（起動ごと再発行）なので、再起動で開いたままの WebUI は再接続時に失敗する。リロードで回復する想定。</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <h4>残余リスク</h4>
+        </div>
+        <p>同一ユーザ権限のプロセスは state.json を読める（0600 は他ユーザを止めるだけ）。マルチユーザ前提の防御は非目標。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACKGROUND -->
+  <section>
+    <h2><iconify-icon icon="mdi:link-variant" width="24" noobserver></iconify-icon>Background &amp; links</h2>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><td>WebSocket の Origin による保護</td><td><a href="https://www.rfc-editor.org/rfc/rfc6455#section-10.2">RFC 6455 §10.2 — Origin Considerations</a></td></tr>
+          <tr><td>ws ライブラリの認証・Origin 検証</td><td><a href="https://github.com/websockets/ws#client-authentication">websockets/ws — Client authentication</a></td></tr>
+          <tr><td>定数時間比較</td><td><a href="https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b">Node — crypto.timingSafeEqual</a></td></tr>
+          <tr><td>WebSocket のセキュリティモデル</td><td><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API">MDN — WebSockets API</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div class="f-title"><iconify-icon icon="mdi:shield-lock-outline" noobserver></iconify-icon>his · rpc spec</div>
+    <ul>
+      <li><iconify-icon icon="mdi:shield-key-outline" noobserver></iconify-icon>パスゲート + Origin 検証 + トークンの3段</li>
+      <li><iconify-icon icon="mdi:flask-outline" noobserver></iconify-icon>検証は <code>node --test</code> + 実機（悪意 Origin からの WS 拒否）</li>
+    </ul>
+    <div class="colophon">his rpc spec · created 2026-10-16</div>
+  </footer>
+</div>
+<nav id="toc" class="toc" aria-label="On this page">
+  <div class="toc-title">On this page</div>
+</nav>
+
+<script>
+(() => {
+  const toc = document.getElementById("toc")
+  const headings = [...document.querySelectorAll(".container h2, .container h3")]
+  const seen = {}
+  for (const h of headings) {
+    const text = h.textContent.trim()
+    if (!h.id) {
+      const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+      seen[base] = (seen[base] ?? 0) + 1
+      h.id = seen[base] > 1 ? `${base}-${seen[base]}` : base
+    }
+    const a = document.createElement("a")
+    a.href = `#${h.id}`
+    a.innerHTML = h.innerHTML
+    a.querySelector("iconify-icon")?.removeAttribute("width")
+    if (h.tagName === "H3") a.className = "toc-h3"
+    a.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+      e.preventDefault()
+      h.scrollIntoView({ behavior: "smooth" })
+      history.replaceState(null, "", `#${h.id}`)
+    })
+    toc.append(a)
+  }
+  const links = new Map([...toc.querySelectorAll("a")].map((a) => [a.getAttribute("href").slice(1), a]))
+  const update = () => {
+    let current = headings[0]
+    for (const h of headings) {
+      if (h.getBoundingClientRect().top <= 96) current = h
+    }
+    for (const a of links.values()) a.classList.remove("active")
+    links.get(current.id)?.classList.add("active")
+  }
+  addEventListener("scroll", update, { passive: true })
+  update()
+})()
+</script>
+</body>
+</html>
