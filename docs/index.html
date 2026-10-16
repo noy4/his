@@ -133,55 +133,10 @@
     }
     .dot { width: 11px; height: 11px; border-radius: 50%; }
     .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
-    .mock-app { background: var(--bg); }
-    .mock-header {
-      display: flex; align-items: center; gap: 16px;
-      padding: 10px 14px; border-bottom: 1px solid var(--border);
-    }
-    .mock-brand { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 14px; color: var(--text-strong); }
-    .mock-brand iconify-icon { color: var(--primary); }
-    .mock-nav, .mock-toggle { display: flex; gap: 2px; background: var(--surface-2); border-radius: 6px; padding: 2px; font-size: 12.5px; }
-    .mock-nav span, .mock-toggle span { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 4px; color: var(--muted); }
-    .mock-nav span.on, .mock-toggle span.on { background: var(--surface); color: var(--text-strong); font-weight: 600; }
-    .mock-nav iconify-icon { font-size: 13px; }
-    .mock-main { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; }
-    .mock-toolbar { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
-    .mock-month {
-      display: inline-flex; align-items: center; gap: 3px; padding: 3px 7px; font-size: 12.5px;
-      color: var(--text); background: var(--surface); border: 1px solid var(--border);
-      border-radius: 4px; font-variant-numeric: tabular-nums;
-    }
-    .mock-month iconify-icon { font-size: 13px; color: var(--muted); }
-    .mcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; }
-    .mcard h4 {
-      margin: 0 0 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
-      color: var(--muted); font-family: var(--mono); font-weight: 500;
-    }
-    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .stat { display: flex; align-items: center; gap: 9px; }
-    .stat iconify-icon { font-size: 22px; color: var(--muted); flex-shrink: 0; }
-    .stat .n { font-size: 19px; font-weight: 600; color: var(--text-strong); font-variant-numeric: tabular-nums; line-height: 1.25; }
-    .stat .l { font-size: 11px; color: var(--muted); }
-    .period {
-      display: flex; justify-content: space-between; gap: 8px; margin-top: 13px; padding-top: 10px;
-      border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); font-family: var(--mono);
-    }
-    .bars { display: flex; align-items: stretch; gap: 3px; height: 72px; }
-    .bars i { flex: 1; align-self: flex-end; background: var(--primary); opacity: 0.7; border-radius: 3px 3px 0 0; }
-    .bars-x { display: flex; gap: 3px; margin-top: 6px; }
-    .bars-x span { flex: 1; text-align: center; font-size: 9px; color: var(--muted); font-family: var(--mono); }
-    .dlist { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
-    .drow { display: flex; align-items: center; gap: 8px; }
-    .tile {
-      width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
-      display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;
-    }
-    .drow .d { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
-    .drow .c { color: var(--muted); font-family: var(--mono); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .mock-frame { width: 100%; height: 600px; border: 0; display: block; background: var(--bg); }
 
     @media (max-width: 720px) {
-      .mock-main { grid-template-columns: 1fr; }
-      .mock-nav { display: none; }
+      .mock-frame { height: 460px; }
     }
 
     /* Sections */
@@ -270,89 +225,11 @@
         <img src="https://img.shields.io/github/stars/noy4/his?style=flat&color=F08A59" alt="Stars">
       </div>
 
-      <div class="mock" aria-hidden="true">
+      <div class="mock">
         <div class="mock-bar">
           <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
         </div>
-        <div class="mock-app">
-          <div class="mock-header">
-            <span class="mock-brand"><iconify-icon icon="mdi:history" width="16" noobserver></iconify-icon>his</span>
-            <nav class="mock-nav">
-              <span class="on"><iconify-icon icon="mdi:chart-box-outline" noobserver></iconify-icon>Dashboard</span>
-              <span><iconify-icon icon="mdi:history" noobserver></iconify-icon>Visits</span>
-              <span><iconify-icon icon="mdi:link-variant" noobserver></iconify-icon>URLs</span>
-              <span><iconify-icon icon="mdi:github" noobserver></iconify-icon>GitHub</span>
-              <span><iconify-icon icon="mdi:database-import-outline" noobserver></iconify-icon>Sources</span>
-              <span><iconify-icon icon="mdi:cog-outline" noobserver></iconify-icon>Settings</span>
-            </nav>
-          </div>
-          <div class="mock-main">
-            <div class="mock-toolbar">
-              <span class="mock-month"><iconify-icon icon="mdi:chevron-left" noobserver></iconify-icon>Oct 2026<iconify-icon icon="mdi:chevron-right" noobserver></iconify-icon></span>
-              <span class="mock-toggle"><span class="on">Monthly</span><span>All time</span></span>
-            </div>
-
-            <div class="mcard">
-              <h4>Overview</h4>
-              <div class="stats">
-                <div class="stat">
-                  <iconify-icon icon="mdi:eye-outline" noobserver></iconify-icon>
-                  <div><div class="n">4,182</div><div class="l">visits</div></div>
-                </div>
-                <div class="stat">
-                  <iconify-icon icon="mdi:link-variant" noobserver></iconify-icon>
-                  <div><div class="n">2,317</div><div class="l">URLs</div></div>
-                </div>
-                <div class="stat">
-                  <iconify-icon icon="mdi:web" noobserver></iconify-icon>
-                  <div><div class="n">604</div><div class="l">domains</div></div>
-                </div>
-                <div class="stat">
-                  <iconify-icon icon="mdi:calendar-range" noobserver></iconify-icon>
-                  <div><div class="n">15</div><div class="l">days tracked</div></div>
-                </div>
-              </div>
-              <div class="period"><span>Period</span><span>Oct 1 – Oct 15, 2026 (15d)</span></div>
-            </div>
-
-            <div class="mcard">
-              <h4>By Hour of Day</h4>
-              <div class="bars">
-                <i style="height:6%"></i><i style="height:3%"></i><i style="height:2%"></i><i style="height:2%"></i><i style="height:3%"></i><i style="height:8%"></i><i style="height:22%"></i><i style="height:45%"></i>
-                <i style="height:62%"></i><i style="height:74%"></i><i style="height:80%"></i><i style="height:76%"></i><i style="height:70%"></i><i style="height:72%"></i><i style="height:78%"></i><i style="height:82%"></i>
-                <i style="height:88%"></i><i style="height:92%"></i><i style="height:80%"></i><i style="height:66%"></i><i style="height:54%"></i><i style="height:40%"></i><i style="height:26%"></i><i style="height:14%"></i>
-              </div>
-              <div class="bars-x">
-                <span>0</span><span></span><span></span><span></span><span></span><span></span><span>6</span><span></span>
-                <span></span><span></span><span></span><span></span><span>12</span><span></span><span></span><span></span>
-                <span></span><span></span><span>18</span><span></span><span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-
-            <div class="mcard">
-              <h4>By Day of Week</h4>
-              <div class="bars">
-                <i style="height:58%"></i><i style="height:86%"></i><i style="height:92%"></i><i style="height:90%"></i>
-                <i style="height:88%"></i><i style="height:74%"></i><i style="height:46%"></i>
-              </div>
-              <div class="bars-x">
-                <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-              </div>
-            </div>
-
-            <div class="mcard">
-              <h4>Top Domains</h4>
-              <div class="dlist">
-                <div class="drow"><span class="tile" style="background:hsl(214 30% 34%);color:hsl(214 60% 88%)">G</span><span class="d">github.com</span><span class="c">812</span></div>
-                <div class="drow"><span class="tile" style="background:hsl(28 30% 34%);color:hsl(28 60% 88%)">S</span><span class="d">stackoverflow.com</span><span class="c">341</span></div>
-                <div class="drow"><span class="tile" style="background:hsl(190 30% 34%);color:hsl(190 60% 88%)">D</span><span class="d">developer.mozilla.org</span><span class="c">268</span></div>
-                <div class="drow"><span class="tile" style="background:hsl(20 30% 34%);color:hsl(20 60% 88%)">N</span><span class="d">news.ycombinator.com</span><span class="c">197</span></div>
-                <div class="drow"><span class="tile" style="background:hsl(230 30% 34%);color:hsl(230 60% 88%)">Z</span><span class="d">zenn.dev</span><span class="c">154</span></div>
-                <div class="drow"><span class="tile" style="background:hsl(355 30% 34%);color:hsl(355 60% 88%)">Y</span><span class="d">www.youtube.com</span><span class="c">121</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <iframe class="mock-frame" src="./demo/" title="his demo" loading="lazy"></iframe>
       </div>
     </header>
   </div>
