@@ -3,5 +3,5 @@ dist
 .DS_Store
 *.local
 
-# built demo under docs
-docs/demo
+# built demo under site
+site/demo
