@@ -9,8 +9,12 @@ import { defineConfig, type Plugin } from 'vite'
 
 const SERVE = 'http://127.0.0.1:4477'
 
+// GitHub Pages demo is served from a subpath (/his/demo/)
+const BASE = process.env.HIS_BASE ?? '/'
+
 // https://vite.dev/config/
 export default defineConfig({
+  base: BASE,
   server: {
     proxy: {
       // origin=SERVE so the server's Origin gate accepts the dev page
