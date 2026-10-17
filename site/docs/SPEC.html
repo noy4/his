@@ -7,7 +7,6 @@
   <title>his | Spec</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/sidebar.css">
   <link rel="stylesheet" href="assets/toc.css">
   <style>
@@ -26,7 +25,8 @@
       --primary-soft: rgba(68, 101, 219, 0.15);
       --accent: #F08A59;
       --accent-soft: rgba(240, 138, 89, 0.15);
-      --mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
       color-scheme: dark;
     }
     @media (prefers-color-scheme: light) {
@@ -57,7 +57,7 @@
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      font-family: var(--sans);
       font-size: 15px;
       line-height: 1.75;
       padding: 0 16px;
@@ -239,7 +239,7 @@
     .figure .node { fill: var(--surface-2); stroke: var(--border-strong); }
     .figure .node-primary { stroke: var(--primary); }
     .figure .node-accent { fill: var(--accent-soft); stroke: var(--accent); }
-    .figure .tt { fill: var(--text-strong); font-weight: 600; font-size: 11.5px; text-anchor: start; font-family: "Geist", sans-serif; }
+    .figure .tt { fill: var(--text-strong); font-weight: 600; font-size: 11.5px; text-anchor: start; font-family: var(--sans); }
     .figure .tm { fill: var(--muted); font-size: 8.5px; text-anchor: start; font-family: var(--mono); }
     .figure .edge { fill: none; stroke: var(--muted); stroke-width: 1.2; marker-end: url(#arch-head-muted); }
     .figure .edge-primary { stroke: var(--primary); stroke-width: 1.5; marker-end: url(#arch-head-primary); }
