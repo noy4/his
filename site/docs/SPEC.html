@@ -47,6 +47,12 @@
       }
     }
 
+    iconify-icon {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+    }
+
     section { scroll-margin-top: 24px; }
     body {
       background: var(--bg);
@@ -105,7 +111,7 @@
       letter-spacing: -0.02em;
       margin-bottom: 8px;
     }
-    h1 iconify-icon { color: var(--primary); flex-shrink: 0; }
+    h1 iconify-icon { color: var(--primary); flex-shrink: 0; width: 30px; height: 30px; }
     .tagline {
       color: var(--muted);
       font-size: 0.95rem;
@@ -125,7 +131,7 @@
       letter-spacing: -0.01em;
       margin-bottom: 8px;
     }
-    h2 iconify-icon { color: var(--primary); flex-shrink: 0; }
+    h2 iconify-icon { color: var(--primary); flex-shrink: 0; width: 24px; height: 24px; }
     h3 {
       display: flex;
       align-items: center;
@@ -322,16 +328,16 @@
 
   <header class="hero">
     <div class="badge-top">
-      <iconify-icon icon="mdi:file-document-edit-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:file-document-edit-outline"></iconify-icon>
       SPECIFICATION
     </div>
-    <h1><iconify-icon icon="mdi:history" width="30" noobserver></iconify-icon>his Spec</h1>
+    <h1><iconify-icon icon="mdi:history" width="30"></iconify-icon>his Spec</h1>
     <p class="tagline">Browser history archive &amp; viewer.</p>
   </header>
 
   <!-- OVERVIEW -->
   <section>
-    <h2><iconify-icon icon="mdi:information-outline" width="24" noobserver></iconify-icon>Overview</h2>
+    <h2><iconify-icon icon="mdi:information-outline" width="24"></iconify-icon>Overview</h2>
     <p class="section-desc">
       One SQLite archive for all browser history, browsed with a self-built WebUI.
     </p>
@@ -339,28 +345,28 @@
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:database-outline"></iconify-icon>
           <h4>Unified archive</h4>
         </div>
         <p>One SQLite file (WAL + FTS5), WebExtensions-style model — <code>HistoryItem</code> + <code>VisitItem</code>.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:database-import-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:database-import-outline"></iconify-icon>
           <h4>Incremental sync</h4>
         </div>
         <p>Staging snapshots, watermark cursors, append-only. Never opens live browser DBs.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:application-brackets-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:application-brackets-outline"></iconify-icon>
           <h4>Three frontends</h4>
         </div>
         <p>One core: CLI, WebUI (React + <code>@preact/signals</code>), Desktop shell.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:shield-lock-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:shield-lock-outline"></iconify-icon>
           <h4>Local only</h4>
         </div>
         <p>127.0.0.1 only, no telemetry. Plain files — copy to back up.</p>
@@ -370,7 +376,7 @@
 
   <!-- STRUCTURE -->
   <section>
-    <h2><iconify-icon icon="mdi:file-tree-outline" width="24" noobserver></iconify-icon>Directory structure</h2>
+    <h2><iconify-icon icon="mdi:file-tree-outline" width="24"></iconify-icon>Directory structure</h2>
     <p class="section-desc">
       One core, three frontends.
     </p>
@@ -429,7 +435,7 @@
 
   <!-- ARCHITECTURE -->
   <section>
-    <h2><iconify-icon icon="mdi:sitemap-outline" width="24" noobserver></iconify-icon>Architecture</h2>
+    <h2><iconify-icon icon="mdi:sitemap-outline" width="24"></iconify-icon>Architecture</h2>
     <p class="section-desc">
       <code>his serve</code> owns the archive, the static WebUI, and the RPC socket; the desktop app only spawns it.
     </p>
@@ -508,7 +514,7 @@
       </svg>
     </div>
 
-    <h3><iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>RPC surface</h3>
+    <h3><iconify-icon icon="mdi:swap-horizontal"></iconify-icon>RPC surface</h3>
     <p class="section-desc">
       JSON-RPC 2.0 over WS at <code>/rpc</code> — <code>history.*</code> mirrors the WebExtensions history API, with stats, GitHub insights and settings alongside; notifications push on the same socket. Origin allow-list (<code>127.0.0.1</code> / <code>localhost</code>) + state-file token, required on every connection.
     </p>
@@ -531,7 +537,7 @@ settings.set         { hiddenPatterns }                                  → Set
 sync.progress        { source, phase, parsed, upserted }                 <span class="c"># on hold — not implemented</span>
 db.changed           { }                                                 <span class="c"># clients refetch open views</span></pre>
 
-    <h3><iconify-icon icon="mdi:file-cog-outline" noobserver></iconify-icon>Runtime state</h3>
+    <h3><iconify-icon icon="mdi:file-cog-outline"></iconify-icon>Runtime state</h3>
     <p class="section-desc">
       The running instance keeps <code>~/.his/state.json</code>; one home = one archive = one instance.
     </p>
@@ -539,35 +545,35 @@ db.changed           { }                                                 <span c
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:file-check-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:file-check-outline"></iconify-icon>
           <h4>Lifecycle</h4>
         </div>
         <p>Written once the port is bound, removed on clean shutdown.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:heart-pulse" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:heart-pulse"></iconify-icon>
           <h4>Liveness</h4>
         </div>
         <p>Readers verify the PID is alive (<code>kill(pid, 0)</code>) and prune dead-PID files in place.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:map-marker-path" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:map-marker-path"></iconify-icon>
           <h4>Location</h4>
         </div>
         <p><code>~/.his/state.json</code> — pid, port, url, db path, /rpc token (mode <code>0600</code>). A second <code>his serve</code> just reports the running URL. The home also holds <code>history.db</code> and staging copies; distinct archives = distinct homes (<code>HIS_HOME</code>).</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:database-outline"></iconify-icon>
           <h4>Write path</h4>
         </div>
         <p>One writer per process (WAL + <code>busy_timeout</code>); sync runs via <code>his sync</code> or <code>sync.run</code> RPC. WebUI has no direct DB access.</p>
       </div>
     </div>
 
-    <h3><iconify-icon icon="mdi:code-json" noobserver></iconify-icon>State file</h3>
+    <h3><iconify-icon icon="mdi:code-json"></iconify-icon>State file</h3>
 
     <pre>{
   "pid": 12345,                      <span class="c">// serve process — stop sends SIGTERM, liveness-checked</span>
@@ -580,12 +586,12 @@ db.changed           { }                                                 <span c
 
   <!-- DATA MODEL -->
   <section>
-    <h2><iconify-icon icon="mdi:database-cog-outline" width="24" noobserver></iconify-icon>Data model</h2>
+    <h2><iconify-icon icon="mdi:database-cog-outline" width="24"></iconify-icon>Data model</h2>
     <p class="section-desc">
       WebExtensions-leaning shapes in SQLite — <code>urls</code> = <code>HistoryItem</code> aggregate, <code>visits</code> = <code>VisitItem</code> events. Epoch ms, Chromium transition enums.
     </p>
 
-    <h3><iconify-icon icon="mdi:code-braces" noobserver></iconify-icon>Schema</h3>
+    <h3><iconify-icon icon="mdi:code-braces"></iconify-icon>Schema</h3>
 
     <div class="figure">
       <svg viewBox="0 0 768 556" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="his schema diagram">
@@ -742,49 +748,49 @@ CREATE TRIGGER urls_fts_after_update AFTER UPDATE ON urls BEGIN
   INSERT INTO urls_fts(rowid, title, url) VALUES (new.id, new.title, new.url);
 END;</pre>
 
-    <h3><iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>Design notes</h3>
+    <h3><iconify-icon icon="mdi:lightbulb-outline"></iconify-icon>Design notes</h3>
 
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:call-split" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:call-split"></iconify-icon>
           <h4>HistoryItem / VisitItem split</h4>
         </div>
         <p><code>urls</code> = URL aggregate, <code>visits</code> = events — WebExtensions shape 1:1, RPC responses need no reshaping.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:content-duplicate" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:content-duplicate"></iconify-icon>
           <h4>Dedup &amp; reset detection</h4>
         </div>
         <p>Source <code>MAX(id)</code> shrinking = history cleared → <code>source_id_offset += last_raw_id</code> (Gateway 式). Takeout has no native ids — stable hash of (url, time). Watermarks advance only after a successful commit.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:clock-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:clock-outline"></iconify-icon>
           <h4>Time = epoch ms</h4>
         </div>
         <p>Adapters convert WebKit µs / PRTime µs / Cocoa s / Takeout µs on the way in. Alt: Unix seconds — WebExtensions unit wins.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:directions-fork" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:directions-fork"></iconify-icon>
           <h4>Transitions normalized</h4>
         </div>
         <p>WebExtensions <code>history.TransitionType</code> (lowercase: <code>link</code> / <code>typed</code> / ...) is the axis; Firefox / Safari / Takeout map at sync.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:table-search" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:table-search"></iconify-icon>
           <h4>Search: trigram</h4>
         </div>
         <p>External content on <code>urls</code> (title, url), trigger-maintained; &lt;3 chars → LIKE. Alt: unicode61 / contentless.</p>
       </div>
     </div>
 
-    <h3><iconify-icon icon="mdi:image-multiple-outline" noobserver></iconify-icon>Favicons — favicons.db</h3>
+    <h3><iconify-icon icon="mdi:image-multiple-outline"></iconify-icon>Favicons — favicons.db</h3>
 
-    <p class="on-hold-note"><iconify-icon icon="mdi:alarm-snooze" noobserver></iconify-icon>On hold — favicon storage &amp; serving is deferred for now; implementation removed, spec kept as designed.</p>
+    <p class="on-hold-note"><iconify-icon icon="mdi:alarm-snooze"></iconify-icon>On hold — favicon storage &amp; serving is deferred for now; implementation removed, spec kept as designed.</p>
 
     <pre><span class="c">-- separate file · permanent store · no TTL</span>
 CREATE TABLE favicons (
@@ -799,14 +805,14 @@ CREATE TABLE favicons (
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:image-outline"></iconify-icon>
           <h4>Quality upsert</h4>
         </div>
         <p>Overwrite only when better (SVG &gt; width &gt; newer) — no downgrade, no TTL; refresh rides the history-delta harvest phase.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:database-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:database-outline"></iconify-icon>
           <h4>Why separate</h4>
         </div>
         <p>Not rebuildable — dropping the file loses icons (recent slice only); back up with <code>history.db</code>. Keeps it lean. Alt: page-level rows (Chrome 式) / same-DB blobs.</p>
@@ -816,7 +822,7 @@ CREATE TABLE favicons (
 
   <!-- SYNC / SOURCES -->
   <section>
-    <h2><iconify-icon icon="mdi:database-import-outline" width="24" noobserver></iconify-icon>Sync</h2>
+    <h2><iconify-icon icon="mdi:database-import-outline" width="24"></iconify-icon>Sync</h2>
     <p class="section-desc">
       Periodic (6h) change-check triggered; snapshots only — live browser DBs are never opened.
     </p>
@@ -824,35 +830,35 @@ CREATE TABLE favicons (
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:radar" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:radar"></iconify-icon>
           <h4>Trigger</h4>
         </div>
         <p>6h periodic; per-target fingerprint gate (mtime/size + sidecars, persisted in the DB) — unchanged targets skip snapshot; catch-up sync at startup. Alt: file events / OS scheduler.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:workflow" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:workflow"></iconify-icon>
           <h4>Pipeline</h4>
         </div>
         <p>fingerprint gate → snapshot → parse → upsert → watermark. One transaction per profile; <code>INSERT OR IGNORE</code> keeps re-sync idempotent.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:content-copy" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:content-copy"></iconify-icon>
           <h4>Snapshot</h4>
         </div>
         <p>SQLite <code>VACUUM INTO</code> from a read-only source handle → staging — used pages only, WAL folded, page-atomic. Fallback (hot journal / open failure): copy main + sidecars → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code> and fold on open. The live DB is never written.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:map-marker-path" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:map-marker-path"></iconify-icon>
           <h4>Watermarks</h4>
         </div>
         <p>Advance only after a successful commit. Source <code>MAX(id)</code> shrinking = history cleared → <code>source_id_offset += last_raw_id</code>.</p>
       </div>
     </div>
 
-    <h3><iconify-icon icon="mdi:web" noobserver></iconify-icon>Sources</h3>
+    <h3><iconify-icon icon="mdi:web"></iconify-icon>Sources</h3>
 
     <div class="table-wrap">
       <table>
@@ -868,7 +874,7 @@ CREATE TABLE favicons (
       </table>
     </div>
 
-    <h3><iconify-icon icon="mdi:directions-fork" noobserver></iconify-icon>Transition mapping</h3>
+    <h3><iconify-icon icon="mdi:directions-fork"></iconify-icon>Transition mapping</h3>
 
     <div class="table-wrap">
       <table>
@@ -892,7 +898,7 @@ CREATE TABLE favicons (
 
   <!-- CLI -->
   <section>
-    <h2><iconify-icon icon="mdi:console" width="24" noobserver></iconify-icon>CLI</h2>
+    <h2><iconify-icon icon="mdi:console" width="24"></iconify-icon>CLI</h2>
     <p class="section-desc">Syntax: <code>his [command] [options]</code></p>
 
     <div class="table-wrap">
@@ -919,7 +925,7 @@ CREATE TABLE favicons (
 
   <!-- WEBUI -->
   <section>
-    <h2><iconify-icon icon="mdi:web" width="24" noobserver></iconify-icon>WebUI</h2>
+    <h2><iconify-icon icon="mdi:web" width="24"></iconify-icon>WebUI</h2>
     <p class="section-desc">
       React + <code>@preact/signals</code> SPA — built to <code>dist/</code>, served by <code>his serve</code>; talks to core only via RPC.
     </p>
@@ -927,28 +933,28 @@ CREATE TABLE favicons (
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:format-list-bulleted" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:format-list-bulleted"></iconify-icon>
           <h4>Views</h4>
         </div>
         <p>Timeline — date-grouped, last-visit DESC, cursor scroll. List — flat. Detail — <code>HistoryItem</code> + visits, delete / restore.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:chart-box-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:chart-box-outline"></iconify-icon>
           <h4>State</h4>
         </div>
         <p>Signals: query · date range · selection. <code>db.changed</code> push triggers a refetch.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:magnify" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:magnify"></iconify-icon>
           <h4>Search</h4>
         </div>
         <p>FTS trigram, server-side; under 3 chars falls back to LIKE. Hidden rows are never returned.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:image-outline"></iconify-icon>
           <h4>Favicons <span class="on-hold-tag">— on hold</span></h4>
         </div>
         <p><code>GET /favicon/&lt;host&gt;</code> — served from <code>favicons.db</code>; root-domain fallback, then a letter tile. Endpoint not implemented.</p>
@@ -958,7 +964,7 @@ CREATE TABLE favicons (
 
   <!-- DESKTOP -->
   <section>
-    <h2><iconify-icon icon="mdi:apple" width="24" noobserver></iconify-icon>Desktop app</h2>
+    <h2><iconify-icon icon="mdi:apple" width="24"></iconify-icon>Desktop app</h2>
     <p class="section-desc">
       A macOS menu bar client with one window — spawns <code>his serve</code>, talks RPC.
     </p>
@@ -966,34 +972,34 @@ CREATE TABLE favicons (
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:cog-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:cog-outline"></iconify-icon>
           <h4>Process</h4>
         </div>
         <p>Single instance lock; spawns <code>his serve</code> at launch, stops it on quit.</p>      </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:window-restore" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:window-restore"></iconify-icon>
           <h4>Window</h4>
         </div>
         <p>One BrowserWindow — loads the serve URL; port and token come from the state file.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:flash-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:flash-outline"></iconify-icon>
           <h4>Sync Now</h4>
         </div>
         <p><code>sync.run</code> over RPC; <code>sync.progress</code> shows in the tray tooltip <span class="on-hold-tag">(on hold — notification not implemented)</span>.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:tray" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:tray"></iconify-icon>
           <h4>Watch</h4>
         </div>
         <p>The sync loop (6h check + startup catch-up) lives in <code>his serve</code> — the tray only triggers and reports.</p>
       </div>
     </div>
 
-    <h3><iconify-icon icon="mdi:menu" noobserver></iconify-icon>Tray menu</h3>
+    <h3><iconify-icon icon="mdi:menu"></iconify-icon>Tray menu</h3>
 
     <pre>Sync Now                       <span class="c"># sync.run over RPC</span>
 Open                           <span class="c"># BrowserWindow → serve URL</span>
@@ -1007,16 +1013,16 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
 
   <!-- CONSIDERATIONS -->
   <section>
-    <h2><iconify-icon icon="mdi:clipboard-list-outline" width="24" noobserver></iconify-icon>Considerations</h2>
+    <h2><iconify-icon icon="mdi:clipboard-list-outline" width="24"></iconify-icon>Considerations</h2>
     <p class="section-desc">
       Everything settled — alternatives live in their sections. Decision log and deferred minor items below.
     </p>
 
-    <h3><iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>Decisions</h3>
+    <h3><iconify-icon icon="mdi:check-circle-outline"></iconify-icon>Decisions</h3>
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:check-decagram" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:check-decagram"></iconify-icon>
           <h4>Settled</h4>
         </div>
         <ul>
@@ -1030,7 +1036,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:alarm-snooze" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:alarm-snooze"></iconify-icon>
           <h4>Deferred</h4>
         </div>
         <ul>
