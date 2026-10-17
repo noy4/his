@@ -6,7 +6,6 @@
   width: 200px;
   max-height: calc(100vh - 128px);
   overflow-y: auto;
-  font-size: 12px;
   line-height: 1.5;
 }
 @media (min-width: 1240px) {
@@ -15,13 +14,9 @@
   }
 }
 .toc-title {
-  padding-left: 14px;
   margin-bottom: 8px;
-  color: var(--muted);
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 600;
 }
 .toc iconify-icon {
   font-size: 13px;
@@ -35,9 +30,10 @@
 }
 .toc a {
   display: block;
-  padding: 3px 8px 3px 12px;
+  padding: 3px 8px 3px calc(12px + var(--toc-level, 0) * 12px);
   border-left: 2px solid var(--border);
   color: var(--muted);
+  font-size: 12px;
   text-decoration: none;
 }
 .toc a:hover {
@@ -46,8 +42,4 @@
 .toc a.active {
   color: var(--primary);
   border-left-color: var(--primary);
-}
-.toc a.toc-h3 {
-  padding-left: 24px;
-  font-size: 11px;
 }
