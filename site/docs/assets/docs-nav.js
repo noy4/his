@@ -24,32 +24,26 @@
       text: "Site",
       items: [
         { text: "Home", link: "../" },
-        { text: "Demo", link: "../demo/" },
+        { text: "Demo", link: "../demo/", external: true },
         { text: "GitHub", link: "https://github.com/noy4/his", external: true },
       ],
     },
   ]
 
-  const title = document.createElement("div")
-  title.className = "side-title"
-  title.textContent = "Docs"
-  nav.append(title)
+  nav.append(el("div", { class: "side-title", text: "Docs" }))
 
   for (const group of sidebar) {
-    const head = document.createElement("div")
-    head.className = "side-group"
-    head.textContent = group.text
-    nav.append(head)
+    nav.append(el("div", { class: "side-group", text: group.text }))
 
     for (const item of group.items) {
-      const a = document.createElement("a")
-      a.href = item.link
-      a.textContent = item.text
-      if (item.external) {
-        a.target = "_blank"
-        a.rel = "noopener"
-      }
-      nav.append(a)
+      nav.append(
+        el("a", {
+          href: item.link,
+          text: item.external ? `${item.text} ↗` : item.text,
+          target: item.external ? "_blank" : null,
+          rel: item.external ? "noopener" : null,
+        }),
+      )
     }
   }
 
@@ -57,5 +51,26 @@
   for (const a of nav.querySelectorAll("a")) {
     const name = (a.getAttribute("href") ?? "").split("/").pop().toLowerCase()
     if (name === page) a.classList.add("active")
+  }
+
+  // ---
+
+  // https://github.com/cloudflare/cloudflare-os/blob/main/packages/bundled-blueprints/libraries/ui/src/dom.ts
+  function el(tag, props = {}, children = []) {
+    const node = document.createElement(tag)
+    for (const [key, value] of Object.entries(props)) {
+      if (value == null || value === false) continue
+      if (key === "class") node.className = value
+      else if (key === "text") node.textContent = value
+      else if (key === "html") node.innerHTML = value
+      else if (key === "style" && typeof value === "object") Object.assign(node.style, value)
+      else if (key.startsWith("on") && typeof value === "function") node.addEventListener(key.slice(2).toLowerCase(), value)
+      else node.setAttribute(key, value === true ? "" : String(value))
+    }
+    for (const child of Array.isArray(children) ? children : [children]) {
+      if (child == null || child === false) continue
+      node.append(child)
+    }
+    return node
   }
 })()
