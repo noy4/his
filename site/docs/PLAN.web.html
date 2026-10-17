@@ -7,7 +7,6 @@
 <title>his | Web implementation plan</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/sidebar.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +28,8 @@
     --green-soft: rgba(74, 222, 128, 0.15);
     --cyan: #38BDF8;
     --purple: #A78BFA;
-    --mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+    --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
     color-scheme: dark;
   }
   @media (prefers-color-scheme: light) {
@@ -54,10 +54,16 @@
     }
   }
 
+  iconify-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-family: var(--sans);
     font-size: 15px;
     line-height: 1.75;
     padding: 0 16px;
@@ -135,7 +141,7 @@
     letter-spacing: -0.02em;
     margin-bottom: 8px;
   }
-  h1 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h1 iconify-icon { color: var(--primary); flex-shrink: 0; width: 30px; height: 30px; }
   .tagline {
     color: var(--muted);
     font-size: 0.95rem;
@@ -155,7 +161,7 @@
     letter-spacing: -0.01em;
     margin-bottom: 8px;
   }
-  h2 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h2 iconify-icon { color: var(--primary); flex-shrink: 0; width: 24px; height: 24px; }
   h3 {
     display: flex;
     align-items: center;
@@ -425,16 +431,16 @@
 
   <header class="hero">
     <div class="badge-top">
-      <iconify-icon icon="mdi:rocket-launch-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:rocket-launch-outline"></iconify-icon>
       IMPLEMENTATION PLAN
     </div>
-    <h1><iconify-icon icon="mdi:history" width="30" noobserver></iconify-icon>his web plan</h1>
+    <h1><iconify-icon icon="mdi:history" width="30"></iconify-icon>his web plan</h1>
     <p class="tagline">Plan for the his WebUI — React + @preact/signals SPA over JSON-RPC.</p>
   </header>
 
   <!-- ROADMAP -->
   <section>
-    <h2><iconify-icon icon="mdi:format-list-numbered" width="24" noobserver></iconify-icon>Roadmap</h2>
+    <h2><iconify-icon icon="mdi:format-list-numbered" width="24"></iconify-icon>Roadmap</h2>
     <p class="section-desc">
       Mock-first — the layout is built against dummy data until the backend lands. <code>src/api.ts</code> is the seam: views talk to signals and a typed client interface only, so the mock swaps for the real RPC client in one place.
     </p>
@@ -442,11 +448,11 @@
     <div class="timeline">
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:hammer-wrench" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:hammer-wrench" style="color:var(--primary)"></iconify-icon>
               Phase 1 — Scaffold
             </span>
             <span class="step-meta">P1 · mock</span>
@@ -456,14 +462,14 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:package-variant-closed" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:package-variant-closed"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">webui/ scaffold</div>
                 <div class="task-desc">Vite + React + TS, <code>@preact/signals</code>, builds to <code>dist/</code></div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:application-brackets-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:application-brackets-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Layout shell</div>
                 <div class="task-desc">search bar · view switcher (timeline / list) · theme via CSS vars</div>
@@ -474,11 +480,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:database-outline" style="color:var(--purple)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:database-outline" style="color:var(--purple)"></iconify-icon>
               Phase 2 — Mock API
             </span>
             <span class="step-meta">P1 · mock</span>
@@ -488,21 +494,21 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:code-braces" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:code-braces"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Typed client interface</div>
                 <div class="task-desc"><code>history.search / getVisits / getItem</code> as <code>api.ts</code></div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:shuffle-variant" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:shuffle-variant"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Dummy dataset</div>
                 <div class="task-desc">HistoryItem / VisitItem shapes · realistic domains &amp; titles · dates spread over months</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:cog-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:cog-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Mock behaviors</div>
                 <div class="task-desc">keyset cursor emulation</div>
@@ -513,11 +519,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:format-list-bulleted" style="color:var(--green)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:format-list-bulleted" style="color:var(--green)"></iconify-icon>
               Phase 3 — Timeline
             </span>
             <span class="step-meta">P1 · mock</span>
@@ -527,21 +533,21 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:calendar-month-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:calendar-month-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Date-grouped list</div>
                 <div class="task-desc">grouped by day · last_visit DESC · <code>nextCursor</code> driven</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:arrow-expand-vertical" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:arrow-expand-vertical"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Infinite scroll</div>
                 <div class="task-desc">IntersectionObserver sentinel → fetch next cursor</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:card-text-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:card-text-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Row</div>
                 <div class="task-desc">favicon slot · title · url · time · visit count</div>
@@ -552,11 +558,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:magnify" style="color:var(--cyan)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:magnify" style="color:var(--cyan)"></iconify-icon>
               Phase 4 — Search &amp; filters
             </span>
             <span class="step-meta">P1 · mock</span>
@@ -566,21 +572,21 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:signal" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:signal"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Signals</div>
                 <div class="task-desc">query · date range (selection comes with detail view)</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:form-textbox" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:form-textbox"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Search box</div>
                 <div class="task-desc">debounced query → <code>history.search</code>; trigram / LIKE is server-side</div>
               </div>
             </div>
             <div class="task">
-              <iconify-icon icon="mdi:calendar-range" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:calendar-range"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Date range</div>
                 <div class="task-desc">from / to filter feeding the same signals</div>
@@ -591,11 +597,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:text-box-outline" style="color:var(--accent)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:text-box-outline" style="color:var(--accent)"></iconify-icon>
               Phase 5 — List &amp; Detail
             </span>
             <span class="step-meta">P1 · mock</span>
@@ -605,14 +611,14 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:view-list-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:view-list-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">List view</div>
                 <div class="task-desc">flat, no date grouping — row reuse</div>
               </div>
             </div>
             <div class="task">
-              <iconify-icon icon="mdi:file-document-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:file-document-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Detail view</div>
                 <div class="task-desc">HistoryItem + visits (<code>history.getVisits</code>)</div>
@@ -623,11 +629,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:swap-horizontal" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:swap-horizontal" style="color:var(--primary)"></iconify-icon>
               Phase 6 — RPC wiring
             </span>
             <span class="step-meta">P2 · real</span>
@@ -637,14 +643,14 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:lan-connect" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:lan-connect"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">JSON-RPC client</div>
                 <div class="task-desc">WS <code>/rpc</code> · id-matched · lazy connect · auto-reconnect</div>
               </div>
             </div>
             <div class="task">
-              <iconify-icon icon="mdi:bell-ring-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:bell-ring-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Push → signals</div>
                 <div class="task-desc"><code>db.changed</code> refetches open views · <code>sync.progress</code> status</div>
@@ -655,11 +661,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:brush-outline" style="color:var(--purple)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:brush-outline" style="color:var(--purple)"></iconify-icon>
               Phase 7 — Polish
             </span>
             <span class="step-meta">P2 · real</span>
@@ -669,14 +675,14 @@
           </div>
           <div class="tasks">
             <div class="task">
-              <iconify-icon icon="mdi:circle-slice-8" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:circle-slice-8"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">States</div>
                 <div class="task-desc">loading skeletons · empty · error with retry</div>
               </div>
             </div>
             <div class="task">
-              <iconify-icon icon="mdi:image-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:image-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Favicons</div>
                 <div class="task-desc"><code>GET /favicon/&lt;host&gt;</code> (root fallback) · 404 → letter tile</div>
@@ -689,7 +695,7 @@
     </div>
 
     <blockquote>
-      <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:lightbulb-outline"></iconify-icon>
       A Dashboard view landed mid-Phase-4 on a <code>history.stats()</code> mock extension (<code>Dashboard / Timeline / List</code> header buttons) — the matching stats method is now core-side. Auth (token / Host pin / page-token injection) is temporarily removed and <code>db.changed</code> is temporarily unwired — see <code>local.md</code>. Dev mock/rpc toggles via <code>VITE_USE_MOCK_API</code> (real data goes through the vite <code>/rpc</code> proxy). Deferred: date-range UI, delete/restore entry points on rows, the detail view (<code>selection</code> rides along).
     </blockquote>
   </section>

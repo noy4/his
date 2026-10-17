@@ -7,7 +7,6 @@
 <title>his | DB spec · Kysely</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/sidebar.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +28,8 @@
     --green-soft: rgba(74, 222, 128, 0.15);
     --cyan: #38BDF8;
     --purple: #A78BFA;
-    --mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+    --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
     color-scheme: dark;
   }
   @media (prefers-color-scheme: light) {
@@ -54,10 +54,16 @@
     }
   }
 
+  iconify-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-family: var(--sans);
     font-size: 15px;
     line-height: 1.75;
     padding: 0 16px;
@@ -135,7 +141,7 @@
     letter-spacing: -0.02em;
     margin-bottom: 8px;
   }
-  h1 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h1 iconify-icon { color: var(--primary); flex-shrink: 0; width: 30px; height: 30px; }
   .tagline {
     color: var(--muted);
     font-size: 0.95rem;
@@ -155,7 +161,7 @@
     letter-spacing: -0.01em;
     margin-bottom: 8px;
   }
-  h2 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h2 iconify-icon { color: var(--primary); flex-shrink: 0; width: 24px; height: 24px; }
   h3 {
     display: flex;
     align-items: center;
@@ -440,44 +446,44 @@
 
   <header class="hero">
     <div class="badge-top">
-      <iconify-icon icon="mdi:database-cog-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:database-cog-outline"></iconify-icon>
       SPEC
     </div>
-    <h1><iconify-icon icon="mdi:database" width="30" noobserver></iconify-icon>his · database</h1>
+    <h1><iconify-icon icon="mdi:database" width="30"></iconify-icon>his · database</h1>
     <p class="tagline">SQLite（<code>node:sqlite</code>）アクセス層に Kysely を導入するための仕様とプラン。</p>
   </header>
 
   <!-- OVERVIEW -->
   <section>
-    <h2><iconify-icon icon="mdi:information-outline" width="24" noobserver></iconify-icon>Overview</h2>
+    <h2><iconify-icon icon="mdi:information-outline" width="24"></iconify-icon>Overview</h2>
     <p class="section-desc">
       採用: <strong>Kysely</strong>（型安全クエリビルダ, ORM ではない）+ <strong>kysely-sqlite</strong>（<code>node:sqlite</code> dialect）。行/テーブル型を生成し、FTS5・集計・PRAGMA などは <code>sql</code> テンプレートで生 SQL を維持する。
     </p>
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:target" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:target"></iconify-icon>
           <h4>目的</h4>
         </div>
         <p>列/テーブル参照のコンパイル時検証、リファクタ追従、<code>as unknown as T[]</code> の排除。<code>DB</code> 型を生成し <code>Kysely&lt;DB&gt;</code> に通す。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:vector-selection" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:vector-selection"></iconify-icon>
           <h4>範囲</h4>
         </div>
         <p><code>core/src/db/**</code> と sync のクエリ。既存 migration も <b>Kysely Migrator へ全面移行</b>（<code>user_version</code> ランナーは廃止、版スタンプとしてのみ残置）。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:close-circle-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:close-circle-outline"></iconify-icon>
           <h4>非対象</h4>
         </div>
         <p>スキーマ設計変更、ORM 的なリレーション、生 SQL の全面禁止。<code>down</code> migration は必須にしない（forward-only 維持）。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:alert-outline"></iconify-icon>
           <h4>最大の影響</h4>
         </div>
         <p>Kysely の API は <strong>非同期</strong>（Promise）。データ層が async 化し、handler / CLI / sync / テストへ波及する（下記 R1）。</p>
@@ -487,7 +493,7 @@
 
   <!-- DEPENDENCIES -->
   <section>
-    <h2><iconify-icon icon="mdi:package-variant-closed" width="24" noobserver></iconify-icon>Dependencies</h2>
+    <h2><iconify-icon icon="mdi:package-variant-closed" width="24"></iconify-icon>Dependencies</h2>
     <p class="section-desc">core に runtime 依存が2つ増える（これまで runtime 依存ゼロ）。</p>
 <pre>pnpm --filter @his/core add kysely kysely-sqlite
 pnpm --filter @his/core add -D kysely-codegen
@@ -504,14 +510,14 @@ pnpm --filter @his/core add -D kysely-codegen
       </table>
     </div>
     <blockquote>
-      <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:lightbulb-outline"></iconify-icon>
       CLI(<code>--dialect sqlite</code>) は native な <code>better-sqlite3</code> を要求するが、programmatic <code>generate({ db, dialect })</code> に <code>kysely-sqlite</code> の Kysely を渡せば <b>better-sqlite3 不要</b>（native devDep を作らない）。
     </blockquote>
   </section>
 
   <!-- DIALECT -->
   <section>
-    <h2><iconify-icon icon="mdi:swap-horizontal" width="24" noobserver></iconify-icon>Dialect &amp; lifecycle</h2>
+    <h2><iconify-icon icon="mdi:swap-horizontal" width="24"></iconify-icon>Dialect &amp; lifecycle</h2>
     <p class="section-desc">
       公式 <code>node:sqlite</code> dialect は無い。<code>kysely-sqlite</code> が事実上の移植版（nikeee, 公式 SQLite dialect を driver だけ差し替え）。既存の <code>DatabaseSync</code> を注入して使う。
     </p>
@@ -526,28 +532,28 @@ pnpm --filter @his/core add -D kysely-codegen
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:cog-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:cog-outline"></iconify-icon>
           <h4>Pragmas</h4>
         </div>
         <p>WAL / <code>foreign_keys</code> / <code>busy_timeout</code> は既存 <code>open()</code> のまま。pre-configured な handle を渡せば dialect の <code>onCreateConnection</code> は不要。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:power-cycle" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:power-cycle"></iconify-icon>
           <h4>Close の一本化</h4>
         </div>
         <p><code>kysely.destroy()</code> は handle を close する。lifecycle をどちらが持つか決める（推奨: Kysely が所有、close は <code>destroy()</code> のみ）。</p>
       </div>
     </div>
     <blockquote>
-      <iconify-icon icon="mdi:information-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:information-outline"></iconify-icon>
       dialect は同期 handle を Promise で包み、mutex で直列化する。トランザクションは <code>db.transaction().execute()</code>、または既存の raw <code>BEGIN/COMMIT</code> を維持。
     </blockquote>
   </section>
 
   <!-- CODEGEN -->
   <section>
-    <h2><iconify-icon icon="mdi:code-json" width="24" noobserver></iconify-icon>Type generation</h2>
+    <h2><iconify-icon icon="mdi:code-json" width="24"></iconify-icon>Type generation</h2>
     <p class="section-desc">採用: <strong><code>kysely-codegen</code>（programmatic API）</strong>。<code>generate({ db, dialect })</code> に <code>kysely-sqlite</code> の Kysely を渡すため native 依存を作らない。自作（案 B/C）は様子見。</p>
     <div class="table-wrap">
       <table>
@@ -561,7 +567,7 @@ pnpm --filter @his/core add -D kysely-codegen
         </tbody>
       </table>
     </div>
-    <h3><iconify-icon icon="mdi:script-text-outline" noobserver></iconify-icon>scripts/gen-db-types.ts</h3>
+    <h3><iconify-icon icon="mdi:script-text-outline"></iconify-icon>scripts/gen-db-types.ts</h3>
 <pre><span class="k">import</span> { DatabaseSync } <span class="k">from</span> 'node:sqlite'
 <span class="k">import</span> { generate, getDialect } <span class="k">from</span> 'kysely-codegen'
 <span class="k">import</span> { createDb, migrate } <span class="k">from</span> '../src/db/db.ts'
@@ -583,7 +589,7 @@ pnpm --filter @his/core add -D kysely-codegen
       <li>除外: FTS5 仮想テーブル <code>urls_fts</code>（+ shadow）と <code>kysely_migration*</code>（micromatch glob）</li>
       <li>PK の null 扱い: SQLite は <code>INTEGER PRIMARY KEY</code> を nullable と報告するため、DDL に <code>NOT NULL</code> を明記して回避（<code>overrides</code> 不要）</li>
     </ul>
-    <h3><iconify-icon icon="mdi:playlist-check" noobserver></iconify-icon>手順</h3>
+    <h3><iconify-icon icon="mdi:playlist-check"></iconify-icon>手順</h3>
     <ol class="card" style="display:block; margin:14px 0; padding:14px 18px 14px 40px;">
       <li>migration を編集/追加: <code>core/src/db/migrations/NNN_name.ts</code>（<code>export async function up(db)</code>）</li>
       <li>再生成: <code>pnpm --filter @his/core db:gen</code> → <code>core/src/db/schema.ts</code> を更新</li>
@@ -595,68 +601,68 @@ pnpm --filter @his/core add -D kysely-codegen
 
   <!-- MIGRATIONS -->
   <section>
-    <h2><iconify-icon icon="mdi:database-import-outline" width="24" noobserver></iconify-icon>Migrations &amp; queries</h2>
+    <h2><iconify-icon icon="mdi:database-import-outline" width="24"></iconify-icon>Migrations &amp; queries</h2>
     <p class="section-desc">
       採用: <strong>Kysely Migrator</strong>（<code>kysely/migration</code> の <code>Migrator</code> + <code>FileMigrationProvider</code>）。既存の <code>PRAGMA user_version</code> ランナーは廃止し、追跡を <code>kysely_migration</code> / <code>kysely_migration_lock</code> に移す。<code>user_version</code> は旧ランナー互換の版スタンプとしてのみ継続（成功後 <code>8</code>）。
     </p>
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:script" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:script"></iconify-icon>
           <h4>形式・順序・追跡</h4>
         </div>
         <p>各 migration は <code>NNN_name.ts</code> で <code>export async function up(db)</code>（<code>down?</code> 任意）。適用は <code>migrator.migrateToLatest()</code>（async）。順序は名前の alpha-numeric（<code>NNN_</code> 維持）。適用済みは <code>kysely_migration</code> に記録、並行実行は lock で直列化。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:code-braces" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:code-braces"></iconify-icon>
           <h4>生 SQL を残す箇所</h4>
         </div>
         <p>DDL は FTS5 仮想テーブル / トリガ / partial index が主で builder では表現不可 → migration は <code>sql</code> テンプレート中心。クエリ側も FTS の <code>MATCH</code> join・集計・<code>PRAGMA</code>・<code>HIDDEN_URLS_EXCLUDED</code> は raw 維持。</p>
       </div>
     </div>
-    <h3><iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>移行時の論点 <span class="tag">H = Hurdle</span></h3>
+    <h3><iconify-icon icon="mdi:alert-outline"></iconify-icon>移行時の論点 <span class="tag">H = Hurdle</span></h3>
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:file-multiple-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:file-multiple-outline"></iconify-icon>
           <h4>H1 複数文スクリプト</h4>
         </div>
         <p>既存 <code>.sql</code> は複数文（<code>000</code> は表 + index + FTS + トリガ）。Kysely の <code>sql</code> は 1 文単位 → 文ごとに <code>sql\`…\`.execute(db)</code> へ分割移植（<code>CREATE TRIGGER …BEGIN…END</code> は1文なのでそのまま）。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:key-alert-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:key-alert-outline"></iconify-icon>
           <h4>H2 FK トグル（004） <span class="tag d">squash で解消</span></h4>
         </div>
         <p><code>PRAGMA foreign_keys</code> はトランザクション内では no-op。Migrator は既定でトランザクションを張るため、FK off を要する <code>004</code> の作り直しが動かない。</p>
       </div>
     </div>
     <blockquote>
-      <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
       <strong>採用（H2-d）: 履歴を squash。</strong> 000〜006 を 1 本の <code>000_init.ts</code> に畳み、004 の FK 作り直しごと消す。<code>000</code> が既に最終形（<code>browser</code>/<code>profile</code>/<code>UNIQUE</code> を含む）なので畳める。既存 DB は <code>user_version</code> を検出して <code>kysely_migration</code> に <strong>baseline 挿入</strong>（init を再実行しない＝データは不変）。baseline は<strong>最新まで適用済み（<code>user_version == 7</code>）の DB のみ</strong>。途中版は先に旧ランナーで最新化してから baseline。
     </blockquote>
     <blockquote>
-      <iconify-icon icon="mdi:tag-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:tag-outline"></iconify-icon>
       <code>migrate()</code> 成功後に <code>PRAGMA user_version = 8</code>（= legacy 7 + 1）を刻む。旧ランナーは <code>while (version &lt; 7)</code> なので <code>8</code> は no-op になり、新規作成した DB を旧リリースへ<b>ロールバックしても init を再実行しない</b>。baseline は <code>INSERT OR IGNORE</code> で冪等（同時初回オープンの UNIQUE 衝突回避）。<code>user_version &gt; 7</code> は Kysely 管理下として素通し。
     </blockquote>
     <blockquote>
-      <iconify-icon icon="mdi:information-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:information-outline"></iconify-icon>
       H2 の代替（不採用）: (a) <code>supportsTransactionalDdl:false</code>（原子性喪失）、(b) 004 を FK 非依存に再設計、(c) 004 のみ Migrator 外で実行（順序/追跡が煩雑）。
     </blockquote>
     <blockquote>
-      <iconify-icon icon="mdi:lightbulb-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:lightbulb-outline"></iconify-icon>
       H2 の候補: (a) adapter を <code>supportsTransactionalDdl: false</code> にしトランザクション無しで走らせる、(b) <code>004</code> を FK 非依存の手順へ再設計、(c) H2 相当のみ Migrator 外で個別実行。いずれも原子性/移植コストのトレードオフ。
     </blockquote>
     <blockquote>
-      <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:alert-outline"></iconify-icon>
       Kysely の API は非同期。<code>initDb</code>（migration 適用）・<code>search</code> / <code>stats</code> / <code>getItem</code> / settings / <code>applyVisits</code> が <code>Promise</code> 化する（Plan Phase 6）。
     </blockquote>
   </section>
 
   <!-- PLAN -->
   <section>
-    <h2><iconify-icon icon="mdi:format-list-numbered" width="24" noobserver></iconify-icon>Plan</h2>
+    <h2><iconify-icon icon="mdi:format-list-numbered" width="24"></iconify-icon>Plan</h2>
     <p class="section-desc">
       トップダウン: <b>契約（最上位の型）→ 土台で実体化 → コア（読/書）→ エントリ配線 → 検証</b>。契約を先に固定し、以降は穴埋め。各 Phase は単独で <code>tsc</code> が通る粒度。
     </p>
@@ -664,11 +670,11 @@ pnpm --filter @his/core add -D kysely-codegen
     <div class="timeline">
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:file-signature" style="color:var(--cyan)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:file-signature" style="color:var(--cyan)"></iconify-icon>
               Phase 1 — Contract（契約固定）
             </span>
             <span class="step-meta">core · server · cli</span>
@@ -678,28 +684,28 @@ pnpm --filter @his/core add -D kysely-codegen
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:swap-horizontal"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">initDb / createDb の戻り値</div>
                 <div class="task-desc"><code>open()</code> 生 handle / <code>createDb(handle)</code> / <code>initDb(): Promise&lt;Kysely&lt;DB&gt;&gt;</code></div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:async" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:async"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">公開関数を async 化</div>
                 <div class="task-desc"><code>search</code> / <code>stats</code> / <code>github*</code> / <code>get|setSettings</code> を <code>Promise</code> に</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:code-json" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:code-json"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">DB 型の参照</div>
                 <div class="task-desc"><code>./schema.ts</code> から import（中身は仮で可）</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:link-variant" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:link-variant"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">呼び出し側の型合わせ</div>
                 <div class="task-desc">server / cli / sync を新シグネチャに（まずコンパイル通す）</div>
@@ -710,11 +716,11 @@ pnpm --filter @his/core add -D kysely-codegen
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:package-variant-closed" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:package-variant-closed" style="color:var(--primary)"></iconify-icon>
               Phase 2 — Deps &amp; dialect
             </span>
             <span class="step-meta">core</span>
@@ -724,14 +730,14 @@ pnpm --filter @his/core add -D kysely-codegen
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:package-variant-closed" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:package-variant-closed"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">add kysely + kysely-sqlite</div>
                 <div class="task-desc"><code>pnpm --filter @his/core add …</code> · Node 要件確認</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:swap-horizontal"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">createDb(handle)</div>
                 <div class="task-desc"><code>SqliteDialect({ database })</code> · <code>initDb</code> と lifecycle 統合</div>
@@ -742,11 +748,11 @@ pnpm --filter @his/core add -D kysely-codegen
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:database-import-outline" style="color:var(--green)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:database-import-outline" style="color:var(--green)"></iconify-icon>
               Phase 3 — Migrations → Kysely Migrator
             </span>
             <span class="step-meta">core · db</span>
@@ -756,21 +762,21 @@ pnpm --filter @his/core add -D kysely-codegen
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:script-text-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:script-text-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">000_init.ts（squash）</div>
                 <div class="task-desc">000+001+005+006 の最終形を 1 本に · 文ごと <code>sql\`…\`.execute(db)</code></div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:database-check-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:database-check-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">baseline 検出</div>
                 <div class="task-desc"><code>user_version == 7</code> の既存 DB は <code>kysely_migration</code> に行を <code>INSERT OR IGNORE</code> で入れて再実行回避。成功後 <code>user_version = 8</code> を刻みロールバック安全化</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:swap-horizontal" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:swap-horizontal"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Migrator 配線</div>
                 <div class="task-desc"><code>FileMigrationProvider</code> · <code>migrateToLatest()</code> · <code>initDb</code> を async 化</div>
@@ -781,11 +787,11 @@ pnpm --filter @his/core add -D kysely-codegen
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:code-json" style="color:var(--purple)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:code-json" style="color:var(--purple)"></iconify-icon>
               Phase 4 — Codegen
             </span>
             <span class="step-meta">core · scripts</span>
@@ -795,14 +801,14 @@ pnpm --filter @his/core add -D kysely-codegen
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:script-text-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:script-text-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">scripts/gen-db-types.ts</div>
                 <div class="task-desc"><code>generate({ db, dialect: getDialect('sqlite') })</code> · <code>excludePattern</code> · overrides</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:file-code-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">schema.ts + scripts</div>
                 <div class="task-desc"><code>db:gen</code> / <code>db:check</code>（再生成 + <code>git diff</code>）</div>
@@ -813,11 +819,11 @@ pnpm --filter @his/core add -D kysely-codegen
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:magnify" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:magnify" style="color:var(--primary)"></iconify-icon>
               Phase 5 — Read queries
             </span>
             <span class="step-meta">core</span>
@@ -827,14 +833,14 @@ pnpm --filter @his/core add -D kysely-codegen
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:table-search" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:table-search"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">query.ts</div>
                 <div class="task-desc">search / searchVisits / getItem / getVisits · FTS は raw</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:chart-box-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:chart-box-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">stats.ts / github/db.ts</div>
                 <div class="task-desc">集計は <code>sql</code> テンプレート · <code>hidden_urls</code> 除外を <code>notExists</code>/raw</div>
@@ -845,11 +851,11 @@ pnpm --filter @his/core add -D kysely-codegen
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:content-save-plus-outline" style="color:var(--green)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:content-save-plus-outline" style="color:var(--green)"></iconify-icon>
               Phase 6 — Write path
             </span>
             <span class="step-meta">core</span>
@@ -859,14 +865,14 @@ pnpm --filter @his/core add -D kysely-codegen
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:cog-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:cog-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">settings.ts</div>
                 <div class="task-desc"><code>upsert</code> / <code>selectFrom</code> · <code>recomputeHidden</code></div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:database-import-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:database-import-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">applyVisits / watermarks</div>
                 <div class="task-desc"><code>db.transaction()</code> · <code>onConflict</code> · <b>集合演算</b>（チャンク多行 INSERT ＋ <code>UPDATE ... FROM</code> で集計、1件1クエリを回避）</div>
@@ -877,11 +883,11 @@ pnpm --filter @his/core add -D kysely-codegen
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:link-variant" style="color:var(--accent)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:link-variant" style="color:var(--accent)"></iconify-icon>
               Phase 7 — Entry wiring
             </span>
             <span class="step-meta">server · cli</span>
@@ -891,14 +897,14 @@ pnpm --filter @his/core add -D kysely-codegen
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:server" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:server"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">server handlers</div>
                 <div class="task-desc"><code>Handler = unknown | Promise&lt;unknown&gt;</code> でそのまま返す</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:console" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:console"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">cli query / sync / serve</div>
                 <div class="task-desc">async 化 · <code>await</code> · watch/sync の <code>initDb</code> 経路</div>
@@ -909,11 +915,11 @@ pnpm --filter @his/core add -D kysely-codegen
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle" style="color:var(--green)"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:check-decagram-outline" style="color:var(--cyan)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-decagram-outline" style="color:var(--cyan)"></iconify-icon>
               Phase 8 — Verify &amp; cleanup
             </span>
             <span class="step-meta">repo</span>
@@ -923,21 +929,21 @@ pnpm --filter @his/core add -D kysely-codegen
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:test-tube" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:test-tube"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">tests await 化</div>
                 <div class="task-desc"><code>src/**/__tests__</code> · <code>node --test</code> 通過</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:broom" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:broom"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">dead code</div>
                 <div class="task-desc"><code>as unknown as T[]</code> 等を整理</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:file-document-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:file-document-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">docs</div>
                 <div class="task-desc">AGENTS.md / SPEC に <code>db:gen</code> 手順を追記</div>
@@ -952,7 +958,7 @@ pnpm --filter @his/core add -D kysely-codegen
 
   <!-- FILES -->
   <section>
-    <h2><iconify-icon icon="mdi:file-tree-outline" width="24" noobserver></iconify-icon>Affected files</h2>
+    <h2><iconify-icon icon="mdi:file-tree-outline" width="24"></iconify-icon>Affected files</h2>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Package</th><th>File</th><th>Change</th></tr></thead>
@@ -976,46 +982,46 @@ pnpm --filter @his/core add -D kysely-codegen
 
   <!-- RISKS -->
   <section>
-    <h2><iconify-icon icon="mdi:alert-circle-outline" width="24" noobserver></iconify-icon>Risks &amp; open questions</h2>
+    <h2><iconify-icon icon="mdi:alert-circle-outline" width="24"></iconify-icon>Risks &amp; open questions</h2>
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:help-circle-outline"></iconify-icon>
           <h4>R1 async 化の波及</h4>
         </div>
         <p>Kysely は常に Promise。データ層が async になり core→server→cli→tests に波及する。最小化は不可（同期モードは無い）。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:help-circle-outline"></iconify-icon>
           <h4>R2 dialect の成熟度</h4>
         </div>
         <p>公式ではなくコミュニティ移植（<code>kysely-sqlite</code>）。仕様変更を追う必要あり。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:help-circle-outline"></iconify-icon>
           <h4>R3 node:sqlite</h4>
         </div>
         <p>比較的新しく API が動きうる。Node 下限（<code>^22.16</code>/<code>&gt;=23.11</code>）を固定。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:help-circle-outline"></iconify-icon>
           <h4>R4 型マッピング</h4>
         </div>
         <p>INTEGER の boolean/epoch は <code>number</code> になる。必要列のみ override し、<code>EpochMs</code> は別名で維持。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:help-circle-outline"></iconify-icon>
           <h4>R5 混在スタイル</h4>
         </div>
         <p>FTS/集計は raw のため builder と <code>sql</code> が混在。方針を明文化して一貫させる。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:help-circle-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:help-circle-outline"></iconify-icon>
           <h4>R6 migrations 移行</h4>
         </div>
         <p><b>Kysely Migrator へ全面移行</b>（<code>user_version</code> ランナー廃止＝版スタンプのみ残置、<code>kysely_migration</code> へ）。000〜006 は <b>squash</b> して <code>000_init.ts</code> に（H2 解消）、既存 DB は baseline で再実行回避、成功後 <code>user_version = 8</code> でロールバック安全化。H1 は文分割で対応。</p>
@@ -1025,7 +1031,7 @@ pnpm --filter @his/core add -D kysely-codegen
 
   <!-- BACKGROUND -->
   <section>
-    <h2><iconify-icon icon="mdi:link-variant" width="24" noobserver></iconify-icon>Background &amp; links</h2>
+    <h2><iconify-icon icon="mdi:link-variant" width="24"></iconify-icon>Background &amp; links</h2>
     <p class="section-desc">
       Kysely に <code>node:sqlite</code> の公式 dialect は無い。API 差異（<code>reader</code> 不在 → <code>columns().length</code>、パラメータ spread）を吸収する移植版のうち、公式 better-sqlite3 dialect を流用し既存 handle を注入できる <code>kysely-sqlite</code> を採用。codegen は <code>kysely-codegen</code> の programmatic API（<code>generate</code>）に <code>kysely-sqlite</code> の Kysely を渡し、native 依存を回避。
     </p>
@@ -1045,10 +1051,10 @@ pnpm --filter @his/core add -D kysely-codegen
   </section>
 
   <footer>
-    <div class="f-title"><iconify-icon icon="mdi:information-outline" noobserver></iconify-icon>his · database spec</div>
+    <div class="f-title"><iconify-icon icon="mdi:information-outline"></iconify-icon>his · database spec</div>
     <ul>
-      <li><iconify-icon icon="mdi:package-variant-closed" noobserver></iconify-icon>kysely + kysely-sqlite（node:sqlite dialect）</li>
-      <li><iconify-icon icon="mdi:code-json" noobserver></iconify-icon>codegen: kysely-codegen（programmatic / getDialect('sqlite')）</li>
+      <li><iconify-icon icon="mdi:package-variant-closed"></iconify-icon>kysely + kysely-sqlite（node:sqlite dialect）</li>
+      <li><iconify-icon icon="mdi:code-json"></iconify-icon>codegen: kysely-codegen（programmatic / getDialect('sqlite')）</li>
     </ul>
     <div class="colophon">his db spec · created 2026-10-13</div>
   </footer>

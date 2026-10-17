@@ -7,7 +7,6 @@
 <title>his | RPC spec · hardening</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/sidebar.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +28,8 @@
     --green-soft: rgba(74, 222, 128, 0.15);
     --cyan: #38BDF8;
     --purple: #A78BFA;
-    --mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+    --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
     color-scheme: dark;
   }
   @media (prefers-color-scheme: light) {
@@ -54,10 +54,16 @@
     }
   }
 
+  iconify-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-family: var(--sans);
     font-size: 15px;
     line-height: 1.75;
     padding: 0 16px;
@@ -135,7 +141,7 @@
     letter-spacing: -0.02em;
     margin-bottom: 8px;
   }
-  h1 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h1 iconify-icon { color: var(--primary); flex-shrink: 0; width: 30px; height: 30px; }
   .tagline {
     color: var(--muted);
     font-size: 0.95rem;
@@ -155,7 +161,7 @@
     letter-spacing: -0.01em;
     margin-bottom: 8px;
   }
-  h2 iconify-icon { color: var(--primary); flex-shrink: 0; }
+  h2 iconify-icon { color: var(--primary); flex-shrink: 0; width: 24px; height: 24px; }
   h3 {
     display: flex;
     align-items: center;
@@ -439,16 +445,16 @@
 <div class="container">
   <header class="hero">
     <div class="badge-top">
-      <iconify-icon icon="mdi:shield-key-outline" noobserver></iconify-icon>
+      <iconify-icon icon="mdi:shield-key-outline"></iconify-icon>
       SPEC
     </div>
-    <h1><iconify-icon icon="mdi:shield-lock-outline" width="30" noobserver></iconify-icon>his · rpc</h1>
+    <h1><iconify-icon icon="mdi:shield-lock-outline" width="30"></iconify-icon>his · rpc</h1>
     <p class="tagline"><code>/rpc</code>（JSON-RPC 2.0 over WS）にパス制限・Origin 検証・トークンを導入するための仕様とプラン。</p>
   </header>
 
   <!-- OVERVIEW -->
   <section>
-    <h2><iconify-icon icon="mdi:information-outline" width="24" noobserver></iconify-icon>Overview</h2>
+    <h2><iconify-icon icon="mdi:information-outline" width="24"></iconify-icon>Overview</h2>
     <p class="section-desc">
       現状 <code>/rpc</code> は<b>どのパス・どの Origin からでも WebSocket を受理</b>する。ブラウザで開いた任意のサイトからローカル RPC を叩ける状態なので、ループバック前提をコードで強制する。
     </p>
@@ -456,28 +462,28 @@
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:target" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:target"></iconify-icon>
           <h4>目的</h4>
         </div>
         <p>任意サイトから <code>history.search</code> 等を呼べないようにする。same-origin を<b>サーバ側で検証</b>し、非ブラウザ経路はトークンで絞る。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:vector-selection" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:vector-selection"></iconify-icon>
           <h4>範囲</h4>
         </div>
         <p>ゲートは <code>server/src/rpc.ts</code>、トークン発行は <code>server/src/index.ts</code>、保存権限は <code>core/src/state.ts</code>、WebUI への配布は <code>server/src/app.ts</code>。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:alert-outline"></iconify-icon>
           <h4>非目標</h4>
         </div>
         <p>マルチユーザ認証・リモート公開・TLS。LAN へ出す場合はリバースプロキシ側で認証を付ける前提のまま。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:playlist-check" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:playlist-check"></iconify-icon>
           <h4>完了条件</h4>
         </div>
         <p>悪意ある Origin からの WS が拒否され、WebUI / CLI / Electron は従来どおり動作し、<code>state.json</code> が <code>0600</code> になる。</p>
@@ -487,7 +493,7 @@
 
   <!-- THREAT MODEL -->
   <section>
-    <h2><iconify-icon icon="mdi:account-alert-outline" width="24" noobserver></iconify-icon>Threat model</h2>
+    <h2><iconify-icon icon="mdi:account-alert-outline" width="24"></iconify-icon>Threat model</h2>
     <p class="section-desc">
       守る対象は<b>履歴そのもの</b>（URL・title・訪問時刻・GitHub 可視情報）と、ローカル経路が漏らす情報。
     </p>
@@ -512,7 +518,7 @@
 
   <!-- CURRENT STATE -->
   <section>
-    <h2><iconify-icon icon="mdi:file-search-outline" width="24" noobserver></iconify-icon>Current state</h2>
+    <h2><iconify-icon icon="mdi:file-search-outline" width="24"></iconify-icon>Current state</h2>
     <p class="section-desc">
       SPEC の記載と実装の差分（すべて現行コードで確認済み）。
     </p>
@@ -536,33 +542,33 @@
 
   <!-- DESIGN -->
   <section>
-    <h2><iconify-icon icon="mdi:shield-check-outline" width="24" noobserver></iconify-icon>Design</h2>
+    <h2><iconify-icon icon="mdi:shield-check-outline" width="24"></iconify-icon>Design</h2>
     <p class="section-desc">
       3段のゲートを<b>上から順に</b>適用する（早い段で落とすほど安い）。
     </p>
 
-    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>1. パスゲート</h3>
+    <h3><iconify-icon icon="mdi:circle-small"></iconify-icon>1. パスゲート</h3>
     <p class="section-desc">
       <code>req.url</code> が <code>/rpc</code> 以外なら <code>socket.destroy()</code>。surface を 1 経路に絞る。
     </p>
 
-    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>2. Origin ゲート</h3>
+    <h3><iconify-icon icon="mdi:circle-small"></iconify-icon>2. Origin ゲート</h3>
     <p class="section-desc">
       許可するのは起動時に確定した origin —<code>http://127.0.0.1:&lt;port&gt;</code> と <code>http://localhost:&lt;port&gt;</code>。port は衝突時に +1 されるため<b>実際に bind したポート</b>を使う。不一致は 403。<br />
       <b>Origin ヘッダが無い場合</b>（スクリプト・CLI・手動クライアント）は Origin 検証を素通りするため、次のトークンで絞る。
     </p>
 
-    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>3. トークン</h3>
+    <h3><iconify-icon icon="mdi:circle-small"></iconify-icon>3. トークン</h3>
     <p class="section-desc">
       起動時に <code>crypto.randomBytes(32).toString('base64url')</code> を発行し <code>state.json</code> に <code>0600</code> で保存。検証は <code>crypto.timingSafeEqual</code>（長さ不一致は即 false）。運搬は <code>/rpc?token=…</code>（ブラウザは WS ハンドシェイクに任意ヘッダを付けられないため）。Origin の有無にかかわらず<b>全接続で必須</b>。
     </p>
 
-    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>4. WebUI への配布</h3>
+    <h3><iconify-icon icon="mdi:circle-small"></iconify-icon>4. WebUI への配布</h3>
     <p class="section-desc">
       <code>server/src/app.ts</code> が entry（<code>isEntry</code>）応答時に <code>&lt;script&gt;window.__HIS__={token}&lt;/script&gt;</code> を <code>&lt;/head&gt;</code> 直前へ注入し、WebUI にトークンを渡す。dev は vite plugin が同じものを state から差し込む。
     </p>
 
-    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>5. state.json の権限</h3>
+    <h3><iconify-icon icon="mdi:circle-small"></iconify-icon>5. state.json の権限</h3>
     <p class="section-desc">
       <code>fs.writeFileSync(file, data, { mode: 0o600 })</code>（既存ファイルは <code>chmod</code>）。トークンが入るため必須。
     </p>
@@ -570,7 +576,7 @@
 
   <!-- PLAN -->
   <section>
-    <h2><iconify-icon icon="mdi:format-list-numbered" width="24" noobserver></iconify-icon>Plan</h2>
+    <h2><iconify-icon icon="mdi:format-list-numbered" width="24"></iconify-icon>Plan</h2>
     <p class="section-desc">
       ゲート → トークン → 配布 → テスト/文書 → 検証。各 Phase は単独で <code>tsc</code> が通り、Phase 1-3 の間もアプリは動作し続ける。
     </p>
@@ -578,11 +584,11 @@
     <div class="timeline">
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:call-split" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:call-split" style="color:var(--primary)"></iconify-icon>
               Phase 1 — Gate（パス + Origin）
             </span>
             <span class="step-meta">server</span>
@@ -592,21 +598,21 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">パス判定</div>
                 <div class="task-desc"><code>req.url</code> が <code>/rpc</code> 以外は <code>socket.destroy()</code></div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Origin 判定</div>
                 <div class="task-desc">一致しなければ 403 + close。比較は完全一致（scheme + host + port）</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">allow-list を実行時ポートで生成</div>
                 <div class="task-desc"><code>bind()</code> 後に確定した port から origin を組み立てて渡す</div>
@@ -617,11 +623,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:key-outline" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:key-outline" style="color:var(--primary)"></iconify-icon>
               Phase 2 — Token 発行・保存
             </span>
             <span class="step-meta">core · server</span>
@@ -631,28 +637,28 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">トークン生成</div>
                 <div class="task-desc"><code>randomBytes(32)</code> → base64url。serve 起動時、無ければ発行</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">state.json を 0600 で書く</div>
                 <div class="task-desc"><code>writeState</code> に <code>mode</code> を追加 + 既存ファイルは <code>chmod</code></div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">検証</div>
                 <div class="task-desc"><code>timingSafeEqual</code> で照合。欠落・不一致は 403</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">state 破棄時の扱い</div>
                 <div class="task-desc"><code>stop</code> で <code>clearState</code> → 次回起動で再発行（トークンは揮発でよい）</div>
@@ -663,11 +669,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:swap-horizontal" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:swap-horizontal" style="color:var(--primary)"></iconify-icon>
               Phase 3 — 配布（WebUI 注入）
             </span>
             <span class="step-meta">server · webui</span>
@@ -677,21 +683,21 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">bootstrap 注入</div>
                 <div class="task-desc"><code>app.ts</code> の entry 応答時に <code>&lt;script&gt;window.__HIS__={token}&lt;/script&gt;</code> を差し込む</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">クライアント側</div>
                 <div class="task-desc"><code>webui/src/app/api/client.ts</code> で <code>?token=</code> を付与（transport は汎用のまま）</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">dev 経路</div>
                 <div class="task-desc">vite proxy が Origin を serve origin に書き換え + state からトークン注入</div>
@@ -702,11 +708,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:flask-outline" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:flask-outline" style="color:var(--primary)"></iconify-icon>
               Phase 4 — Tests &amp; docs
             </span>
             <span class="step-meta">server · SPEC</span>
@@ -716,28 +722,28 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">test script 追加</div>
                 <div class="task-desc"><code>server/package.json</code> に <code>"test": "node --test \"src/**/*.test.ts\""</code></div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">拒否系</div>
                 <div class="task-desc">別パス（silent drop） / 別 Origin / トークン欠落 / 不一致 → 403</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">許可系</div>
                 <div class="task-desc">正規 Origin + 正規トークンで <code>history.stats</code> が通る</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">SPEC.html 更新</div>
                 <div class="task-desc">RPC surface と state file の記述を実装に合わせる</div>
@@ -748,11 +754,11 @@
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline" noobserver></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
-              <iconify-icon icon="mdi:playlist-check" style="color:var(--primary)" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:playlist-check" style="color:var(--primary)"></iconify-icon>
               Phase 5 — Verify
             </span>
             <span class="step-meta">manual</span>
@@ -762,28 +768,28 @@
           </div>
           <div class="tasks">
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">別 Origin からの拒否</div>
                 <div class="task-desc"><code>ws://127.0.0.1:4477/rpc</code> を偽 Origin で叩き 403</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">WebUI 正常動作</div>
                 <div class="task-desc">Dashboard / Stats が読み込め、<code>db.changed</code> が届く</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Electron 起動</div>
                 <div class="task-desc">メニューバーアプリからウィンドウが開き RPC が通る</div>
               </div>
             </div>
             <div class="task done">
-              <iconify-icon icon="mdi:check-circle-outline" noobserver></iconify-icon>
+              <iconify-icon icon="mdi:check-circle-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">権限確認</div>
                 <div class="task-desc"><code>stat -f %Lp ~/.his/state.json</code> が <code>600</code></div>
@@ -798,7 +804,7 @@
 
   <!-- AFFECTED FILES -->
   <section>
-    <h2><iconify-icon icon="mdi:file-tree-outline" width="24" noobserver></iconify-icon>Affected files</h2>
+    <h2><iconify-icon icon="mdi:file-tree-outline" width="24"></iconify-icon>Affected files</h2>
     <div class="table-wrap">
       <table>
         <thead>
@@ -822,9 +828,9 @@
 
   <!-- RISKS -->
   <section>
-    <h2><iconify-icon icon="mdi:alert-circle-outline" width="24" noobserver></iconify-icon>Risks &amp; open questions</h2>
+    <h2><iconify-icon icon="mdi:alert-circle-outline" width="24"></iconify-icon>Risks &amp; open questions</h2>
 
-    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>論点</h3>
+    <h3><iconify-icon icon="mdi:circle-small"></iconify-icon>論点</h3>
     <div class="table-wrap">
       <table>
         <thead>
@@ -839,32 +845,32 @@
       </table>
     </div>
 
-    <h3><iconify-icon icon="mdi:circle-small" noobserver></iconify-icon>リスク</h3>
+    <h3><iconify-icon icon="mdi:circle-small"></iconify-icon>リスク</h3>
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:alert-outline"></iconify-icon>
           <h4>既存 state.json との互換</h4>
         </div>
         <p>トークン無しの state が残っていると起動時に検証が揺れる。<b>起動時に読み直して無ければ発行</b>する順序にする。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:alert-outline"></iconify-icon>
           <h4>壊したときの戻し</h4>
         </div>
         <p>ゲートは <code>rpc.ts</code> の 1 箇所なので、Phase 単位で revert 可能。Phase 1 のみでも A の脅威は消える。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:alert-outline"></iconify-icon>
           <h4>トークンの寿命</h4>
         </div>
         <p>揮発（起動ごと再発行）なので、再起動で開いたままの WebUI は再接続時に失敗する。リロードで回復する想定。</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:alert-outline" noobserver></iconify-icon>
+          <iconify-icon icon="mdi:alert-outline"></iconify-icon>
           <h4>残余リスク</h4>
         </div>
         <p>同一ユーザ権限のプロセスは state.json を読める（0600 は他ユーザを止めるだけ）。マルチユーザ前提の防御は非目標。</p>
@@ -874,7 +880,7 @@
 
   <!-- BACKGROUND -->
   <section>
-    <h2><iconify-icon icon="mdi:link-variant" width="24" noobserver></iconify-icon>Background &amp; links</h2>
+    <h2><iconify-icon icon="mdi:link-variant" width="24"></iconify-icon>Background &amp; links</h2>
     <div class="table-wrap">
       <table>
         <tbody>
@@ -888,10 +894,10 @@
   </section>
 
   <footer>
-    <div class="f-title"><iconify-icon icon="mdi:shield-lock-outline" noobserver></iconify-icon>his · rpc spec</div>
+    <div class="f-title"><iconify-icon icon="mdi:shield-lock-outline"></iconify-icon>his · rpc spec</div>
     <ul>
-      <li><iconify-icon icon="mdi:shield-key-outline" noobserver></iconify-icon>パスゲート + Origin 検証 + トークンの3段</li>
-      <li><iconify-icon icon="mdi:flask-outline" noobserver></iconify-icon>検証は <code>node --test</code> + 実機（悪意 Origin からの WS 拒否）</li>
+      <li><iconify-icon icon="mdi:shield-key-outline"></iconify-icon>パスゲート + Origin 検証 + トークンの3段</li>
+      <li><iconify-icon icon="mdi:flask-outline"></iconify-icon>検証は <code>node --test</code> + 実機（悪意 Origin からの WS 拒否）</li>
     </ul>
     <div class="colophon">his rpc spec · created 2026-10-16</div>
   </footer>
