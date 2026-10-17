@@ -38,6 +38,8 @@
   text-decoration: none;
 }
 .sidebar-brand iconify-icon {
+  width: 24px;
+  height: 24px;
   color: var(--primary);
 }
 .sidebar-heading {
