@@ -1,8 +1,10 @@
 .toc {
+  --content-width: 720px;
+  --gutter: 60px;
   display: none;
   position: fixed;
   top: 96px;
-  left: calc(50% + 420px);
+  left: calc(50% + var(--content-width) / 2 + var(--gutter));
   width: 200px;
   max-height: calc(100vh - 128px);
   overflow-y: auto;
