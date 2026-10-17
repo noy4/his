@@ -62,7 +62,7 @@
 }
 .sidebar a:hover {
   color: var(--text-strong);
-  background: var(--surface);
+  background: var(--surface-2);
 }
 .sidebar a.active {
   color: var(--primary);
