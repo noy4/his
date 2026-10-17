@@ -38,26 +38,33 @@
   const content = el("div", { class: "sidebar-content" })
   nav.append(content)
 
+  const menu = el("div", { class: "sidebar-menu" })
   content.append(
-    el("a", { class: "side-brand", href: "../" }, [
+    el("a", { class: "sidebar-brand", href: "../" }, [
       el("iconify-icon", { icon: brand.icon, width: "24", noobserver: true }),
       el("span", { text: brand.title }),
     ]),
+    menu,
   )
 
   for (const group of sidebar) {
-    content.append(el("div", { class: "side-group", text: group.text }))
-
-    for (const item of group.items) {
-      content.append(
-        el("a", {
-          href: item.link,
-          text: item.external ? `${item.text} ↗` : item.text,
-          target: item.external ? "_blank" : null,
-          rel: item.external ? "noopener" : null,
-        }),
-      )
-    }
+    menu.append(
+      el("div", { class: "sidebar-heading", text: group.text }),
+      el(
+        "ul",
+        {},
+        group.items.map((item) =>
+          el("li", {}, [
+            el("a", {
+              href: item.link,
+              text: item.external ? `${item.text} ↗` : item.text,
+              target: item.external ? "_blank" : null,
+              rel: item.external ? "noopener" : null,
+            }),
+          ]),
+        ),
+      ),
+    )
   }
 
   const page = (location.pathname.split("/").pop() || "index.html").toLowerCase()
