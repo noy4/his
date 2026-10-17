@@ -2,6 +2,11 @@
   const nav = document.getElementById("sidebar")
   if (!nav) return
 
+  const brand = {
+    icon: "mdi:history",
+    title: "his",
+  }
+
   const sidebar = [
     {
       text: "Specs",
@@ -30,7 +35,12 @@
     },
   ]
 
-  nav.append(el("div", { class: "side-title", text: "Docs" }))
+  nav.append(
+    el("a", { class: "side-brand", href: "../" }, [
+      el("iconify-icon", { icon: brand.icon, width: "24", noobserver: true }),
+      el("span", { text: brand.title }),
+    ]),
+  )
 
   for (const group of sidebar) {
     nav.append(el("div", { class: "side-group", text: group.text }))
