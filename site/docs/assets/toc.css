@@ -1,12 +1,13 @@
 .toc {
   --content-width: 720px;
-  --gutter: 60px;
+  --gutter: 96px;
   display: none;
   position: fixed;
   top: 96px;
   left: calc(50% + var(--content-width) / 2 + var(--gutter));
   width: 200px;
   max-height: calc(100vh - 128px);
+  overflow-x: hidden;
   overflow-y: auto;
   line-height: 1.5;
 }
@@ -33,7 +34,9 @@
   border-radius: 2px;
   background: var(--primary);
   opacity: 0;
-  transition: top 0.25s cubic-bezier(0, 1, 0.5, 1), opacity 0.25s;
+  transition:
+    top 0.25s cubic-bezier(0, 1, 0.5, 1),
+    opacity 0.25s;
 }
 .toc ul {
   margin: 0;

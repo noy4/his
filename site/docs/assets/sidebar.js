@@ -35,7 +35,10 @@
     },
   ]
 
-  nav.append(
+  const content = el("div", { class: "sidebar-content" })
+  nav.append(content)
+
+  content.append(
     el("a", { class: "side-brand", href: "../" }, [
       el("iconify-icon", { icon: brand.icon, width: "24", noobserver: true }),
       el("span", { text: brand.title }),
@@ -43,10 +46,10 @@
   )
 
   for (const group of sidebar) {
-    nav.append(el("div", { class: "side-group", text: group.text }))
+    content.append(el("div", { class: "side-group", text: group.text }))
 
     for (const item of group.items) {
-      nav.append(
+      content.append(
         el("a", {
           href: item.link,
           text: item.external ? `${item.text} ↗` : item.text,
