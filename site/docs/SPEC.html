@@ -87,13 +87,6 @@
       font-weight: 600;
       margin-bottom: 14px;
     }
-    .on-hold-note {
-      color: var(--accent);
-      font-family: var(--mono);
-      font-size: 12.5px;
-      margin: -4px 0 16px;
-    }
-    .on-hold-note iconify-icon { font-size: 14px; width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; }
     .on-hold-tag {
       color: var(--accent);
       font-family: var(--mono);
@@ -471,8 +464,7 @@
         <rect class="node" x="68" y="140" width="190" height="56" rx="6"/>
         <image href="https://api.iconify.design/mdi/server.svg?height=18&color=%237E8A9E" x="80" y="159" width="18" height="18"/>
         <text class="tt" x="104" y="162">HTTP server</text>
-        <text class="tm" x="104" y="178">static dist · /favicon/&lt;domain&gt;</text>
-        <text class="tm" x="104" y="210" style="fill: var(--accent); font-style: italic">on hold: /favicon serving</text>
+        <text class="tm" x="104" y="178">static dist · WebUI assets</text>
 
         <rect class="node" x="298" y="140" width="190" height="56" rx="6"/>
         <image href="https://api.iconify.design/mdi/broadcast.svg?height=18&color=%237E8A9E" x="310" y="159" width="18" height="18"/>
@@ -590,7 +582,7 @@ db.changed           { }                                                 <span c
     <h3><iconify-icon icon="mdi:code-braces"></iconify-icon>Schema</h3>
 
     <div class="figure">
-      <svg viewBox="0 0 768 556" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="his schema diagram">
+      <svg viewBox="0 0 604 556" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="his schema diagram">
         <defs>
           <marker id="er-head" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" class="head-muted"/></marker>
         </defs>
@@ -598,8 +590,6 @@ db.changed           { }                                                 <span c
         <!-- File zones -->
         <rect class="fig-zone" x="36" y="44" width="552" height="486" rx="8"/>
         <text class="fig-label" x="48" y="62">HISTORY.DB — WAL · foreign_keys=ON · append-only</text>
-        <rect class="fig-zone" x="604" y="44" width="148" height="170" rx="8"/>
-        <text class="fig-label" x="616" y="62">FAVICONS.DB</text>
 
         <!-- Edges -->
         <path class="edge" style="marker-end: url(#er-head)" d="M 340,160 H 272"/>
@@ -610,8 +600,6 @@ db.changed           { }                                                 <span c
         <text class="alabel" x="408" y="421">1:1</text>
         <path class="edge" style="stroke-dasharray:4 4; marker-end: url(#er-head)" d="M 158,292 V 250"/>
         <text class="alabel" x="166" y="270">external content · triggers</text>
-        <path class="edge" style="stroke-dasharray:4 4; marker-end: url(#er-head)" d="M 668,90 V 76 H 160 V 86"/>
-        <text class="alabel" x="470" y="70">host</text>
 
         <!-- urls -->
         <rect class="node" x="48" y="90" width="220" height="143" rx="6"/>
@@ -670,18 +658,6 @@ db.changed           { }                                                 <span c
         <text class="tm" x="352" y="497">last_source_visit_id</text>
         <text class="tm" x="352" y="510">source_id_offset · reset offset</text>
         <text class="tm" x="352" y="523">last_run_at</text>
-
-        <!-- favicon_cache -->
-        <rect class="node" x="616" y="90" width="132" height="114" rx="6"/>
-        <text class="tt" x="628" y="108">favicons</text>
-        <text class="tm" x="628" y="122">separate · permanent</text>
-        <text class="tm" x="628" y="134">id · PK</text>
-        <text class="tm" x="628" y="147">host · UNIQUE · www-str.</text>
-        <text class="tm" x="628" y="160">data · BLOB</text>
-        <text class="tm" x="628" y="173">data_type · 6 formats</text>
-        <text class="tm" x="628" y="186">width · best (svg=0)</text>
-        <text class="tm" x="628" y="199">updated_at · harvest time</text>
-        <text class="tm" x="616" y="212" style="fill: var(--accent); font-style: italic">on hold · not implemented</text>
       </svg>
     </div>
 
@@ -781,37 +757,6 @@ END;</pre>
           <h4>Search: trigram</h4>
         </div>
         <p>External content on <code>urls</code> (title, url), trigger-maintained; &lt;3 chars → LIKE. Alt: unicode61 / contentless.</p>
-      </div>
-    </div>
-
-    <h3><iconify-icon icon="mdi:image-multiple-outline"></iconify-icon>Favicons — favicons.db</h3>
-
-    <p class="on-hold-note"><iconify-icon icon="mdi:alarm-snooze"></iconify-icon>On hold — favicon storage &amp; serving is deferred for now; implementation removed, spec kept as designed.</p>
-
-    <pre><span class="c">-- separate file · permanent store · no TTL</span>
-CREATE TABLE favicons (
-  id          INTEGER PRIMARY KEY,
-  host        TEXT    NOT NULL UNIQUE,    <span class="c">-- www-stripped (+ root fallback at read)</span>
-  data        BLOB    NOT NULL,
-  data_type   TEXT    NOT NULL,           <span class="c">-- png | svg | ico | webp | jpeg | gif</span>
-  width       INTEGER NOT NULL DEFAULT 0, <span class="c">-- best quality wins · never downgraded (svg = 0)</span>
-  updated_at  INTEGER NOT NULL            <span class="c">-- epoch ms · harvest time = diff baseline</span>
-);</pre>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:image-outline"></iconify-icon>
-          <h4>Quality upsert</h4>
-        </div>
-        <p>Overwrite only when better (SVG &gt; width &gt; newer) — no downgrade, no TTL; refresh rides the history-delta harvest phase.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:database-outline"></iconify-icon>
-          <h4>Why separate</h4>
-        </div>
-        <p>Not rebuildable — dropping the file loses icons (recent slice only); back up with <code>history.db</code>. Keeps it lean. Alt: page-level rows (Chrome 式) / same-DB blobs.</p>
       </div>
     </div>
   </section>
@@ -948,13 +893,6 @@ CREATE TABLE favicons (
         </div>
         <p>FTS trigram, server-side; under 3 chars falls back to LIKE. Hidden rows are never returned.</p>
       </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:image-outline"></iconify-icon>
-          <h4>Favicons <span class="on-hold-tag">— on hold</span></h4>
-        </div>
-        <p><code>GET /favicon/&lt;host&gt;</code> — served from <code>favicons.db</code>; root-domain fallback, then a letter tile. Endpoint not implemented.</p>
-      </div>
     </div>
   </section>
 
@@ -1027,7 +965,6 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <li>Page bodies out of scope — metadata only, no WARC / WACZ</li>
           <li>Dedup key = <code>(source_profile_id, source_visit_id)</code> — watermark incremental with reset detection</li>
           <li>Sync cadence = 6h periodic + per-target fingerprint gate (unchanged targets skip snapshot) + a startup catch-up sync</li>
-          <li>Favicon store = permanent harvest — one best icon per host (SVG &gt; width &gt; newer), history-delta driven, no TTL / no favicon cursor <span class="on-hold-tag">→ on hold: implementation removed for now</span></li>
         </ul>
       </div>
       <div class="card">
@@ -1038,7 +975,6 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
         <ul>
           <li>CLI <code>query</code> output formats — JSON / CSV / table</li>
           <li>Desktop webui bundling — shipped dist vs dev vite proxy</li>
-          <li>Favicon harvest / storage — <span class="on-hold-tag">on hold</span>: online favicon fetch (Google S2 / origin <code>/favicon.ico</code> fallback · privacy policy pending) stays frozen until favicon storage ships</li>
         </ul>
       </div>
     </div>

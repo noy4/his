@@ -26,6 +26,12 @@
       ],
     },
     {
+      text: "Archive",
+      items: [
+        { text: "Favicon DB", link: "archive/favicon-db.html", icon: "mdi:image-multiple-outline" },
+      ],
+    },
+    {
       text: "Site",
       items: [
         { text: "Home", link: "../", icon: "mdi:home-outline" },
