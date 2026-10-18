@@ -277,8 +277,9 @@
       margin: 0;
     }
     .card p strong { color: var(--text); }
-    .card ul { margin: 0; padding-left: 16px; }
+    .card ul, .card ol { margin: 6px 0 0; padding-left: 18px; }
     .card li { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+    .card li strong { color: var(--text); }
 
     /* Footer */
     footer {
@@ -654,9 +655,10 @@ settings.set         { hiddenPatterns }                                  → Set
         <text class="tt" x="352" y="468">profile_watermarks</text>
         <text class="tm" x="486" y="468">cursors</text>
         <text class="tm" x="352" y="484">source_profile_id · PK · FK</text>
-        <text class="tm" x="352" y="497">last_source_visit_id</text>
-        <text class="tm" x="352" y="510">source_id_offset · reset offset</text>
-        <text class="tm" x="352" y="523">last_run_at</text>
+        <text class="tm" x="352" y="496">last_source_visit_id</text>
+        <text class="tm" x="352" y="508">source_id_offset · reset offset</text>
+        <text class="tm" x="352" y="520">last_fingerprint · change gate</text>
+        <text class="tm" x="352" y="532">last_run_at</text>
       </svg>
     </div>
 
@@ -697,6 +699,7 @@ CREATE TABLE profile_watermarks (       <span class="c">-- sync cursors</span>
   source_profile_id    INTEGER PRIMARY KEY REFERENCES source_profiles(id),
   last_source_visit_id INTEGER NOT NULL DEFAULT 0,
   source_id_offset     INTEGER NOT NULL DEFAULT 0,  <span class="c">-- += last_raw_id on clear</span>
+  last_fingerprint     TEXT,                <span class="c">-- change gate</span>
   last_run_at          INTEGER
 );
 
@@ -744,37 +747,57 @@ END;</pre>
   <section>
     <h2><iconify-icon icon="mdi:database-import-outline" width="24"></iconify-icon>Sync</h2>
     <p class="section-desc">
-      Periodic (6h) change-check. Snapshots only — live browser DBs are never opened.
+      Sync browser history.
     </p>
+
+    <p><code>gate → snapshot → parse → upsert → watermark</code></p>
 
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:radar"></iconify-icon>
-          <h4>Trigger</h4>
+          <iconify-icon icon="mdi:filter-outline"></iconify-icon>
+          <h4>Gate</h4>
         </div>
-        <p>6h periodic + per-target fingerprint gate (mtime/size + sidecars, in the DB). Unchanged targets skip snapshot. Catch-up sync at startup. Alt: file events / OS scheduler.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:workflow"></iconify-icon>
-          <h4>Pipeline</h4>
-        </div>
-        <p>gate → snapshot → parse → upsert → watermark. One transaction per profile. <code>INSERT OR IGNORE</code> keeps re-sync idempotent.</p>
+        <p>Skips targets whose fingerprint (mtime/size) matches the stored <code>profile_watermarks.last_fingerprint</code>.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:content-copy"></iconify-icon>
           <h4>Snapshot</h4>
         </div>
-        <p>SQLite <code>VACUUM INTO</code> from a read-only handle → staging (used pages only, WAL folded, page-atomic). Fallback (hot journal / open failure): copy main + sidecars → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code>, fold on open. The live DB is never written.</p>
+        <p>The live DB is locked by the browser, so sync reads a stable copy. path: <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code></p>
+        <ol>
+          <li><strong>Copy:</strong> <code>VACUUM INTO</code> from a read-only handle — WAL folded.</li>
+          <li><strong>Fallback:</strong> on hot journal / open failure, copy main + sidecars, fold on open.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:code-braces"></iconify-icon>
+          <h4>Parse</h4>
+        </div>
+        <p>Normalizes each source's rows into the schema.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-plus-outline"></iconify-icon>
+          <h4>Upsert</h4>
+        </div>
+        <p><code>INSERT OR IGNORE</code> keeps re-sync idempotent.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:map-marker-path"></iconify-icon>
-          <h4>Watermarks</h4>
+          <h4>Watermark</h4>
         </div>
-        <p>Advance only after a successful commit. Source <code>MAX(id)</code> shrinking = history cleared → <code>source_id_offset += last_raw_id</code>.</p>
+        <p>Advances the cursor after each committed run. <strong>Reset:</strong> if the source's max id shrinks (history cleared), bump <code>source_id_offset += last_raw_id</code> so old ids can't collide.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:radar"></iconify-icon>
+          <h4>Trigger</h4>
+        </div>
+        <p>6h periodic + startup catch-up.</p>
       </div>
     </div>
 
