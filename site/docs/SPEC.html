@@ -176,7 +176,6 @@
       font-family: var(--mono);
       font-size: 0.7rem;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
       border-bottom: 1px solid var(--border-strong);
       white-space: nowrap;
       background: var(--surface);
@@ -446,7 +445,7 @@
         <path class="edge edge-primary" d="M 148,340 V 304"/>
         <text class="alabel" x="396" y="210">GET / · static</text>
         <text class="alabel" x="500" y="158">WS /rpc</text>
-        <text class="alabel" x="396" y="254">upsert · append-only</text>
+        <text class="alabel" x="396" y="254">upsert · dedup</text>
         <text class="alabel" x="463" y="318">staging snapshot</text>
         <text class="alabel" x="156" y="324">spawn · stop</text>
 
@@ -476,7 +475,7 @@
         <rect class="node" x="560" y="238" width="184" height="48" rx="6"/>
         <image href="https://api.iconify.design/mdi/database-outline.svg?height=18&color=%237E8A9E" x="572" y="253" width="18" height="18"/>
         <text class="tt" x="596" y="256" style="font-family: var(--mono); font-size: 11px;">history.db</text>
-        <text class="tm" x="596" y="272">WAL · FTS5 · append-only</text>
+        <text class="tm" x="596" y="272">WAL · FTS5</text>
 
         <!-- WebUI -->
         <rect class="node node-accent" x="560" y="140" width="184" height="56" rx="6"/>
@@ -532,52 +531,44 @@ settings.set         { hiddenPatterns }                                  → Set
 
   </section>
 
+  <!-- DATA DIRECTORY -->
+  <section>
+    <h2><iconify-icon icon="mdi:folder-outline" width="24"></iconify-icon>Data directory</h2>
+    <p class="section-desc">
+      Default <code>~/.his</code>, override with <code>--home &lt;dir&gt;</code> or <code>HIS_HOME</code>.
+    </p>
+
+    <pre>~/.his/
+├── state.json    <span class="c"># running instance — {pid, port, url, db, token} (0600)</span>
+├── history.db    <span class="c"># the archive</span>
+└── staging/      <span class="c"># snapshot copies</span></pre>
+  </section>
+
   <!-- RUNTIME STATE -->
   <section>
     <h2><iconify-icon icon="mdi:file-cog-outline" width="24"></iconify-icon>Runtime state</h2>
     <p class="section-desc">
-      The running instance keeps <code>~/.his/state.json</code>. One home = one archive = one instance.
+      The running instance keeps <code>~/.his/state.json</code>.
     </p>
 
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:file-check-outline"></iconify-icon>
-          <h4>Lifecycle</h4>
+          <h4>Created / removed</h4>
         </div>
         <p>Written once the port is bound, removed on clean shutdown.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:heart-pulse"></iconify-icon>
-          <h4>Liveness</h4>
-        </div>
-        <p>Readers verify the PID is alive (<code>kill(pid, 0)</code>) and prune dead-PID files in place.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:map-marker-path"></iconify-icon>
-          <h4>Location</h4>
-        </div>
-        <p><code>~/.his/state.json</code> — pid, port, url, db path, /rpc token (mode <code>0600</code>). A second <code>his serve</code> just reports the running URL. The home also holds <code>history.db</code> and staging copies. Distinct archives = distinct homes (<code>HIS_HOME</code>).</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:database-outline"></iconify-icon>
-          <h4>Write path</h4>
-        </div>
-        <p>One writer per process (WAL + <code>busy_timeout</code>). Sync runs via <code>his sync</code> or the <code>sync.run</code> RPC. WebUI has no direct DB access.</p>
       </div>
     </div>
 
     <h3><iconify-icon icon="mdi:code-json"></iconify-icon>State file</h3>
 
     <pre>{
-  "pid": 12345,                      <span class="c">// serve process — stop sends SIGTERM, liveness-checked</span>
-  "port": 4477,                      <span class="c">// actually bound port (starts at 4477, +1 on conflict)</span>
+  "pid": 12345,                      <span class="c">// serve process</span>
+  "port": 4477,                      <span class="c">// bound port</span>
   "url": "http://localhost:4477/",
-  "db": "/Users/me/.his/history.db",  <span class="c">// absolute path of the archive</span>
-  "token": "9f2c…"                   <span class="c">// /rpc requires it · webui injected · desktop reads file</span>
+  "db": "/Users/me/.his/history.db",  <span class="c">// archive path</span>
+  "token": "9f2c…"                   <span class="c">// required by /rpc</span>
 }</pre>
   </section>
 
@@ -585,7 +576,7 @@ settings.set         { hiddenPatterns }                                  → Set
   <section>
     <h2><iconify-icon icon="mdi:database-cog-outline" width="24"></iconify-icon>Data model</h2>
     <p class="section-desc">
-      WebExtensions-leaning shapes in SQLite — <code>urls</code> = <code>HistoryItem</code> aggregate, <code>visits</code> = <code>VisitItem</code> events. Epoch ms, Chromium transition enums.
+      URLs and visits in one SQLite file.
     </p>
 
     <h3><iconify-icon icon="mdi:code-braces"></iconify-icon>Schema</h3>
@@ -598,7 +589,7 @@ settings.set         { hiddenPatterns }                                  → Set
 
         <!-- File zones -->
         <rect class="fig-zone" x="36" y="44" width="552" height="486" rx="8"/>
-        <text class="fig-label" x="48" y="62">HISTORY.DB — WAL · foreign_keys=ON · append-only</text>
+        <text class="fig-label" x="48" y="62">HISTORY.DB — WAL · foreign_keys=ON</text>
 
         <!-- Edges -->
         <path class="edge" style="marker-end: url(#er-head)" d="M 340,160 H 272"/>
@@ -613,7 +604,7 @@ settings.set         { hiddenPatterns }                                  → Set
         <!-- urls -->
         <rect class="node" x="48" y="90" width="220" height="143" rx="6"/>
         <text class="tt" x="60" y="108">urls</text>
-        <text class="tm" x="92" y="108">HistoryItem · URL aggregate</text>
+        <text class="tm" x="92" y="108">HistoryItem</text>
         <text class="tm" x="60" y="126">id · PK</text>
         <text class="tm" x="60" y="139">url · UNIQUE</text>
         <text class="tm" x="60" y="152">title</text>
@@ -636,7 +627,7 @@ settings.set         { hiddenPatterns }                                  → Set
         <!-- visits -->
         <rect class="node" x="340" y="90" width="240" height="169" rx="6"/>
         <text class="tt" x="352" y="108">visits</text>
-        <text class="tm" x="404" y="108">VisitItem · events</text>
+        <text class="tm" x="404" y="108">VisitItem</text>
         <text class="tm" x="352" y="126">id · PK</text>
         <text class="tm" x="352" y="139">url_id · FK</text>
         <text class="tm" x="352" y="152">visit_time · ms</text>
@@ -651,11 +642,10 @@ settings.set         { hiddenPatterns }                                  → Set
         <!-- source_profiles -->
         <rect class="node" x="340" y="300" width="240" height="130" rx="6"/>
         <text class="tt" x="352" y="318">source_profiles</text>
-        <text class="tm" x="467" y="318">registry</text>
         <text class="tm" x="352" y="336">id · PK</text>
         <text class="tm" x="352" y="349">browser</text>
         <text class="tm" x="352" y="362">profile</text>
-        <text class="tm" x="352" y="375">kind</text>
+        <text class="tm" x="352" y="375">kind · chromium, firefox, safari, takeout</text>
         <text class="tm" x="352" y="388">profile_path</text>
         <text class="tm" x="352" y="401" style="font-style: italic">UNIQUE(browser, profile)</text>
 
@@ -670,40 +660,40 @@ settings.set         { hiddenPatterns }                                  → Set
       </svg>
     </div>
 
-    <pre><span class="c">-- history.db · WAL · foreign_keys=ON · append-only</span>
-CREATE TABLE source_profiles (          <span class="c">-- registered browser profiles · identity = (browser, profile)</span>
+    <pre><span class="c">-- history.db · WAL · foreign_keys=ON</span>
+CREATE TABLE source_profiles (          <span class="c">-- browser profiles</span>
   id            INTEGER PRIMARY KEY,
-  browser       TEXT    NOT NULL,       <span class="c">-- user-facing slug · chrome, brave, ...</span>
-  profile       TEXT    NOT NULL,       <span class="c">-- slugified dir · Default, vpw8f8gt.default-release, ...</span>
-  kind          TEXT    NOT NULL,       <span class="c">-- engine · derived from browser</span>
+  browser       TEXT    NOT NULL,       <span class="c">-- chrome, brave, ...</span>
+  profile       TEXT    NOT NULL,       <span class="c">-- profile dir</span>
+  kind          TEXT    NOT NULL,       <span class="c">-- engine</span>
   profile_path  TEXT    NOT NULL,
   UNIQUE(browser, profile)
 );
 
-CREATE TABLE urls (                     <span class="c">-- HistoryItem · URL aggregate</span>
+CREATE TABLE urls (                     <span class="c">-- HistoryItem</span>
   id               INTEGER PRIMARY KEY,
   url              TEXT    NOT NULL UNIQUE,
   title            TEXT,                <span class="c">-- last seen</span>
   first_visit_time INTEGER NOT NULL,    <span class="c">-- epoch ms</span>
-  last_visit_time  INTEGER NOT NULL,    <span class="c">-- epoch ms</span>
+  last_visit_time  INTEGER NOT NULL,
   visit_count      INTEGER NOT NULL DEFAULT 0,
   typed_count      INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE visits (                   <span class="c">-- VisitItem · one row per visit</span>
+CREATE TABLE visits (                   <span class="c">-- VisitItem</span>
   id                INTEGER PRIMARY KEY,
   url_id            INTEGER NOT NULL REFERENCES urls(id),
   visit_time        INTEGER NOT NULL,   <span class="c">-- epoch ms</span>
-  transition        TEXT    NOT NULL,   <span class="c">-- Chromium enum · LINK / TYPED / ...</span>
+  transition        TEXT    NOT NULL,   <span class="c">-- LINK / TYPED / ...</span>
   source_profile_id INTEGER NOT NULL REFERENCES source_profiles(id),
-  source_visit_id   INTEGER NOT NULL,   <span class="c">-- native visit id · takeout: stable hash</span>
+  source_visit_id   INTEGER NOT NULL,   <span class="c">-- native id · takeout: hash</span>
   UNIQUE(source_profile_id, source_visit_id)
 );
 CREATE INDEX idx_visits_visit_time        ON visits(visit_time DESC);
 CREATE INDEX idx_visits_url_id_visit_time ON visits(url_id, visit_time DESC);
 CREATE INDEX idx_urls_last_visit_time     ON urls(last_visit_time DESC);      <span class="c">-- timeline sort</span>
 
-CREATE TABLE profile_watermarks (       <span class="c">-- incremental cursors per profile</span>
+CREATE TABLE profile_watermarks (       <span class="c">-- sync cursors</span>
   source_profile_id    INTEGER PRIMARY KEY REFERENCES source_profiles(id),
   last_source_visit_id INTEGER NOT NULL DEFAULT 0,
   source_id_offset     INTEGER NOT NULL DEFAULT 0,  <span class="c">-- += last_raw_id on clear</span>
@@ -713,7 +703,7 @@ CREATE TABLE profile_watermarks (       <span class="c">-- incremental cursors p
 CREATE VIRTUAL TABLE urls_fts USING fts5(
   title, url,
   content='urls', content_rowid='id',
-  tokenize='trigram'                    <span class="c">-- SQLite >= 3.34 · trigger-maintained</span>
+  tokenize='trigram'                    <span class="c">-- trigger-maintained</span>
 );
 
 CREATE TRIGGER urls_fts_after_insert AFTER INSERT ON urls BEGIN
@@ -729,49 +719,9 @@ CREATE TRIGGER urls_fts_after_update AFTER UPDATE ON urls BEGIN
   INSERT INTO urls_fts(rowid, title, url) VALUES (new.id, new.title, new.url);
 END;</pre>
 
-    <h3><iconify-icon icon="mdi:lightbulb-outline"></iconify-icon>Design notes</h3>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:call-split"></iconify-icon>
-          <h4>HistoryItem / VisitItem split</h4>
-        </div>
-        <p><code>urls</code> = URL aggregate, <code>visits</code> = events — WebExtensions shape 1:1, RPC responses need no reshaping.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:content-duplicate"></iconify-icon>
-          <h4>Dedup &amp; reset detection</h4>
-        </div>
-        <p>Source <code>MAX(id)</code> shrinking = history cleared → <code>source_id_offset += last_raw_id</code>. Takeout has no native ids — stable hash of (url, time). Watermarks advance only after commit.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:clock-outline"></iconify-icon>
-          <h4>Time = epoch ms</h4>
-        </div>
-        <p>Adapters convert WebKit µs / PRTime µs / Cocoa s / Takeout µs on the way in. Alt: Unix seconds — WebExtensions unit wins.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:directions-fork"></iconify-icon>
-          <h4>Transitions normalized</h4>
-        </div>
-        <p>WebExtensions <code>history.TransitionType</code> (lowercase: <code>link</code> / <code>typed</code> / ...) is the axis. Firefox / Safari / Takeout map at sync.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:table-search"></iconify-icon>
-          <h4>Search: trigram</h4>
-        </div>
-        <p>External content on <code>urls</code> (title, url), trigger-maintained. &lt;3 chars → LIKE. Alt: unicode61 / contentless.</p>
-      </div>
-    </div>
-
     <h3><iconify-icon icon="mdi:puzzle-outline"></iconify-icon>WebExtensions mapping</h3>
     <p class="section-desc">
-      Taken straight from the WebExtensions <code>history</code> API.
+      Based on the WebExtensions <code>history</code> API.
     </p>
 
     <div class="table-wrap">
