@@ -2,7 +2,7 @@
   const nav = document.getElementById("sidebar")
   if (!nav) return
 
-  const brand = {
+  const config = {
     icon: "mdi:history",
     title: "his",
   }
@@ -11,26 +11,26 @@
     {
       text: "Specs",
       items: [
-        { text: "Spec", link: "SPEC.html" },
-        { text: "Database", link: "SPEC.db.html" },
-        { text: "RPC", link: "SPEC.rpc.html" },
+        { text: "Spec", link: "SPEC.html", icon: "mdi:file-document-edit-outline" },
+        { text: "Database", link: "SPEC.db.html", icon: "mdi:database-outline" },
+        { text: "RPC", link: "SPEC.rpc.html", icon: "mdi:swap-horizontal" },
       ],
     },
     {
       text: "Plans",
       items: [
-        { text: "Plan", link: "PLAN.html" },
-        { text: "WebUI", link: "PLAN.web.html" },
-        { text: "GitHub Insights", link: "PLAN.github.html" },
-        { text: "Hide patterns", link: "PLAN.hide.html" },
+        { text: "Plan", link: "PLAN.html", icon: "mdi:clipboard-list-outline" },
+        { text: "WebUI", link: "PLAN.web.html", icon: "mdi:application-brackets-outline" },
+        { text: "GitHub Insights", link: "PLAN.github.html", icon: "mdi:github" },
+        { text: "Hide patterns", link: "PLAN.hide.html", icon: "mdi:eye-off-outline" },
       ],
     },
     {
       text: "Site",
       items: [
-        { text: "Home", link: "../" },
-        { text: "Demo", link: "../demo/", external: true },
-        { text: "GitHub", link: "https://github.com/noy4/his", external: true },
+        { text: "Home", link: "../", icon: "mdi:home-outline" },
+        { text: "Demo", link: "../demo/", icon: "mdi:monitor-dashboard", external: true },
+        { text: "GitHub", link: "https://github.com/noy4/his", icon: "mdi:github", external: true },
       ],
     },
   ]
@@ -38,32 +38,17 @@
   const content = el("div", { class: "sidebar-content" })
   nav.append(content)
 
+  const brand = el("a", { class: "sidebar-brand", href: "../" }, [
+    el("iconify-icon", { icon: config.icon, width: "24" }),
+    el("span", { text: config.title }),
+  ])
   const menu = el("div", { class: "sidebar-menu" })
-  content.append(
-    el("a", { class: "sidebar-brand", href: "../" }, [
-      el("iconify-icon", { icon: brand.icon, width: "24", noobserver: true }),
-      el("span", { text: brand.title }),
-    ]),
-    menu,
-  )
+  content.append(brand, menu)
 
   for (const group of sidebar) {
     menu.append(
       el("div", { class: "sidebar-heading", text: group.text }),
-      el(
-        "ul",
-        {},
-        group.items.map((item) =>
-          el("li", {}, [
-            el("a", {
-              href: item.link,
-              text: item.external ? `${item.text} ↗` : item.text,
-              target: item.external ? "_blank" : null,
-              rel: item.external ? "noopener" : null,
-            }),
-          ]),
-        ),
-      ),
+      el("ul", {}, group.items.map((item) => el("li", {}, [link(item)]))),
     )
   }
 
@@ -74,6 +59,23 @@
   }
 
   // ---
+
+  function link(item) {
+    return el(
+      "a",
+      {
+        href: item.link,
+        target: item.external ? "_blank" : null,
+        rel: item.external ? "noopener" : null,
+      },
+      [
+        item.icon
+          ? el("iconify-icon", { icon: item.icon, width: "16" })
+          : null,
+        el("span", { text: item.external ? `${item.text} ↗` : item.text }),
+      ],
+    )
+  }
 
   // https://github.com/cloudflare/cloudflare-os/blob/main/packages/bundled-blueprints/libraries/ui/src/dom.ts
   function el(tag, props = {}, children = []) {
