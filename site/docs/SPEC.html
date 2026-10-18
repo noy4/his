@@ -426,7 +426,7 @@
   <section>
     <h2><iconify-icon icon="mdi:sitemap-outline" width="24"></iconify-icon>Architecture</h2>
     <p class="section-desc">
-      <code>his serve</code> owns the archive, the static WebUI, and the RPC socket; the desktop app only spawns it.
+      <code>his serve</code> owns the archive, the static WebUI, and the RPC socket. The desktop app only spawns it.
     </p>
 
     <div class="figure">
@@ -504,7 +504,7 @@
 
     <h3><iconify-icon icon="mdi:swap-horizontal"></iconify-icon>RPC surface</h3>
     <p class="section-desc">
-      JSON-RPC 2.0 over WS at <code>/rpc</code> — <code>history.*</code> mirrors the WebExtensions history API, with stats, GitHub insights and settings alongside; notifications push on the same socket. Origin allow-list (<code>127.0.0.1</code> / <code>localhost</code>) + state-file token, required on every connection.
+      JSON-RPC 2.0 over WS at <code>/rpc</code>. <code>history.*</code> mirrors the WebExtensions API, plus stats, GitHub insights, and settings. Notifications push on the same socket. Every connection needs an allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) and the state-file token.
     </p>
 
     <pre><span class="c"># request / response — id-matched</span>
@@ -527,7 +527,7 @@ db.changed           { }                                                 <span c
 
     <h3><iconify-icon icon="mdi:file-cog-outline"></iconify-icon>Runtime state</h3>
     <p class="section-desc">
-      The running instance keeps <code>~/.his/state.json</code>; one home = one archive = one instance.
+      The running instance keeps <code>~/.his/state.json</code>. One home = one archive = one instance.
     </p>
 
     <div class="grid-2">
@@ -550,14 +550,14 @@ db.changed           { }                                                 <span c
           <iconify-icon icon="mdi:map-marker-path"></iconify-icon>
           <h4>Location</h4>
         </div>
-        <p><code>~/.his/state.json</code> — pid, port, url, db path, /rpc token (mode <code>0600</code>). A second <code>his serve</code> just reports the running URL. The home also holds <code>history.db</code> and staging copies; distinct archives = distinct homes (<code>HIS_HOME</code>).</p>
+        <p><code>~/.his/state.json</code> — pid, port, url, db path, /rpc token (mode <code>0600</code>). A second <code>his serve</code> just reports the running URL. The home also holds <code>history.db</code> and staging copies. Distinct archives = distinct homes (<code>HIS_HOME</code>).</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:database-outline"></iconify-icon>
           <h4>Write path</h4>
         </div>
-        <p>One writer per process (WAL + <code>busy_timeout</code>); sync runs via <code>his sync</code> or <code>sync.run</code> RPC. WebUI has no direct DB access.</p>
+        <p>One writer per process (WAL + <code>busy_timeout</code>). Sync runs via <code>his sync</code> or the <code>sync.run</code> RPC. WebUI has no direct DB access.</p>
       </div>
     </div>
 
@@ -735,7 +735,7 @@ END;</pre>
           <iconify-icon icon="mdi:content-duplicate"></iconify-icon>
           <h4>Dedup &amp; reset detection</h4>
         </div>
-        <p>Source <code>MAX(id)</code> shrinking = history cleared → <code>source_id_offset += last_raw_id</code> (Gateway 式). Takeout has no native ids — stable hash of (url, time). Watermarks advance only after a successful commit.</p>
+        <p>Source <code>MAX(id)</code> shrinking = history cleared → <code>source_id_offset += last_raw_id</code>. Takeout has no native ids — stable hash of (url, time). Watermarks advance only after commit.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -749,14 +749,14 @@ END;</pre>
           <iconify-icon icon="mdi:directions-fork"></iconify-icon>
           <h4>Transitions normalized</h4>
         </div>
-        <p>WebExtensions <code>history.TransitionType</code> (lowercase: <code>link</code> / <code>typed</code> / ...) is the axis; Firefox / Safari / Takeout map at sync.</p>
+        <p>WebExtensions <code>history.TransitionType</code> (lowercase: <code>link</code> / <code>typed</code> / ...) is the axis. Firefox / Safari / Takeout map at sync.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:table-search"></iconify-icon>
           <h4>Search: trigram</h4>
         </div>
-        <p>External content on <code>urls</code> (title, url), trigger-maintained; &lt;3 chars → LIKE. Alt: unicode61 / contentless.</p>
+        <p>External content on <code>urls</code> (title, url), trigger-maintained. &lt;3 chars → LIKE. Alt: unicode61 / contentless.</p>
       </div>
     </div>
   </section>
@@ -765,7 +765,7 @@ END;</pre>
   <section>
     <h2><iconify-icon icon="mdi:database-import-outline" width="24"></iconify-icon>Sync</h2>
     <p class="section-desc">
-      Periodic (6h) change-check triggered; snapshots only — live browser DBs are never opened.
+      Periodic (6h) change-check. Snapshots only — live browser DBs are never opened.
     </p>
 
     <div class="grid-2">
@@ -774,21 +774,21 @@ END;</pre>
           <iconify-icon icon="mdi:radar"></iconify-icon>
           <h4>Trigger</h4>
         </div>
-        <p>6h periodic; per-target fingerprint gate (mtime/size + sidecars, persisted in the DB) — unchanged targets skip snapshot; catch-up sync at startup. Alt: file events / OS scheduler.</p>
+        <p>6h periodic + per-target fingerprint gate (mtime/size + sidecars, in the DB). Unchanged targets skip snapshot. Catch-up sync at startup. Alt: file events / OS scheduler.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:workflow"></iconify-icon>
           <h4>Pipeline</h4>
         </div>
-        <p>fingerprint gate → snapshot → parse → upsert → watermark. One transaction per profile; <code>INSERT OR IGNORE</code> keeps re-sync idempotent.</p>
+        <p>gate → snapshot → parse → upsert → watermark. One transaction per profile. <code>INSERT OR IGNORE</code> keeps re-sync idempotent.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:content-copy"></iconify-icon>
           <h4>Snapshot</h4>
         </div>
-        <p>SQLite <code>VACUUM INTO</code> from a read-only source handle → staging — used pages only, WAL folded, page-atomic. Fallback (hot journal / open failure): copy main + sidecars → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code> and fold on open. The live DB is never written.</p>
+        <p>SQLite <code>VACUUM INTO</code> from a read-only handle → staging (used pages only, WAL folded, page-atomic). Fallback (hot journal / open failure): copy main + sidecars → <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code>, fold on open. The live DB is never written.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -848,14 +848,14 @@ END;</pre>
           <tr><th>Command / Option</th><th>Behavior</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>sync</code></td><td>Run sync once — writes <code>history.db</code> directly. Prints per-source counts; errors exit 1</td></tr>
-          <tr><td><code>sync --target &lt;browser[:profile]&gt;</code></td><td>Limit to targets, repeatable (e.g. <code>--target=chrome:Default --target=brave</code>) — bare <code>&lt;browser&gt;</code> runs all of its profiles; slugs: <code>chrome</code> / <code>chromium</code> / <code>edge</code> / <code>brave</code> / <code>vivaldi</code> / <code>arc</code> / <code>opera</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code></td></tr>
+          <tr><td><code>sync</code></td><td>Run sync once, writes <code>history.db</code> directly. Prints per-source counts. Errors exit 1</td></tr>
+          <tr><td><code>sync --target &lt;browser[:profile]&gt;</code></td><td>Limit to targets, repeatable (e.g. <code>--target=chrome:Default --target=brave</code>). Bare <code>&lt;browser&gt;</code> runs all its profiles. Slugs: <code>chrome</code> / <code>chromium</code> / <code>edge</code> / <code>brave</code> / <code>vivaldi</code> / <code>arc</code> / <code>opera</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code></td></tr>
           <tr><td><code>sync --full</code></td><td>Ignore watermarks and re-read everything (idempotent)</td></tr>
           <tr><td><code>serve</code></td><td>Foreground — HTTP + RPC + 6h sync loop with startup catch-up. <code>Ctrl+C</code> stops and removes the state file</td></tr>
-          <tr><td><code>serve --port &lt;n&gt;</code></td><td>Port to bind (default <code>4477</code>); +1 on conflict, recorded in the state file</td></tr>
+          <tr><td><code>serve --port &lt;n&gt;</code></td><td>Port to bind (default <code>4477</code>). +1 on conflict, recorded in the state file</td></tr>
           <tr><td><code>serve --open</code></td><td>Open the WebUI once the port is bound</td></tr>
           <tr><td><code>query [text]</code></td><td>Read-only — runs <code>history.search</code> against <code>history.db</code>, prints JSON. <code>--url</code>, <code>--from</code>, <code>--to</code>, <code>--limit</code></td></tr>
-          <tr><td><code>status</code></td><td>Print the running instance (url + archive); exit 1 when none. Stale state is pruned silently</td></tr>
+          <tr><td><code>status</code></td><td>Print the running instance (url + archive). Exit 1 when none. Stale state is pruned silently</td></tr>
           <tr><td><code>stop</code></td><td>SIGTERM the running instance and remove its state file</td></tr>
           <tr><td><code>--home &lt;dir&gt;</code></td><td>Override <code>~/.his</code> (env: <code>HIS_HOME</code>)</td></tr>
           <tr><td><code>-h</code> / <code>-v</code></td><td>Show help / version</td></tr>
@@ -868,7 +868,7 @@ END;</pre>
   <section>
     <h2><iconify-icon icon="mdi:web" width="24"></iconify-icon>WebUI</h2>
     <p class="section-desc">
-      React + <code>@preact/signals</code> SPA — built to <code>dist/</code>, served by <code>his serve</code>; talks to core only via RPC.
+      React + <code>@preact/signals</code> SPA, built to <code>dist/</code> and served by <code>his serve</code>. Talks to core only via RPC.
     </p>
 
     <div class="grid-2">
@@ -891,7 +891,7 @@ END;</pre>
           <iconify-icon icon="mdi:magnify"></iconify-icon>
           <h4>Search</h4>
         </div>
-        <p>FTS trigram, server-side; under 3 chars falls back to LIKE. Hidden rows are never returned.</p>
+        <p>FTS trigram, server-side. Under 3 chars falls back to LIKE. Hidden rows are never returned.</p>
       </div>
     </div>
   </section>
@@ -909,20 +909,21 @@ END;</pre>
           <iconify-icon icon="mdi:cog-outline"></iconify-icon>
           <h4>Process</h4>
         </div>
-        <p>Single instance lock; spawns <code>his serve</code> at launch, stops it on quit.</p>      </div>
+        <p>Single instance lock. Spawns <code>his serve</code> at launch, stops it on quit.</p>
+      </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:window-restore"></iconify-icon>
           <h4>Window</h4>
         </div>
-        <p>One BrowserWindow — loads the serve URL; port and token come from the state file.</p>
+        <p>One BrowserWindow — loads the serve URL. Port and token come from the state file.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:flash-outline"></iconify-icon>
           <h4>Sync Now</h4>
         </div>
-        <p><code>sync.run</code> over RPC; <code>sync.progress</code> shows in the tray tooltip <span class="on-hold-tag">(on hold — notification not implemented)</span>.</p>
+        <p><code>sync.run</code> over RPC. <code>sync.progress</code> shows in the tray tooltip <span class="on-hold-tag">(on hold — notification not implemented)</span>.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -949,7 +950,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
   <section>
     <h2><iconify-icon icon="mdi:clipboard-list-outline" width="24"></iconify-icon>Considerations</h2>
     <p class="section-desc">
-      Everything settled — alternatives live in their sections. Decision log and deferred minor items below.
+      Alternatives live in their sections. Decision log below.
     </p>
 
     <h3><iconify-icon icon="mdi:check-circle-outline"></iconify-icon>Decisions</h3>
@@ -960,7 +961,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <h4>Settled</h4>
         </div>
         <ul>
-          <li>Sync runs both ways — standalone <code>his sync</code> writes directly, <code>sync.run</code> over RPC runs in-process; accidental overlap covered by WAL + <code>busy_timeout</code></li>
+          <li>Sync runs both ways — <code>his sync</code> writes directly, <code>sync.run</code> runs in-process. Overlap covered by WAL + <code>busy_timeout</code></li>
           <li><code>/rpc</code> accepts an allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) plus the state-file token</li>
           <li>Page bodies out of scope — metadata only, no WARC / WACZ</li>
           <li>Dedup key = <code>(source_profile_id, source_visit_id)</code> — watermark incremental with reset detection</li>
