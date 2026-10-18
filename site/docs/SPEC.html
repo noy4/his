@@ -87,12 +87,6 @@
       font-weight: 600;
       margin-bottom: 14px;
     }
-    .on-hold-tag {
-      color: var(--accent);
-      font-family: var(--mono);
-      font-size: 12px;
-      font-style: normal;
-    }
     h1 {
       display: flex;
       align-items: center;
@@ -168,6 +162,8 @@
 
     /* Tables */
     .table-wrap { overflow-x: auto; margin: 14px 0; }
+    .table-wrap a { color: var(--primary); text-decoration: none; }
+    .table-wrap a:hover { text-decoration: underline; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -332,7 +328,7 @@
   <section>
     <h2><iconify-icon icon="mdi:information-outline" width="24"></iconify-icon>Overview</h2>
     <p class="section-desc">
-      One SQLite archive for all browser history, browsed with a self-built WebUI.
+      One SQLite archive for all browser history, with WebUI.
     </p>
 
     <div class="grid-2">
@@ -348,14 +344,14 @@
           <iconify-icon icon="mdi:database-import-outline"></iconify-icon>
           <h4>Incremental sync</h4>
         </div>
-        <p>Staging snapshots, watermark cursors, append-only. Never opens live browser DBs.</p>
+        <p>Snapshot copies + watermark cursors.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:application-brackets-outline"></iconify-icon>
           <h4>Three frontends</h4>
         </div>
-        <p>One core: CLI, WebUI, Desktop shell.</p>
+        <p>CLI, WebUI, Desktop shell.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -426,7 +422,7 @@
   <section>
     <h2><iconify-icon icon="mdi:sitemap-outline" width="24"></iconify-icon>Architecture</h2>
     <p class="section-desc">
-      <code>his serve</code> owns the archive, the static WebUI, and the RPC socket. The desktop app only spawns it.
+      <code>his serve</code> owns the archive, the WebUI, and the RPC socket. Desktop just spawns it.
     </p>
 
     <div class="figure">
@@ -484,7 +480,7 @@
 
         <!-- WebUI -->
         <rect class="node node-accent" x="560" y="140" width="184" height="56" rx="6"/>
-        <image href="https://api.iconify.design/logos/react-icon.svg?height=18" x="572" y="159" height="18"/>
+        <image href="https://api.iconify.design/logos/react.svg?height=18" x="572" y="159" height="18"/>
         <text class="tt" x="596" y="162">WebUI</text>
         <text class="tm" x="596" y="178">React · @preact/signals</text>
 
@@ -501,13 +497,26 @@
         <text class="tm" x="366" y="378">Chromium · Firefox · Safari · Takeout</text>
       </svg>
     </div>
+  </section>
 
-    <h3><iconify-icon icon="mdi:swap-horizontal"></iconify-icon>RPC surface</h3>
+  <!-- RPC -->
+  <section>
+    <h2><iconify-icon icon="mdi:swap-horizontal" width="24"></iconify-icon>RPC</h2>
     <p class="section-desc">
-      JSON-RPC 2.0 over WS at <code>/rpc</code>. <code>history.*</code> mirrors the WebExtensions API, plus stats, GitHub insights, and settings. Notifications push on the same socket. Every connection needs an allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) and the state-file token.
+      JSON-RPC 2.0 over WS at <code>/rpc</code>.
     </p>
 
-    <pre><span class="c"># request / response — id-matched</span>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:shield-lock-outline"></iconify-icon>
+          <h4>Auth</h4>
+        </div>
+        <p>Allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) + the state-file token.</p>
+      </div>
+    </div>
+
+    <pre><span class="c"># request / response</span>
 history.search       { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
 history.searchVisits { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
 history.getVisits    { urlId, limit? }                                   → VisitItem[]
@@ -519,13 +528,13 @@ sources.list         { check? }                                          → Sou
 sync.run             { full? }                                           → SyncSummary      <span class="c"># progress push on hold</span>
 sync.status                                                              → LastRun | null
 settings.get                                                             → SettingsInfo
-settings.set         { hiddenPatterns }                                  → SettingsInfo
+settings.set         { hiddenPatterns }                                  → SettingsInfo</pre>
 
-<span class="c"># notifications — same socket, no id</span>
-sync.progress        { source, phase, parsed, upserted }                 <span class="c"># on hold — not implemented</span>
-db.changed           { }                                                 <span class="c"># clients refetch open views</span></pre>
+  </section>
 
-    <h3><iconify-icon icon="mdi:file-cog-outline"></iconify-icon>Runtime state</h3>
+  <!-- RUNTIME STATE -->
+  <section>
+    <h2><iconify-icon icon="mdi:file-cog-outline" width="24"></iconify-icon>Runtime state</h2>
     <p class="section-desc">
       The running instance keeps <code>~/.his/state.json</code>. One home = one archive = one instance.
     </p>
@@ -759,6 +768,26 @@ END;</pre>
         <p>External content on <code>urls</code> (title, url), trigger-maintained. &lt;3 chars → LIKE. Alt: unicode61 / contentless.</p>
       </div>
     </div>
+
+    <h3><iconify-icon icon="mdi:puzzle-outline"></iconify-icon>WebExtensions mapping</h3>
+    <p class="section-desc">
+      Taken straight from the WebExtensions <code>history</code> API.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>his</th><th>WebExtensions</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>history.search</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/search">browser.history.search()</a> — plus <code>cursor</code> / <code>limit</code></td></tr>
+          <tr><td><code>history.getVisits</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/getVisits">browser.history.getVisits()</a></td></tr>
+          <tr><td><code>HistoryItem</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/HistoryItem">HistoryItem</a></td></tr>
+          <tr><td><code>VisitItem</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/VisitItem">VisitItem</a></td></tr>
+          <tr><td><code>transition</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/TransitionType">TransitionType</a></td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <!-- SYNC / SOURCES -->
@@ -884,7 +913,7 @@ END;</pre>
           <iconify-icon icon="mdi:chart-box-outline"></iconify-icon>
           <h4>State</h4>
         </div>
-        <p>Signals: query · date range · selection. <code>db.changed</code> push triggers a refetch.</p>
+        <p>Signals: query · date range · selection.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -923,7 +952,7 @@ END;</pre>
           <iconify-icon icon="mdi:flash-outline"></iconify-icon>
           <h4>Sync Now</h4>
         </div>
-        <p><code>sync.run</code> over RPC. <code>sync.progress</code> shows in the tray tooltip <span class="on-hold-tag">(on hold — notification not implemented)</span>.</p>
+        <p><code>sync.run</code> over RPC.</p>
       </div>
       <div class="card">
         <div class="card-head">

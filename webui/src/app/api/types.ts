@@ -74,8 +74,7 @@ export interface SourcesListParams {
   check?: boolean
 }
 
-// notifications — sync.progress is on hold (see SPEC); db.changed pending
-// open-ended so new server events can arrive before the map lists them
+// notifications — not implemented (db.changed / sync.progress)
 export interface HisEvents {
   [event: string]: (...args: any[]) => void
 }

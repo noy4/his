@@ -29,6 +29,7 @@
       text: "Archive",
       items: [
         { text: "Favicon DB", link: "archive/favicon-db.html", icon: "mdi:image-multiple-outline" },
+        { text: "Notifications", link: "archive/notifications.html", icon: "mdi:bell-outline" },
       ],
     },
     {
