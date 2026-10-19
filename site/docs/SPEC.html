@@ -954,41 +954,6 @@ Open                           <span class="c"># BrowserWindow → serve URL</sp
 Quit his                       <span class="c"># stop serve · quit</span></pre>
   </section>
 
-  <!-- CONSIDERATIONS -->
-  <section>
-    <h2><iconify-icon icon="mdi:clipboard-list-outline" width="24"></iconify-icon>Considerations</h2>
-    <p class="section-desc">
-      Alternatives live in their sections. Decision log below.
-    </p>
-
-    <h3><iconify-icon icon="mdi:check-circle-outline"></iconify-icon>Decisions</h3>
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:check-decagram"></iconify-icon>
-          <h4>Settled</h4>
-        </div>
-        <ul>
-          <li>Sync runs both ways — <code>his sync</code> writes directly, <code>sync.run</code> runs in-process. Overlap covered by WAL + <code>busy_timeout</code></li>
-          <li><code>/rpc</code> accepts an allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) plus the state-file token</li>
-          <li>Page bodies out of scope — metadata only, no WARC / WACZ</li>
-          <li>Dedup key = <code>(source_profile_id, source_visit_id)</code> — watermark incremental with reset detection</li>
-          <li>Sync cadence = 6h periodic + per-target fingerprint gate (unchanged targets skip snapshot) + a startup catch-up sync</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:alarm-snooze"></iconify-icon>
-          <h4>Deferred</h4>
-        </div>
-        <ul>
-          <li>CLI <code>query</code> output formats — JSON / CSV / table</li>
-          <li>Desktop webui bundling — shipped dist vs dev vite proxy</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
   <footer>
     <div class="colophon">his SPEC · created 2026-10-02</div>
   </footer>
