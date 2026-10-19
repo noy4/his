@@ -853,7 +853,7 @@ END;</pre>
           <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable) · <code>--full</code></td></tr>
           <tr><td><code>serve</code></td><td>Foreground: HTTP + RPC + 6h sync. <code>--port &lt;n&gt;</code> (default 4477) · <code>--open</code></td></tr>
           <tr><td><code>query [text]</code></td><td>Read-only search → JSON. <code>--url</code> · <code>--from</code> · <code>--to</code> · <code>--limit</code></td></tr>
-          <tr><td><code>status</code></td><td>Print running instance; exit 1 if none</td></tr>
+          <tr><td><code>status</code></td><td>Print running instance (exit 1 if none)</td></tr>
           <tr><td><code>stop</code></td><td>Stop the running instance</td></tr>
           <tr><td><code>--home &lt;dir&gt;</code></td><td>Archive home (default <code>~/.his</code>, env <code>HIS_HOME</code>)</td></tr>
           <tr><td><code>-h</code> / <code>-v</code></td><td>Help / version</td></tr>
@@ -919,7 +919,7 @@ END;</pre>
   <section>
     <h2><iconify-icon icon="mdi:apple" width="24"></iconify-icon>Desktop app</h2>
     <p class="section-desc">
-      A macOS menu bar client with one window — spawns <code>his serve</code>, talks RPC.
+      macOS menu bar client. Spawns <code>his serve</code>.
     </p>
 
     <div class="grid-2">
@@ -928,28 +928,21 @@ END;</pre>
           <iconify-icon icon="mdi:cog-outline"></iconify-icon>
           <h4>Process</h4>
         </div>
-        <p>Single instance lock. Spawns <code>his serve</code> at launch, stops it on quit.</p>
+        <p>Menubar app — dock hidden, tray. Spawns <code>his serve</code> at boot, stops on quit.</p>
       </div>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:window-restore"></iconify-icon>
           <h4>Window</h4>
         </div>
-        <p>One BrowserWindow — loads the serve URL. Port and token come from the state file.</p>
+        <p>One BrowserWindow — loads the serve URL. Close hides it.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:flash-outline"></iconify-icon>
-          <h4>Sync Now</h4>
+          <iconify-icon icon="mdi:power-plug-outline"></iconify-icon>
+          <h4>Serve</h4>
         </div>
-        <p><code>sync.run</code> over RPC.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:tray"></iconify-icon>
-          <h4>Watch</h4>
-        </div>
-        <p>The sync loop (6h check + startup catch-up) lives in <code>his serve</code> — the tray only triggers and reports.</p>
+        <p>Reuses a running instance, else spawns + waits. Tray actions respawn when down.</p>
       </div>
     </div>
 
@@ -959,10 +952,6 @@ END;</pre>
 Open                           <span class="c"># BrowserWindow → serve URL</span>
 ─────────────────────────────
 Quit his                       <span class="c"># stop serve · quit</span></pre>
-
-    <p class="section-desc">
-      Tray actions respawn <code>his serve</code> when down.
-    </p>
   </section>
 
   <!-- CONSIDERATIONS -->
