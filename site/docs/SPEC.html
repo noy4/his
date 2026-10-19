@@ -499,6 +499,154 @@
     </div>
   </section>
 
+  <!-- DESKTOP -->
+  <section>
+    <h2><iconify-icon icon="mdi:apple" width="24"></iconify-icon>Desktop app</h2>
+    <p class="section-desc">
+      macOS menu bar client. Spawns <code>his serve</code>.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:cog-outline"></iconify-icon>
+          <h4>Process</h4>
+        </div>
+        <p>Menubar app — dock hidden, tray. Spawns <code>his serve</code> at boot, stops on quit.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:window-restore"></iconify-icon>
+          <h4>Window</h4>
+        </div>
+        <p>One BrowserWindow — loads the serve URL. Close hides it.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:power-plug-outline"></iconify-icon>
+          <h4>Serve</h4>
+        </div>
+        <p>Reuses a running instance, else spawns + waits. Tray actions respawn when down.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:menu"></iconify-icon>Tray menu</h3>
+
+    <pre>Sync Now                       <span class="c"># sync.run over RPC</span>
+Open                           <span class="c"># BrowserWindow → serve URL</span>
+─────────────────────────────
+Quit his                       <span class="c"># stop serve · quit</span></pre>
+  </section>
+
+  <!-- WEBUI -->
+  <section>
+    <h2><iconify-icon icon="mdi:web" width="24"></iconify-icon>WebUI</h2>
+    <p class="section-desc">
+      React SPA served by <code>his serve</code>.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:chart-box-outline"></iconify-icon>
+          <h4>Dashboard</h4>
+        </div>
+        <p>Totals, by-hour / by-day charts, top domains.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:history"></iconify-icon>
+          <h4>Visits</h4>
+        </div>
+        <p>Date-grouped visits, infinite scroll + search.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:link-variant"></iconify-icon>
+          <h4>URLs</h4>
+        </div>
+        <p>Unique URLs, list / card toggle + search.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:github"></iconify-icon>
+          <h4>GitHub</h4>
+        </div>
+        <p>PR / repo stats + recent visits.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-import"></iconify-icon>
+          <h4>Sources</h4>
+        </div>
+        <p>Profiles, select + resync.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:cog-outline"></iconify-icon>
+          <h4>Settings</h4>
+        </div>
+        <p>Privacy — hide URL patterns.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLI -->
+  <section>
+    <h2><iconify-icon icon="mdi:console" width="24"></iconify-icon>CLI</h2>
+    <p class="section-desc">Syntax: <code>his [command] [options]</code></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Command</th><th>Behavior</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable) · <code>--full</code></td></tr>
+          <tr><td><code>serve</code></td><td>Foreground: HTTP + RPC + 6h sync. <code>--port &lt;n&gt;</code> (default 4477) · <code>--open</code></td></tr>
+          <tr><td><code>query [text]</code></td><td>Read-only search → JSON. <code>--url</code> · <code>--from</code> · <code>--to</code> · <code>--limit</code></td></tr>
+          <tr><td><code>status</code></td><td>Print running instance (exit 1 if none)</td></tr>
+          <tr><td><code>stop</code></td><td>Stop the running instance</td></tr>
+          <tr><td><code>--home &lt;dir&gt;</code></td><td>Archive home (default <code>~/.his</code>, env <code>HIS_HOME</code>)</td></tr>
+          <tr><td><code>-h</code> / <code>-v</code></td><td>Help / version</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RPC -->
+  <section>
+    <h2><iconify-icon icon="mdi:swap-horizontal" width="24"></iconify-icon>RPC</h2>
+    <p class="section-desc">
+      JSON-RPC 2.0 over WS at <code>/rpc</code>.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:shield-lock-outline"></iconify-icon>
+          <h4>Auth</h4>
+        </div>
+        <p>Allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) + the state-file token.</p>
+      </div>
+    </div>
+
+    <pre><span class="c"># request / response</span>
+history.search       { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
+history.searchVisits { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
+history.getVisits    { urlId, limit? }                                   → VisitItem[]
+history.getItem      { id }                                              → { item, visits } | null
+history.stats        { month? }                                          → Stats
+history.githubStats  { month? }                                          → GithubStats
+history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
+sources.list         { check? }                                          → Source[]         <span class="c"># + watermarks · check probes source files</span>
+sync.run             { full? }                                           → SyncSummary      <span class="c"># progress push on hold</span>
+sync.status                                                              → LastRun | null
+settings.get                                                             → SettingsInfo
+settings.set         { hiddenPatterns }                                  → SettingsInfo</pre>
+
+  </section>
+
   <!-- DATA MODEL -->
   <section>
     <h2><iconify-icon icon="mdi:database-cog-outline" width="24"></iconify-icon>Data model</h2>
@@ -763,154 +911,6 @@ END;</pre>
       </table>
     </div>
 
-  </section>
-
-  <!-- RPC -->
-  <section>
-    <h2><iconify-icon icon="mdi:swap-horizontal" width="24"></iconify-icon>RPC</h2>
-    <p class="section-desc">
-      JSON-RPC 2.0 over WS at <code>/rpc</code>.
-    </p>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:shield-lock-outline"></iconify-icon>
-          <h4>Auth</h4>
-        </div>
-        <p>Allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) + the state-file token.</p>
-      </div>
-    </div>
-
-    <pre><span class="c"># request / response</span>
-history.search       { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
-history.searchVisits { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
-history.getVisits    { urlId, limit? }                                   → VisitItem[]
-history.getItem      { id }                                              → { item, visits } | null
-history.stats        { month? }                                          → Stats
-history.githubStats  { month? }                                          → GithubStats
-history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
-sources.list         { check? }                                          → Source[]         <span class="c"># + watermarks · check probes source files</span>
-sync.run             { full? }                                           → SyncSummary      <span class="c"># progress push on hold</span>
-sync.status                                                              → LastRun | null
-settings.get                                                             → SettingsInfo
-settings.set         { hiddenPatterns }                                  → SettingsInfo</pre>
-
-  </section>
-
-  <!-- CLI -->
-  <section>
-    <h2><iconify-icon icon="mdi:console" width="24"></iconify-icon>CLI</h2>
-    <p class="section-desc">Syntax: <code>his [command] [options]</code></p>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Command</th><th>Behavior</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable) · <code>--full</code></td></tr>
-          <tr><td><code>serve</code></td><td>Foreground: HTTP + RPC + 6h sync. <code>--port &lt;n&gt;</code> (default 4477) · <code>--open</code></td></tr>
-          <tr><td><code>query [text]</code></td><td>Read-only search → JSON. <code>--url</code> · <code>--from</code> · <code>--to</code> · <code>--limit</code></td></tr>
-          <tr><td><code>status</code></td><td>Print running instance (exit 1 if none)</td></tr>
-          <tr><td><code>stop</code></td><td>Stop the running instance</td></tr>
-          <tr><td><code>--home &lt;dir&gt;</code></td><td>Archive home (default <code>~/.his</code>, env <code>HIS_HOME</code>)</td></tr>
-          <tr><td><code>-h</code> / <code>-v</code></td><td>Help / version</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- WEBUI -->
-  <section>
-    <h2><iconify-icon icon="mdi:web" width="24"></iconify-icon>WebUI</h2>
-    <p class="section-desc">
-      React SPA served by <code>his serve</code>.
-    </p>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:chart-box-outline"></iconify-icon>
-          <h4>Dashboard</h4>
-        </div>
-        <p>Totals, by-hour / by-day charts, top domains.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:history"></iconify-icon>
-          <h4>Visits</h4>
-        </div>
-        <p>Date-grouped visits, infinite scroll + search.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:link-variant"></iconify-icon>
-          <h4>URLs</h4>
-        </div>
-        <p>Unique URLs, list / card toggle + search.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:github"></iconify-icon>
-          <h4>GitHub</h4>
-        </div>
-        <p>PR / repo stats + recent visits.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:database-import"></iconify-icon>
-          <h4>Sources</h4>
-        </div>
-        <p>Profiles, select + resync.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:cog-outline"></iconify-icon>
-          <h4>Settings</h4>
-        </div>
-        <p>Privacy — hide URL patterns.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- DESKTOP -->
-  <section>
-    <h2><iconify-icon icon="mdi:apple" width="24"></iconify-icon>Desktop app</h2>
-    <p class="section-desc">
-      macOS menu bar client. Spawns <code>his serve</code>.
-    </p>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:cog-outline"></iconify-icon>
-          <h4>Process</h4>
-        </div>
-        <p>Menubar app — dock hidden, tray. Spawns <code>his serve</code> at boot, stops on quit.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:window-restore"></iconify-icon>
-          <h4>Window</h4>
-        </div>
-        <p>One BrowserWindow — loads the serve URL. Close hides it.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:power-plug-outline"></iconify-icon>
-          <h4>Serve</h4>
-        </div>
-        <p>Reuses a running instance, else spawns + waits. Tray actions respawn when down.</p>
-      </div>
-    </div>
-
-    <h3><iconify-icon icon="mdi:menu"></iconify-icon>Tray menu</h3>
-
-    <pre>Sync Now                       <span class="c"># sync.run over RPC</span>
-Open                           <span class="c"># BrowserWindow → serve URL</span>
-─────────────────────────────
-Quit his                       <span class="c"># stop serve · quit</span></pre>
   </section>
 
   <!-- DATA DIRECTORY -->
