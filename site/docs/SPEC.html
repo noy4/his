@@ -847,20 +847,16 @@ END;</pre>
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Command / Option</th><th>Behavior</th></tr>
+          <tr><th>Command</th><th>Behavior</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>sync</code></td><td>Run sync once, writes <code>history.db</code> directly. Prints per-source counts. Errors exit 1</td></tr>
-          <tr><td><code>sync --target &lt;browser[:profile]&gt;</code></td><td>Limit to targets, repeatable (e.g. <code>--target=chrome:Default --target=brave</code>). Bare <code>&lt;browser&gt;</code> runs all its profiles. Slugs: <code>chrome</code> / <code>chromium</code> / <code>edge</code> / <code>brave</code> / <code>vivaldi</code> / <code>arc</code> / <code>opera</code> / <code>firefox</code> / <code>safari</code> / <code>takeout</code></td></tr>
-          <tr><td><code>sync --full</code></td><td>Ignore watermarks and re-read everything (idempotent)</td></tr>
-          <tr><td><code>serve</code></td><td>Foreground — HTTP + RPC + 6h sync loop with startup catch-up. <code>Ctrl+C</code> stops and removes the state file</td></tr>
-          <tr><td><code>serve --port &lt;n&gt;</code></td><td>Port to bind (default <code>4477</code>). +1 on conflict, recorded in the state file</td></tr>
-          <tr><td><code>serve --open</code></td><td>Open the WebUI once the port is bound</td></tr>
-          <tr><td><code>query [text]</code></td><td>Read-only — runs <code>history.search</code> against <code>history.db</code>, prints JSON. <code>--url</code>, <code>--from</code>, <code>--to</code>, <code>--limit</code></td></tr>
-          <tr><td><code>status</code></td><td>Print the running instance (url + archive). Exit 1 when none. Stale state is pruned silently</td></tr>
-          <tr><td><code>stop</code></td><td>SIGTERM the running instance and remove its state file</td></tr>
-          <tr><td><code>--home &lt;dir&gt;</code></td><td>Override <code>~/.his</code> (env: <code>HIS_HOME</code>)</td></tr>
-          <tr><td><code>-h</code> / <code>-v</code></td><td>Show help / version</td></tr>
+          <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable) · <code>--full</code></td></tr>
+          <tr><td><code>serve</code></td><td>Foreground: HTTP + RPC + 6h sync. <code>--port &lt;n&gt;</code> (default 4477) · <code>--open</code></td></tr>
+          <tr><td><code>query [text]</code></td><td>Read-only search → JSON. <code>--url</code> · <code>--from</code> · <code>--to</code> · <code>--limit</code></td></tr>
+          <tr><td><code>status</code></td><td>Print running instance; exit 1 if none</td></tr>
+          <tr><td><code>stop</code></td><td>Stop the running instance</td></tr>
+          <tr><td><code>--home &lt;dir&gt;</code></td><td>Archive home (default <code>~/.his</code>, env <code>HIS_HOME</code>)</td></tr>
+          <tr><td><code>-h</code> / <code>-v</code></td><td>Help / version</td></tr>
         </tbody>
       </table>
     </div>
@@ -870,30 +866,51 @@ END;</pre>
   <section>
     <h2><iconify-icon icon="mdi:web" width="24"></iconify-icon>WebUI</h2>
     <p class="section-desc">
-      React + <code>@preact/signals</code> SPA, built to <code>dist/</code> and served by <code>his serve</code>. Talks to core only via RPC.
+      React SPA served by <code>his serve</code>.
     </p>
 
     <div class="grid-2">
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:format-list-bulleted"></iconify-icon>
-          <h4>Views</h4>
-        </div>
-        <p>Timeline — date-grouped, last-visit DESC, cursor scroll. List — flat. Detail — <code>HistoryItem</code> + visits, delete / restore.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
           <iconify-icon icon="mdi:chart-box-outline"></iconify-icon>
-          <h4>State</h4>
+          <h4>Dashboard</h4>
         </div>
-        <p>Signals: query · date range · selection.</p>
+        <p>Totals, by-hour / by-day charts, top domains.</p>
       </div>
       <div class="card">
         <div class="card-head">
-          <iconify-icon icon="mdi:magnify"></iconify-icon>
-          <h4>Search</h4>
+          <iconify-icon icon="mdi:history"></iconify-icon>
+          <h4>Visits</h4>
         </div>
-        <p>FTS trigram, server-side. Under 3 chars falls back to LIKE. Hidden rows are never returned.</p>
+        <p>Date-grouped visits, infinite scroll + search.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:link-variant"></iconify-icon>
+          <h4>URLs</h4>
+        </div>
+        <p>Unique URLs, list / card toggle + search.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:github"></iconify-icon>
+          <h4>GitHub</h4>
+        </div>
+        <p>PR / repo stats + recent visits.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-import"></iconify-icon>
+          <h4>Sources</h4>
+        </div>
+        <p>Profiles, select + resync.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:cog-outline"></iconify-icon>
+          <h4>Settings</h4>
+        </div>
+        <p>Privacy — hide URL patterns.</p>
       </div>
     </div>
   </section>
