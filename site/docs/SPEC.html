@@ -499,80 +499,6 @@
     </div>
   </section>
 
-  <!-- RPC -->
-  <section>
-    <h2><iconify-icon icon="mdi:swap-horizontal" width="24"></iconify-icon>RPC</h2>
-    <p class="section-desc">
-      JSON-RPC 2.0 over WS at <code>/rpc</code>.
-    </p>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:shield-lock-outline"></iconify-icon>
-          <h4>Auth</h4>
-        </div>
-        <p>Allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) + the state-file token.</p>
-      </div>
-    </div>
-
-    <pre><span class="c"># request / response</span>
-history.search       { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
-history.searchVisits { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
-history.getVisits    { urlId, limit? }                                   → VisitItem[]
-history.getItem      { id }                                              → { item, visits } | null
-history.stats        { month? }                                          → Stats
-history.githubStats  { month? }                                          → GithubStats
-history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
-sources.list         { check? }                                          → Source[]         <span class="c"># + watermarks · check probes source files</span>
-sync.run             { full? }                                           → SyncSummary      <span class="c"># progress push on hold</span>
-sync.status                                                              → LastRun | null
-settings.get                                                             → SettingsInfo
-settings.set         { hiddenPatterns }                                  → SettingsInfo</pre>
-
-  </section>
-
-  <!-- DATA DIRECTORY -->
-  <section>
-    <h2><iconify-icon icon="mdi:folder-outline" width="24"></iconify-icon>Data directory</h2>
-    <p class="section-desc">
-      Default <code>~/.his</code>, override with <code>--home &lt;dir&gt;</code> or <code>HIS_HOME</code>.
-    </p>
-
-    <pre>~/.his/
-├── state.json    <span class="c"># running instance — {pid, port, url, db, token} (0600)</span>
-├── history.db    <span class="c"># the archive</span>
-└── staging/      <span class="c"># snapshot copies</span></pre>
-  </section>
-
-  <!-- RUNTIME STATE -->
-  <section>
-    <h2><iconify-icon icon="mdi:file-cog-outline" width="24"></iconify-icon>Runtime state</h2>
-    <p class="section-desc">
-      The running instance keeps <code>~/.his/state.json</code>.
-    </p>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:file-check-outline"></iconify-icon>
-          <h4>Created / removed</h4>
-        </div>
-        <p>Written once the port is bound, removed on clean shutdown.</p>
-      </div>
-    </div>
-
-    <h3><iconify-icon icon="mdi:code-json"></iconify-icon>State file</h3>
-
-    <pre>{
-  "pid": 12345,                      <span class="c">// serve process</span>
-  "port": 4477,                      <span class="c">// bound port</span>
-  "url": "http://localhost:4477/",
-  "db": "/Users/me/.his/history.db",  <span class="c">// archive path</span>
-  "token": "9f2c…"                   <span class="c">// required by /rpc</span>
-}</pre>
-  </section>
-
   <!-- DATA MODEL -->
   <section>
     <h2><iconify-icon icon="mdi:database-cog-outline" width="24"></iconify-icon>Data model</h2>
@@ -839,6 +765,39 @@ END;</pre>
 
   </section>
 
+  <!-- RPC -->
+  <section>
+    <h2><iconify-icon icon="mdi:swap-horizontal" width="24"></iconify-icon>RPC</h2>
+    <p class="section-desc">
+      JSON-RPC 2.0 over WS at <code>/rpc</code>.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:shield-lock-outline"></iconify-icon>
+          <h4>Auth</h4>
+        </div>
+        <p>Allow-listed Origin (<code>127.0.0.1</code> / <code>localhost</code>) + the state-file token.</p>
+      </div>
+    </div>
+
+    <pre><span class="c"># request / response</span>
+history.search       { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
+history.searchVisits { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
+history.getVisits    { urlId, limit? }                                   → VisitItem[]
+history.getItem      { id }                                              → { item, visits } | null
+history.stats        { month? }                                          → Stats
+history.githubStats  { month? }                                          → GithubStats
+history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
+sources.list         { check? }                                          → Source[]         <span class="c"># + watermarks · check probes source files</span>
+sync.run             { full? }                                           → SyncSummary      <span class="c"># progress push on hold</span>
+sync.status                                                              → LastRun | null
+settings.get                                                             → SettingsInfo
+settings.set         { hiddenPatterns }                                  → SettingsInfo</pre>
+
+  </section>
+
   <!-- CLI -->
   <section>
     <h2><iconify-icon icon="mdi:console" width="24"></iconify-icon>CLI</h2>
@@ -952,6 +911,47 @@ END;</pre>
 Open                           <span class="c"># BrowserWindow → serve URL</span>
 ─────────────────────────────
 Quit his                       <span class="c"># stop serve · quit</span></pre>
+  </section>
+
+  <!-- DATA DIRECTORY -->
+  <section>
+    <h2><iconify-icon icon="mdi:folder-outline" width="24"></iconify-icon>Data directory</h2>
+    <p class="section-desc">
+      Default <code>~/.his</code>, override with <code>--home &lt;dir&gt;</code> or <code>HIS_HOME</code>.
+    </p>
+
+    <pre>~/.his/
+├── state.json    <span class="c"># running instance — {pid, port, url, db, token} (0600)</span>
+├── history.db    <span class="c"># the archive</span>
+└── staging/      <span class="c"># snapshot copies</span></pre>
+  </section>
+
+  <!-- RUNTIME STATE -->
+  <section>
+    <h2><iconify-icon icon="mdi:file-cog-outline" width="24"></iconify-icon>Runtime state</h2>
+    <p class="section-desc">
+      The running instance keeps <code>~/.his/state.json</code>.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:file-check-outline"></iconify-icon>
+          <h4>Created / removed</h4>
+        </div>
+        <p>Written once the port is bound, removed on clean shutdown.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:code-json"></iconify-icon>State file</h3>
+
+    <pre>{
+  "pid": 12345,                      <span class="c">// serve process</span>
+  "port": 4477,                      <span class="c">// bound port</span>
+  "url": "http://localhost:4477/",
+  "db": "/Users/me/.his/history.db",  <span class="c">// archive path</span>
+  "token": "9f2c…"                   <span class="c">// required by /rpc</span>
+}</pre>
   </section>
 
   <footer>
