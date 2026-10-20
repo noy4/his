@@ -13,7 +13,7 @@
       items: [
         { text: "Spec", link: "SPEC.html", icon: "mdi:file-document-edit-outline" },
         { text: "Database", link: "db.html", icon: "mdi:database-outline" },
-        { text: "RPC", link: "SPEC.rpc.html", icon: "mdi:swap-horizontal" },
+        { text: "RPC", link: "rpc.html", icon: "mdi:swap-horizontal" },
       ],
     },
     {
