@@ -21,7 +21,6 @@
       items: [
         { text: "Plan", link: "PLAN.html", icon: "mdi:clipboard-list-outline" },
         { text: "WebUI", link: "PLAN.web.html", icon: "mdi:application-brackets-outline" },
-        { text: "GitHub Insights", link: "PLAN.github.html", icon: "mdi:github" },
         { text: "Hide patterns", link: "PLAN.hide.html", icon: "mdi:eye-off-outline" },
       ],
     },

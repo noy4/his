@@ -400,17 +400,14 @@
       IMPLEMENTATION PLAN
     </div>
     <h1><iconify-icon icon="mdi:server-network" width="30"></iconify-icon>his plan</h1>
-    <p class="tagline">Plan for the his core, CLI, and desktop shell — PLAN.web covers the WebUI.</p>
+    <p class="tagline">Plan for the his core, CLI, and desktop shell.</p>
   </header>
 
   <!-- ROADMAP -->
   <section>
     <h2><iconify-icon icon="mdi:format-list-numbered" width="24"></iconify-icon>Roadmap</h2>
     <p class="section-desc">
-      Phases follow the dependency chain: model → DB → sync → sources → CLI → serve/RPC → desktop.
-      Core ships before its consumers.
-      The WebUI stays on mocks until Phase 6 lands.
-      PLAN.web then swaps its mock <code>api.ts</code> for a real WS client.
+      The UI is built against mocks, then wired to the real API.
     </p>
 
     <div class="timeline">
@@ -465,14 +462,14 @@
             <span class="step-meta">P1 · core</span>
           </div>
           <div class="step-body">
-            <code>history.db</code> and <code>favicons.db</code> live here. One writer per process.
+            <code>history.db</code> lives here. One writer per process.
           </div>
           <div class="tasks">
             <div class="task done">
               <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">schema.sql</div>
-                <div class="task-desc">urls · visits · source_profiles · profile_watermarks · urls_fts trigram — favicon_cache in <code>favicons.db</code></div>
+                <div class="task-desc">urls · visits · source_profiles · profile_watermarks · urls_fts trigram</div>
               </div>
             </div>
             <div class="task done">
@@ -526,13 +523,6 @@
               <div class="task-text">
                 <div class="task-title">run.ts</div>
                 <div class="task-desc">snapshot → parse → upsert → watermark · one tx per profile · <code>INSERT OR IGNORE</code> · watermark advances only after commit</div>
-              </div>
-            </div>
-            <div class="task">
-              <iconify-icon icon="mdi:image-outline"></iconify-icon>
-              <div class="task-text">
-                <div class="task-title">favicons.ts</div>
-                <div class="task-desc">Favicon harvest phase — Δvisits hosts ∪ hosts missing from favicon_cache → prefix scan → quality upsert (permanent · no cursor)</div>
               </div>
             </div>
           </div>
@@ -642,7 +632,7 @@
               <iconify-icon icon="mdi:server"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">server/index.ts</div>
-                <div class="task-desc">static dist · binds 127.0.0.1 · <code>GET /favicon/&lt;host&gt;</code> (root fallback) from <code>favicons.db</code></div>
+                <div class="task-desc">static dist · binds 127.0.0.1</div>
               </div>
             </div>
             <div class="task done">
@@ -710,50 +700,6 @@
       </div>
 
     </div>
-  </section>
-
-  <!-- CONTRACTS -->
-  <section>
-    <h2><iconify-icon icon="mdi:swap-horizontal-circle-outline" width="24"></iconify-icon>Contracts &amp; seams</h2>
-    <p class="section-desc">
-      Small, stable contracts between packages. Frontends never reach past them.
-    </p>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:swap-horizontal"></iconify-icon>
-          <h4>RPC surface = core's contract</h4>
-        </div>
-        <p><code>core</code> implements <code>history.* / sources.* / sync.*</code>. <code>server/src/rpc.ts</code> is a thin dispatcher.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:file-cog-outline"></iconify-icon>
-          <h4>state.json — serve ↔ desktop</h4>
-        </div>
-        <p>Written once the port is bound, removed at shutdown. Desktop spawns when absent, reports when present. One home = one archive = one instance (<code>HIS_HOME</code>).</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:link-variant"></iconify-icon>
-          <h4>WebUI seam lands here</h4>
-        </div>
-        <p>One import swap at the <code>api.ts</code> seam. Views don't change. Push (<code>db.changed</code>) drives the refetch signals.</p>
-      </div>
-      <div class="card">
-        <div class="card-head">
-          <iconify-icon icon="mdi:image-outline"></iconify-icon>
-          <h4>favicons.db — permanent</h4>
-        </div>
-        <p>Permanent store (no TTL). Host-keyed (www-stripped) with root-domain fallback at read; quality upsert (SVG &gt; width &gt; newer) fed by the history-delta harvest. Served at <code>/favicon/&lt;host&gt;</code>; 404 → letter tile. Back up with <code>history.db</code>.</p>
-      </div>
-    </div>
-
-    <blockquote>
-      <iconify-icon icon="mdi:lightbulb-outline"></iconify-icon>
-      P1 lands independently of the WebUI. Phase 6 <code>serve</code> is the WebUI's last prerequisite — PLAN.web Phases 6–7 go real after it.
-    </blockquote>
   </section>
 
   <footer>

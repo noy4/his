@@ -168,17 +168,6 @@
     margin: 14px 0;
   }
   pre .c { color: var(--muted); }
-  blockquote {
-    margin: 10px 0;
-    padding: 8px 14px;
-    border-left: 2px solid var(--primary);
-    background: var(--surface-2);
-    border-radius: 0 8px 8px 0;
-    color: var(--muted);
-    font-size: 0.78rem;
-    line-height: 1.65;
-  }
-  blockquote a { color: var(--primary); }
 
   /* Tables */
   .table-wrap { overflow-x: auto; margin: 14px 0; }
@@ -407,7 +396,7 @@
   <section>
     <h2><iconify-icon icon="mdi:format-list-numbered" width="24"></iconify-icon>Roadmap</h2>
     <p class="section-desc">
-      Mock-first — the layout is built against dummy data until the backend lands. <code>src/api.ts</code> is the seam: views talk to signals and a typed client interface only, so the mock swaps for the real RPC client in one place.
+      Built against mocks, then wired to the real API.
     </p>
 
     <div class="timeline">
@@ -515,7 +504,7 @@
               <iconify-icon icon="mdi:card-text-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Row</div>
-                <div class="task-desc">favicon slot · title · url · time · visit count</div>
+                <div class="task-desc">title · url · time · visit count</div>
               </div>
             </div>
           </div>
@@ -614,13 +603,6 @@
                 <div class="task-desc">WS <code>/rpc</code> · id-matched · lazy connect · auto-reconnect</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:bell-ring-outline"></iconify-icon>
-              <div class="task-text">
-                <div class="task-title">Push → signals</div>
-                <div class="task-desc"><code>db.changed</code> refetches open views · <code>sync.progress</code> status</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -646,23 +628,11 @@
                 <div class="task-desc">loading skeletons · empty · error with retry</div>
               </div>
             </div>
-            <div class="task">
-              <iconify-icon icon="mdi:image-outline"></iconify-icon>
-              <div class="task-text">
-                <div class="task-title">Favicons</div>
-                <div class="task-desc"><code>GET /favicon/&lt;host&gt;</code> (root fallback) · 404 → letter tile</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
     </div>
-
-    <blockquote>
-      <iconify-icon icon="mdi:lightbulb-outline"></iconify-icon>
-      A Dashboard view landed mid-Phase-4 on a <code>history.stats()</code> mock extension (<code>Dashboard / Timeline / List</code> header buttons) — the matching stats method is now core-side. Auth (token / Host pin / page-token injection) is temporarily removed and <code>db.changed</code> is temporarily unwired — see <code>local.md</code>. Dev mock/rpc toggles via <code>VITE_USE_MOCK_API</code> (real data goes through the vite <code>/rpc</code> proxy). Deferred: date-range UI, delete/restore entry points on rows, the detail view (<code>selection</code> rides along).
-    </blockquote>
   </section>
 
   <footer>
