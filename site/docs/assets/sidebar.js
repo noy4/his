@@ -14,6 +14,7 @@
         { text: "Spec", link: "SPEC.html", icon: "mdi:file-document-edit-outline" },
         { text: "Database", link: "db.html", icon: "mdi:database-outline" },
         { text: "RPC", link: "rpc.html", icon: "mdi:swap-horizontal" },
+        { text: "Settings", link: "settings.html", icon: "mdi:cog-outline" },
       ],
     },
     {
@@ -21,7 +22,6 @@
       items: [
         { text: "Plan", link: "PLAN.html", icon: "mdi:clipboard-list-outline" },
         { text: "WebUI", link: "PLAN.web.html", icon: "mdi:application-brackets-outline" },
-        { text: "Hide patterns", link: "PLAN.hide.html", icon: "mdi:eye-off-outline" },
       ],
     },
     {
