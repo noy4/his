@@ -47,7 +47,12 @@
   const content = el("div", { class: "sidebar-content" })
   nav.append(content)
 
-  const brand = el("a", { class: "sidebar-brand", href: "../" }, [
+  // resolve brand href
+  const script = document.currentScript
+  const docsRoot = script ? new URL("../", script.src) : new URL(".", location.href)
+  const brandHref = new URL("index.html", docsRoot).href
+
+  const brand = el("a", { class: "sidebar-brand", href: brandHref }, [
     el("iconify-icon", { icon: config.icon, width: "24" }),
     el("span", { text: config.title }),
   ])
