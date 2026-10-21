@@ -33,9 +33,9 @@
       ],
     },
     {
-      text: "Site",
+      text: "Links",
       items: [
-        { text: "Home", link: "../", icon: "mdi:home-outline" },
+        { text: "Website", link: "../", icon: "mdi:web" },
         { text: "Demo", link: "../demo/", icon: "mdi:monitor-dashboard", external: true },
         { text: "GitHub", link: "https://github.com/noy4/his", icon: "mdi:github", external: true },
       ],
