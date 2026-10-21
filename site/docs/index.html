@@ -8,112 +8,16 @@
   <meta name="description" content="Documentation for the his archive.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
   <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
   <link rel="stylesheet" href="assets/sidebar.css">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0B0E14;
-      --surface: #151A23;
-      --surface-2: #21252F;
-      --border: #2C313F;
-      --border-strong: #383F50;
-      --text: #C3CDDC;
-      --text-strong: #F7F9FC;
-      --muted: #7E8A9E;
-      --primary: #4465DB;
-      --primary-soft: rgba(68, 101, 219, 0.15);
-      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
-      --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
-      color-scheme: dark;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #F8FAFC;
-        --surface: #FFFFFF;
-        --surface-2: #F1F5F9;
-        --border: #E2E8F0;
-        --border-strong: #CBD5E1;
-        --text: #334155;
-        --text-strong: #0F172A;
-        --muted: #64748B;
-        --primary: #2563EB;
-        --primary-soft: rgba(37, 99, 235, 0.1);
-        color-scheme: light;
-      }
-    }
-
-    iconify-icon { display: inline-block; width: 1em; height: 1em; }
-
-    section { scroll-margin-top: 24px; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      font-size: 15px;
-      line-height: 1.75;
-      padding: 0 16px;
-    }
-    .container { max-width: 720px; margin: 0 auto; padding: 48px 0 80px; }
-
-    /* Hero */
-    .hero { padding-bottom: 24px; border-bottom: 1px solid var(--border-strong); }
-    .badge-top {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 12px;
-      background: var(--primary-soft); color: var(--primary);
-      border: 1px solid var(--primary); border-radius: 999px;
-      font-size: 0.8rem; font-family: var(--mono); font-weight: 600;
-      margin-bottom: 14px;
-    }
-    h1 {
-      display: flex; align-items: center; gap: 12px;
-      font-size: 1.9rem; font-weight: 700; color: var(--text-strong);
-      line-height: 1.3; letter-spacing: -0.02em; margin-bottom: 8px;
-    }
-    h1 iconify-icon { color: var(--primary); flex-shrink: 0; width: 30px; height: 30px; }
-    .tagline { color: var(--muted); font-size: 0.95rem; line-height: 1.6; font-family: var(--mono); }
-
-    /* Sections */
-    section { margin-top: 48px; }
-    h2 {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 1.3rem; font-weight: 700; color: var(--text-strong);
-      letter-spacing: -0.01em; margin-bottom: 8px;
-    }
-    h2 iconify-icon { color: var(--primary); flex-shrink: 0; width: 24px; height: 24px; }
-    .section-desc { color: var(--muted); font-size: 0.88rem; margin-bottom: 16px; }
-    p { margin-bottom: 12px; }
-
-    /* Inline code & blocks */
-    code {
-      font-family: var(--mono); font-size: 0.82em; color: var(--text);
-      background: var(--surface-2); padding: 2px 6px; border-radius: 4px;
-    }
-
-    /* Grid & Cards */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
-    @media (max-width: 620px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px;
-    }
+    /* Cards */
     a.card { display: block; color: inherit; text-decoration: none; }
     a.card:hover { border-color: var(--border-strong); text-decoration: none; }
-    .card .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-    .card .card-head iconify-icon { font-size: 22px; color: var(--primary); flex-shrink: 0; }
-    .card h4 { font-size: 0.95rem; color: var(--text-strong); font-weight: 600; margin: 0; }
-    .card p { font-size: 0.82rem; color: var(--muted); line-height: 1.65; margin: 0; }
 
-    /* Footer */
-    footer {
-      margin-top: 56px; padding-top: 20px;
-      border-top: 1px solid var(--border-strong);
-      color: var(--muted); font-size: 0.8rem;
-    }
-    .colophon { margin-top: 8px; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+    /* Colophon */
+    .colophon { margin-top: 8px; }
   </style>
 </head>
 <body>
