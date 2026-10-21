@@ -26,6 +26,7 @@
     },
     {
       text: "Archive",
+      collapsed: true,
       items: [
         { text: "Favicon DB", link: "archive/favicon-db.html", icon: "mdi:image-multiple-outline" },
         { text: "Notifications", link: "archive/notifications.html", icon: "mdi:bell-outline" },
@@ -41,6 +42,8 @@
     },
   ]
 
+  const page = (location.pathname.split("/").pop() || "index.html").toLowerCase()
+
   const content = el("div", { class: "sidebar-content" })
   nav.append(content)
 
@@ -51,26 +54,49 @@
   const menu = el("div", { class: "sidebar-menu" })
   content.append(brand, menu)
 
-  for (const group of sidebar) {
-    menu.append(
-      el("div", { class: "sidebar-heading", text: group.text }),
-      el("ul", {}, group.items.map((item) => el("li", {}, [link(item)]))),
+  sidebar.forEach((group, index) => {
+    const id = `sidebar-group-${index}`
+    const collapsible = group.collapsed != null
+    const list = el("ul", { id }, group.items.map((item) => el("li", {}, [link(item)])))
+    const heading = el(
+      collapsible ? "button" : "div",
+      {
+        class: "sidebar-heading",
+        type: collapsible ? "button" : null,
+        "aria-controls": collapsible ? id : null,
+      },
+      [
+        el("span", { text: group.text }),
+        collapsible
+          ? el("iconify-icon", { class: "sidebar-caret", icon: "mdi:chevron-right", width: "16" })
+          : null,
+      ],
     )
-  }
+    menu.append(el("div", { class: "sidebar-group" }, [heading, list]))
 
-  const page = (location.pathname.split("/").pop() || "index.html").toLowerCase()
-  for (const a of nav.querySelectorAll("a")) {
-    const name = (a.getAttribute("href") ?? "").split("/").pop().toLowerCase()
-    if (name === page) a.classList.add("active")
-  }
+    if (!collapsible) return
+
+    let expanded = false
+    const setExpanded = (value) => {
+      expanded = value
+      list.hidden = !expanded
+      heading.setAttribute("aria-expanded", String(expanded))
+      heading.classList.toggle("expanded", expanded)
+    }
+
+    setExpanded(!group.collapsed || list.querySelector("a.active") != null)
+    heading.addEventListener("click", () => setExpanded(!expanded))
+  })
 
   // ---
 
   function link(item) {
+    const active = (item.link.split("/").pop() ?? "").toLowerCase() === page
     return el(
       "a",
       {
         href: item.link,
+        class: active ? "active" : null,
         target: item.external ? "_blank" : null,
         rel: item.external ? "noopener" : null,
       },
