@@ -312,7 +312,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <iconify-icon icon="mdi:database-import"></iconify-icon>
           <h4>Sources</h4>
         </div>
-        <p>Profiles, select + resync.</p>
+        <p>Discovered profiles, sync targets + resync.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -335,7 +335,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <tr><th>Command</th><th>Behavior</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable) · <code>--full</code></td></tr>
+          <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable; default: configured targets) · <code>--full</code></td></tr>
           <tr><td><code>serve</code></td><td>Foreground: HTTP + RPC + 6h sync. <code>--port &lt;n&gt;</code> (default 4477) · <code>--open</code></td></tr>
           <tr><td><code>query [text]</code></td><td>Read-only search → JSON. <code>--url</code> · <code>--from</code> · <code>--to</code> · <code>--limit</code></td></tr>
           <tr><td><code>status</code></td><td>Print running instance (exit 1 if none)</td></tr>
@@ -372,11 +372,11 @@ history.getItem      { id }                                              → { i
 history.stats        { month? }                                          → Stats
 history.githubStats  { month? }                                          → GithubStats
 history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
-sources.list         { check? }                                          → Source[]         <span class="c"># + watermarks · check probes source files</span>
-sync.run             { full? }                                           → SyncSummary      <span class="c"># progress push on hold</span>
+sources.list         { check? }                                          → SourceEntry[]    <span class="c"># discovered ∪ registered · check probes source files</span>
+sync.run             { targets?, full? }                                 → SyncSummary      <span class="c"># targets omitted → settings</span>
 sync.status                                                              → LastRun | null
-settings.get                                                             → SettingsInfo
-settings.set         { hiddenPatterns }                                  → SettingsInfo</pre>
+settings.get                                                             → SettingsInfo     <span class="c"># { hiddenPatterns, hiddenCount, syncTargets }</span>
+settings.set         { hiddenPatterns?, syncTargets? }                   → SettingsInfo</pre>
 
   </section>
 
@@ -554,10 +554,12 @@ END;</pre>
   <section>
     <h2><iconify-icon icon="mdi:database-import-outline" width="24"></iconify-icon>Sync</h2>
     <p class="section-desc">
-      Sync browser history.
+      Sync the configured targets.
     </p>
 
-    <p><code>gate → snapshot → parse → upsert → watermark</code></p>
+    <p><code>targets → gate → snapshot → parse → upsert → watermark</code></p>
+
+    <p>Targets come from <code>settings.sync_targets</code>; an empty list syncs nothing. <code>his sync --target</code> overrides them once.</p>
 
     <div class="grid-2">
       <div class="card">

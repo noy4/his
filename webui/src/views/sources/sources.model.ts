@@ -1,15 +1,17 @@
 import { signal } from '@preact/signals-react'
-import type { HisApi, SourceProfile, SyncSummary } from '@/app/api'
+import type { HisApi, SourceEntry, SyncSummary } from '@/app/api'
+import { sourceKey } from '@his/core'
 
-export function sourceKey(source: SourceProfile): string {
-  return `${source.browser}:${source.profile}`
-}
+export type { SourceEntry } from '@/app/api'
 
 export class SourcesModel {
   readonly api: HisApi
-  readonly sources = signal<SourceProfile[]>([])
-  readonly selected = signal<Set<string>>(new Set())
+  readonly entries = signal<SourceEntry[]>([])
+  /** configured sync targets */
+  readonly enabled = signal<Set<string>>(new Set())
   readonly running = signal(false)
+  readonly saving = signal(false)
+  readonly error = signal<string | null>(null)
   readonly lastSync = signal<SyncSummary | null>(null)
   #started = false
 
@@ -26,15 +28,57 @@ export class SourcesModel {
   }
 
   async reload(): Promise<void> {
-    this.sources.value = await this.api.sourcesList({ check: true })
+    const [entries, settings] = await Promise.all([
+      this.api.sourcesList({ check: true }),
+      this.api.settings.get(),
+    ])
+    this.entries.value = entries
+    this.enabled.value = new Set(settings.syncTargets)
+  }
+
+  toggle = (key: string): void => {
+    const next = new Set(this.enabled.value)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    this.#applyTargets(next)
+  }
+
+  selectAll = (): void => {
+    this.#applyTargets(new Set(this.entries.value.map(sourceKey)))
+  }
+
+  clearSelection = (): void => {
+    this.#applyTargets(new Set())
   }
 
   syncAll(): void {
-    void this.#sync(this.sources.value.map(sourceKey))
+    void this.#sync(this.entries.value.map(sourceKey))
   }
 
   syncSelected(): void {
-    void this.#sync([...this.selected.value])
+    void this.#sync([...this.enabled.value])
+  }
+
+  // --- internals ---
+
+  // optimistic: update the set now, persist, revert on failure
+  #applyTargets(next: Set<string>): void {
+    this.enabled.value = next
+    void this.#saveTargets(next)
+  }
+
+  async #saveTargets(next: Set<string>): Promise<void> {
+    this.saving.value = true
+    this.error.value = null
+    try {
+      const info = await this.api.settings.set({ syncTargets: [...next] })
+      this.enabled.value = new Set(info.syncTargets)
+    } catch {
+      this.error.value = 'Could not save sync targets'
+      await this.reload().catch(() => {})
+    } finally {
+      this.saving.value = false
+    }
   }
 
   async #sync(keys: string[]): Promise<void> {
@@ -43,26 +87,10 @@ export class SourcesModel {
     try {
       this.lastSync.value = await this.api.syncRun({ targets: keys })
       await this.reload()
-      this.clearSelection()
     } catch {
       // sync failures surface through sync.status once wired
     } finally {
       this.running.value = false
     }
-  }
-
-  toggle(key: string): void {
-    const next = new Set(this.selected.value)
-    if (next.has(key)) next.delete(key)
-    else next.add(key)
-    this.selected.value = next
-  }
-
-  selectAll(): void {
-    this.selected.value = new Set(this.sources.value.map(sourceKey))
-  }
-
-  clearSelection(): void {
-    this.selected.value = new Set()
   }
 }

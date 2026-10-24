@@ -221,6 +221,19 @@ const data = build()
 export const MOCK_ITEMS: readonly HistoryItem[] = data.items
 export const MOCK_VISITS: ReadonlyMap<number, VisitItem[]> = data.visits
 
+// every profile on this machine, including ones never synced
+export const MOCK_DISCOVERED: { browser: string; profile: string }[] = [
+  { browser: 'brave', profile: 'Default' },
+  { browser: 'brave', profile: 'Profile 2' },
+  { browser: 'chrome', profile: 'Default' },
+  { browser: 'chrome', profile: 'Profile 1' },
+  { browser: 'arc', profile: 'Default' },
+  { browser: 'vivaldi', profile: 'Default' },
+  { browser: 'firefox', profile: 'vpw8f8gt.default-release' },
+  { browser: 'safari', profile: 'default' },
+  { browser: 'takeout', profile: 'History-2026-09-30' },
+]
+
 export const MOCK_SOURCES: SourceProfile[] = [
   {
     id: 1,

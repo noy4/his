@@ -1,13 +1,27 @@
 import { sql } from 'kysely'
-import type { RegisteredSource, SourceKind } from '../../types.ts'
+import type { RegisteredSource, RegisteredSourceEntry, SourceEntry, SourceKind, UnregisteredSourceEntry } from '../../types.ts'
 import { probeFingerprint } from './fingerprint.ts'
 import type { KyselyDb } from '../../db/db.ts'
+import { discoverAllTargets } from './discover.ts'
+import { sourceKey } from './utils.ts'
 
 export interface ListSourceProfilesOptions {
   /** probe each profile's source files and report whether it changed since the last sync */
   check?: boolean
 }
 
+export type ListSourcesOptions = ListSourceProfilesOptions & {
+  home: string
+}
+
+// the sources listing: discovered ∪ registered
+export async function listSources(db: KyselyDb, options: ListSourcesOptions): Promise<SourceEntry[]> {
+  const discovered = discoverAllTargets(options.home)
+  const registered = await listSourceProfiles(db, { check: options.check })
+  return mergeEntries(discovered, registered)
+}
+
+// registered profiles only
 export async function listSourceProfiles(db: KyselyDb, options: ListSourceProfilesOptions = {}): Promise<RegisteredSource[]> {
   const rows = await db
     .selectFrom('source_profiles as sp')
@@ -48,8 +62,42 @@ export async function listSourceProfiles(db: KyselyDb, options: ListSourceProfil
   }))
 }
 
-// probe the source files now and compare to the fingerprint saved at the last sync
+// discovered first, then the registered profiles that were not discovered
+export function mergeEntries(
+  discovered: readonly { browser: string; profile: string }[],
+  registered: readonly RegisteredSource[],
+): SourceEntry[] {
+  const registeredByKey = new Map(registered.map((source) => [sourceKey(source), source]))
+  const entries: SourceEntry[] = []
+  const seen = new Set<string>()
+  for (const target of discovered) {
+    const key = sourceKey(target)
+    seen.add(key)
+    const source = registeredByKey.get(key)
+    entries.push(source ? toRegistered(source) : toUnregistered(target))
+  }
+  for (const source of registered) {
+    const key = sourceKey(source)
+    if (seen.has(key)) continue
+    entries.push(toRegistered(source))
+  }
+  return entries
+}
+
+// compare the source files to the last stored fingerprint
 function isPending(row: { last_fingerprint: string | null; profile_path: string }): boolean {
   if (row.last_fingerprint === null) return true
   return probeFingerprint(row.profile_path) !== row.last_fingerprint
+}
+
+function toRegistered(source: RegisteredSource): RegisteredSourceEntry {
+  return { ...source, registered: true }
+}
+
+function toUnregistered(target: { browser: string; profile: string }): UnregisteredSourceEntry {
+  return {
+    browser: target.browser,
+    profile: target.profile,
+    registered: false,
+  }
 }

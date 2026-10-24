@@ -287,6 +287,45 @@
         </div>
       </div>
 
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:check-circle"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:sync" style="color:var(--green)"></iconify-icon>
+              Phase 8 — Sync targets
+            </span>
+            <span class="step-meta">P2 · real</span>
+          </div>
+          <div class="step-body">
+            Pick which profiles sync — the choice is persisted and drives every run.
+          </div>
+          <div class="tasks">
+            <div class="task done">
+              <iconify-icon icon="mdi:monitor-dashboard"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Sources as targets</div>
+                <div class="task-desc">discovered ∪ registered cards · toggle = sync target · instant save</div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:cog-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">settings.syncTargets</div>
+                <div class="task-desc"><code>settings.get/set</code> · empty means nothing syncs</div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:swap-horizontal"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">sources.list</div>
+                <div class="task-desc"><code>SourceEntry[]</code> — discovered ∪ registered, with stats</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 

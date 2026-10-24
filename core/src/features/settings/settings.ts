@@ -1,34 +1,44 @@
 import type { KyselyDb } from '../../db/db.ts'
 import { cleanPatterns, matchesHidden } from './hidden-patterns.ts'
+import { getSyncTargets, setSyncTargets } from '../sync/targets.ts'
 
-const KEY = 'hidden_patterns'
+const HIDDEN_KEY = 'hidden_patterns'
 
 export interface SettingsInfo {
   hiddenPatterns: string[]
   hiddenCount: number
+  syncTargets: string[]
+}
+
+export interface SettingsPatch {
+  hiddenPatterns?: string[]
+  syncTargets?: string[]
 }
 
 export async function getSettings(db: KyselyDb): Promise<SettingsInfo> {
   return {
     hiddenPatterns: await readPatterns(db),
     hiddenCount: await countHidden(db),
+    syncTargets: await getSyncTargets(db),
   }
 }
 
-// Store the patterns and materialize hidden_urls. Returns the cleaned list.
-export async function setSettings(db: KyselyDb, hiddenPatterns: unknown): Promise<SettingsInfo> {
-  const patterns = cleanPatterns(hiddenPatterns)
-  const value = JSON.stringify(patterns)
-  await db
-    .insertInto('settings')
-    .values({ key: KEY, value })
-    .onConflict((oc) => oc.column('key').doUpdateSet({ value }))
-    .execute()
-  await recomputeHidden(db, patterns)
-  return {
-    hiddenPatterns: patterns,
-    hiddenCount: await countHidden(db),
+// partial update, only the provided fields change
+export async function setSettings(db: KyselyDb, patch: SettingsPatch): Promise<SettingsInfo> {
+  if (patch.hiddenPatterns !== undefined) {
+    const patterns = cleanPatterns(patch.hiddenPatterns)
+    const value = JSON.stringify(patterns)
+    await db
+      .insertInto('settings')
+      .values({ key: HIDDEN_KEY, value })
+      .onConflict((oc) => oc.column('key').doUpdateSet({ value }))
+      .execute()
+    await recomputeHidden(db, patterns)
   }
+  if (patch.syncTargets !== undefined) {
+    await setSyncTargets(db, patch.syncTargets)
+  }
+  return getSettings(db)
 }
 
 // Recompute hidden_urls for every URL. Only changed rows are written.
@@ -75,7 +85,7 @@ async function readPatterns(db: KyselyDb): Promise<string[]> {
   const row = await db
     .selectFrom('settings')
     .select('value')
-    .where('key', '=', KEY)
+    .where('key', '=', HIDDEN_KEY)
     .executeTakeFirst()
   if (row === undefined) return []
   try {

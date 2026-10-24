@@ -1,7 +1,7 @@
-import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
+import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
 import { isoDay } from '@/lib/date'
-import { cleanPatterns, hostWithoutWww, matchesHidden, matchesKind, mergeRepoRoots, parseGithubUrl, type GithubUrlInfo } from '@his/core'
-import { MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
+import { cleanPatterns, hostWithoutWww, matchesHidden, matchesKind, mergeRepoRoots, parseGithubUrl, sourceKey, type GithubUrlInfo } from '@his/core'
+import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
 const SYNC_DELAY_MS = 600
@@ -212,11 +212,49 @@ function githubVisits(params: GithubVisitsParams): SearchPage {
 
 // --- sources ---
 
-const keyOf = (s: SourceProfile): string => `${s.browser}:${s.profile}`
-
+// configured sync targets; empty means nothing syncs (explicit targets override)
+let syncTargets: string[] = []
 let sources: SourceProfile[] = MOCK_SOURCES.map((s) => ({ ...s }))
 let inRun = false
 let lastRunRecord: SyncLastRun | null = null
+
+// trim, drop empties, dedupe
+function cleanTargets(input: unknown): string[] {
+  if (!Array.isArray(input)) return []
+  const seen = new Set<string>()
+  for (const value of input) {
+    if (typeof value !== 'string') continue
+    const token = value.trim()
+    if (token) seen.add(token)
+  }
+  return [...seen]
+}
+
+// explicit targets win, otherwise the configured targets
+function wantedKeys(params: SyncRunParams): Set<string> {
+  return new Set(params.targets ?? syncTargets)
+}
+
+// discovered ∪ registered
+function sourceEntries(check: boolean): SourceEntry[] {
+  const registeredByKey = new Map(sources.map((source) => [sourceKey(source), source]))
+  const entries: SourceEntry[] = []
+  const seen = new Set<string>()
+  for (const target of MOCK_DISCOVERED) {
+    const key = sourceKey(target)
+    seen.add(key)
+    const source = registeredByKey.get(key)
+    entries.push(source
+      ? { ...source, pending: check ? source.pending : null, registered: true }
+      : { browser: target.browser, profile: target.profile, registered: false })
+  }
+  for (const source of sources) {
+    const key = sourceKey(source)
+    if (seen.has(key)) continue
+    entries.push({ ...source, pending: check ? source.pending : null, registered: true })
+  }
+  return entries
+}
 
 function hashKey(text: string): number {
   let h = 0
@@ -234,8 +272,8 @@ async function syncRun(params: SyncRunParams): Promise<SyncSummary> {
   const startedAt = Date.now()
   try {
     await delay(SYNC_DELAY_MS)
-    const wanted = params.targets === undefined ? null : new Set(params.targets)
-    const targets = sources.filter((s) => wanted === null || wanted.has(keyOf(s)))
+    const wanted = wantedKeys(params)
+    const targets = sources.filter((s) => wanted.has(sourceKey(s)))
     let skipped = 0
     let inserted = 0
     const runAt = Date.now()
@@ -244,7 +282,7 @@ async function syncRun(params: SyncRunParams): Promise<SyncSummary> {
         skipped += 1
         continue
       }
-      const bump = 1 + (hashKey(keyOf(source)) % 800)
+      const bump = 1 + (hashKey(sourceKey(source)) % 800)
       source.visits += bump
       source.lastVisit = runAt - (hashKey(source.profile) % 3_600_000)
       source.watermark.lastRunAt = runAt
@@ -371,8 +409,8 @@ export const mockApi: HisApi = {
     return githubVisits(params)
   },
 
-  async sourcesList(params?: SourcesListParams): Promise<SourceProfile[]> {
-    return sources.map((s) => ({ ...s, pending: params?.check ? s.pending : null }))
+  async sourcesList(params?: SourcesListParams): Promise<SourceEntry[]> {
+    return sourceEntries(params?.check === true)
   },
 
   syncRun: (params: SyncRunParams) => syncRun(params),
@@ -383,11 +421,20 @@ export const mockApi: HisApi = {
 
   settings: {
     async get(): Promise<SettingsInfo> {
-      return { hiddenPatterns: [...hiddenPatterns], hiddenCount: hiddenCount(hiddenPatterns) }
+      return {
+        hiddenPatterns: [...hiddenPatterns],
+        hiddenCount: hiddenCount(hiddenPatterns),
+        syncTargets: [...syncTargets],
+      }
     },
-    async set(params: { hiddenPatterns: string[] }): Promise<SettingsInfo> {
-      hiddenPatterns = cleanPatterns(params.hiddenPatterns)
-      return { hiddenPatterns: [...hiddenPatterns], hiddenCount: hiddenCount(hiddenPatterns) }
+    async set(params: SettingsPatch): Promise<SettingsInfo> {
+      if (params.hiddenPatterns !== undefined) hiddenPatterns = cleanPatterns(params.hiddenPatterns)
+      if (params.syncTargets !== undefined) syncTargets = cleanTargets(params.syncTargets)
+      return {
+        hiddenPatterns: [...hiddenPatterns],
+        hiddenCount: hiddenCount(hiddenPatterns),
+        syncTargets: [...syncTargets],
+      }
     },
   },
 

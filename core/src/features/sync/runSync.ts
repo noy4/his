@@ -2,6 +2,7 @@ import type { SyncOptions, SyncSummary } from '../../types.ts'
 import { initDb } from '../../db/db.ts'
 import { historyDbPath } from '../../paths.ts'
 import { resolveTargets } from '../sources/discover.ts'
+import { resolveConfiguredTargets } from './targets.ts'
 import { runTarget } from './runTarget.ts'
 
 export interface SyncHooks {
@@ -24,7 +25,9 @@ export async function runSync(
       touchedUrls: 0,
       errors: [],
     }
-    const targets = resolveTargets(home, options.targets)
+    const targets = options.targets !== undefined
+      ? resolveTargets(home, options.targets)
+      : await resolveConfiguredTargets(db, home)
     if (targets.length === 0)
       hooks.onLog?.('no targets found')
 

@@ -1,1 +1,1 @@
-export { listSourceProfiles as list, type ListSourceProfilesOptions } from './list.ts'
+export { listSources as list, type ListSourcesOptions } from './list.ts'

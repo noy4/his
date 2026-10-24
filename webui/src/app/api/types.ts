@@ -1,10 +1,10 @@
 import type { GithubKind, GithubVisitKind } from '@his/core'
-import type { HistoryItem, HistoryVisit, RegisteredSource, SettingsInfo, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core'
+import type { HistoryItem, HistoryVisit, RegisteredSource, SettingsInfo, SettingsPatch, SourceEntry, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core'
 
-export type { HistoryItem, HistoryVisit, SettingsInfo, Transition, VisitItem }
+export type { HistoryItem, HistoryVisit, SettingsInfo, SettingsPatch, SourceEntry, Transition, VisitItem }
 export type { SyncLastRun, SyncSummary }
 
-// sources.list row — RegisteredSource (source_profiles + watermark) + listing aggregates
+// registered archive row — the stats half of a SourceEntry
 export type SourceProfile = RegisteredSource
 
 // sync.run RPC params — the same shape as the CLI --target flags
@@ -87,12 +87,12 @@ export interface HisApi {
   stats(month?: string): Promise<Stats>
   githubStats(month?: string): Promise<GithubStats>
   githubVisits(params: GithubVisitsParams): Promise<SearchPage>
-  sourcesList(params?: SourcesListParams): Promise<SourceProfile[]>
+  sourcesList(params?: SourcesListParams): Promise<SourceEntry[]>
   syncRun(params: SyncRunParams): Promise<SyncSummary>
   syncStatus(): Promise<SyncLastRun | null>
   settings: {
     get(): Promise<SettingsInfo>
-    set(params: { hiddenPatterns: string[] }): Promise<SettingsInfo>
+    set(params: SettingsPatch): Promise<SettingsInfo>
   }
   on<K extends keyof HisEvents & string>(event: K, handler: HisEvents[K]): () => void
 }

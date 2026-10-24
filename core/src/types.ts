@@ -76,6 +76,18 @@ export interface RegisteredSource {
   pending: boolean | null
 }
 
+export type SourceEntry = RegisteredSourceEntry | UnregisteredSourceEntry
+
+export type RegisteredSourceEntry = RegisteredSource & {
+  registered: true
+}
+
+export type UnregisteredSourceEntry = {
+  browser: string
+  profile: string
+  registered: false
+}
+
 // one sync execution — returned by runSync / sync.run RPC
 export interface SyncSummary {
   attempted: number

@@ -26,7 +26,7 @@
       SPEC
     </div>
     <h1><iconify-icon icon="mdi:cog-outline" width="30"></iconify-icon>his · settings</h1>
-    <p class="tagline">Privacy controls for the archive.</p>
+    <p class="tagline">Privacy &amp; sync controls for the archive.</p>
   </header>
 
   <!-- HIDDEN PATTERNS -->
@@ -53,6 +53,26 @@ https://*.example.com/*
       <li><iconify-icon icon="mdi:filter-variant"></iconify-icon><strong>Materialize:</strong> matches go to <code>hidden_urls(url_id)</code>; every read excludes them with <code>NOT EXISTS</code></li>
       <li><iconify-icon icon="mdi:sync"></iconify-icon><strong>Recompute:</strong> on save (all URLs) and on ingest (new URLs)</li>
       <li><iconify-icon icon="mdi:swap-horizontal"></iconify-icon><strong>RPC:</strong> <code>settings.get</code> / <code>settings.set { hiddenPatterns }</code> → <code>{ hiddenPatterns, hiddenCount }</code></li>
+    </ul>
+  </section>
+
+  <!-- SYNC TARGETS -->
+  <section>
+    <h2><iconify-icon icon="mdi:sync" width="24"></iconify-icon>Sync targets</h2>
+    <p class="section-desc">
+      Only the listed profiles are synced; an empty list syncs nothing.
+    </p>
+<pre><span class="c"># browser — every profile of that browser</span>
+chrome
+brave
+
+<span class="c"># browser:profile — one exact profile</span>
+chrome:Default</pre>
+    <ul class="list">
+      <li><iconify-icon icon="mdi:database-outline"></iconify-icon><strong>Storage:</strong> <code>settings</code> KV, key <code>sync_targets</code> (JSON <code>string[]</code>)</li>
+      <li><iconify-icon icon="mdi:sync"></iconify-icon><strong>Applied:</strong> when <code>runSync</code> gets no explicit targets; CLI <code>--target</code> overrides</li>
+      <li><iconify-icon icon="mdi:swap-horizontal"></iconify-icon><strong>RPC:</strong> <code>settings.get</code> / <code>settings.set { syncTargets }</code></li>
+      <li><iconify-icon icon="mdi:monitor-dashboard"></iconify-icon><strong>UI:</strong> Sources view — a card toggle sets a sync target</li>
     </ul>
   </section>
 
