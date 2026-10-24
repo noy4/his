@@ -3,7 +3,8 @@ import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
 import { search } from '../../history/query.ts'
-import { getSettings, recomputeHidden, setSettings } from '../settings.ts'
+import { recomputeHidden } from '../hidden.ts'
+import { getSettings, setSettings } from '../settings.ts'
 
 describe('settings + recompute', () => {
   let handle: DatabaseSync
