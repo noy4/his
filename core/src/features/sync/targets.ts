@@ -4,7 +4,7 @@ import { discoverAllTargets } from '../sources/discover.ts'
 import { sourceKey } from '../sources/utils.ts'
 import { readSettingJson, writeSettingJson } from '../settings/store.ts'
 
-const KEY = 'sync_targets'
+const SYNC_TARGETS_KEY = 'sync_targets'
 const MAX_TARGETS = 500
 
 // trims, drops malformed, dedupes, caps
@@ -20,12 +20,12 @@ export function cleanTargets(input: unknown): string[] {
 }
 
 export async function getSyncTargets(db: KyselyDb): Promise<string[]> {
-  return cleanTargets(await readSettingJson(db, KEY))
+  return cleanTargets(await readSettingJson(db, SYNC_TARGETS_KEY))
 }
 
 export async function setSyncTargets(db: KyselyDb, input: unknown): Promise<string[]> {
   const targets = cleanTargets(input)
-  await writeSettingJson(db, KEY, targets)
+  await writeSettingJson(db, SYNC_TARGETS_KEY, targets)
   return targets
 }
 
