@@ -2,17 +2,18 @@ import type { KyselyDb } from '../../db/db.ts'
 import { countHidden, getHiddenPatterns, setHiddenPatterns } from './hidden.ts'
 import { getSyncTargets, setSyncTargets } from '../sync/targets.ts'
 
-export interface SettingsInfo {
+export type SettingsValues = {
   hiddenPatterns: string[]
-  /** derived: currently hidden URL count, not settable */
-  hiddenUrlCount: number
   syncTargets: string[]
 }
 
-export interface SettingsPatch {
-  hiddenPatterns?: string[]
-  syncTargets?: string[]
+export type SettingsStats = {
+  /** derived: currently hidden URL count */
+  hiddenUrlCount: number
 }
+
+export type SettingsInfo = SettingsValues & SettingsStats
+export type SettingsPatch = Partial<SettingsValues>
 
 export async function getSettings(db: KyselyDb): Promise<SettingsInfo> {
   const hiddenPatterns = await getHiddenPatterns(db)
