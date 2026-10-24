@@ -2,6 +2,7 @@ import type { KyselyDb } from '../../db/db.ts'
 import type { SyncTarget } from '../sources/types.ts'
 import { discoverAllTargets } from '../sources/discover.ts'
 import { sourceKey } from '../sources/utils.ts'
+import { readSettingJson, writeSettingJson } from '../settings/store.ts'
 
 const KEY = 'sync_targets'
 const MAX_TARGETS = 500
@@ -19,27 +20,12 @@ export function cleanTargets(input: unknown): string[] {
 }
 
 export async function getSyncTargets(db: KyselyDb): Promise<string[]> {
-  const row = await db
-    .selectFrom('settings')
-    .select('value')
-    .where('key', '=', KEY)
-    .executeTakeFirst()
-  if (row === undefined) return []
-  try {
-    return cleanTargets(JSON.parse(row.value))
-  } catch {
-    return []
-  }
+  return cleanTargets(await readSettingJson(db, KEY))
 }
 
 export async function setSyncTargets(db: KyselyDb, input: unknown): Promise<string[]> {
   const targets = cleanTargets(input)
-  const value = JSON.stringify(targets)
-  await db
-    .insertInto('settings')
-    .values({ key: KEY, value })
-    .onConflict((oc) => oc.column('key').doUpdateSet({ value }))
-    .execute()
+  await writeSettingJson(db, KEY, targets)
   return targets
 }
 

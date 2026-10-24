@@ -1,5 +1,6 @@
 import type { KyselyDb } from '../../db/db.ts'
 import { cleanPatterns, matchesHidden } from './hidden-patterns.ts'
+import { readSettingJson, writeSettingJson } from './store.ts'
 import { getSyncTargets, setSyncTargets } from '../sync/targets.ts'
 
 const HIDDEN_KEY = 'hidden_patterns'
@@ -27,12 +28,7 @@ export async function getSettings(db: KyselyDb): Promise<SettingsInfo> {
 export async function setSettings(db: KyselyDb, patch: SettingsPatch): Promise<SettingsInfo> {
   if (patch.hiddenPatterns !== undefined) {
     const patterns = cleanPatterns(patch.hiddenPatterns)
-    const value = JSON.stringify(patterns)
-    await db
-      .insertInto('settings')
-      .values({ key: HIDDEN_KEY, value })
-      .onConflict((oc) => oc.column('key').doUpdateSet({ value }))
-      .execute()
+    await writeSettingJson(db, HIDDEN_KEY, patterns)
     await recomputeHidden(db, patterns)
   }
   if (patch.syncTargets !== undefined) {
@@ -82,17 +78,7 @@ export async function recomputeHidden(db: KyselyDb, patterns?: string[]): Promis
 // --- helpers ---
 
 async function readPatterns(db: KyselyDb): Promise<string[]> {
-  const row = await db
-    .selectFrom('settings')
-    .select('value')
-    .where('key', '=', HIDDEN_KEY)
-    .executeTakeFirst()
-  if (row === undefined) return []
-  try {
-    return cleanPatterns(JSON.parse(row.value))
-  } catch {
-    return []
-  }
+  return cleanPatterns(await readSettingJson(db, HIDDEN_KEY))
 }
 
 async function countHidden(db: KyselyDb): Promise<number> {
