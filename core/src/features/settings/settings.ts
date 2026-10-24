@@ -4,7 +4,8 @@ import { getSyncTargets, setSyncTargets } from '../sync/targets.ts'
 
 export interface SettingsInfo {
   hiddenPatterns: string[]
-  hiddenCount: number
+  /** derived: currently hidden URL count, not settable */
+  hiddenUrlCount: number
   syncTargets: string[]
 }
 
@@ -14,9 +15,10 @@ export interface SettingsPatch {
 }
 
 export async function getSettings(db: KyselyDb): Promise<SettingsInfo> {
+  const hiddenPatterns = await getHiddenPatterns(db)
   return {
-    hiddenPatterns: await getHiddenPatterns(db),
-    hiddenCount: await countHidden(db),
+    hiddenPatterns,
+    hiddenUrlCount: hiddenPatterns.length === 0 ? 0 : await countHidden(db),
     syncTargets: await getSyncTargets(db),
   }
 }

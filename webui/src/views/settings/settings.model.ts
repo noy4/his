@@ -5,7 +5,7 @@ export class SettingsModel {
   readonly text = signal('')
   readonly saving = signal(false)
   readonly status = signal<string | null>(null)
-  readonly hiddenCount = signal<number | null>(null)
+  readonly hiddenUrlCount = signal<number | null>(null)
   #api: Pick<HisApi, 'settings'>
   #started = false
 
@@ -29,7 +29,7 @@ export class SettingsModel {
     try {
       const info = await this.#api.settings.get()
       this.text.value = info.hiddenPatterns.join('\n')
-      this.hiddenCount.value = info.hiddenCount
+      this.hiddenUrlCount.value = info.hiddenUrlCount
     } catch {
       this.status.value = 'Could not load settings'
     }
@@ -42,7 +42,7 @@ export class SettingsModel {
     try {
       const info = await this.#api.settings.set({ hiddenPatterns: parsePatterns(this.text.value) })
       this.text.value = info.hiddenPatterns.join('\n')
-      this.hiddenCount.value = info.hiddenCount
+      this.hiddenUrlCount.value = info.hiddenUrlCount
       this.status.value = 'Saved'
     } catch {
       this.status.value = 'Could not save settings'

@@ -52,7 +52,7 @@ https://*.example.com/*
       <li><iconify-icon icon="mdi:database-outline"></iconify-icon><strong>Storage:</strong> <code>settings</code> KV, key <code>hidden_patterns</code> (JSON <code>string[]</code>)</li>
       <li><iconify-icon icon="mdi:filter-variant"></iconify-icon><strong>Materialize:</strong> matches go to <code>hidden_urls(url_id)</code>; every read excludes them with <code>NOT EXISTS</code></li>
       <li><iconify-icon icon="mdi:sync"></iconify-icon><strong>Recompute:</strong> on save (all URLs) and on ingest (new URLs)</li>
-      <li><iconify-icon icon="mdi:swap-horizontal"></iconify-icon><strong>RPC:</strong> <code>settings.get</code> / <code>settings.set { hiddenPatterns }</code> → <code>{ hiddenPatterns, hiddenCount }</code></li>
+      <li><iconify-icon icon="mdi:swap-horizontal"></iconify-icon><strong>RPC:</strong> <code>settings.get</code> / <code>settings.set { hiddenPatterns }</code> → <code>{ hiddenPatterns, hiddenUrlCount }</code></li>
     </ul>
   </section>
 

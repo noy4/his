@@ -40,10 +40,10 @@ describe('settings + recompute', () => {
 
     const info = await setSettings(db, { hiddenPatterns: ['Example.com'] })
     assert.deepEqual(info.hiddenPatterns, ['example.com'])
-    assert.equal(info.hiddenCount, 2)
+    assert.equal(info.hiddenUrlCount, 2)
 
     assert.deepEqual((await getSettings(db)).hiddenPatterns, ['example.com'])
-    assert.equal((await getSettings(db)).hiddenCount, 2)
+    assert.equal((await getSettings(db)).hiddenUrlCount, 2)
 
     assert.deepEqual((await search(db, {})).items.map((item) => item.url), ['https://other.com/c'])
   })
@@ -56,7 +56,7 @@ describe('settings + recompute', () => {
     assert.equal((await search(db, {})).items.length, 1)
 
     const info = await setSettings(db, { hiddenPatterns: [] })
-    assert.equal(info.hiddenCount, 0)
+    assert.equal(info.hiddenUrlCount, 0)
     assert.equal((await search(db, {})).items.length, 2)
   })
 
@@ -80,6 +80,6 @@ describe('settings + recompute', () => {
 
     const after = await setSettings(db, { hiddenPatterns: [] })
     assert.deepEqual(after.syncTargets, ['chrome:Default', 'bad'])
-    assert.equal(after.hiddenCount, 0)
+    assert.equal(after.hiddenUrlCount, 0)
   })
 })

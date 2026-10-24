@@ -26,7 +26,7 @@ function visibleItems(): HistoryItem[] {
   return MOCK_ITEMS.filter((item) => !matchesHidden(item.url, hiddenPatterns))
 }
 
-function hiddenCount(patterns: string[]): number {
+function hiddenUrlCount(patterns: string[]): number {
   if (patterns.length === 0) return 0
   return MOCK_ITEMS.filter((item) => matchesHidden(item.url, patterns)).length
 }
@@ -423,7 +423,7 @@ export const mockApi: HisApi = {
     async get(): Promise<SettingsInfo> {
       return {
         hiddenPatterns: [...hiddenPatterns],
-        hiddenCount: hiddenCount(hiddenPatterns),
+        hiddenUrlCount: hiddenUrlCount(hiddenPatterns),
         syncTargets: [...syncTargets],
       }
     },
@@ -432,7 +432,7 @@ export const mockApi: HisApi = {
       if (params.syncTargets !== undefined) syncTargets = cleanTargets(params.syncTargets)
       return {
         hiddenPatterns: [...hiddenPatterns],
-        hiddenCount: hiddenCount(hiddenPatterns),
+        hiddenUrlCount: hiddenUrlCount(hiddenPatterns),
         syncTargets: [...syncTargets],
       }
     },
