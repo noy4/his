@@ -1,18 +1,18 @@
 import type { KyselyDb } from '../../db/db.ts'
-import { cleanPatterns, matchesHidden } from './hidden-patterns.ts'
-import { readSettingJson, writeSettingJson } from './store.ts'
+import type { SettingDef } from './define.ts'
+import { matchesHidden } from './hidden-patterns.ts'
+import { readSettingJson } from './store.ts'
 
-const HIDDEN_PATTERNS_KEY = 'hidden_patterns'
+export const HIDDEN_PATTERNS_KEY = 'hidden_patterns'
 
-export async function getHiddenPatterns(db: KyselyDb): Promise<string[]> {
-  return cleanPatterns(await readSettingJson(db, HIDDEN_PATTERNS_KEY))
+export const hiddenPatternsSetting: SettingDef<string[]> = {
+  afterWrite: async (db, patterns) => {
+    await recomputeHidden(db, patterns)
+  },
 }
 
-export async function setHiddenPatterns(db: KyselyDb, input: unknown): Promise<string[]> {
-  const patterns = cleanPatterns(input)
-  await writeSettingJson(db, HIDDEN_PATTERNS_KEY, patterns)
-  await recomputeHidden(db, patterns)
-  return patterns
+export async function getHiddenPatterns(db: KyselyDb): Promise<string[]> {
+  return (await readSettingJson(db, HIDDEN_PATTERNS_KEY) ?? []) as string[]
 }
 
 export async function countHidden(db: KyselyDb): Promise<number> {

@@ -1,6 +1,6 @@
 import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
 import { isoDay } from '@/lib/date'
-import { cleanPatterns, hostWithoutWww, matchesHidden, matchesKind, mergeRepoRoots, parseGithubUrl, sourceKey, type GithubUrlInfo } from '@his/core'
+import { hostWithoutWww, matchesHidden, matchesKind, mergeRepoRoots, parseGithubUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -218,18 +218,6 @@ let sources: SourceProfile[] = MOCK_SOURCES.map((s) => ({ ...s }))
 let inRun = false
 let lastRunRecord: SyncLastRun | null = null
 
-// trim, drop empties, dedupe
-function cleanTargets(input: unknown): string[] {
-  if (!Array.isArray(input)) return []
-  const seen = new Set<string>()
-  for (const value of input) {
-    if (typeof value !== 'string') continue
-    const token = value.trim()
-    if (token) seen.add(token)
-  }
-  return [...seen]
-}
-
 // explicit targets win, otherwise the configured targets
 function wantedKeys(params: SyncRunParams): Set<string> {
   return new Set(params.targets ?? syncTargets)
@@ -422,18 +410,18 @@ export const mockApi: HisApi = {
   settings: {
     async get(): Promise<SettingsInfo> {
       return {
-        hiddenPatterns: [...hiddenPatterns],
-        hiddenUrlCount: hiddenUrlCount(hiddenPatterns),
-        syncTargets: [...syncTargets],
+        hidden_patterns: [...hiddenPatterns],
+        hidden_url_count: hiddenUrlCount(hiddenPatterns),
+        sync_targets: [...syncTargets],
       }
     },
     async set(params: SettingsPatch): Promise<SettingsInfo> {
-      if (params.hiddenPatterns !== undefined) hiddenPatterns = cleanPatterns(params.hiddenPatterns)
-      if (params.syncTargets !== undefined) syncTargets = cleanTargets(params.syncTargets)
+      if (params.hidden_patterns !== undefined) hiddenPatterns = params.hidden_patterns
+      if (params.sync_targets !== undefined) syncTargets = params.sync_targets
       return {
-        hiddenPatterns: [...hiddenPatterns],
-        hiddenUrlCount: hiddenUrlCount(hiddenPatterns),
-        syncTargets: [...syncTargets],
+        hidden_patterns: [...hiddenPatterns],
+        hidden_url_count: hiddenUrlCount(hiddenPatterns),
+        sync_targets: [...syncTargets],
       }
     },
   },

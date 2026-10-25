@@ -33,7 +33,7 @@ export class SourcesModel {
       this.api.settings.get(),
     ])
     this.entries.value = entries
-    this.enabled.value = new Set(settings.syncTargets)
+    this.enabled.value = new Set(settings.sync_targets ?? [])
   }
 
   toggle = (key: string): void => {
@@ -71,8 +71,8 @@ export class SourcesModel {
     this.saving.value = true
     this.error.value = null
     try {
-      const info = await this.api.settings.set({ syncTargets: [...next] })
-      this.enabled.value = new Set(info.syncTargets)
+      const info = await this.api.settings.set({ sync_targets: [...next] })
+      this.enabled.value = new Set(info.sync_targets ?? [])
     } catch {
       this.error.value = 'Could not save sync targets'
       await this.reload().catch(() => {})

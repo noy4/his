@@ -28,8 +28,8 @@ export class SettingsModel {
   async reload(): Promise<void> {
     try {
       const info = await this.#api.settings.get()
-      this.text.value = info.hiddenPatterns.join('\n')
-      this.hiddenUrlCount.value = info.hiddenUrlCount
+      this.text.value = (info.hidden_patterns ?? []).join('\n')
+      this.hiddenUrlCount.value = info.hidden_url_count
     } catch {
       this.status.value = 'Could not load settings'
     }
@@ -40,9 +40,9 @@ export class SettingsModel {
     this.saving.value = true
     this.status.value = null
     try {
-      const info = await this.#api.settings.set({ hiddenPatterns: parsePatterns(this.text.value) })
-      this.text.value = info.hiddenPatterns.join('\n')
-      this.hiddenUrlCount.value = info.hiddenUrlCount
+      const info = await this.#api.settings.set({ hidden_patterns: parsePatterns(this.text.value) })
+      this.text.value = (info.hidden_patterns ?? []).join('\n')
+      this.hiddenUrlCount.value = info.hidden_url_count
       this.status.value = 'Saved'
     } catch {
       this.status.value = 'Could not save settings'

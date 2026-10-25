@@ -88,7 +88,7 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
   const candidates = visits.filter((visit) => visit.sourceVisitId > skipBelow)
 
   // new URLs are flagged hidden at insert time, so sync needs no full recompute
-  const { hiddenPatterns } = await getSettings(db)
+  const { hidden_patterns = [] } = await getSettings(db)
 
   let insertedVisits = 0
   let touchedUrls = 0
@@ -97,8 +97,8 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
   await db.transaction().execute(async (tx) => {
     const urlIds = new Map<string, number>()
     await resolveUrlIds(tx, candidates, urlIds)
-    if (hiddenPatterns.length > 0)
-      await flagHidden(tx, urlIds, hiddenPatterns)
+    if (hidden_patterns.length > 0)
+      await flagHidden(tx, urlIds, hidden_patterns)
 
     const deltas = await insertVisits(tx, sourceProfileId, offset, candidates, urlIds)
     insertedVisits = [...deltas.values()].reduce((sum, delta) => sum + delta.count, 0)

@@ -38,12 +38,12 @@ describe('settings + recompute', () => {
     await insertUrl(2, 'https://news.example.com/b', 2000)
     await insertUrl(3, 'https://other.com/c', 3000)
 
-    const info = await setSettings(db, { hiddenPatterns: ['Example.com'] })
-    assert.deepEqual(info.hiddenPatterns, ['example.com'])
-    assert.equal(info.hiddenUrlCount, 2)
+    const info = await setSettings(db, { hidden_patterns: ['example.com'] })
+    assert.deepEqual(info.hidden_patterns, ['example.com'])
+    assert.equal(info.hidden_url_count, 2)
 
-    assert.deepEqual((await getSettings(db)).hiddenPatterns, ['example.com'])
-    assert.equal((await getSettings(db)).hiddenUrlCount, 2)
+    assert.deepEqual((await getSettings(db)).hidden_patterns, ['example.com'])
+    assert.equal((await getSettings(db)).hidden_url_count, 2)
 
     assert.deepEqual((await search(db, {})).items.map((item) => item.url), ['https://other.com/c'])
   })
@@ -52,11 +52,11 @@ describe('settings + recompute', () => {
     await insertUrl(1, 'https://example.com/a', 1000)
     await insertUrl(2, 'https://other.com/c', 2000)
 
-    await setSettings(db, { hiddenPatterns: ['example.com'] })
+    await setSettings(db, { hidden_patterns: ['example.com'] })
     assert.equal((await search(db, {})).items.length, 1)
 
-    const info = await setSettings(db, { hiddenPatterns: [] })
-    assert.equal(info.hiddenUrlCount, 0)
+    const info = await setSettings(db, { hidden_patterns: [] })
+    assert.equal(info.hidden_url_count, 0)
     assert.equal((await search(db, {})).items.length, 2)
   })
 
@@ -65,7 +65,7 @@ describe('settings + recompute', () => {
     await insertUrl(2, 'https://news.example.com/b', 2000)
     await insertUrl(3, 'https://other.com/c', 3000)
 
-    await setSettings(db, { hiddenPatterns: ['example.com'] })
+    await setSettings(db, { hidden_patterns: ['example.com'] })
     assert.equal(await recomputeHidden(db, ['example.com']), 0)
     // remove 2 (example, news) + add 1 (other) = 3
     assert.equal(await recomputeHidden(db, ['other.com']), 3)
@@ -74,12 +74,12 @@ describe('settings + recompute', () => {
   it('stores sync targets and keeps them when hidden patterns change', async () => {
     await insertUrl(1, 'https://example.com/a', 1000)
 
-    await setSettings(db, { hiddenPatterns: ['example.com'] })
-    const info = await setSettings(db, { syncTargets: ['Chrome:Default', 'bad'] })
-    assert.deepEqual(info.syncTargets, ['chrome:Default', 'bad'])
+    await setSettings(db, { hidden_patterns: ['example.com'] })
+    const info = await setSettings(db, { sync_targets: ['chrome:Default', 'bad'] })
+    assert.deepEqual(info.sync_targets, ['chrome:Default', 'bad'])
 
-    const after = await setSettings(db, { hiddenPatterns: [] })
-    assert.deepEqual(after.syncTargets, ['chrome:Default', 'bad'])
-    assert.equal(after.hiddenUrlCount, 0)
+    const after = await setSettings(db, { hidden_patterns: [] })
+    assert.deepEqual(after.sync_targets, ['chrome:Default', 'bad'])
+    assert.equal(after.hidden_url_count, 0)
   })
 })

@@ -3,30 +3,12 @@ import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
 import type { SyncTarget } from '../../sources/types.ts'
-import { applyTargetFilter, cleanTargets, getSyncTargets, setSyncTargets } from '../targets.ts'
+import { applyTargetFilter, getSyncTargets, setSyncTargets } from '../targets.ts'
 
 const target = (browser: string, profile: string): SyncTarget => ({
   browser,
   profile,
   dbPath: `/x/${browser}/${profile}`,
-})
-
-describe('cleanTargets', () => {
-  it('trims, lowercases the browser and keeps the profile', () => {
-    assert.deepEqual(cleanTargets([' Chrome:Default ', 'Chrome:Default']), ['chrome:Default'])
-  })
-
-  it('keeps bare browser tokens', () => {
-    assert.deepEqual(cleanTargets(['Brave', ' brave ']), ['brave'])
-  })
-
-  it('drops non-strings, empty and malformed tokens', () => {
-    assert.deepEqual(cleanTargets(['', '   ', ':', ':x', 'x:', 3, null, 'ok']), ['ok'])
-  })
-
-  it('returns empty for a non-array', () => {
-    assert.deepEqual(cleanTargets('chrome'), [])
-  })
 })
 
 describe('applyTargetFilter', () => {
@@ -65,11 +47,11 @@ describe('sync target storage', () => {
 
   afterEach(() => handle.close())
 
-  it('reads back what it stored, cleaned', async () => {
+  it('reads back what it stored', async () => {
     assert.deepEqual(await getSyncTargets(db), [])
-    const stored = await setSyncTargets(db, ['Chrome:Default', 'bad', 1])
-    assert.deepEqual(stored, ['chrome:Default', 'bad'])
-    assert.deepEqual(await getSyncTargets(db), ['chrome:Default', 'bad'])
+    const stored = await setSyncTargets(db, ['chrome:Default', 'brave:Default'])
+    assert.deepEqual(stored, ['chrome:Default', 'brave:Default'])
+    assert.deepEqual(await getSyncTargets(db), ['chrome:Default', 'brave:Default'])
   })
 
   it('treats broken json as empty', async () => {

@@ -1,34 +1,33 @@
 import type { KyselyDb } from '../../db/db.ts'
-import { countHidden, getHiddenPatterns, setHiddenPatterns } from './hidden.ts'
-import { getSyncTargets, setSyncTargets } from '../sync/targets.ts'
+import { countHidden } from './hidden.ts'
+import { SETTINGS, SETTINGS_KEYS } from './registry.ts'
+import type { SettingsValues } from './registry.ts'
+import { readSettingsJson, writeSettingJson } from './store.ts'
 
-export type SettingsValues = {
-  hiddenPatterns: string[]
-  syncTargets: string[]
-}
-
+/** Derived stats */
 export type SettingsStats = {
-  /** derived: currently hidden URL count */
-  hiddenUrlCount: number
+  hidden_url_count: number
 }
 
 export type SettingsInfo = SettingsValues & SettingsStats
-export type SettingsPatch = Partial<SettingsValues>
+export type SettingsPatch = SettingsValues
 
 export async function getSettings(db: KyselyDb): Promise<SettingsInfo> {
-  const hiddenPatterns = await getHiddenPatterns(db)
+  // only the stored settings; absent keys stay undefined
+  const values = Object.fromEntries(await readSettingsJson(db, SETTINGS_KEYS)) as SettingsValues
   return {
-    hiddenPatterns,
-    hiddenUrlCount: hiddenPatterns.length === 0 ? 0 : await countHidden(db),
-    syncTargets: await getSyncTargets(db),
+    ...values,
+    hidden_url_count: (values.hidden_patterns ?? []).length === 0 ? 0 : await countHidden(db),
   }
 }
 
 // partial update, only the provided fields change
 export async function setSettings(db: KyselyDb, patch: SettingsPatch): Promise<SettingsInfo> {
-  if (patch.hiddenPatterns !== undefined)
-    await setHiddenPatterns(db, patch.hiddenPatterns)
-  if (patch.syncTargets !== undefined)
-    await setSyncTargets(db, patch.syncTargets)
+  for (const key of SETTINGS_KEYS) {
+    const value = patch[key]
+    if (value === undefined) continue
+    await writeSettingJson(db, key, value)
+    await SETTINGS[key].afterWrite?.(db, value)
+  }
   return getSettings(db)
 }

@@ -2,29 +2,19 @@ import type { KyselyDb } from '../../db/db.ts'
 import type { SyncTarget } from '../sources/types.ts'
 import { discoverAllTargets } from '../sources/discover.ts'
 import { sourceKey } from '../sources/utils.ts'
+import type { SettingDef } from '../settings/define.ts'
 import { readSettingJson, writeSettingJson } from '../settings/store.ts'
 
-const SYNC_TARGETS_KEY = 'sync_targets'
-const MAX_TARGETS = 500
+export const SYNC_TARGETS_KEY = 'sync_targets'
 
-// trims, drops malformed, dedupes, caps
-export function cleanTargets(input: unknown): string[] {
-  if (!Array.isArray(input)) return []
-  const seen = new Set<string>()
-  for (const value of input) {
-    if (typeof value !== 'string') continue
-    const token = cleanToken(value)
-    if (token !== null) seen.add(token)
-  }
-  return [...seen].slice(0, MAX_TARGETS)
-}
+export const syncTargetsSetting: SettingDef<string[]> = {}
 
 export async function getSyncTargets(db: KyselyDb): Promise<string[]> {
-  return cleanTargets(await readSettingJson(db, SYNC_TARGETS_KEY))
+  return (await readSettingJson(db, SYNC_TARGETS_KEY) ?? []) as string[]
 }
 
 export async function setSyncTargets(db: KyselyDb, input: unknown): Promise<string[]> {
-  const targets = cleanTargets(input)
+  const targets = input as string[]
   await writeSettingJson(db, SYNC_TARGETS_KEY, targets)
   return targets
 }
@@ -40,18 +30,4 @@ export function applyTargetFilter(tokens: string[], discovered: SyncTarget[]): S
 export async function resolveConfiguredTargets(db: KyselyDb, home: string): Promise<SyncTarget[]> {
   const tokens = await getSyncTargets(db)
   return applyTargetFilter(tokens, discoverAllTargets(home))
-}
-
-// --- helpers ---
-
-// 'Chrome:Default' → 'chrome:Default'
-function cleanToken(value: string): string | null {
-  const raw = value.trim()
-  if (raw === '') return null
-  const sep = raw.indexOf(':')
-  if (sep === -1) return raw.toLowerCase()
-  const browser = raw.slice(0, sep).trim().toLowerCase()
-  const profile = raw.slice(sep + 1)
-  if (browser === '' || profile === '') return null
-  return `${browser}:${profile}`
 }

@@ -375,8 +375,8 @@ history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { i
 sources.list         { check? }                                          → SourceEntry[]    <span class="c"># discovered ∪ registered · check probes source files</span>
 sync.run             { targets?, full? }                                 → SyncSummary      <span class="c"># targets omitted → settings</span>
 sync.status                                                              → LastRun | null
-settings.get                                                             → SettingsInfo     <span class="c"># { hiddenPatterns, hiddenUrlCount, syncTargets }</span>
-settings.set         { hiddenPatterns?, syncTargets? }                   → SettingsInfo</pre>
+settings.get                                                             → SettingsInfo     <span class="c"># { hidden_patterns, hidden_url_count, sync_targets }</span>
+settings.set         { hidden_patterns?, sync_targets? }                 → SettingsInfo</pre>
 
   </section>
 
