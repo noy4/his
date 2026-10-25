@@ -5,11 +5,6 @@ import { SourcesModel } from './sources.model'
 import type { SyncSummary } from '@/app/api'
 import { sourceKey } from '@his/core'
 import { cn } from 'cn'
-import CheckNetwork from '~icons/mdi/check-network-outline'
-import Close from '~icons/mdi/close'
-import Loading from '~icons/mdi/loading'
-import Reload from '~icons/mdi/refresh'
-import SelectAll from '~icons/mdi/select-all'
 import { type ReactNode } from 'react'
 
 export function Sources({ app }: { app: AppModel }) {
@@ -18,42 +13,12 @@ export function Sources({ app }: { app: AppModel }) {
   const enabled = model.enabled.value
   const enabledCount = enabled.size
   const running = model.running.value
-  const saving = model.saving.value
   const error = model.error.value
 
   return (
     <SourcesRoot>
       <SourcesHeader>
         <SourcesToolbar>
-          <ToolbarButton
-            icon={<Reload width={14} height={14} />}
-            label="rescan"
-            onClick={() => model.reload()}
-            disabled={running}
-          />
-          <ToolbarButton
-            icon={<SelectAll width={14} height={14} />}
-            label="all"
-            onClick={() => model.selectAll()}
-            disabled={running || saving}
-          />
-          {enabledCount > 0 && (
-            <ToolbarButton
-              icon={<Close width={14} height={14} />}
-              label="none"
-              onClick={() => model.clearSelection()}
-              disabled={running || saving}
-            />
-          )}
-          <span className="ml-auto" />
-          <ToolbarButton
-            icon={running
-              ? <Loading width={14} height={14} className="animate-spin" />
-              : <CheckNetwork width={14} height={14} />}
-            label="sync all"
-            onClick={() => model.syncAll()}
-            disabled={running}
-          />
           <SyncButton
             onClick={() => model.syncSelected()}
             disabled={running || enabledCount === 0}
@@ -100,21 +65,7 @@ function SourcesHeader({ children }: { children: ReactNode }) {
 }
 
 function SourcesToolbar({ children }: { children: ReactNode }) {
-  return <div className="flex items-center gap-2">{children}</div>
-}
-
-function ToolbarButton({ icon, label, onClick, disabled }: { icon: ReactNode; label: string; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 font-mono text-xs text-muted transition hover:bg-bg-3 hover:text-text active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-40"
-    >
-      {icon}
-      {label}
-    </button>
-  )
+  return <div className="flex items-center justify-end gap-2">{children}</div>
 }
 
 function SyncButton({ children, onClick, disabled, running }: { children: ReactNode; onClick: () => void; disabled?: boolean; running: boolean }) {

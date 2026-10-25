@@ -1,6 +1,5 @@
 import { signal } from '@preact/signals-react'
 import type { HisApi, SourceEntry, SyncSummary } from '@/app/api'
-import { sourceKey } from '@his/core'
 
 export type { SourceEntry } from '@/app/api'
 
@@ -41,18 +40,6 @@ export class SourcesModel {
     if (next.has(key)) next.delete(key)
     else next.add(key)
     this.#applyTargets(next)
-  }
-
-  selectAll = (): void => {
-    this.#applyTargets(new Set(this.entries.value.map(sourceKey)))
-  }
-
-  clearSelection = (): void => {
-    this.#applyTargets(new Set())
-  }
-
-  syncAll(): void {
-    void this.#sync(this.entries.value.map(sourceKey))
   }
 
   syncSelected(): void {
