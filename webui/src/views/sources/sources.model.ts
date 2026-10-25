@@ -11,6 +11,8 @@ export class SourcesModel {
   readonly running = signal(false)
   readonly error = signal<string | null>(null)
   readonly lastSync = signal<SyncSummary | null>(null)
+  /** false until the first listing arrives */
+  readonly loaded = signal(false)
   #started = false
 
   constructor(api: HisApi) {
@@ -26,12 +28,16 @@ export class SourcesModel {
   }
 
   async reload(): Promise<void> {
-    const [entries, settings] = await Promise.all([
-      this.api.sourcesList({ check: true }),
-      this.api.settings.get(),
-    ])
-    this.entries.value = entries
-    this.enabled.value = new Set(settings.sync_targets ?? [])
+    try {
+      const [entries, settings] = await Promise.all([
+        this.api.sourcesList({ check: true }),
+        this.api.settings.get(),
+      ])
+      this.entries.value = entries
+      this.enabled.value = new Set(settings.sync_targets ?? [])
+    } finally {
+      this.loaded.value = true
+    }
   }
 
   toggle = (key: string): void => {

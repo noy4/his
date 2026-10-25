@@ -19,9 +19,7 @@ export function Sources({ app }: { app: AppModel }) {
   return (
     <SourcesRoot>
       <SourcesHeader>
-        <p className="text-xs leading-relaxed text-muted">
-          Pick the sources to import. Selected ones sync automatically.
-        </p>
+        <SourcesDescription text="Pick the sources to import. Selected ones sync automatically." />
         <SourcesStatus>
           <RunSummary run={model.lastSync.value} />
           {error !== null
@@ -39,23 +37,25 @@ export function Sources({ app }: { app: AppModel }) {
       </SourcesHeader>
 
       <SourcesBody>
-        {entries.length === 0
-          ? <SourcesEmpty />
-          : (
-            <SourcesGrid>
-              {entries.map((entry) => {
-                const key = sourceKey(entry)
-                return (
-                  <SourceCard
-                    key={key}
-                    entry={entry}
-                    enabled={enabled.has(key)}
-                    onToggle={() => model.toggle(key)}
-                  />
-                )
-              })}
-            </SourcesGrid>
-          )}
+        {!model.loaded.value
+          ? <SourcesSkeleton />
+          : entries.length === 0
+            ? <SourcesEmpty />
+            : (
+              <SourcesGrid>
+                {entries.map((entry) => {
+                  const key = sourceKey(entry)
+                  return (
+                    <SourceCard
+                      key={key}
+                      entry={entry}
+                      enabled={enabled.has(key)}
+                      onToggle={() => model.toggle(key)}
+                    />
+                  )
+                })}
+              </SourcesGrid>
+            )}
       </SourcesBody>
     </SourcesRoot>
   )
@@ -71,6 +71,10 @@ function SourcesRoot({ children }: { children: ReactNode }) {
 
 function SourcesHeader({ children }: { children: ReactNode }) {
   return <header className="flex shrink-0 items-center gap-3 px-4 py-3">{children}</header>
+}
+
+function SourcesDescription({ text }: { text: string }) {
+  return <p className="text-xs leading-relaxed text-muted">{text}</p>
 }
 
 function SourcesStatus({ children }: { children: ReactNode }) {
@@ -116,4 +120,28 @@ function SourcesGrid({ children }: { children: ReactNode }) {
 
 function SourcesEmpty() {
   return <p className="py-6 text-center text-sm text-muted">No sources found. Install a supported browser or add an export file.</p>
+}
+
+function SourcesSkeleton() {
+  return (
+    <SourcesGrid>
+      {Array.from({ length: 3 }, (_, i) => <SourcesCardSkeleton key={i} />)}
+    </SourcesGrid>
+  )
+}
+
+function SourcesCardSkeleton() {
+  return (
+    <div className="flex flex-col gap-2.5 rounded-lg border bg-bg-2 p-4">
+      <div className="flex flex-col items-start gap-2">
+        <div className="h-10 w-10 animate-pulse rounded-lg bg-bg-3" />
+        <div className="grid gap-0.5">
+          <div className="h-5 w-28 animate-pulse rounded bg-bg-3" />
+          <div className="h-4 w-36 animate-pulse rounded bg-bg-3" />
+        </div>
+      </div>
+      <div className="h-4 w-32 animate-pulse rounded bg-bg-3" />
+      <div className="h-4.5 w-20 animate-pulse rounded bg-bg-3" />
+    </div>
+  )
 }
