@@ -3,7 +3,7 @@ import type { SyncTarget } from '../sources/types.ts'
 import { discoverAllTargets } from '../sources/discover.ts'
 import { sourceKey } from '../sources/utils.ts'
 import type { SettingDef } from '../settings/define.ts'
-import { readSettingJson, writeSettingJson } from '../settings/store.ts'
+import { readSettingJson } from '../settings/store.ts'
 
 export const SYNC_TARGETS_KEY = 'sync_targets'
 
@@ -11,12 +11,6 @@ export const syncTargetsSetting: SettingDef<string[]> = {}
 
 export async function getSyncTargets(db: KyselyDb): Promise<string[]> {
   return (await readSettingJson(db, SYNC_TARGETS_KEY) ?? []) as string[]
-}
-
-export async function setSyncTargets(db: KyselyDb, input: unknown): Promise<string[]> {
-  const targets = input as string[]
-  await writeSettingJson(db, SYNC_TARGETS_KEY, targets)
-  return targets
 }
 
 // keep only the discovered targets the tokens select

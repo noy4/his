@@ -3,7 +3,8 @@ import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
 import type { SyncTarget } from '../../sources/types.ts'
-import { applyTargetFilter, getSyncTargets, setSyncTargets } from '../targets.ts'
+import { writeSettingJson } from '../../settings/store.ts'
+import { applyTargetFilter, getSyncTargets, SYNC_TARGETS_KEY } from '../targets.ts'
 
 const target = (browser: string, profile: string): SyncTarget => ({
   browser,
@@ -47,10 +48,9 @@ describe('sync target storage', () => {
 
   afterEach(() => handle.close())
 
-  it('reads back what it stored', async () => {
+  it('reads back what was stored', async () => {
     assert.deepEqual(await getSyncTargets(db), [])
-    const stored = await setSyncTargets(db, ['chrome:Default', 'brave:Default'])
-    assert.deepEqual(stored, ['chrome:Default', 'brave:Default'])
+    await writeSettingJson(db, SYNC_TARGETS_KEY, ['chrome:Default', 'brave:Default'])
     assert.deepEqual(await getSyncTargets(db), ['chrome:Default', 'brave:Default'])
   })
 
