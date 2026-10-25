@@ -15,13 +15,11 @@ export async function readSettingJson(db: KyselyDb, key: string): Promise<unknow
   }
 }
 
-export async function readSettingsJson(db: KyselyDb, keys: readonly string[]): Promise<Map<string, unknown>> {
+export async function readSettingsJson(db: KyselyDb): Promise<Map<string, unknown>> {
   const values = new Map<string, unknown>()
-  if (keys.length === 0) return values
   const rows = await db
     .selectFrom('settings')
     .select(['key', 'value'])
-    .where('key', 'in', keys)
     .execute()
   for (const row of rows) {
     try {

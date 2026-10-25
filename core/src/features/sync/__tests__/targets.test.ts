@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict'
-import { DatabaseSync } from 'node:sqlite'
-import { afterEach, beforeEach, describe, it } from 'node:test'
-import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
+import { describe, it } from 'node:test'
 import type { SyncTarget } from '../../sources/types.ts'
-import { writeSettingJson } from '../../settings/store.ts'
-import { applyTargetFilter, getSyncTargets, SYNC_TARGETS_KEY } from '../targets.ts'
+import { applyTargetFilter } from '../targets.ts'
 
 const target = (browser: string, profile: string): SyncTarget => ({
   browser,
@@ -33,29 +30,5 @@ describe('applyTargetFilter', () => {
 
   it('ignores tokens that match nothing', () => {
     assert.deepEqual(applyTargetFilter(['firefox'], all), [])
-  })
-})
-
-describe('sync target storage', () => {
-  let handle: DatabaseSync
-  let db: KyselyDb
-
-  beforeEach(async () => {
-    handle = new DatabaseSync(':memory:')
-    await migrate(handle)
-    db = createDb(handle)
-  })
-
-  afterEach(() => handle.close())
-
-  it('reads back what was stored', async () => {
-    assert.deepEqual(await getSyncTargets(db), [])
-    await writeSettingJson(db, SYNC_TARGETS_KEY, ['chrome:Default', 'brave:Default'])
-    assert.deepEqual(await getSyncTargets(db), ['chrome:Default', 'brave:Default'])
-  })
-
-  it('treats broken json as empty', async () => {
-    await db.insertInto('settings').values({ key: 'sync_targets', value: '{not json' }).execute()
-    assert.deepEqual(await getSyncTargets(db), [])
   })
 })

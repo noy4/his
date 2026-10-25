@@ -9,10 +9,6 @@ export const SYNC_TARGETS_KEY = 'sync_targets'
 
 export const syncTargetsSetting: SettingDef<string[]> = {}
 
-export async function getSyncTargets(db: KyselyDb): Promise<string[]> {
-  return (await readSettingJson(db, SYNC_TARGETS_KEY) ?? []) as string[]
-}
-
 // keep only the discovered targets the tokens select
 export function applyTargetFilter(tokens: string[], discovered: SyncTarget[]): SyncTarget[] {
   if (tokens.length === 0) return []
@@ -22,6 +18,6 @@ export function applyTargetFilter(tokens: string[], discovered: SyncTarget[]): S
 
 // configured targets resolved against this machine
 export async function resolveConfiguredTargets(db: KyselyDb, home: string): Promise<SyncTarget[]> {
-  const tokens = await getSyncTargets(db)
+  const tokens = (await readSettingJson(db, SYNC_TARGETS_KEY) ?? []) as string[]
   return applyTargetFilter(tokens, discoverAllTargets(home))
 }

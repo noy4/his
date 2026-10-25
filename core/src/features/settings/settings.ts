@@ -14,7 +14,7 @@ export type SettingsPatch = SettingsValues
 
 export async function getSettings(db: KyselyDb): Promise<SettingsInfo> {
   // only the stored settings; absent keys stay undefined
-  const values = Object.fromEntries(await readSettingsJson(db, SETTINGS_KEYS)) as SettingsValues
+  const values = Object.fromEntries(await readSettingsJson(db)) as SettingsValues
   return {
     ...values,
     hidden_url_count: (values.hidden_patterns ?? []).length === 0 ? 0 : await countHidden(db),
