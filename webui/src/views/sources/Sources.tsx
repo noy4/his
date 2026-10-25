@@ -6,7 +6,7 @@ import type { SyncSummary } from '@/app/api'
 import { sourceKey } from '@his/core'
 import { cn } from 'cn'
 import { buttonPrimary } from '@/components/ui/button'
-import { type ReactNode } from 'react'
+import { type ComponentProps, type ReactNode } from 'react'
 
 export function Sources({ app }: { app: AppModel }) {
   const model = useModel(() => new SourcesModel(app.api))
@@ -82,16 +82,13 @@ function SourcesNotice({ text }: { text: string }) {
   return <span title={text} className="min-w-0 truncate font-mono text-xs text-warn">{text}</span>
 }
 
-function SyncButton({ children, onClick, disabled }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
+function SyncButton(props: ComponentProps<'button'>) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      disabled={disabled}
+      {...props}
       className={cn(buttonPrimary, 'shrink-0')}
-    >
-      {children}
-    </button>
+    />
   )
 }
 
