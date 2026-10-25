@@ -5,6 +5,7 @@ import { SourcesModel } from './sources.model'
 import type { SyncSummary } from '@/app/api'
 import { sourceKey } from '@his/core'
 import { cn } from 'cn'
+import { buttonPrimary } from '@/components/ui/button'
 import { type ReactNode } from 'react'
 
 export function Sources({ app }: { app: AppModel }) {
@@ -18,44 +19,43 @@ export function Sources({ app }: { app: AppModel }) {
   return (
     <SourcesRoot>
       <SourcesHeader>
-        <p className="mb-3 text-xs leading-relaxed text-muted">
+        <p className="text-xs leading-relaxed text-muted">
           Pick the sources to import. Selected ones sync automatically.
         </p>
-        <SourcesToolbar>
-          <SyncButton
-            onClick={() => model.syncSelected()}
-            disabled={running || enabledCount === 0}
-            running={running}
-          >
-            {enabledCount > 0 ? `Sync now (${enabledCount})` : 'Sync now'}
-          </SyncButton>
-        </SourcesToolbar>
-        <RunSummary run={model.lastSync.value} />
-        {error !== null
-          ? <p className="mt-2 font-mono text-xs text-warn">{error}</p>
-          : entries.length > 0 && enabledCount === 0
-            ? <p className="mt-2 font-mono text-xs text-muted">no sync targets selected — auto sync is off</p>
-            : null}
+        <SourcesStatus>
+          <RunSummary run={model.lastSync.value} />
+          {error !== null
+            ? <SourcesNotice text={error} />
+            : entries.length > 0 && enabledCount === 0
+              ? <SourcesNotice text="no sync targets selected" />
+              : null}
+        </SourcesStatus>
+        <SyncButton
+          onClick={() => model.syncSelected()}
+          disabled={running || enabledCount === 0}
+        >
+          {enabledCount > 0 ? `Sync now (${enabledCount})` : 'Sync now'}
+        </SyncButton>
       </SourcesHeader>
 
       <SourcesBody>
         {entries.length === 0
           ? <SourcesEmpty />
           : (
-              <SourcesGrid>
-                {entries.map((entry) => {
-                  const key = sourceKey(entry)
-                  return (
-                    <SourceCard
-                      key={key}
-                      entry={entry}
-                      enabled={enabled.has(key)}
-                      onToggle={() => model.toggle(key)}
-                    />
-                  )
-                })}
-              </SourcesGrid>
-            )}
+            <SourcesGrid>
+              {entries.map((entry) => {
+                const key = sourceKey(entry)
+                return (
+                  <SourceCard
+                    key={key}
+                    entry={entry}
+                    enabled={enabled.has(key)}
+                    onToggle={() => model.toggle(key)}
+                  />
+                )
+              })}
+            </SourcesGrid>
+          )}
       </SourcesBody>
     </SourcesRoot>
   )
@@ -70,23 +70,24 @@ function SourcesRoot({ children }: { children: ReactNode }) {
 // SourcesHeader
 
 function SourcesHeader({ children }: { children: ReactNode }) {
-  return <header className="shrink-0 border-b px-4 py-3">{children}</header>
+  return <header className="flex shrink-0 items-center gap-3 px-4 py-3">{children}</header>
 }
 
-function SourcesToolbar({ children }: { children: ReactNode }) {
-  return <div className="flex items-center justify-end gap-2">{children}</div>
+function SourcesStatus({ children }: { children: ReactNode }) {
+  return <div className="ml-auto flex shrink-0 items-center gap-3">{children}</div>
 }
 
-function SyncButton({ children, onClick, disabled, running }: { children: ReactNode; onClick: () => void; disabled?: boolean; running: boolean }) {
+function SourcesNotice({ text }: { text: string }) {
+  return <span className="font-mono text-xs text-warn">{text}</span>
+}
+
+function SyncButton({ children, onClick, disabled }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded bg-primary px-3 py-1.5 text-sm font-medium text-white transition-opacity disabled:pointer-events-none disabled:opacity-40',
-        running ? 'opacity-80' : 'hover:opacity-90',
-      )}
+      className={cn(buttonPrimary, 'shrink-0')}
     >
       {children}
     </button>
@@ -97,16 +98,16 @@ function RunSummary({ run }: { run: SyncSummary | null }) {
   if (run === null) return null
   const synced = run.attempted - run.failures
   return (
-    <p className="mt-2 font-mono text-xs text-muted">
+    <span className="font-mono text-xs text-muted">
       {synced}/{run.attempted} synced · {run.skipped} skipped · +{run.insertedVisits.toLocaleString()} visits
-    </p>
+    </span>
   )
 }
 
 // SourcesBody
 
 function SourcesBody({ children }: { children: ReactNode }) {
-  return <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
+  return <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2">{children}</div>
 }
 
 function SourcesGrid({ children }: { children: ReactNode }) {
