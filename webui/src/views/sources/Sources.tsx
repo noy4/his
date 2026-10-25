@@ -71,15 +71,15 @@ function SourcesHeader({ children }: { children: ReactNode }) {
 }
 
 function SourcesDescription({ text }: { text: string }) {
-  return <p className="text-xs leading-relaxed text-muted">{text}</p>
+  return <p title={text} className="min-w-0 truncate text-xs text-muted">{text}</p>
 }
 
 function SourcesStatus({ children }: { children: ReactNode }) {
-  return <div className="ml-auto flex shrink-0 items-center gap-3">{children}</div>
+  return <div className="ml-auto flex min-w-0 items-center gap-3">{children}</div>
 }
 
 function SourcesNotice({ text }: { text: string }) {
-  return <span className="font-mono text-xs text-warn">{text}</span>
+  return <span title={text} className="min-w-0 truncate font-mono text-xs text-warn">{text}</span>
 }
 
 function SyncButton({ children, onClick, disabled }: { children: ReactNode; onClick: () => void; disabled?: boolean }) {
@@ -98,10 +98,9 @@ function SyncButton({ children, onClick, disabled }: { children: ReactNode; onCl
 function RunSummary({ run }: { run: SyncSummary | null }) {
   if (run === null) return null
   const synced = run.attempted - run.failures
+  const text = `${synced}/${run.attempted} synced · ${run.skipped} skipped · +${run.insertedVisits.toLocaleString()} visits`
   return (
-    <span className="font-mono text-xs text-muted">
-      {synced}/{run.attempted} synced · {run.skipped} skipped · +{run.insertedVisits.toLocaleString()} visits
-    </span>
+    <span title={text} className="min-w-0 truncate font-mono text-xs text-muted">{text}</span>
   )
 }
 
