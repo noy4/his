@@ -18,6 +18,9 @@ export function Sources({ app }: { app: AppModel }) {
   return (
     <SourcesRoot>
       <SourcesHeader>
+        <p className="mb-3 text-xs leading-relaxed text-muted">
+          Pick the sources to import. Selected ones sync automatically.
+        </p>
         <SourcesToolbar>
           <SyncButton
             onClick={() => model.syncSelected()}
@@ -36,17 +39,23 @@ export function Sources({ app }: { app: AppModel }) {
       </SourcesHeader>
 
       <SourcesBody>
-        {entries.map((entry) => {
-          const key = sourceKey(entry)
-          return (
-            <SourceCard
-              key={key}
-              entry={entry}
-              enabled={enabled.has(key)}
-              onToggle={() => model.toggle(key)}
-            />
-          )
-        })}
+        {entries.length === 0
+          ? <SourcesEmpty />
+          : (
+              <SourcesGrid>
+                {entries.map((entry) => {
+                  const key = sourceKey(entry)
+                  return (
+                    <SourceCard
+                      key={key}
+                      entry={entry}
+                      enabled={enabled.has(key)}
+                      onToggle={() => model.toggle(key)}
+                    />
+                  )
+                })}
+              </SourcesGrid>
+            )}
       </SourcesBody>
     </SourcesRoot>
   )
@@ -97,11 +106,13 @@ function RunSummary({ run }: { run: SyncSummary | null }) {
 // SourcesBody
 
 function SourcesBody({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">
-        {children}
-      </div>
-    </div>
-  )
+  return <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
+}
+
+function SourcesGrid({ children }: { children: ReactNode }) {
+  return <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">{children}</div>
+}
+
+function SourcesEmpty() {
+  return <p className="py-6 text-center text-sm text-muted">No sources found. Install a supported browser or add an export file.</p>
 }
