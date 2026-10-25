@@ -9,7 +9,6 @@ export class SourcesModel {
   /** configured sync targets */
   readonly enabled = signal<Set<string>>(new Set())
   readonly running = signal(false)
-  readonly saving = signal(false)
   readonly error = signal<string | null>(null)
   readonly lastSync = signal<SyncSummary | null>(null)
   #started = false
@@ -55,7 +54,6 @@ export class SourcesModel {
   }
 
   async #saveTargets(next: Set<string>): Promise<void> {
-    this.saving.value = true
     this.error.value = null
     try {
       const info = await this.api.settings.set({ sync_targets: [...next] })
@@ -63,8 +61,6 @@ export class SourcesModel {
     } catch {
       this.error.value = 'Could not save sync targets'
       await this.reload().catch(() => {})
-    } finally {
-      this.saving.value = false
     }
   }
 
