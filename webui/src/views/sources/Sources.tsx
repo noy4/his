@@ -15,6 +15,7 @@ export function Sources({ app }: { app: AppModel }) {
   const enabledCount = enabled.size
   const running = model.running.value
   const error = model.error.value
+  const notice = error ?? (entries.length > 0 && enabledCount === 0 ? 'no sync targets selected' : null)
 
   return (
     <SourcesRoot>
@@ -22,11 +23,7 @@ export function Sources({ app }: { app: AppModel }) {
         <SourcesDescription text="Pick the sources to import. Selected ones sync automatically." />
         <SourcesStatus>
           <RunSummary run={model.lastSync.value} />
-          {error !== null
-            ? <SourcesNotice text={error} />
-            : entries.length > 0 && enabledCount === 0
-              ? <SourcesNotice text="no sync targets selected" />
-              : null}
+          {notice !== null && <SourcesNotice text={notice} />}
         </SourcesStatus>
         <SyncButton
           onClick={() => model.syncSelected()}
