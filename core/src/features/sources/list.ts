@@ -1,6 +1,6 @@
 import { sql } from 'kysely'
 import type { RegisteredSource, RegisteredSourceEntry, SourceEntry, SourceKind, UnregisteredSourceEntry } from '../../types.ts'
-import { probeFingerprint } from './fingerprint.ts'
+import { probeSourceFingerprint } from './fingerprint.ts'
 import type { KyselyDb } from '../../db/db.ts'
 import { discoverAllTargets } from './discover.ts'
 import { sourceKey } from './utils.ts'
@@ -87,7 +87,7 @@ export function mergeEntries(
 // compare the source files to the last stored fingerprint
 function isPending(row: { last_fingerprint: string | null; profile_path: string }): boolean {
   if (row.last_fingerprint === null) return true
-  return probeFingerprint(row.profile_path) !== row.last_fingerprint
+  return probeSourceFingerprint(row.profile_path) !== row.last_fingerprint
 }
 
 function toRegistered(source: RegisteredSource): RegisteredSourceEntry {

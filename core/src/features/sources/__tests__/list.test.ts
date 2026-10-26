@@ -5,7 +5,7 @@ import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
-import { probeFingerprint } from '../fingerprint.ts'
+import { probeSourceFingerprint } from '../fingerprint.ts'
 import { listSourceProfiles } from '../list.ts'
 import { sourceProfile } from '../../../testing/db.ts'
 
@@ -52,7 +52,7 @@ describe('listSourceProfiles', () => {
   })
 
   it('reports not pending when the stored fingerprint matches the source now', async () => {
-    await setFingerprint(probeFingerprint(sourceFile))
+    await setFingerprint(probeSourceFingerprint(sourceFile))
     assert.equal((await listSourceProfiles(db, { check: true }))[0]!.pending, false)
   })
 

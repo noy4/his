@@ -6,7 +6,7 @@ import { snapshot } from './snapshot.ts'
 import type { SyncTarget } from '../sources/types.ts'
 import { browserOf } from '../sources/browsers.ts'
 import type { SyncHooks } from './runSync.ts'
-import { probeFingerprint } from '../sources/fingerprint.ts'
+import { probeSourceFingerprint } from '../sources/fingerprint.ts'
 import { getStoredFingerprint, storeFingerprint } from './checkpoints.ts'
 
 interface RunTargetParams {
@@ -30,7 +30,7 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
 
   try {
     // check fingerprint (--rescan bypasses)
-    const fingerprint = probeFingerprint(target.dbPath)
+    const fingerprint = probeSourceFingerprint(target.dbPath)
 
     if (!options.rescan) {
       const stored = await getStoredFingerprint(db, target.browser, target.profile)
