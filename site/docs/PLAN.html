@@ -113,7 +113,7 @@
               <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">schema.sql</div>
-                <div class="task-desc">urls · visits · source_profiles · profile_watermarks · urls_fts trigram</div>
+                <div class="task-desc">urls · visits · source_profiles · sync_checkpoints · urls_fts trigram</div>
               </div>
             </div>
             <div class="task done">
@@ -158,7 +158,7 @@
             <div class="task done">
               <iconify-icon icon="mdi:map-marker-path"></iconify-icon>
               <div class="task-text">
-                <div class="task-title">watermarks.ts</div>
+                <div class="task-title">checkpoints.ts</div>
                 <div class="task-desc">per-profile cursor · <code>MAX(id)</code> shrink = cleared → <code>source_id_offset += last_raw_id</code></div>
               </div>
             </div>
@@ -166,7 +166,7 @@
               <iconify-icon icon="mdi:workflow"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">run.ts</div>
-                <div class="task-desc">snapshot → parse → upsert → watermark · one tx per profile · <code>INSERT OR IGNORE</code> · watermark advances only after commit</div>
+                <div class="task-desc">snapshot → parse → upsert → checkpoint · one tx per profile · <code>INSERT OR IGNORE</code> · checkpoint advances only after commit</div>
               </div>
             </div>
           </div>
@@ -244,7 +244,7 @@
               <iconify-icon icon="mdi:sync"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">sync paths</div>
-                <div class="task-desc">per-source counts · errors exit 1 · <code>--source &lt;kind&gt;</code> · <code>--full</code> ignores watermarks (idempotent)</div>
+                <div class="task-desc">per-source counts · errors exit 1 · <code>--source &lt;kind&gt;</code> · <code>--full</code> ignores checkpoints (idempotent)</div>
               </div>
             </div>
             <div class="task done">

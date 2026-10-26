@@ -25,7 +25,7 @@ export async function listSources(db: KyselyDb, options: ListSourcesOptions): Pr
 export async function listSourceProfiles(db: KyselyDb, options: ListSourceProfilesOptions = {}): Promise<RegisteredSource[]> {
   const rows = await db
     .selectFrom('source_profiles as sp')
-    .leftJoin('profile_watermarks as pw', 'pw.source_profile_id', 'sp.id')
+    .leftJoin('sync_checkpoints as sc', 'sc.source_profile_id', 'sp.id')
     .leftJoin('visits as v', 'v.source_profile_id', 'sp.id')
     .select([
       'sp.id',
@@ -33,10 +33,10 @@ export async function listSourceProfiles(db: KyselyDb, options: ListSourceProfil
       'sp.profile',
       'sp.kind',
       'sp.profile_path',
-      'pw.last_source_visit_id',
-      'pw.source_id_offset',
-      'pw.last_run_at',
-      'pw.last_fingerprint',
+      'sc.last_source_visit_id',
+      'sc.source_id_offset',
+      'sc.last_run_at',
+      'sc.last_fingerprint',
       sql<number>`COUNT(v.id)`.as('visits'),
       sql<number | null>`MAX(v.visit_time)`.as('last_visit_time'),
     ])
@@ -50,7 +50,7 @@ export async function listSourceProfiles(db: KyselyDb, options: ListSourceProfil
     profile: row.profile,
     kind: row.kind as SourceKind,
     profilePath: row.profile_path,
-    watermark: {
+    checkpoint: {
       sourceProfileId: row.id,
       lastSourceVisitId: row.last_source_visit_id ?? 0,
       sourceIdOffset: row.source_id_offset ?? 0,

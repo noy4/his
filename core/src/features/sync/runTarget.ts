@@ -7,7 +7,7 @@ import type { SyncTarget } from '../sources/types.ts'
 import { browserOf } from '../sources/browsers.ts'
 import type { SyncHooks } from './runSync.ts'
 import { probeFingerprint } from '../sources/fingerprint.ts'
-import { getTargetFingerprint, setTargetFingerprint } from './watermarks.ts'
+import { getTargetFingerprint, setTargetFingerprint } from './checkpoints.ts'
 
 interface RunTargetParams {
   db: KyselyDb

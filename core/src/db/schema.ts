@@ -13,14 +13,6 @@ export interface HiddenUrls {
   url_id: Generated<number>;
 }
 
-export interface ProfileWatermarks {
-  last_fingerprint: string | null;
-  last_run_at: number | null;
-  last_source_visit_id: Generated<number>;
-  source_id_offset: Generated<number>;
-  source_profile_id: Generated<number>;
-}
-
 export interface Settings {
   key: string;
   value: string;
@@ -32,6 +24,14 @@ export interface SourceProfiles {
   kind: string;
   profile: string;
   profile_path: string;
+}
+
+export interface SyncCheckpoints {
+  last_fingerprint: string | null;
+  last_run_at: number | null;
+  last_source_visit_id: Generated<number>;
+  source_id_offset: Generated<number>;
+  source_profile_id: Generated<number>;
 }
 
 export interface Urls {
@@ -55,9 +55,9 @@ export interface Visits {
 
 export interface DB {
   hidden_urls: HiddenUrls;
-  profile_watermarks: ProfileWatermarks;
   settings: Settings;
   source_profiles: SourceProfiles;
+  sync_checkpoints: SyncCheckpoints;
   urls: Urls;
   visits: Visits;
 }

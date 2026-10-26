@@ -26,7 +26,7 @@ beforeEach(async () => {
     .values({ ...sourceProfile, profile_path: sourceFile })
     .execute()
   await db
-    .insertInto('profile_watermarks')
+    .insertInto('sync_checkpoints')
     .values({
       source_profile_id: 1,
       last_source_visit_id: 0,
@@ -64,7 +64,7 @@ describe('listSourceProfiles', () => {
 
 async function setFingerprint(fingerprint: string): Promise<void> {
   await db
-    .updateTable('profile_watermarks')
+    .updateTable('sync_checkpoints')
     .set({ last_fingerprint: fingerprint })
     .where('source_profile_id', '=', 1)
     .execute()

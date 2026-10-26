@@ -14,7 +14,7 @@ cli.option('--home <dir>', 'archive home (env: HIS_HOME, default ~/.his)')
 cli
   .command('sync', 'run sync once (kinds: chromium firefox safari takeout)')
   .option('--target <browser[:profile]>', 'limit to targets, repeatable (e.g. chrome, chrome:Default)')
-  .option('--full', 'ignore watermarks and re-read everything (idempotent)')
+  .option('--full', 'ignore sync checkpoints and re-read everything (idempotent)')
   .action(withCtx((ctx, opts) => sync(ctx, {
     targets: opts.target === undefined ? undefined : [].concat(opts.target),
     full: opts.full

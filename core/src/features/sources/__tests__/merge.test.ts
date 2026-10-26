@@ -11,7 +11,7 @@ const registered = (browser: string, profile: string): RegisteredSource => ({
   profile,
   kind: 'chromium',
   profilePath: `/x/${browser}/${profile}`,
-  watermark: { sourceProfileId: 1, lastSourceVisitId: 0, sourceIdOffset: 0, lastRunAt: null },
+  checkpoint: { sourceProfileId: 1, lastSourceVisitId: 0, sourceIdOffset: 0, lastRunAt: null },
   visits: 0,
   lastVisit: null,
   pending: null,

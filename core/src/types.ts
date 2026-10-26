@@ -55,7 +55,7 @@ export interface NormalizedVisit {
   transition: Transition
 }
 
-export interface Watermark {
+export interface SyncCheckpoint {
   sourceProfileId: number
   lastSourceVisitId: number
   sourceIdOffset: number
@@ -68,7 +68,7 @@ export interface RegisteredSource {
   profile: string
   kind: SourceKind
   profilePath: string
-  watermark: Watermark
+  checkpoint: SyncCheckpoint
   /** listing aggregates over the profile's visits (sources.list) */
   visits: number
   lastVisit: EpochMs | null

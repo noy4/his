@@ -77,7 +77,7 @@
           <iconify-icon icon="mdi:database-import-outline"></iconify-icon>
           <h4>Incremental sync</h4>
         </div>
-        <p>Snapshot copies + watermark cursors.</p>
+        <p>Snapshot copies + checkpoint cursors.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -457,9 +457,9 @@ settings.set         { hidden_patterns?, sync_targets? }                 → Set
         <text class="tm" x="352" y="388">profile_path</text>
         <text class="tm" x="352" y="401" style="font-style: italic">UNIQUE(browser, profile)</text>
 
-        <!-- profile_watermarks -->
+        <!-- sync_checkpoints -->
         <rect class="node" x="340" y="450" width="240" height="90" rx="6"/>
-        <text class="tt" x="352" y="468">profile_watermarks</text>
+        <text class="tt" x="352" y="468">sync_checkpoints</text>
         <text class="tm" x="486" y="468">cursors</text>
         <text class="tm" x="352" y="484">source_profile_id · PK · FK</text>
         <text class="tm" x="352" y="496">last_source_visit_id</text>
@@ -502,7 +502,7 @@ CREATE INDEX idx_visits_visit_time        ON visits(visit_time DESC);
 CREATE INDEX idx_visits_url_id_visit_time ON visits(url_id, visit_time DESC);
 CREATE INDEX idx_urls_last_visit_time     ON urls(last_visit_time DESC);      <span class="c">-- timeline sort</span>
 
-CREATE TABLE profile_watermarks (       <span class="c">-- sync cursors</span>
+CREATE TABLE sync_checkpoints (         <span class="c">-- sync cursors</span>
   source_profile_id    INTEGER PRIMARY KEY REFERENCES source_profiles(id),
   last_source_visit_id INTEGER NOT NULL DEFAULT 0,
   source_id_offset     INTEGER NOT NULL DEFAULT 0,  <span class="c">-- += last_raw_id on clear</span>
@@ -557,7 +557,7 @@ END;</pre>
       Sync the configured targets.
     </p>
 
-    <p><code>targets → gate → snapshot → parse → upsert → watermark</code></p>
+    <p><code>targets → gate → snapshot → parse → upsert → checkpoint</code></p>
 
     <p>Targets come from <code>settings.sync_targets</code>; an empty list syncs nothing. <code>his sync --target</code> overrides them once.</p>
 
@@ -567,7 +567,7 @@ END;</pre>
           <iconify-icon icon="mdi:filter-outline"></iconify-icon>
           <h4>Gate</h4>
         </div>
-        <p>Skips targets whose fingerprint (mtime/size) matches the stored <code>profile_watermarks.last_fingerprint</code>.</p>
+        <p>Skips targets whose fingerprint (mtime/size) matches the stored <code>sync_checkpoints.last_fingerprint</code>.</p>
       </div>
       <div class="card">
         <div class="card-head">
@@ -597,7 +597,7 @@ END;</pre>
       <div class="card">
         <div class="card-head">
           <iconify-icon icon="mdi:map-marker-path"></iconify-icon>
-          <h4>Watermark</h4>
+          <h4>Checkpoint</h4>
         </div>
         <p>Advances the cursor after each committed run. <strong>Reset:</strong> if the source's max id shrinks (history cleared), bump <code>source_id_offset += last_raw_id</code> so old ids can't collide.</p>
       </div>

@@ -1,17 +1,17 @@
-import type { EpochMs, Watermark } from '../../types.ts'
+import type { EpochMs, SyncCheckpoint } from '../../types.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
-export interface WatermarkPatch {
+export interface SyncCheckpointPatch {
   lastSourceVisitId: number
   sourceIdOffset: number
   lastRunAt?: EpochMs | null
 }
 
-// Accepts a transaction so the watermark advances with the same commit as the
+// Accepts a transaction so the checkpoint advances with the same commit as the
 // visits it tracks.
-export async function getWatermark(db: KyselyDb, sourceProfileId: number): Promise<Watermark> {
+export async function getCheckpoint(db: KyselyDb, sourceProfileId: number): Promise<SyncCheckpoint> {
   const row = await db
-    .selectFrom('profile_watermarks')
+    .selectFrom('sync_checkpoints')
     .select(['source_profile_id', 'last_source_visit_id', 'source_id_offset', 'last_run_at'])
     .where('source_profile_id', '=', sourceProfileId)
     .executeTakeFirst()
@@ -30,7 +30,7 @@ export async function getWatermark(db: KyselyDb, sourceProfileId: number): Promi
     }
 }
 
-export async function setWatermark(db: KyselyDb, sourceProfileId: number, patch: WatermarkPatch): Promise<void> {
+export async function setCheckpoint(db: KyselyDb, sourceProfileId: number, patch: SyncCheckpointPatch): Promise<void> {
   const values = {
     source_profile_id: sourceProfileId,
     last_source_visit_id: patch.lastSourceVisitId,
@@ -38,18 +38,18 @@ export async function setWatermark(db: KyselyDb, sourceProfileId: number, patch:
     last_run_at: patch.lastRunAt ?? null,
   }
   await db
-    .insertInto('profile_watermarks')
+    .insertInto('sync_checkpoints')
     .values(values)
     .onConflict((oc) => oc.column('source_profile_id').doUpdateSet(values))
     .execute()
 }
 
-export function detectCleared(watermark: Watermark, sourceMaxVisitId: number): boolean {
-  return watermark.lastSourceVisitId > 0 && sourceMaxVisitId < watermark.lastSourceVisitId
+export function detectCleared(checkpoint: SyncCheckpoint, sourceMaxVisitId: number): boolean {
+  return checkpoint.lastSourceVisitId > 0 && sourceMaxVisitId < checkpoint.lastSourceVisitId
 }
 
-export function resetOffset(watermark: Watermark): number {
-  return watermark.sourceIdOffset + watermark.lastSourceVisitId
+export function resetOffset(checkpoint: SyncCheckpoint): number {
+  return checkpoint.sourceIdOffset + checkpoint.lastSourceVisitId
 }
 
 // --- target fingerprint (change gate) ---
@@ -58,8 +58,8 @@ export function resetOffset(watermark: Watermark): number {
 export async function getTargetFingerprint(db: KyselyDb, browser: string, profile: string): Promise<string | null> {
   const row = await db
     .selectFrom('source_profiles as sp')
-    .innerJoin('profile_watermarks as pw', 'pw.source_profile_id', 'sp.id')
-    .select('pw.last_fingerprint as fingerprint')
+    .innerJoin('sync_checkpoints as sc', 'sc.source_profile_id', 'sp.id')
+    .select('sc.last_fingerprint as fingerprint')
     .where('sp.browser', '=', browser)
     .where('sp.profile', '=', profile)
     .executeTakeFirst()
@@ -69,7 +69,7 @@ export async function getTargetFingerprint(db: KyselyDb, browser: string, profil
 // Store the change-gate fingerprint for a source profile.
 export async function setTargetFingerprint(db: KyselyDb, sourceProfileId: number, fingerprint: string): Promise<void> {
   await db
-    .updateTable('profile_watermarks')
+    .updateTable('sync_checkpoints')
     .set({ last_fingerprint: fingerprint })
     .where('source_profile_id', '=', sourceProfileId)
     .execute()

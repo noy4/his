@@ -1,9 +1,9 @@
 import { sql, type Transaction } from 'kysely'
 import type { DB } from '../../db/schema.ts'
-import type { EpochMs, IdMode, NormalizedVisit, SourceKind, Watermark } from '../../types.ts'
+import type { EpochMs, IdMode, NormalizedVisit, SourceKind, SyncCheckpoint } from '../../types.ts'
 import { getSettings } from '../settings/settings.ts'
 import { matchesHidden } from '../settings/hidden-patterns.ts'
-import { detectCleared, getWatermark, resetOffset, setWatermark } from './watermarks.ts'
+import { detectCleared, getCheckpoint, resetOffset, setCheckpoint } from './checkpoints.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
 export interface SourceProfileRef {
@@ -50,9 +50,9 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
   const { db, profile, visits, options } = params
   const now = options.now ?? Date.now()
   const sourceProfileId = await ensureSourceProfile(db, profile) // find-or-create the profile row
-  const watermark = await getWatermark(db, sourceProfileId) // last ingested source id
+  const checkpoint = await getCheckpoint(db, sourceProfileId) // last ingested source id
 
-  // empty batch: don't touch the watermark, a real clear shows on the next batch
+  // empty batch: don't touch the checkpoint, a real clear shows on the next batch
   if (visits.length === 0)
     return {
       sourceProfileId,
@@ -61,30 +61,30 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
       insertedVisits: 0,
       touchedUrls: 0,
       cleared: false,
-      lastSourceVisitId: watermark.lastSourceVisitId,
-      sourceIdOffset: watermark.sourceIdOffset,
+      lastSourceVisitId: checkpoint.lastSourceVisitId,
+      sourceIdOffset: checkpoint.sourceIdOffset,
       lastRunAt: now,
     }
 
-  // pre-pass: batch max id and the count past the watermark
+  // pre-pass: batch max id and the count past the checkpoint
   let maxSeen = 0
-  let aboveWatermark = 0
+  let aboveCheckpoint = 0
   for (const visit of visits) {
     const id = visit.sourceVisitId
     if (id > maxSeen)
       maxSeen = id
-    if (id > watermark.lastSourceVisitId)
-      aboveWatermark += 1
+    if (id > checkpoint.lastSourceVisitId)
+      aboveCheckpoint += 1
   }
 
-  // id space shrank vs the watermark: history was cleared, realign
+  // id space shrank vs the checkpoint: history was cleared, realign
   const { cleared, offset, skipBelow, processAll } = computeSkip({
-    watermark,
+    checkpoint,
     maxSeen,
     idMode: profile.idMode,
     full: options.full,
   })
-  const pending = processAll ? visits.length : aboveWatermark
+  const pending = processAll ? visits.length : aboveCheckpoint
   const candidates = visits.filter((visit) => visit.sourceVisitId > skipBelow)
 
   // new URLs are flagged hidden at insert time, so sync needs no full recompute
@@ -93,7 +93,7 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
   let insertedVisits = 0
   let touchedUrls = 0
 
-  // all-or-nothing: the watermark advances with the commit
+  // all-or-nothing: the checkpoint advances with the commit
   await db.transaction().execute(async (tx) => {
     const urlIds = new Map<string, number>()
     await resolveUrlIds(tx, candidates, urlIds)
@@ -105,7 +105,7 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
     touchedUrls = deltas.size
     await applyDeltas(tx, deltas)
 
-    await setWatermark(tx, sourceProfileId, {
+    await setCheckpoint(tx, sourceProfileId, {
       lastSourceVisitId: maxSeen,
       sourceIdOffset: offset,
       lastRunAt: now,
@@ -302,22 +302,22 @@ export interface SkipState {
 }
 
 export interface ComputeSkipParams {
-  watermark: Watermark
+  checkpoint: SyncCheckpoint
   maxSeen: number
   idMode: IdMode
   full?: boolean
 }
 
-// decide cleared / offset / skipBelow from the watermark and this batch's ids
-export function computeSkip({ watermark, maxSeen, idMode, full }: ComputeSkipParams): SkipState {
-  const hashIds = idMode === 'hash' // hash ids carry no order, skip watermark logic
-  const cleared = !hashIds && detectCleared(watermark, maxSeen)
+// decide cleared / offset / skipBelow from the checkpoint and this batch's ids
+export function computeSkip({ checkpoint, maxSeen, idMode, full }: ComputeSkipParams): SkipState {
+  const hashIds = idMode === 'hash' // hash ids carry no order, skip checkpoint logic
+  const cleared = !hashIds && detectCleared(checkpoint, maxSeen)
   const processAll = hashIds || full || cleared
   return {
     cleared,
     processAll,
-    offset: cleared ? resetOffset(watermark) : watermark.sourceIdOffset,
-    skipBelow: processAll ? -1 : watermark.lastSourceVisitId,
+    offset: cleared ? resetOffset(checkpoint) : checkpoint.sourceIdOffset,
+    skipBelow: processAll ? -1 : checkpoint.lastSourceVisitId,
   }
 }
 
