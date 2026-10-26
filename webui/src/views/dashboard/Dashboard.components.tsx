@@ -24,6 +24,10 @@ export function DashboardSkeleton() {
           </div>
           <Skeleton className="mt-3 h-3 w-32" />
         </Card>
+        <Card>
+          <CardTitle>Daily Visits</CardTitle>
+          <Skeleton className="h-32" />
+        </Card>
         <div className="grid gap-4">
           <Card>
             <CardTitle>By Hour of Day</CardTitle>

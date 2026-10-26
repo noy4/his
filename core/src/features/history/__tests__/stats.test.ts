@@ -68,8 +68,45 @@ describe('monthly queries', () => {
         { day: `${month}-01`, visits: 2 },
         { day: `${month}-${new Date(end - 1).getDate()}`, visits: 1 },
       ])
+      assert.deepEqual(summary.byDay, [
+        { day: `${month}-01`, visits: 2 },
+        { day: `${month}-${new Date(end - 1).getDate()}`, visits: 1 },
+      ])
 
       await assert.rejects(() => stats(db, '2026-13'), /YYYY-MM/)
     })
   }
+})
+
+describe('all-time stats', () => {
+  let handle: DatabaseSync
+  let db: KyselyDb
+
+  beforeEach(async () => {
+    handle = new DatabaseSync(':memory:')
+    await migrate(handle)
+    db = createDb(handle)
+  })
+
+  afterEach(() => handle.close())
+
+  it('returns ascending daily buckets', async () => {
+    await db
+      .insertInto('source_profiles')
+      .values(sourceProfile)
+      .execute()
+    const dayA = new Date('2026-10-05T12:00:00').getTime()
+    const dayB = new Date('2026-10-03T12:00:00').getTime()
+    await seedUrl(db, { id: 1, url: 'https://github.com/foo/bar', title: 'foo/bar', times: [dayA, dayA + 1000, dayB] })
+
+    const summary = await stats(db)
+    assert.deepEqual(summary.byDay, [
+      { day: '2026-10-03', visits: 1 },
+      { day: '2026-10-05', visits: 2 },
+    ])
+    assert.deepEqual(summary.busiestDays, [
+      { day: '2026-10-05', visits: 2 },
+      { day: '2026-10-03', visits: 1 },
+    ])
+  })
 })

@@ -45,6 +45,7 @@ export interface Stats {
   totals: StatTotals
   byHour: { hour: number; visits: number }[]
   byDow: { dow: number; visits: number }[]
+  byDay: { day: string; visits: number }[]
   topDomains: { domain: string; visits: number }[]
   busiestDays: { day: string; visits: number }[]
 }

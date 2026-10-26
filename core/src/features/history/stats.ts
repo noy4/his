@@ -21,6 +21,7 @@ export interface Stats {
   totals: StatTotals
   byHour: { hour: number; visits: number }[]
   byDow: { dow: number; visits: number }[]
+  byDay: { day: string; visits: number }[]
   topDomains: { domain: string; visits: number }[]
   busiestDays: { day: string; visits: number }[]
 }
@@ -88,7 +89,7 @@ async function allTimeStats(db: KyselyDb): Promise<Stats> {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
   }
 
-  const busiestDays = (await db
+  const byDay = (await db
     .selectFrom('visits')
     .innerJoin('urls', 'urls.id', 'visits.url_id')
     .select((eb) => [
@@ -97,15 +98,16 @@ async function allTimeStats(db: KyselyDb): Promise<Stats> {
     ])
     .where(hiddenExcluded)
     .groupBy(sql`day`)
-    .orderBy(sql`visits`, 'desc')
     .orderBy(sql`day`)
-    .limit(5)
     .execute()).map((row) => ({ day: row.day, visits: Number(row.visits) }))
+
+  const busiestDays = busiestFrom(byDay)
 
   return {
     totals,
     byHour: byHour.map((v, hour) => ({ hour, visits: v })),
     byDow: byDow.map((v, dow) => ({ dow, visits: v })),
+    byDay,
     topDomains: rankDomains(byDomain),
     busiestDays,
   }
@@ -177,7 +179,7 @@ async function monthStats(db: KyselyDb, month: string): Promise<Stats> {
     byDow[Number(bucket.dow)] = Number(bucket.visits)
   }
 
-  const busiestDays = (await db
+  const byDay = (await db
     .selectFrom('visits')
     .innerJoin('urls', 'urls.id', 'visits.url_id')
     .select((eb) => [
@@ -187,21 +189,29 @@ async function monthStats(db: KyselyDb, month: string): Promise<Stats> {
     .where(monthWindow(start, end))
     .where(hiddenExcluded)
     .groupBy(sql`day`)
-    .orderBy(sql`visits`, 'desc')
     .orderBy(sql`day`)
-    .limit(5)
     .execute()).map((row) => ({ day: row.day, visits: Number(row.visits) }))
+
+  const busiestDays = busiestFrom(byDay)
 
   return {
     totals,
     byHour: byHour.map((v, hour) => ({ hour, visits: v })),
     byDow: byDow.map((v, dow) => ({ dow, visits: v })),
+    byDay,
     topDomains: rankDomains(byDomain),
     busiestDays,
   }
 }
 
 // --- helpers ---
+
+// top 5 days by visits, ties broken by day
+function busiestFrom(byDay: { day: string; visits: number }[]): { day: string; visits: number }[] {
+  return [...byDay]
+    .sort((a, b) => b.visits - a.visits || a.day.localeCompare(b.day))
+    .slice(0, 5)
+}
 
 function rankDomains(byDomain: Map<string, number>): { domain: string; visits: number }[] {
   return topBy([...byDomain], { limit: 8, score: ([, visits]) => visits, key: ([domain]) => domain })

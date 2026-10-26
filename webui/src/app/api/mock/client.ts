@@ -17,6 +17,13 @@ function topN(map: Map<string, number>, n: number): { key: string; visits: numbe
     .map(([key, visits]) => ({ key, visits }))
 }
 
+// 'YYYY-MM-DD' → ascending daily series
+function sortByDay(byDay: Map<string, number>): { day: string; visits: number }[] {
+  return [...byDay]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([day, visits]) => ({ day, visits }))
+}
+
 // --- hide patterns (settings) ---
 
 let hiddenPatterns: string[] = []
@@ -60,6 +67,7 @@ function computeStats(): Stats {
     totals: { items: visible.length, visits, domains: byDomain.size, firstVisit, lastVisit },
     byHour: byHour.map((v, hour) => ({ hour, visits: v })),
     byDow: byDow.map((v, dow) => ({ dow, visits: v })),
+    byDay: sortByDay(byDay),
     topDomains: topN(byDomain, 8).map(({ key, visits }) => ({ domain: key, visits })),
     busiestDays: topN(byDay, 5).map(({ key, visits }) => ({ day: key, visits })),
   }
@@ -101,6 +109,7 @@ function computeMonthlyStats(month: string): Stats {
     },
     byHour: byHour.map((v, hour) => ({ hour, visits: v })),
     byDow: byDow.map((v, dow) => ({ dow, visits: v })),
+    byDay: sortByDay(byDay),
     topDomains: topN(byDomain, 8).map(({ key, visits }) => ({ domain: key, visits })),
     busiestDays: topN(byDay, 5).map(({ key, visits }) => ({ day: key, visits })),
   }

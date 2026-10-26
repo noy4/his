@@ -55,6 +55,33 @@ export function Bars({ data, labels }: { data: number[]; labels?: string[] }) {
   )
 }
 
+// daily trend — one bar per day, sparse date labels, ~6 max
+export function DailyBars({ data }: { data: { day: string; visits: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.visits))
+  const step = Math.max(1, Math.ceil(data.length / 6))
+  return (
+    <div className="flex h-32 items-stretch gap-px">
+      {data.map((d, i) => {
+        const show = i === 0 || i === data.length - 1 || i % step === 0
+        return (
+          <div key={d.day} className="flex min-w-0 flex-1 flex-col items-center gap-1">
+            <div className="flex w-full flex-1 items-end">
+              <div
+                className="w-full rounded-t bg-primary/70 hover:bg-primary"
+                style={{ height: `${(d.visits / max) * 100}%` }}
+                title={`${d.day}: ${fmtNum(d.visits)}`}
+              />
+            </div>
+            <span className="whitespace-nowrap text-[10px] text-muted/70">
+              {show ? dayjs(d.day).format('M/D') : ''}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function PeriodToggle<T extends string>({
   value,
   onChange,
