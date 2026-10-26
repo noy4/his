@@ -32,6 +32,11 @@ export function isoDay(epoch: number | null): string {
   return epoch === null ? '' : dayjs(epoch).format('YYYY-MM-DD')
 }
 
+// inclusive day span — 2026/10/01 → 2026/10/26 = 26
+export function daySpan(from: number, to: number): number {
+  return dayjs(to).startOf('day').diff(dayjs(from).startOf('day'), 'day') + 1
+}
+
 // '2026-10-04' → 1791039600000
 export function dayStartMs(iso: string): number | null {
   const d = dayjs(iso)

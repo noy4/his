@@ -1,6 +1,6 @@
 import { Card, CardTitle } from '@/components/ui/card'
 import { cn } from 'cn'
-import { dateLabel } from '@/lib/date'
+import { dateLabel, daySpan } from '@/lib/date'
 import { isLocalDomain } from '@/lib/domain'
 import { fmtNum } from '@/lib/format'
 import { useModel } from '@/lib/useModel'
@@ -23,7 +23,6 @@ import {
 } from '../stats/Stats.components'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const DAY = 86_400_000
 
 export function Dashboard({ app }: { app: AppModel }) {
   const dashboard = useModel(() => new DashboardModel(app.api))
@@ -35,7 +34,7 @@ export function Dashboard({ app }: { app: AppModel }) {
 
   const { totals } = stats
   const monthly = dashboard.mode.value === 'month'
-  const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY) + 1
+  const days = daySpan(totals.firstVisit, totals.lastVisit)
 
   const byHour = stats.byHour.map((h) => h.visits)
   const byHourLabels = stats.byHour.map((h) => (h.hour % 6 === 0 ? String(h.hour) : ''))
