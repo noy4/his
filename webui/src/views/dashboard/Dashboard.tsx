@@ -46,6 +46,7 @@ export function Dashboard({ app }: { app: AppModel }) {
   const topDomains = stats.topDomains
   const busiestDays = stats.busiestDays
   const maxDomainVisits = Math.max(1, ...topDomains.map((d) => d.visits))
+  const maxBusiestVisits = Math.max(1, ...busiestDays.map((d) => d.visits))
 
   const dailyFrom = monthly
     ? `${dashboard.monthKey.value}-01`
@@ -177,12 +178,35 @@ export function Dashboard({ app }: { app: AppModel }) {
           <Card>
             <CardTitle>Busiest Days</CardTitle>
             <ol className="space-y-1 text-sm">
-              {busiestDays.map((d) => (
-                <li key={d.day} className="flex items-center justify-between gap-2">
-                  <span className="truncate text-text-2">{d.day}</span>
-                  <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
-                </li>
-              ))}
+              {busiestDays.map((d, i) => {
+                const top = i < 3
+                const Medal = RANK_MEDALS[i]
+                return (
+                  <li
+                    key={d.day}
+                    className={cn('relative -mx-1 overflow-hidden rounded', i === 3 && 'mt-1 border-t border-border-2')}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                      style={{ width: `${(d.visits / maxBusiestVisits) * 100}%` }}
+                    />
+                    <div className={cn('relative flex items-center gap-2 px-1', top ? 'py-1' : 'py-0.5')}>
+                      <span className="flex w-5 shrink-0 items-center justify-center">
+                        {top && Medal ? (
+                          <Medal className={cn('size-5', RANK_MEDAL_COLORS[i])} />
+                        ) : (
+                          <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
+                        )}
+                      </span>
+                      <span className={cn('min-w-0 flex-1 truncate', top ? 'font-medium text-text' : 'text-text-2')}>
+                        {d.day} ({dayjs(d.day).format('ddd')})
+                      </span>
+                      <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
+                    </div>
+                  </li>
+                )
+              })}
             </ol>
           </Card>
         )}
