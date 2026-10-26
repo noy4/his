@@ -116,17 +116,19 @@ export function Dashboard({ app }: { app: AppModel }) {
             <Stat label="visits" value={fmtNum(totals.visits)} icon={EyeIcon} />
             <Stat label="URLs" value={fmtNum(totals.items)} icon={LinkIcon} />
             <Stat label="domains" value={fmtNum(totals.domains)} icon={WebIcon} />
-            <Stat label="days tracked" value={fmtNum(days)} icon={CalendarIcon} />
+            {!monthly && <Stat label="days tracked" value={fmtNum(days)} icon={CalendarIcon} />}
           </div>
-          <div className="mt-4 flex items-center justify-between gap-2 border-t pt-3">
-            <span className="text-xs text-muted">Period</span>
-            <span className="flex items-center gap-1.5 text-xs text-muted">
-              <span className="font-mono tabular-nums">
-                {dateLabel(totals.firstVisit)} - {dateLabel(totals.lastVisit)}
+          {!monthly && (
+            <div className="mt-4 flex items-center justify-between gap-2 border-t pt-3">
+              <span className="text-xs text-muted">Period</span>
+              <span className="flex items-center gap-1.5 text-xs text-muted">
+                <span className="font-mono tabular-nums">
+                  {dateLabel(totals.firstVisit)} - {dateLabel(totals.lastVisit)}
+                </span>
+                <span className="font-mono tabular-nums">({days}d)</span>
               </span>
-              <span className="font-mono tabular-nums">({days}d)</span>
-            </span>
-          </div>
+            </div>
+          )}
         </Card>
 
         <Card>
@@ -195,17 +197,19 @@ export function Dashboard({ app }: { app: AppModel }) {
           </ol>
         </Card>
 
-        <Card>
-          <CardTitle>Busiest Days</CardTitle>
-          <ol className="space-y-1 text-sm">
-            {busiestDays.map((d) => (
-              <li key={d.day} className="flex items-center justify-between gap-2">
-                <span className="truncate text-text-2">{d.day}</span>
-                <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
-              </li>
-            ))}
-          </ol>
-        </Card>
+        {!monthly && (
+          <Card>
+            <CardTitle>Busiest Days</CardTitle>
+            <ol className="space-y-1 text-sm">
+              {busiestDays.map((d) => (
+                <li key={d.day} className="flex items-center justify-between gap-2">
+                  <span className="truncate text-text-2">{d.day}</span>
+                  <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        )}
       </StatsContentRoot>
     </ViewRoot>
   )

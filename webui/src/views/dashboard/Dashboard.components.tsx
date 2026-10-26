@@ -15,14 +15,13 @@ export function DashboardSkeleton() {
         <Card>
           <CardTitle>Overview</CardTitle>
           <div className="grid grid-cols-2 gap-4">
-            {Array.from({ length: 4 }, (_, i) => (
+            {Array.from({ length: 3 }, (_, i) => (
               <div key={i} className="space-y-1.5">
                 <Skeleton className="h-7 w-20" />
                 <Skeleton className="h-3 w-16" />
               </div>
             ))}
           </div>
-          <Skeleton className="mt-3 h-3 w-32" />
         </Card>
         <Card>
           <CardTitle>Daily Visits</CardTitle>
@@ -40,10 +39,6 @@ export function DashboardSkeleton() {
         </div>
         <Card>
           <CardTitle>Top Domains</CardTitle>
-          <ListSkeleton />
-        </Card>
-        <Card>
-          <CardTitle>Busiest Days</CardTitle>
           <ListSkeleton />
         </Card>
       </StatsContentRoot>
