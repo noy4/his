@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { useState } from 'react'
-import { Bar, BarChart, LabelList, ReferenceArea, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
+import { Bar, BarChart, LabelList, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
 import type { ComponentProps, ReactNode } from 'react'
@@ -73,8 +73,8 @@ export function Bars({
   )
 }
 
-// daily trend — Recharts bar chart, one bar per day, value labelled on the peak
-export function DailyBars({ data }: { data: { day: string; visits: number }[] }) {
+// daily trend — Recharts bar chart, value labelled on the peak, optional dashed average line
+export function DailyBars({ data, avg }: { data: { day: string; visits: number }[]; avg?: number }) {
   const peakDay = data.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 }).day
   const today = dayjs().format('YYYY-MM-DD')
   const [width, setWidth] = useState(0)
@@ -100,6 +100,14 @@ export function DailyBars({ data }: { data: { day: string; visits: number }[] })
         />
         {data.some((d) => d.day === today) && (
           <ReferenceArea x1={today} x2={today} fill="var(--color-warn-soft)" strokeOpacity={0} />
+        )}
+        {avg !== undefined && avg > 0 && (
+          <ReferenceLine
+            y={avg}
+            stroke="var(--color-muted)"
+            strokeDasharray="3 3"
+            label={{ value: fmtNum(Math.round(avg)), position: 'insideBottomRight', fill: 'var(--color-muted)', fontSize: 10, fontStyle: 'italic' }}
+          />
         )}
         <Bar dataKey="visits" fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false}>
           <LabelList

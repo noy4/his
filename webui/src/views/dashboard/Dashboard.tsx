@@ -63,7 +63,9 @@ export function Dashboard({ app }: { app: AppModel }) {
   })()
   const dailyTotal = daily.reduce((sum, d) => sum + d.visits, 0)
   const dailyPeak = daily.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 })
-  const dailyAvg = daily.length === 0 ? 0 : dailyTotal / daily.length
+  const todayKey = dayjs().format('YYYY-MM-DD')
+  const elapsedDays = daily.filter((d) => d.day <= todayKey).length
+  const dailyAvg = elapsedDays === 0 ? 0 : dailyTotal / elapsedDays
   const activeDays = daily.filter((d) => d.visits > 0).length
 
   return (
@@ -112,7 +114,7 @@ export function Dashboard({ app }: { app: AppModel }) {
 
         <Card>
           <CardTitle>Daily Visits</CardTitle>
-          <DailyBars data={daily} />
+          <DailyBars data={daily} avg={dailyAvg} />
           <div className="mt-3 grid grid-cols-2 gap-4 border-t pt-3">
             <Stat
               icon={PeakIcon}
