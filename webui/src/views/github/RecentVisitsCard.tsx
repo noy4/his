@@ -7,7 +7,7 @@ import { cn } from 'cn'
 import type { ComponentProps } from 'react'
 import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
-import { HistoryItemRow } from '../HistoryRow'
+import { HistoryItemRow } from '@/views/shared/HistoryRow'
 import { GitHubVisitCard, GitHubVisitCardGrid } from './GitHubVisitCard'
 import {
   EmptyMessage,

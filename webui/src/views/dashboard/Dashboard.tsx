@@ -10,7 +10,7 @@ import CalendarIcon from '~icons/mdi/calendar-range'
 import EyeIcon from '~icons/mdi/eye-outline'
 import LinkIcon from '~icons/mdi/link-variant'
 import WebIcon from '~icons/mdi/web'
-import { ViewRoot } from '../View.components'
+import { ViewRoot } from '@/views/shared/ViewRoot'
 import { DashboardModel } from './dashboard.model'
 import { DashboardSkeleton } from './Dashboard.components'
 import {
@@ -20,7 +20,7 @@ import {
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
-} from '../stats/Stats.components'
+} from '@/views/shared/Stats.components'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
