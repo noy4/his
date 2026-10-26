@@ -2,7 +2,7 @@ import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/app/app'
 import { UrlsModel } from './urls.model'
 import { SearchBar } from '@/components/SearchBar'
-import { HistoryRow } from '@/views/HistoryRow'
+import { HistoryItemRow } from '@/views/HistoryRow'
 import { HistoryCard, HistoryCardGrid } from '@/views/HistoryCard'
 import { Card } from '@/components/ui/card'
 import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-group'
@@ -42,7 +42,7 @@ export function Urls({ app }: { app: AppModel }) {
         ) : (
           <UrlsList>
             {items.value.map((it) => (
-              <HistoryRow key={it.id} item={it} />
+              <HistoryItemRow key={it.id} item={it} />
             ))}
           </UrlsList>
         )}

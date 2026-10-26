@@ -5,31 +5,64 @@ import { cn } from 'cn'
 import type { ComponentProps, ReactNode } from 'react'
 import { Favicon } from './Favicon'
 
-export function HistoryRow({ item, icon, title }: { item: HistoryItem | HistoryVisit; icon?: ReactNode; title?: ReactNode }) {
-  const host = hostWithoutWww(item.url)
-  const isVisit = 'visitTime' in item
-  const time = isVisit ? item.visitTime : item.lastVisit
+type HistoryItemRowProps = {
+  item: HistoryItem
+  icon?: ReactNode
+  title?: ReactNode
+}
+
+export function HistoryItemRow({ item, icon, title }: HistoryItemRowProps) {
   return (
-    <HistoryRowRoot href={item.url}>
-      {icon ?? <Favicon host={host} />}
+    <HistoryRowFrame
+      href={item.url}
+      icon={icon ?? <Favicon host={hostWithoutWww(item.url)} />}
+      title={title ?? (item.title || item.url)}
+      url={item.url}
+      time={item.lastVisit}
+      visitCount={item.visitCount}
+    />
+  )
+}
 
+export function HistoryVisitRow({ item }: { item: HistoryVisit }) {
+  return (
+    <HistoryRowFrame
+      href={item.url}
+      icon={<Favicon host={hostWithoutWww(item.url)} />}
+      title={item.title || item.url}
+      url={item.url}
+      time={item.visitTime}
+      visitCount={item.visitCount}
+    />
+  )
+}
+
+// --- components ---
+
+type HistoryRowFrameProps = {
+  href: string
+  icon: ReactNode
+  title: ReactNode
+  url: string
+  time: number
+  visitCount: number
+}
+
+function HistoryRowFrame({ href, icon, title, url, time, visitCount }: HistoryRowFrameProps) {
+  return (
+    <HistoryRowRoot href={href}>
+      {icon}
       <HistoryRowBody>
-        <HistoryRowTitle>{title ?? (item.title || item.url)}</HistoryRowTitle>
-        <HistoryRowUrl text={item.url} />
+        <HistoryRowTitle>{title}</HistoryRowTitle>
+        <HistoryRowUrl text={url} />
       </HistoryRowBody>
-
       <HistoryRowMeta>
-        <HistoryCountBadge
-          value={item.visitCount}
-          title={`${item.visitCount} ${isVisit ? 'total visits to this URL' : 'visits'}`}
-        />
+        <HistoryCountBadge value={visitCount} />
         <HistoryTime value={time} />
       </HistoryRowMeta>
     </HistoryRowRoot>
   )
 }
-
-// --- components ---
 
 function HistoryRowRoot({ className, ...props }: ComponentProps<'a'>) {
   return (
@@ -62,12 +95,12 @@ function HistoryRowMeta({ className, ...props }: ComponentProps<'span'>) {
   return <span {...props} className={cn('inline-flex shrink-0 items-center gap-2', className)} />
 }
 
-function HistoryCountBadge({ value, title, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { value: number; title?: string }) {
+function HistoryCountBadge({ value, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { value: number }) {
   if (value <= 1) return null
   return (
     <span
       {...props}
-      title={title}
+      title={`${value} visits`}
       className={cn('min-w-5 rounded bg-primary-soft px-1.5 py-px text-center font-mono text-xs font-semibold text-primary', className)}
     >
       {value}
@@ -77,8 +110,6 @@ function HistoryCountBadge({ value, title, className, ...props }: Omit<Component
 
 function HistoryTime({ value, className, ...props }: Omit<ComponentProps<'time'>, 'children'> & { value: number }) {
   return (
-    <time {...props} className={cn('font-mono text-xs text-muted', className)}>
-      {timeLabel(value)}
-    </time>
+    <time {...props} className={cn('font-mono text-xs text-muted', className)}>{timeLabel(value)}</time>
   )
 }

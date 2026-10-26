@@ -2,7 +2,7 @@ import { useModel } from '@/lib/useModel'
 import { isoDay, relativeDateLabel } from '@/lib/date'
 import { AppModel } from '@/app/app'
 import { SearchBar } from '@/components/SearchBar'
-import { HistoryRow } from '@/views/HistoryRow'
+import { HistoryVisitRow } from '@/views/HistoryRow'
 import type { HistoryVisit } from '@/app/api'
 import { Card } from '@/components/ui/card'
 import { ViewRoot } from '../View.components'
@@ -31,7 +31,7 @@ export function Visits({ app }: { app: AppModel }) {
             <VisitsGroupTitle text={g.label} />
             <VisitsGroupContent>
               {g.items.map((it) => (
-                <HistoryRow key={it.id} item={it} />
+                <HistoryVisitRow key={it.id} item={it} />
               ))}
             </VisitsGroupContent>
           </VisitsGroupRoot>

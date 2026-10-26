@@ -7,7 +7,7 @@ import { cn } from 'cn'
 import type { ComponentProps } from 'react'
 import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
-import { HistoryRow } from '../HistoryRow'
+import { HistoryItemRow } from '../HistoryRow'
 import { GitHubVisitCard, GitHubVisitCardGrid } from './GitHubVisitCard'
 import {
   EmptyMessage,
@@ -168,7 +168,7 @@ function GitHubVisitRow({ item }: { item: HistoryItem }) {
   if (!urlInfo) return null
   const titleInfo = urlInfo.root ? parseGithubTitle(item.title || item.url, urlInfo) : undefined
   return (
-    <HistoryRow
+    <HistoryItemRow
       item={item}
       title={titleInfo && (
         <>
