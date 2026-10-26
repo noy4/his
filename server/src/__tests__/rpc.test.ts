@@ -18,7 +18,7 @@ async function startServer(): Promise<Harness> {
   const address = server.address()
   const port = typeof address === 'object' && address !== null ? address.port : 0
   const origin = `http://127.0.0.1:${port}`
-  const rpc = new RpcServer(server, () => ({ 'history.stats': () => ({ ok: true }) }), {
+  const rpc = new RpcServer(server, { 'history.stats': () => ({ ok: true }) }, {
     allowedOrigins: [origin],
     token: TOKEN,
   })

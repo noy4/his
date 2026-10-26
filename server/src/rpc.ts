@@ -7,7 +7,6 @@ import { METHOD_NOT_FOUND, frameNotification, receive, rpcError } from './rpc-fr
 
 export type Handler = (params: Record<string, any>) => unknown | Promise<unknown>
 export type Broadcast = (method: string, params: unknown) => void
-export type HandlersFactory = (context: { broadcast: Broadcast }) => Record<string, Handler>
 
 export interface RpcOptions {
   // Only this path upgrades to a WebSocket (default /rpc)
@@ -31,9 +30,9 @@ export class RpcServer {
   readonly #token: Buffer
   #heartbeat: NodeJS.Timeout | null = null
 
-  constructor(server: http.Server, handlers: HandlersFactory, options: RpcOptions) {
+  constructor(server: http.Server, handlers: Record<string, Handler>, options: RpcOptions) {
     this.#server = server
-    this.#handlers = handlers({ broadcast: this.broadcast })
+    this.#handlers = handlers
     this.#path = options.path ?? '/rpc'
     this.#allowedOrigins = new Set(options.allowedOrigins)
     this.#token = Buffer.from(options.token)

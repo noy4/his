@@ -58,7 +58,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   }
 
   // Origins need the bound port, so RPC is wired after bind
-  const rpc = new RpcServer(server, () => createHandlers({ db, runner, home }), {
+  const rpc = new RpcServer(server, createHandlers({ db, runner, home }), {
     allowedOrigins: allowedOrigins(instance.port),
     token,
   })
