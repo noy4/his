@@ -16,6 +16,7 @@ import {
   StatsContentRoot,
   StatsHeaderRoot,
 } from '@/views/shared/Stats'
+import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/views/shared/rank-medals'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
 import { RecentItemsCard } from './RecentItemsCard'
@@ -97,28 +98,45 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
 function TopReposCard({ gh }: { gh: GithubModel }) {
   const stats = gh.stats.value
   if (!stats) return null
+  const maxVisits = Math.max(1, ...stats.topRepos.map((r) => r.visits))
   return (
     <Card>
       <CardTitle>Top Repos</CardTitle>
       <ol className="space-y-1 text-sm">
-        {stats.topRepos.map((r) => (
-          <li key={`${r.owner}/${r.repo}`}>
-            <button
-              type="button"
-              className={cn(rowCls, 'w-full text-left')}
-              onClick={() => gh.setFilter({
-                owner: r.owner,
-                repo: r.repo
-              })}
-            >
-              <GitHubAvatar owner={r.owner} />
-              <div className="min-w-0 flex-1 truncate text-text-2">
-                <span className="text-muted">{r.owner}/</span>{r.repo}
-              </div>
-              <VisitCount n={r.visits} />
-            </button>
-          </li>
-        ))}
+        {stats.topRepos.map((r, i) => {
+          const top = i < 3
+          const Medal = RANK_MEDALS[i]
+          return (
+            <li key={`${r.owner}/${r.repo}`} className="relative -mx-1 overflow-hidden rounded">
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                style={{ width: `${(r.visits / maxVisits) * 100}%` }}
+              />
+              <button
+                type="button"
+                className="relative flex w-full items-center gap-2 rounded px-1 text-left hover:bg-bg-3"
+                onClick={() => gh.setFilter({
+                  owner: r.owner,
+                  repo: r.repo
+                })}
+              >
+                <span className="flex w-5 shrink-0 items-center justify-center">
+                  {top && Medal ? (
+                    <Medal className={cn('size-5', RANK_MEDAL_COLORS[i])} />
+                  ) : (
+                    <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
+                  )}
+                </span>
+                <GitHubAvatar owner={r.owner} />
+                <div className="min-w-0 flex-1 truncate text-text-2">
+                  <span className="text-muted">{r.owner}/</span>{r.repo}
+                </div>
+                <VisitCount n={r.visits} />
+              </button>
+            </li>
+          )
+        })}
       </ol>
     </Card>
   )
@@ -127,28 +145,45 @@ function TopReposCard({ gh }: { gh: GithubModel }) {
 function TopOwnersCard({ gh }: { gh: GithubModel }) {
   const stats = gh.stats.value
   if (!stats) return null
+  const maxVisits = Math.max(1, ...stats.topOwners.map((o) => o.visits))
   return (
     <Card>
       <CardTitle>Top Owners</CardTitle>
       <ol className="space-y-1 text-sm">
-        {stats.topOwners.map((o) => (
-          <li key={o.owner}>
-            <button
-              type="button"
-              className={cn(rowCls, 'w-full text-left')}
-              onClick={() => gh.setFilter({ owner: o.owner })}
-            >
-              <GitHubAvatar owner={o.owner} />
-              <span className="min-w-0 flex-1 truncate text-text-2">
-                {o.owner}
-              </span>
-              <span className="shrink-0 text-xs text-muted">
-                {o.repos} repos
-              </span>
-              <VisitCount n={o.visits} />
-            </button>
-          </li>
-        ))}
+        {stats.topOwners.map((o, i) => {
+          const top = i < 3
+          const Medal = RANK_MEDALS[i]
+          return (
+            <li key={o.owner} className="relative -mx-1 overflow-hidden rounded">
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                style={{ width: `${(o.visits / maxVisits) * 100}%` }}
+              />
+              <button
+                type="button"
+                className="relative flex w-full items-center gap-2 rounded px-1 text-left hover:bg-bg-3"
+                onClick={() => gh.setFilter({ owner: o.owner })}
+              >
+                <span className="flex w-5 shrink-0 items-center justify-center">
+                  {top && Medal ? (
+                    <Medal className={cn('size-5', RANK_MEDAL_COLORS[i])} />
+                  ) : (
+                    <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
+                  )}
+                </span>
+                <GitHubAvatar owner={o.owner} />
+                <span className="min-w-0 flex-1 truncate text-text-2">
+                  {o.owner}
+                </span>
+                <span className="shrink-0 text-xs text-muted">
+                  {o.repos} repos
+                </span>
+                <VisitCount n={o.visits} />
+              </button>
+            </li>
+          )
+        })}
       </ol>
     </Card>
   )
