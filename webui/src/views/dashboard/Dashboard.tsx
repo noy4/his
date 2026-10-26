@@ -9,11 +9,8 @@ import { fmtNum } from '@/lib/format'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/app/app'
 import CalendarIcon from '~icons/mdi/calendar-range'
-import ActiveIcon from '~icons/mdi/calendar-check'
-import AvgIcon from '~icons/mdi/calculator-variant'
 import EyeIcon from '~icons/mdi/eye-outline'
 import LinkIcon from '~icons/mdi/link-variant'
-import PeakIcon from '~icons/mdi/trending-up'
 import WebIcon from '~icons/mdi/web'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/views/shared/rank-medals'
@@ -50,23 +47,25 @@ export function Dashboard({ app }: { app: AppModel }) {
   const busiestDays = stats.busiestDays
   const maxDomainVisits = Math.max(1, ...topDomains.map((d) => d.visits))
 
-  const daily = (() => {
-    const byDay = stats.byDay ?? []
-    if (monthly) {
-      const start = `${dashboard.monthKey.value}-01`
-      return dailySeries(byDay, start, dayjs(start).endOf('month').format('YYYY-MM-DD'), { visits: 0 })
-    }
-    if (totals.lastVisit === 0) return []
-    const end = dayjs(totals.lastVisit)
-    const from = Math.max(totals.firstVisit, end.subtract(ALL_TIME_DAYS - 1, 'day').valueOf())
-    return dailySeries(byDay, isoDay(from), isoDay(totals.lastVisit), { visits: 0 })
-  })()
+  const dailyFrom = monthly
+    ? `${dashboard.monthKey.value}-01`
+    : totals.lastVisit === 0
+      ? null
+      : isoDay(Math.max(totals.firstVisit, dayjs(totals.lastVisit).subtract(ALL_TIME_DAYS - 1, 'day').valueOf()))
+  const daily = dailyFrom
+    ? dailySeries(
+        stats.byDay ?? [],
+        dailyFrom,
+        monthly ? dayjs(dailyFrom).endOf('month').format('YYYY-MM-DD') : isoDay(totals.lastVisit),
+        { visits: 0 },
+      )
+    : []
   const dailyTotal = daily.reduce((sum, d) => sum + d.visits, 0)
-  const dailyPeak = daily.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 })
   const todayKey = dayjs().format('YYYY-MM-DD')
   const elapsedDays = daily.filter((d) => d.day <= todayKey).length
   const dailyAvg = elapsedDays === 0 ? 0 : dailyTotal / elapsedDays
-  const activeDays = daily.filter((d) => d.visits > 0).length
+  const activeDays = (stats.byDay ?? []).length
+  const activeDenom = monthly ? elapsedDays : days
 
   return (
     <ViewRoot>
@@ -99,30 +98,26 @@ export function Dashboard({ app }: { app: AppModel }) {
             <Stat label="domains" value={fmtNum(totals.domains)} icon={WebIcon} />
             {!monthly && <Stat label="days tracked" value={fmtNum(days)} icon={CalendarIcon} />}
           </div>
-          {!monthly && (
-            <div className="mt-4 flex items-center justify-between gap-2 border-t pt-3">
-              <span className="text-xs text-muted">Period</span>
-              <span className="flex items-center gap-1.5 text-xs text-muted">
-                <span className="font-mono tabular-nums">
+
+          <div className="mt-4">
+            <DailyBars data={daily} avg={dailyAvg} />
+          </div>
+
+          <div className="mt-3 space-y-1 border-t pt-3">
+            {!monthly && totals.lastVisit !== 0 && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-muted">Period</span>
+                <span className="font-mono text-xs text-muted tabular-nums">
                   {dateLabel(totals.firstVisit)} - {dateLabel(totals.lastVisit)}
                 </span>
-                <span className="font-mono tabular-nums">({days}d)</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-muted">Active days</span>
+              <span className="font-mono text-xs text-muted tabular-nums">
+                {activeDays}/{activeDenom}
               </span>
             </div>
-          )}
-        </Card>
-
-        <Card>
-          <CardTitle>Daily Visits</CardTitle>
-          <DailyBars data={daily} avg={dailyAvg} />
-          <div className="mt-3 grid grid-cols-2 gap-4 border-t pt-3">
-            <Stat
-              icon={PeakIcon}
-              label={dailyPeak.day ? `max · ${dayjs(dailyPeak.day).format('M/D')}` : 'max'}
-              value={fmtNum(dailyPeak.visits)}
-            />
-            <Stat icon={AvgIcon} label="avg / day" value={fmtNum(Math.round(dailyAvg))} />
-            <Stat icon={ActiveIcon} label="active days" value={`${activeDays}/${daily.length}`} />
           </div>
         </Card>
 

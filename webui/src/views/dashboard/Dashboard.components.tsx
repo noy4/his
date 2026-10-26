@@ -15,17 +15,20 @@ export function DashboardSkeleton() {
         <Card>
           <CardTitle>Overview</CardTitle>
           <div className="grid grid-cols-2 gap-4">
-            {Array.from({ length: 3 }, (_, i) => (
+            {Array.from({ length: 4 }, (_, i) => (
               <div key={i} className="space-y-1.5">
                 <Skeleton className="h-7 w-20" />
                 <Skeleton className="h-3 w-16" />
               </div>
             ))}
           </div>
-        </Card>
-        <Card>
-          <CardTitle>Daily Visits</CardTitle>
-          <Skeleton className="h-32" />
+          <div className="mt-4">
+            <Skeleton className="h-40" />
+          </div>
+          <div className="mt-3 space-y-2 border-t pt-3">
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-full" />
+          </div>
         </Card>
         <div className="grid gap-4">
           <Card>
