@@ -15,7 +15,7 @@ if any of that changes.
 - **Reads** your browsers' history databases, but only through a copy it makes
   (`VACUUM INTO` from a read-only handle). The browser's own data is never written.
 - **Writes** only inside the archive home (`~/.his` by default): `history.db`,
-  staging copies and `state.json` (pid, port, url and the `/rpc` token).
+  snapshot copies and `state.json` (pid, port, url and the `/rpc` token).
 - **Serves** the WebUI and the RPC socket on `127.0.0.1`, using a port from 4477
   upward. `Ctrl+C` / `his stop` removes the state file.
 

@@ -180,7 +180,7 @@
         <text class="alabel" x="396" y="210">GET / · static</text>
         <text class="alabel" x="500" y="158">WS /rpc</text>
         <text class="alabel" x="396" y="254">upsert · dedup</text>
-        <text class="alabel" x="463" y="318">staging snapshot</text>
+        <text class="alabel" x="463" y="318">snapshot copy</text>
         <text class="alabel" x="156" y="324">spawn · stop</text>
 
         <!-- Entry -->
@@ -574,7 +574,7 @@ END;</pre>
           <iconify-icon icon="mdi:content-copy"></iconify-icon>
           <h4>Snapshot</h4>
         </div>
-        <p>The live DB is locked by the browser, so sync reads a stable copy. path: <code>~/.his/staging/&lt;source&gt;/&lt;profile&gt;</code></p>
+        <p>The live DB is locked by the browser, so sync reads a stable copy. path: <code>~/.his/snapshots/&lt;source&gt;/&lt;profile&gt;</code></p>
         <ol>
           <li><strong>Copy:</strong> <code>VACUUM INTO</code> from a read-only handle — WAL folded.</li>
           <li><strong>Fallback:</strong> on hot journal / open failure, copy main + sidecars, fold on open.</li>
@@ -658,7 +658,7 @@ END;</pre>
     <pre>~/.his/
 ├── state.json    <span class="c"># running instance — {pid, port, url, db, token} (0600)</span>
 ├── history.db    <span class="c"># the archive</span>
-└── staging/      <span class="c"># snapshot copies</span></pre>
+└── snapshots/    <span class="c"># snapshot copies</span></pre>
   </section>
 
   <!-- RUNTIME STATE -->

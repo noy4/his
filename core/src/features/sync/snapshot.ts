@@ -12,9 +12,9 @@ export interface SnapshotResult {
 const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
 
 export function snapshot(target: SyncTarget, home: string): SnapshotResult {
-  const staging = stagingPath(home, target.browser, target.profile)
-  fs.mkdirSync(staging, { recursive: true })
-  const snapshotPath = path.join(staging, path.basename(target.dbPath))
+  const snapshots = snapshotsPath(home, target.browser, target.profile)
+  fs.mkdirSync(snapshots, { recursive: true })
+  const snapshotPath = path.join(snapshots, path.basename(target.dbPath))
 
   if (isJson(target.dbPath)) {
     fs.copyFileSync(target.dbPath, snapshotPath)
@@ -25,8 +25,8 @@ export function snapshot(target: SyncTarget, home: string): SnapshotResult {
   return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via }
 }
 
-export function stagingPath(home: string, browser: string, profile: string): string {
-  return path.join(home, 'staging', browser, profile)
+export function snapshotsPath(home: string, browser: string, profile: string): string {
+  return path.join(home, 'snapshots', browser, profile)
 }
 
 function isJson(dbPath: string): boolean {

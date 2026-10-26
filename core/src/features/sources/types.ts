@@ -14,7 +14,7 @@ export interface Engine {
   readonly idMode: IdMode
   /** profiles of one browser; profile token selects one, undefined = all */
   discover(browser: Browser, home: string, profile: string | undefined): SyncTarget[]
-  /** read one staging snapshot file */
+  /** read one snapshot file */
   parse(path: string): NormalizedVisit[]
 }
 
