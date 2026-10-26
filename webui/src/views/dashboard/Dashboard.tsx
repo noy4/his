@@ -131,7 +131,8 @@ export function Dashboard({ app }: { app: AppModel }) {
 
         <Card>
           <CardTitle>Daily Visits</CardTitle>
-          <div className="mb-3 grid grid-cols-2 gap-4">
+          <DailyBars data={daily} />
+          <div className="mt-3 grid grid-cols-2 gap-4 border-t pt-3">
             <Stat
               icon={PeakIcon}
               label={dailyPeak.day ? `max · ${dayjs(dailyPeak.day).format('M/D')}` : 'max'}
@@ -140,7 +141,6 @@ export function Dashboard({ app }: { app: AppModel }) {
             <Stat icon={AvgIcon} label="avg / day" value={fmtNum(Math.round(dailyAvg))} />
             <Stat icon={ActiveIcon} label="active days" value={`${activeDays}/${daily.length}`} />
           </div>
-          <DailyBars data={daily} />
         </Card>
 
         <div className="grid gap-4">
