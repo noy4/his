@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
+import { Bar, BarChart, LabelList, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
 import type { ComponentProps, ReactNode } from 'react'
@@ -56,11 +56,12 @@ export function Bars({ data, labels }: { data: number[]; labels?: string[] }) {
   )
 }
 
-// daily trend — Recharts bar chart, one bar per day
+// daily trend — Recharts bar chart, one bar per day, value labelled on the peak
 export function DailyBars({ data }: { data: { day: string; visits: number }[] }) {
+  const peakDay = data.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 }).day
   return (
     <ResponsiveContainer width="100%" height={160}>
-      <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
+      <BarChart data={data} margin={{ top: 16, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
         <XAxis
           dataKey="day"
           tickFormatter={(v: string) => dayjs(v).format('M/D')}
@@ -84,7 +85,25 @@ export function DailyBars({ data }: { data: { day: string; visits: number }[] })
           labelStyle={{ color: 'var(--color-muted)' }}
           itemStyle={{ color: 'var(--color-text)' }}
         />
-        <Bar dataKey="visits" fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+        <Bar dataKey="visits" fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false}>
+          <LabelList
+            dataKey="visits"
+            content={(props) => {
+              if (props.index === undefined || data[props.index]?.day !== peakDay) return <g />
+              return (
+                <text
+                  x={Number(props.x) + Number(props.width) / 2}
+                  y={Number(props.y) - 4}
+                  textAnchor="middle"
+                  fontSize={10}
+                  fill="var(--color-muted)"
+                >
+                  {fmtNum(Number(props.value))}
+                </text>
+              )
+            }}
+          />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   )
