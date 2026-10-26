@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
 import type { ComponentProps, ReactNode } from 'react'
@@ -55,30 +56,37 @@ export function Bars({ data, labels }: { data: number[]; labels?: string[] }) {
   )
 }
 
-// daily trend — one bar per day, sparse date labels, ~6 max
+// daily trend — Recharts bar chart, one bar per day
 export function DailyBars({ data }: { data: { day: string; visits: number }[] }) {
-  const max = Math.max(1, ...data.map((d) => d.visits))
-  const step = Math.max(1, Math.ceil(data.length / 6))
   return (
-    <div className="flex h-32 items-stretch gap-px">
-      {data.map((d, i) => {
-        const show = i === 0 || i === data.length - 1 || i % step === 0
-        return (
-          <div key={d.day} className="flex min-w-0 flex-1 flex-col items-center gap-1">
-            <div className="flex w-full flex-1 items-end">
-              <div
-                className="w-full rounded-t bg-primary/70 hover:bg-primary"
-                style={{ height: `${(d.visits / max) * 100}%` }}
-                title={`${d.day}: ${fmtNum(d.visits)}`}
-              />
-            </div>
-            <span className="whitespace-nowrap text-[10px] text-muted/70">
-              {show ? dayjs(d.day).format('M/D') : ''}
-            </span>
-          </div>
-        )
-      })}
-    </div>
+    <ResponsiveContainer width="100%" height={160}>
+      <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
+        <XAxis
+          dataKey="day"
+          tickFormatter={(v: string) => dayjs(v).format('M/D')}
+          interval="preserveStartEnd"
+          minTickGap={24}
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
+        />
+        <Tooltip
+          cursor={{ fill: 'var(--color-primary-soft)' }}
+          labelFormatter={(v) => dayjs(String(v)).format('ddd, M/D')}
+          formatter={(v) => [fmtNum(Number(v)), 'visits']}
+          contentStyle={{
+            background: 'var(--color-bg-2)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 6,
+            padding: '4px 8px',
+            fontSize: 12,
+          }}
+          labelStyle={{ color: 'var(--color-muted)' }}
+          itemStyle={{ color: 'var(--color-text)' }}
+        />
+        <Bar dataKey="visits" fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+      </BarChart>
+    </ResponsiveContainer>
   )
 }
 
