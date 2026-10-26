@@ -22,14 +22,9 @@ export function GitHubSkeleton() {
               </div>
             ))}
           </div>
-          <Skeleton className="mt-3 h-3 w-32" />
         </Card>
         <Card>
           <CardTitle>Top Repos</CardTitle>
-          <ListSkeleton />
-        </Card>
-        <Card>
-          <CardTitle>Top Owners</CardTitle>
           <ListSkeleton />
         </Card>
         <Card>
