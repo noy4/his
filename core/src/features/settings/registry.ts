@@ -1,6 +1,6 @@
 import type { SettingValue } from './define.ts'
 import { HIDDEN_PATTERNS_KEY, hiddenPatternsSetting } from './hidden.ts'
-import { SYNC_TARGETS_KEY, syncTargetsSetting } from '../sync/targets.ts'
+import { SYNC_TARGETS_KEY, syncTargetsSetting } from './sync-targets.ts'
 
 // key = settings KV key
 export const SETTINGS = {

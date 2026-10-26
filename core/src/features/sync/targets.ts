@@ -2,12 +2,8 @@ import type { KyselyDb } from '../../db/db.ts'
 import type { SyncTarget } from '../sources/types.ts'
 import { discoverAllTargets } from '../sources/discover.ts'
 import { sourceKey } from '../sources/utils.ts'
-import type { SettingDef } from '../settings/define.ts'
+import { SYNC_TARGETS_KEY } from '../settings/sync-targets.ts'
 import { readSettingJson } from '../settings/store.ts'
-
-export const SYNC_TARGETS_KEY = 'sync_targets'
-
-export const syncTargetsSetting: SettingDef<string[]> = {}
 
 // keep only the discovered targets the tokens select
 export function applyTargetFilter(tokens: string[], discovered: SyncTarget[]): SyncTarget[] {

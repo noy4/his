@@ -44,18 +44,10 @@ export async function setCheckpoint(db: KyselyDb, sourceProfileId: number, patch
     .execute()
 }
 
-export function detectCleared(checkpoint: SyncCheckpoint, sourceMaxVisitId: number): boolean {
-  return checkpoint.lastSourceVisitId > 0 && sourceMaxVisitId < checkpoint.lastSourceVisitId
-}
-
-export function resetOffset(checkpoint: SyncCheckpoint): number {
-  return checkpoint.sourceIdOffset + checkpoint.lastSourceVisitId
-}
-
 // --- target fingerprint (change gate) ---
 
-// Read the change-gate fingerprint for a source profile (browser + profile).
-export async function getTargetFingerprint(db: KyselyDb, browser: string, profile: string): Promise<string | null> {
+// Read the stored change-gate fingerprint for a source profile (browser + profile).
+export async function getStoredFingerprint(db: KyselyDb, browser: string, profile: string): Promise<string | null> {
   const row = await db
     .selectFrom('source_profiles as sp')
     .innerJoin('sync_checkpoints as sc', 'sc.source_profile_id', 'sp.id')
@@ -67,7 +59,7 @@ export async function getTargetFingerprint(db: KyselyDb, browser: string, profil
 }
 
 // Store the change-gate fingerprint for a source profile.
-export async function setTargetFingerprint(db: KyselyDb, sourceProfileId: number, fingerprint: string): Promise<void> {
+export async function storeFingerprint(db: KyselyDb, sourceProfileId: number, fingerprint: string): Promise<void> {
   await db
     .updateTable('sync_checkpoints')
     .set({ last_fingerprint: fingerprint })

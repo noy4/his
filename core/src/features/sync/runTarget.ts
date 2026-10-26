@@ -7,7 +7,7 @@ import type { SyncTarget } from '../sources/types.ts'
 import { browserOf } from '../sources/browsers.ts'
 import type { SyncHooks } from './runSync.ts'
 import { probeFingerprint } from '../sources/fingerprint.ts'
-import { getTargetFingerprint, setTargetFingerprint } from './checkpoints.ts'
+import { getStoredFingerprint, storeFingerprint } from './checkpoints.ts'
 
 interface RunTargetParams {
   db: KyselyDb
@@ -33,7 +33,7 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
     const fingerprint = probeFingerprint(target.dbPath)
 
     if (!options.rescan) {
-      const stored = await getTargetFingerprint(db, target.browser, target.profile)
+      const stored = await getStoredFingerprint(db, target.browser, target.profile)
       if (stored === fingerprint) {
         hooks.onLog?.(`${logLabel}: unchanged — skipped`)
         return { status: 'skipped' }
@@ -62,7 +62,7 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
     })
 
     // save fingerprint
-    await setTargetFingerprint(db, result.sourceProfileId, fingerprint)
+    await storeFingerprint(db, result.sourceProfileId, fingerprint)
 
     hooks.onLog?.(`${logLabel}: +${result.insertedVisits} visits · ${result.touchedUrls} urls${result.cleared ? ' (history cleared, offset realigned)' : ''}`)
 

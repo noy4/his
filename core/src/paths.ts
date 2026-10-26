@@ -18,3 +18,7 @@ export function historyDbPath(home: string): string {
 export function takeoutDir(home: string): string {
   return path.join(home, 'takeout')
 }
+
+export function snapshotDir(home: string, browser: string, profile: string): string {
+  return path.join(home, 'snapshots', browser, profile)
+}

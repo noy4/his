@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
+import { snapshotDir } from '../../paths.ts'
 import type { SyncTarget } from '../sources/types.ts'
 
 export interface SnapshotResult {
@@ -12,9 +13,9 @@ export interface SnapshotResult {
 const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
 
 export function snapshot(target: SyncTarget, home: string): SnapshotResult {
-  const snapshots = snapshotsPath(home, target.browser, target.profile)
-  fs.mkdirSync(snapshots, { recursive: true })
-  const snapshotPath = path.join(snapshots, path.basename(target.dbPath))
+  const dir = snapshotDir(home, target.browser, target.profile)
+  fs.mkdirSync(dir, { recursive: true })
+  const snapshotPath = path.join(dir, path.basename(target.dbPath))
 
   if (isJson(target.dbPath)) {
     fs.copyFileSync(target.dbPath, snapshotPath)
@@ -23,10 +24,6 @@ export function snapshot(target: SyncTarget, home: string): SnapshotResult {
 
   const via = vacuumInto(target.dbPath, snapshotPath) ?? copyTrio(target.dbPath, snapshotPath)
   return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via }
-}
-
-export function snapshotsPath(home: string, browser: string, profile: string): string {
-  return path.join(home, 'snapshots', browser, profile)
 }
 
 function isJson(dbPath: string): boolean {
