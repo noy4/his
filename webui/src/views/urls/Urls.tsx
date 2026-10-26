@@ -5,6 +5,7 @@ import { UrlsModel } from './urls.model'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryItemRow } from '@/views/HistoryRow'
 import { HistoryCardGrid, HistoryItemCard } from '@/views/HistoryCard'
+import { HistorySkeleton } from '@/views/HistorySkeleton'
 import { Card } from '@/components/ui/card'
 import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-group'
 import { ViewRoot } from '../View.components'
@@ -27,6 +28,7 @@ export function Urls({ app }: { app: AppModel }) {
 
   const groups = groupByDay(items.value)
   const isCardView = view.value === 'card'
+  const initialLoading = loading.value && items.value.length === 0
 
   return (
     <ViewRoot>
@@ -36,25 +38,29 @@ export function Urls({ app }: { app: AppModel }) {
           <span className="ml-auto" />
           <UrlsViewToggle view={view.value} onChange={setView} />
         </UrlsToolbarRoot>
-        {groups.map((g) => (
-          <UrlsGroupRoot key={g.key}>
-            <UrlsGroupTitle text={g.label} />
-            {isCardView ? (
-              <HistoryCardGrid>
-                {g.items.map((it) => (
-                  <HistoryItemCard key={it.id} item={it} />
-                ))}
-              </HistoryCardGrid>
-            ) : (
-              <UrlsGroupContent>
-                {g.items.map((it) => (
-                  <HistoryItemRow key={it.id} item={it} />
-                ))}
-              </UrlsGroupContent>
-            )}
-          </UrlsGroupRoot>
-        ))}
-        {loading.value && <UrlsLoading />}
+        {initialLoading ? (
+          <HistorySkeleton view={view.value} />
+        ) : (
+          groups.map((g) => (
+            <UrlsGroupRoot key={g.key}>
+              <UrlsGroupTitle text={g.label} />
+              {isCardView ? (
+                <HistoryCardGrid>
+                  {g.items.map((it) => (
+                    <HistoryItemCard key={it.id} item={it} />
+                  ))}
+                </HistoryCardGrid>
+              ) : (
+                <UrlsGroupContent>
+                  {g.items.map((it) => (
+                    <HistoryItemRow key={it.id} item={it} />
+                  ))}
+                </UrlsGroupContent>
+              )}
+            </UrlsGroupRoot>
+          ))
+        )}
+        {!initialLoading && loading.value && <UrlsLoading />}
         {done.value && items.value.length === 0 && <UrlsEmpty />}
         <UrlsLoadMoreSentinel ref={setSentinel} />
       </Card>

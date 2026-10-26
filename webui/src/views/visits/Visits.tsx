@@ -4,6 +4,7 @@ import { AppModel } from '@/app/app'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryVisitRow } from '@/views/HistoryRow'
 import { HistoryCardGrid, HistoryVisitCard } from '@/views/HistoryCard'
+import { HistorySkeleton } from '@/views/HistorySkeleton'
 import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-group'
 import type { HistoryVisit } from '@/app/api'
 import { Card } from '@/components/ui/card'
@@ -26,6 +27,7 @@ export function Visits({ app }: { app: AppModel }) {
   } = useModel(() => new VisitsModel(app.api))
   const groups = groupByDay(items.value)
   const isCardView = view.value === 'card'
+  const initialLoading = loading.value && items.value.length === 0
 
   return (
     <ViewRoot>
@@ -35,25 +37,29 @@ export function Visits({ app }: { app: AppModel }) {
           <span className="ml-auto" />
           <VisitsViewToggle view={view.value} onChange={setView} />
         </VisitsToolbarRoot>
-        {groups.map((g) => (
-          <VisitsGroupRoot key={g.key}>
-            <VisitsGroupTitle text={g.label} />
-            {isCardView ? (
-              <HistoryCardGrid>
-                {g.items.map((it) => (
-                  <HistoryVisitCard key={it.id} item={it} />
-                ))}
-              </HistoryCardGrid>
-            ) : (
-              <VisitsGroupContent>
-                {g.items.map((it) => (
-                  <HistoryVisitRow key={it.id} item={it} />
-                ))}
-              </VisitsGroupContent>
-            )}
-          </VisitsGroupRoot>
-        ))}
-        {loading.value && <VisitsLoading />}
+        {initialLoading ? (
+          <HistorySkeleton view={view.value} />
+        ) : (
+          groups.map((g) => (
+            <VisitsGroupRoot key={g.key}>
+              <VisitsGroupTitle text={g.label} />
+              {isCardView ? (
+                <HistoryCardGrid>
+                  {g.items.map((it) => (
+                    <HistoryVisitCard key={it.id} item={it} />
+                  ))}
+                </HistoryCardGrid>
+              ) : (
+                <VisitsGroupContent>
+                  {g.items.map((it) => (
+                    <HistoryVisitRow key={it.id} item={it} />
+                  ))}
+                </VisitsGroupContent>
+              )}
+            </VisitsGroupRoot>
+          ))
+        )}
+        {!initialLoading && loading.value && <VisitsLoading />}
         {done.value && items.value.length === 0 && <VisitsEmpty />}
         <VisitsLoadMoreSentinel ref={setSentinel} />
       </Card>
