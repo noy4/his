@@ -8,8 +8,11 @@ import { fmtNum } from '@/lib/format'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/app/app'
 import CalendarIcon from '~icons/mdi/calendar-range'
+import ActiveIcon from '~icons/mdi/calendar-check'
+import AvgIcon from '~icons/mdi/calculator-variant'
 import EyeIcon from '~icons/mdi/eye-outline'
 import LinkIcon from '~icons/mdi/link-variant'
+import PeakIcon from '~icons/mdi/trending-up'
 import WebIcon from '~icons/mdi/web'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 import { DashboardModel } from './dashboard.model'
@@ -72,6 +75,10 @@ export function Dashboard({ app }: { app: AppModel }) {
     const from = Math.max(totals.firstVisit, end.subtract(ALL_TIME_DAYS - 1, 'day').valueOf())
     return dailySeries(byDay, isoDay(from), isoDay(totals.lastVisit))
   })()
+  const dailyTotal = daily.reduce((sum, d) => sum + d.visits, 0)
+  const dailyPeak = daily.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 })
+  const dailyAvg = daily.length === 0 ? 0 : dailyTotal / daily.length
+  const activeDays = daily.filter((d) => d.visits > 0).length
 
   return (
     <ViewRoot>
@@ -117,6 +124,15 @@ export function Dashboard({ app }: { app: AppModel }) {
 
         <Card>
           <CardTitle>Daily Visits</CardTitle>
+          <div className="mb-3 grid grid-cols-2 gap-4">
+            <Stat
+              icon={PeakIcon}
+              label={dailyPeak.day ? `max · ${dayjs(dailyPeak.day).format('M/D')}` : 'max'}
+              value={fmtNum(dailyPeak.visits)}
+            />
+            <Stat icon={AvgIcon} label="avg / day" value={fmtNum(Math.round(dailyAvg))} />
+            <Stat icon={ActiveIcon} label="active days" value={`${activeDays}/${daily.length}`} />
+          </div>
           <DailyBars data={daily} />
         </Card>
 
