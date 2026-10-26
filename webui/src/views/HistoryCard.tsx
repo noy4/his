@@ -1,9 +1,9 @@
 import type { HistoryItem, HistoryVisit } from '@/app/api'
+import { Favicon } from '@/components/Favicon'
 import { dateLabel, timeLabel } from '@/lib/date'
 import { cn } from 'cn'
 import { hostWithoutWww } from '@his/core'
 import type { ComponentProps, ReactNode } from 'react'
-import { Favicon } from './Favicon'
 
 export function HistoryCardGrid({ children }: { children: ReactNode }) {
   return <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-2">{children}</div>

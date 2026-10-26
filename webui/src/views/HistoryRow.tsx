@@ -1,9 +1,9 @@
 import type { HistoryItem, HistoryVisit } from '@/app/api'
+import { Favicon } from '@/components/Favicon'
 import { dateLabel, timeLabel } from '@/lib/date'
 import { hostWithoutWww } from '@his/core'
 import { cn } from 'cn'
 import type { ComponentProps, ReactNode } from 'react'
-import { Favicon } from './Favicon'
 
 type HistoryItemRowProps = {
   item: HistoryItem
