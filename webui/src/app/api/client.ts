@@ -1,4 +1,4 @@
-import type { GithubStats, GithubVisitsFilter, HisApi, HisEvents, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SourceEntry, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from './types'
+import type { GithubStats, GithubVisitsFilter, HisApi, HisEvents, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SourceEntry, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from './types'
 import { mockApi } from './mock/client'
 import { RpcTransport } from '@/lib/rpc-transport'
 
@@ -6,8 +6,8 @@ export function createApi(): HisApi {
   if (import.meta.env.VITE_USE_MOCK_API === 'true') return mockApi
   const transport = new RpcTransport<HisEvents>(rpcUrl())
   return {
-    search: (params: SearchParams) => transport.call<SearchPage>('history.search', params),
-    searchVisits: (params: SearchParams) => transport.call<SearchVisitsPage>('history.searchVisits', params),
+    search: (params: SearchFilter) => transport.call<SearchPage>('history.search', params),
+    searchVisits: (params: SearchFilter) => transport.call<SearchVisitsPage>('history.searchVisits', params),
     getVisits: (urlId: number, limit?: number) => transport.call<VisitItem[]>('history.getVisits', { urlId, limit }),
     getItem: (id: number) => transport.call<ItemDetail | null>('history.getItem', { id }),
     stats: (month?: string) => transport.call<Stats>('history.stats', { month }),

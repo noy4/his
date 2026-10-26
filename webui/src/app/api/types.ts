@@ -1,7 +1,8 @@
-import type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisitKind, GithubVisitsFilter } from '@his/core'
-import type { HistoryItem, HistoryVisit, RegisteredSource, SettingsInfo, SettingsPatch, SourceEntry, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core'
+import type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisitKind, GithubVisitsFilter, HistoryItem, HistoryVisit, ItemDetail, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core'
 
-export type { HistoryItem, HistoryVisit, SettingsInfo, SettingsPatch, SourceEntry, Transition, VisitItem }
+// share types (incl. history stats/pages) — single source is @his/core
+export type { HistoryItem, HistoryVisit, ItemDetail, SearchFilter, SearchPage, SearchVisitsPage }
+export type { SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, Transition, VisitItem }
 export type { SyncLastRun, SyncSummary }
 
 // registered archive row — the stats half of a SourceEntry
@@ -9,46 +10,6 @@ export type SourceProfile = RegisteredSource
 
 // sync.run RPC params — the same shape as the CLI --target flags
 export type SyncRunParams = SyncOptions
-
-export interface ItemDetail {
-  item: HistoryItem
-  visits: VisitItem[]
-}
-
-export interface SearchParams {
-  query?: string
-  from?: number
-  to?: number
-  cursor?: string
-  limit?: number
-}
-
-export interface SearchPage {
-  items: HistoryItem[]
-  nextCursor: string | null
-}
-
-export interface SearchVisitsPage {
-  items: HistoryVisit[]
-  nextCursor: string | null
-}
-
-export interface StatTotals {
-  items: number
-  visits: number
-  domains: number
-  firstVisit: number
-  lastVisit: number
-}
-
-export interface Stats {
-  totals: StatTotals
-  byHour: { hour: number; visits: number }[]
-  byDow: { dow: number; visits: number }[]
-  byDay: { day: string; visits: number }[]
-  topDomains: { domain: string; visits: number }[]
-  busiestDays: { day: string; visits: number }[]
-}
 
 // --- GitHub insights (types come from @his/core) ---
 
@@ -65,8 +26,8 @@ export interface HisEvents {
 }
 
 export interface HisApi {
-  search(params: SearchParams): Promise<SearchPage>
-  searchVisits(params: SearchParams): Promise<SearchVisitsPage>
+  search(params: SearchFilter): Promise<SearchPage>
+  searchVisits(params: SearchFilter): Promise<SearchVisitsPage>
   getVisits(urlId: number, limit?: number): Promise<VisitItem[]>
   getItem(id: number): Promise<ItemDetail | null>
   stats(month?: string): Promise<Stats>

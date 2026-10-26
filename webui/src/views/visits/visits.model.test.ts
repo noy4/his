@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { batch } from '@preact/signals-react'
-import type { HisApi, HistoryVisit, SearchParams, SearchVisitsPage } from '@/app/api'
+import type { HisApi, HistoryVisit, SearchFilter, SearchVisitsPage } from '@/app/api'
 import { UrlsModel } from '../urls/urls.model.ts'
 import { VisitsModel } from './visits.model.ts'
 
@@ -18,7 +18,7 @@ function deferred<T>() {
 
 describe('VisitsModel', () => {
   it('keeps repeated URL visits across pages and their cumulative count', async () => {
-    const calls: SearchParams[] = []
+    const calls: SearchFilter[] = []
     const model = new VisitsModel({
       async searchVisits(params) {
         calls.push(params)
@@ -60,7 +60,7 @@ describe('VisitsModel', () => {
   it('filters by query and visit range and ignores stale responses after a change', async () => {
     const initial = deferred<SearchVisitsPage>()
     const current = deferred<SearchVisitsPage>()
-    const calls: SearchParams[] = []
+    const calls: SearchFilter[] = []
     const model = new VisitsModel({
       searchVisits(params) {
         calls.push(params)

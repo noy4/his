@@ -1,25 +1,12 @@
 import { sql, type RawBuilder, type SqlBool } from 'kysely'
 import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../../types.ts'
+import type { ItemDetail, SearchFilter, SearchPage, SearchVisitsPage } from './types.ts'
 import { hiddenExcluded } from '../../db/query/filters.ts'
-import { clampLimit, decodeCursor, paginate, type Page } from '../../db/query/paging.ts'
+import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
-export interface SearchFilter {
-  query?: string
-  url?: string
-  from?: EpochMs
-  to?: EpochMs
-  cursor?: string
-  limit?: number
-}
-
-export interface ItemDetail {
-  item: HistoryItem
-  visits: VisitItem[]
-}
-
-export type SearchPage = Page<HistoryItem>
-export type SearchVisitsPage = Page<HistoryVisit>
+// Data types live in ./types.ts (browser-safe) and are re-exported here.
+export type { ItemDetail, SearchFilter, SearchPage, SearchVisitsPage } from './types.ts'
 
 interface UrlRow {
   id: number

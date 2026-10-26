@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, mergeRepoRoots, parseGithubUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -405,7 +405,7 @@ function decodeCursor(cursor: string): { time: number; id: number } | null {
   }
 }
 
-function findVisible(params: SearchParams): HistoryItem[] {
+function findVisible(params: SearchFilter): HistoryItem[] {
   const q = params.query?.trim().toLowerCase() ?? ''
   const from = params.from ?? -Infinity
   const to = params.to ?? Infinity
@@ -433,7 +433,7 @@ function paginate(rows: HistoryItem[], cursorText?: string, limit = DEFAULT_LIMI
   return { items: page, nextCursor }
 }
 
-function searchVisits(params: SearchParams): SearchVisitsPage {
+function searchVisits(params: SearchFilter): SearchVisitsPage {
   const query = params.query?.trim().toLowerCase() ?? ''
   const from = params.from ?? -Infinity
   const to = params.to ?? Infinity
@@ -464,11 +464,11 @@ function searchVisits(params: SearchParams): SearchVisitsPage {
 }
 
 export const mockApi: HisApi = {
-  async search(params: SearchParams): Promise<SearchPage> {
+  async search(params: SearchFilter): Promise<SearchPage> {
     return paginate(findVisible(params), params.cursor, params.limit)
   },
 
-  async searchVisits(params: SearchParams): Promise<SearchVisitsPage> {
+  async searchVisits(params: SearchFilter): Promise<SearchVisitsPage> {
     return searchVisits(params)
   },
 

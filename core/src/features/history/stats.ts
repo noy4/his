@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import type { EpochMs } from '../../types.ts'
+import type { Stats, StatTotals } from './types.ts'
 import { hostWithoutWww } from '../../util/url.ts'
 import { topBy } from '../../util/top.ts'
 import { hiddenExcluded, monthRange, monthWindow } from '../../db/query/filters.ts'
@@ -8,23 +8,9 @@ import type { KyselyDb } from '../../db/db.ts'
 // Dashboard aggregates; shape mirrors the WebUI Stats 1:1.
 // Buckets use server-local time, days 'YYYY-MM-DD'; month ('YYYY-MM') scopes
 // everything to that calendar month (totals count URLs visited in it).
+// Data types live in ./types.ts (browser-safe) and are re-exported here.
 
-export interface StatTotals {
-  items: number
-  visits: number
-  domains: number
-  firstVisit: EpochMs
-  lastVisit: EpochMs
-}
-
-export interface Stats {
-  totals: StatTotals
-  byHour: { hour: number; visits: number }[]
-  byDow: { dow: number; visits: number }[]
-  byDay: { day: string; visits: number }[]
-  topDomains: { domain: string; visits: number }[]
-  busiestDays: { day: string; visits: number }[]
-}
+export type { Stats, StatTotals } from './types.ts'
 
 // time bucketing uses plain SQL.
 export async function stats(db: KyselyDb, month?: string): Promise<Stats> {
