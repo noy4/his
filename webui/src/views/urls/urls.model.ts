@@ -3,7 +3,6 @@ import type { HisApi, HistoryItem, Stats } from '@/app/api'
 import { FilterModel } from '@/lib/signal/filter'
 
 const PAGE_SIZE = 60
-const VIEW_KEY = 'his.urls.view'
 
 export class UrlsModel {
   readonly api: HisApi
@@ -13,7 +12,7 @@ export class UrlsModel {
   readonly loading = signal(false)
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
-  readonly view = signal(localStorage.getItem(VIEW_KEY) === 'card' ? 'card' : 'list')
+  readonly view = signal('list')
   #pending: Promise<void> = Promise.resolve()
 
   constructor(api: HisApi) {
@@ -26,7 +25,6 @@ export class UrlsModel {
 
   setView = (next: string): void => {
     this.view.value = next
-    localStorage.setItem(VIEW_KEY, next)
   }
 
   subscribe(): () => void {

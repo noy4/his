@@ -6,7 +6,6 @@ export type GithubMode = 'month' | 'all'
 export type GithubFilter = { owner: string; repo?: string } | null
 
 const PAGE = 30
-const VIEW_KEY = 'his.github.view'
 
 export class GithubModel {
   readonly api: HisApi
@@ -17,7 +16,7 @@ export class GithubModel {
   readonly kind = signal<GithubVisitKind>('repo')
   readonly visits = signal<HistoryItem[]>([])
   readonly nextCursor = signal<string | null>(null)
-  readonly view = signal(localStorage.getItem(VIEW_KEY) === 'card' ? 'card' : 'list')
+  readonly view = signal('card')
   #statsReq = 0
   #visitsReq = 0
   #started = false
@@ -62,7 +61,6 @@ export class GithubModel {
 
   setView(next: string): void {
     this.view.value = next
-    localStorage.setItem(VIEW_KEY, next)
   }
 
   loadMore(): void {
