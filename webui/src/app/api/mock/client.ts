@@ -1,4 +1,4 @@
-import type { GithubStats, GithubVisitsParams, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, mergeRepoRoots, parseGithubUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -197,6 +197,7 @@ function computeGithubStats(month?: string): GithubStats {
       lastVisit,
     },
     byDay: computeGithubByDay(month),
+    byDayTop: computeGithubByDayTop(month),
     topRepos: [...repos.values()].sort(byVisits).slice(0, GITHUB_TOP),
     topOwners: [...owners]
       .map(([owner, o]) => ({ owner, repos: o.repos.size, visits: o.visits }))
@@ -228,7 +229,75 @@ function computeGithubByDay(month?: string): { day: string; all: number; repo: n
   return [...map.values()].sort((a, b) => a.day.localeCompare(b.day))
 }
 
-function githubVisits(params: GithubVisitsParams): SearchPage {
+// per-day top items (most recently visited first) per kind, for chart tooltips
+function computeGithubByDayTop(month?: string): GithubStats['byDayTop'] {
+  const days = new Map<string, Record<GithubDayKind, Map<string, GithubDayItem>>>()
+  for (const item of visibleItems()) {
+    const urlInfo = parseGithubUrl(item.url)
+    if (!urlInfo) continue
+    const classified = classifyDayItem(urlInfo)
+    const perDay = new Map<string, { visits: number; lastVisit: number }>()
+    for (const visit of MOCK_VISITS.get(item.id) ?? []) {
+      const day = isoDay(visit.visitTime)
+      if (month !== undefined && day.slice(0, 7) !== month) continue
+      const agg = perDay.get(day) ?? { visits: 0, lastVisit: 0 }
+      agg.visits += 1
+      agg.lastVisit = Math.max(agg.lastVisit, visit.visitTime)
+      perDay.set(day, agg)
+    }
+    for (const [day, agg] of perDay) {
+      const byKind = days.get(day) ?? { repo: new Map(), issue_pr: new Map(), other: new Map() }
+      const bucket = byKind[classified.kind]
+      const cur = bucket.get(classified.key) ?? { ...classified, visits: 0, lastVisit: 0 }
+      cur.visits += agg.visits
+      cur.lastVisit = Math.max(cur.lastVisit, agg.lastVisit)
+      bucket.set(classified.key, cur)
+      days.set(day, byKind)
+    }
+  }
+  return [...days.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, byKind]) => ({
+      day,
+      repo: topRecent([...byKind.repo.values()]),
+      issue_pr: topRecent([...byKind.issue_pr.values()]),
+      other: topRecent([...byKind.other.values()]),
+    }))
+}
+
+// display entity (repo / issue-pr / other) a github URL belongs to
+function classifyDayItem(urlInfo: GithubUrlInfo): Omit<GithubDayItem, 'visits' | 'lastVisit'> {
+  if (urlInfo.root === true && urlInfo.repo !== undefined) {
+    return { key: `repo:${urlInfo.owner}/${urlInfo.repo}`, kind: 'repo', owner: urlInfo.owner, repo: urlInfo.repo }
+  }
+  if (urlInfo.kind !== undefined && urlInfo.number !== undefined && urlInfo.repo !== undefined) {
+    return {
+      key: `issue:${urlInfo.owner}/${urlInfo.repo}/${urlInfo.kind}/${urlInfo.number}`,
+      kind: 'issue_pr',
+      owner: urlInfo.owner,
+      repo: urlInfo.repo,
+      number: urlInfo.number,
+      pullKind: urlInfo.kind,
+    }
+  }
+  return {
+    key: `other:${urlInfo.owner}${urlInfo.repo === undefined ? '' : `/${urlInfo.repo}`}`,
+    kind: 'other',
+    owner: urlInfo.owner,
+    repo: urlInfo.repo,
+  }
+}
+
+const DAY_TOP = 3
+
+// most recently visited first; ties by visits then key
+function topRecent(items: GithubDayItem[]): GithubDayItem[] {
+  return items
+    .sort((a, b) => b.lastVisit - a.lastVisit || b.visits - a.visits || a.key.localeCompare(b.key))
+    .slice(0, DAY_TOP)
+}
+
+function githubVisits(params: GithubVisitsFilter): SearchPage {
   const owner = params.owner?.toLowerCase()
   const repo = params.repo?.toLowerCase()
   const kind = params.kind ?? 'all'
@@ -422,7 +491,7 @@ export const mockApi: HisApi = {
     return computeGithubStats(month)
   },
 
-  async githubVisits(params: GithubVisitsParams): Promise<SearchPage> {
+  async githubVisits(params: GithubVisitsFilter): Promise<SearchPage> {
     return githubVisits(params)
   },
 

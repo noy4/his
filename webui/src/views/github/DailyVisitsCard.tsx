@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { useState } from 'react'
 import { isoDay } from '@/lib/date'
 import { ALL_TIME_DAYS, dailySeries } from '@/lib/time-series'
-import { DailyVisitsChart } from './DailyVisitsChart'
+import { DailyVisitsChart, type DailyVisitTop } from './DailyVisitsChart'
 import { FilterChip } from './GitHub.components'
 import type { GithubModel } from './github.model'
 
@@ -15,23 +15,26 @@ const KINDS: { value: GithubVisitKind; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
-const ZERO = { all: 0, repo: 0, issue_pr: 0, other: 0 }
+const EMPTY_TOP: DailyVisitTop = { repo: [], issue_pr: [], other: [] }
+const ZERO = { all: 0, repo: 0, issue_pr: 0, other: 0, top: EMPTY_TOP }
 
 export function DailyVisitsCard({ gh }: { gh: GithubModel }) {
   const [kind, setKind] = useState<GithubVisitKind>('repo')
   const stats = gh.stats.value
   if (!stats) return null
 
+  const topByDay = new Map(stats.byDayTop.map((d) => [d.day, { repo: d.repo, issue_pr: d.issue_pr, other: d.other }]))
+  const source = stats.byDay.map((d) => ({ ...d, top: topByDay.get(d.day) ?? EMPTY_TOP }))
   const daily = (() => {
     if (gh.mode.value === 'month') {
       const start = `${gh.monthKey.value}-01`
-      return dailySeries(stats.byDay, start, dayjs(start).endOf('month').format('YYYY-MM-DD'), ZERO)
+      return dailySeries(source, start, dayjs(start).endOf('month').format('YYYY-MM-DD'), ZERO)
     }
     const { firstVisit, lastVisit } = stats.totals
     if (lastVisit === 0) return []
     const end = dayjs(lastVisit)
     const from = Math.max(firstVisit, end.subtract(ALL_TIME_DAYS - 1, 'day').valueOf())
-    return dailySeries(stats.byDay, isoDay(from), isoDay(lastVisit), ZERO)
+    return dailySeries(source, isoDay(from), isoDay(lastVisit), ZERO)
   })()
 
   return (

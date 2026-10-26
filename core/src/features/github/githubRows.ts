@@ -1,6 +1,6 @@
 import { sql, type Expression, type ExpressionBuilder, type SqlBool } from 'kysely'
 import { parseGithubUrl, type GithubUrlInfo } from './parse.ts'
-import type { HistoryItem } from '../../types.ts'
+import type { EpochMs, HistoryItem } from '../../types.ts'
 import { hiddenExcluded, monthRange, monthWindow } from '../../db/query/filters.ts'
 import type { KyselyDb } from '../../db/db.ts'
 import type { DB } from '../../db/schema.ts'
@@ -75,24 +75,32 @@ function githubMonthRows(db: KyselyDb, month: string): Promise<GithubRow[]> {
     .execute()
 }
 
-// per-(day, url) visit counts, for daily charts. kind is not classified here (needs parseGithubUrl).
+// per-(day, url) visit counts + last visit time, for daily charts.
+// kind is not classified here (needs parseGithubUrl).
 export interface GithubDayRow {
   day: string
   url: string
   visits: number
+  lastVisit: EpochMs
 }
 
 export async function getGithubVisitDays(db: KyselyDb, month?: string): Promise<GithubDayRow[]> {
   const rows = month === undefined
     ? await githubAllDays(db)
     : await githubMonthDays(db, month)
-  return rows.map((row) => ({ day: row.day, url: row.url, visits: Number(row.visits) }))
+  return rows.map((row) => ({
+    day: row.day,
+    url: row.url,
+    visits: Number(row.visits),
+    lastVisit: Number(row.lastVisit),
+  }))
 }
 
 interface GithubDayQueryRow {
   day: string
   url: string
   visits: number
+  lastVisit: number | bigint
 }
 
 function githubAllDays(db: KyselyDb): Promise<GithubDayQueryRow[]> {
@@ -103,6 +111,7 @@ function githubAllDays(db: KyselyDb): Promise<GithubDayQueryRow[]> {
       sql<string>`DATE(visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
       'urls.url as url',
       sql<number>`COUNT(*)`.as('visits'),
+      sql<number>`MAX(visit_time)`.as('lastVisit'),
     ])
     .where(githubUrl)
     .where(hiddenExcluded)
@@ -121,6 +130,7 @@ function githubMonthDays(db: KyselyDb, month: string): Promise<GithubDayQueryRow
       sql<string>`DATE(visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
       'urls.url as url',
       sql<number>`COUNT(*)`.as('visits'),
+      sql<number>`MAX(visit_time)`.as('lastVisit'),
     ])
     .where(githubUrl)
     .where(monthWindow(start, end))

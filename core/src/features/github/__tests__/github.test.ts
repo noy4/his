@@ -59,6 +59,46 @@ describe('githubStats', () => {
       { day: '2026-10-05', all: 1, repo: 0, issue_pr: 1, other: 0 },
       { day: '2026-10-06', all: 1, repo: 0, issue_pr: 0, other: 1 },
     ])
+    assert.deepEqual(
+      s.byDayTop.map((d) => ({ day: d.day, repo: d.repo.map((i) => i.key), issue_pr: d.issue_pr.map((i) => i.key), other: d.other.map((i) => i.key) })),
+      [
+        { day: '2026-09-01', repo: ['repo:foo/bar'], issue_pr: [], other: [] },
+        { day: '2026-09-10', repo: [], issue_pr: ['issue:foo/baz/issue/3'], other: [] },
+        { day: '2026-10-01', repo: ['repo:foo/bar'], issue_pr: [], other: [] },
+        { day: '2026-10-02', repo: ['repo:foo/bar'], issue_pr: [], other: [] },
+        { day: '2026-10-03', repo: [], issue_pr: ['issue:foo/bar/pull/12'], other: [] },
+        { day: '2026-10-04', repo: [], issue_pr: ['issue:foo/bar/pull/12'], other: [] },
+        { day: '2026-10-05', repo: [], issue_pr: ['issue:foo/bar/pull/12'], other: [] },
+        { day: '2026-10-06', repo: [], issue_pr: [], other: ['other:qux'] },
+      ],
+    )
+    assert.deepEqual(s.byDayTop.find((d) => d.day === '2026-10-03')?.issue_pr[0], {
+      key: 'issue:foo/bar/pull/12', kind: 'issue_pr', owner: 'foo', repo: 'bar',
+      number: 12, pullKind: 'pull', visits: 1, lastVisit: at('2026-10-03T10:00'),
+    })
+  })
+
+  it('byDayTop: most recent first, capped per kind', async () => {
+    const h = new DatabaseSync(':memory:')
+    try {
+      await migrate(h)
+      const tdb = createDb(h)
+      await tdb.insertInto('source_profiles').values(sourceProfile).execute()
+      await seedUrl(tdb, { id: 1, url: 'https://github.com/a/one', title: 'a/one', times: [at('2026-10-10T10:00')] })
+      await seedUrl(tdb, { id: 2, url: 'https://github.com/b/two', title: 'b/two', times: [at('2026-10-10T12:00')] })
+      await seedUrl(tdb, { id: 3, url: 'https://github.com/c/three', title: 'c/three', times: [at('2026-10-10T11:00')] })
+      await seedUrl(tdb, { id: 4, url: 'https://github.com/d/four', title: 'd/four', times: [at('2026-10-10T13:00')] })
+      await seedUrl(tdb, { id: 5, url: 'https://github.com/a/one/pull/1', title: 'PR · Pull Request #1 · a/one', times: [at('2026-10-10T09:00')] })
+
+      const [day] = (await githubStats(tdb)).byDayTop
+      assert.equal(day?.day, '2026-10-10')
+      // recency order (d 13:00, b 12:00, c 11:00); a (10:00) dropped by the top-3 cap
+      assert.deepEqual(day?.repo.map((i) => `${i.owner}/${i.repo}:${i.visits}`), ['d/four:1', 'b/two:1', 'c/three:1'])
+      assert.deepEqual(day?.issue_pr.map((i) => i.key), ['issue:a/one/pull/1'])
+      assert.equal(day?.other.length, 0)
+    } finally {
+      h.close()
+    }
   })
 
   it('month narrows to that month visits', async () => {
@@ -71,11 +111,19 @@ describe('githubStats', () => {
       { day: '2026-09-01', all: 1, repo: 1, issue_pr: 0, other: 0 },
       { day: '2026-09-10', all: 1, repo: 0, issue_pr: 1, other: 0 },
     ])
+    assert.deepEqual(
+      s.byDayTop.map((d) => ({ day: d.day, repo: d.repo.map((i) => i.key), issue_pr: d.issue_pr.map((i) => i.key), other: d.other.map((i) => i.key) })),
+      [
+        { day: '2026-09-01', repo: ['repo:foo/bar'], issue_pr: [], other: [] },
+        { day: '2026-09-10', repo: [], issue_pr: ['issue:foo/baz/issue/3'], other: [] },
+      ],
+    )
   })
 
   it('empty month', async () => {
     assert.deepEqual((await githubStats(db, '2020-01')).totals, { visits: 0, repos: 0, owners: 0, items: 0, firstVisit: 0, lastVisit: 0 })
     assert.deepEqual((await githubStats(db, '2020-01')).byDay, [])
+    assert.deepEqual((await githubStats(db, '2020-01')).byDayTop, [])
   })
 
   it('rejects bad month', async () => {

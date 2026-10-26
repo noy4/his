@@ -1,4 +1,4 @@
-import type { GithubKind, GithubVisitKind } from '@his/core'
+import type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisitKind, GithubVisitsFilter } from '@his/core'
 import type { HistoryItem, HistoryVisit, RegisteredSource, SettingsInfo, SettingsPatch, SourceEntry, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem } from '@his/core'
 
 export type { HistoryItem, HistoryVisit, SettingsInfo, SettingsPatch, SourceEntry, Transition, VisitItem }
@@ -50,26 +50,9 @@ export interface Stats {
   busiestDays: { day: string; visits: number }[]
 }
 
-// --- GitHub insights ---
+// --- GitHub insights (types come from @his/core) ---
 
-export type { GithubKind, GithubVisitKind }
-
-export interface GithubStats {
-  totals: { visits: number; repos: number; owners: number; items: number; firstVisit: number; lastVisit: number }
-  byDay: { day: string; all: number; repo: number; issue_pr: number; other: number }[]
-  topRepos: { owner: string; repo: string; visits: number }[]
-  topOwners: { owner: string; repos: number; visits: number }[]
-  topItems: { owner: string; repo: string; kind: GithubKind; number: number; title: string; url: string; visits: number }[]
-}
-
-export interface GithubVisitsParams {
-  month?: string
-  owner?: string
-  repo?: string
-  kind?: GithubVisitKind
-  cursor?: string
-  limit?: number
-}
+export type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisitKind, GithubVisitsFilter }
 
 export interface SourcesListParams {
   /** probe each source and report whether it changed since the last sync */
@@ -88,7 +71,7 @@ export interface HisApi {
   getItem(id: number): Promise<ItemDetail | null>
   stats(month?: string): Promise<Stats>
   githubStats(month?: string): Promise<GithubStats>
-  githubVisits(params: GithubVisitsParams): Promise<SearchPage>
+  githubVisits(params: GithubVisitsFilter): Promise<SearchPage>
   sourcesList(params?: SourcesListParams): Promise<SourceEntry[]>
   syncRun(params: SyncRunParams): Promise<SyncSummary>
   syncStatus(): Promise<SyncLastRun | null>
