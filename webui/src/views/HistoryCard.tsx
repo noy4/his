@@ -31,7 +31,7 @@ export function HistoryCard({ item }: { item: HistoryItem }) {
 
 // --- components ---
 
-export function HistoryCardRoot({ className, ...props }: ComponentProps<'a'>) {
+function HistoryCardRoot({ className, ...props }: ComponentProps<'a'>) {
   return (
     <a
       target="_blank"
@@ -42,44 +42,44 @@ export function HistoryCardRoot({ className, ...props }: ComponentProps<'a'>) {
   )
 }
 
-export function HistoryCardHeader({ className, ...props }: ComponentProps<'div'>) {
+function HistoryCardHeader({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div {...props} className={cn('flex min-w-0 flex-col items-start gap-2.5', className)} />
   )
 }
 
-export function HistoryCardHeading({ className, ...props }: ComponentProps<'div'>) {
+function HistoryCardHeading({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div {...props} className={cn('grid w-full min-w-0 leading-snug', className)} />
   )
 }
 
-export function HistoryCardTitle({ text, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { text: string }) {
+function HistoryCardTitle({ text, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { text: string }) {
   return (
     <span {...props} className={cn('line-clamp-2 text-sm font-semibold text-text', className)}>{text}</span>
   )
 }
 
-export function HistoryCardMeta({ text, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { text: string }) {
+function HistoryCardMeta({ text, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { text: string }) {
   return (
     <span {...props} className={cn('truncate font-mono text-[11px] text-muted', className)}>{text}</span>
   )
 }
 
-export function HistoryCardFooter({ className, ...props }: ComponentProps<'div'>) {
+function HistoryCardFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div {...props} className={cn('mt-auto flex items-center justify-end gap-2', className)} />
   )
 }
 
-export function HistoryCountBadge({ value, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { value: number }) {
+function HistoryCountBadge({ value, className, ...props }: Omit<ComponentProps<'span'>, 'children'> & { value: number }) {
   if (value <= 1) return null
   return (
     <span {...props} className={cn('min-w-5 rounded bg-primary-soft px-1.5 py-px text-center font-mono text-xs font-semibold text-primary', className)}>{value}</span>
   )
 }
 
-export function HistoryTime({ value, className, ...props }: Omit<ComponentProps<'time'>, 'children'> & { value: number }) {
+function HistoryTime({ value, className, ...props }: Omit<ComponentProps<'time'>, 'children'> & { value: number }) {
   return (
     <time {...props} className={cn('font-mono text-xs text-muted', className)}>{timeLabel(value)}</time>
   )

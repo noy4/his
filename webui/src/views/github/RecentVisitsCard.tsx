@@ -61,7 +61,7 @@ function groupVisitsByDate(visits: HistoryItem[]) {
   return groups
 }
 
-export function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
+function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       {...props}
@@ -123,7 +123,7 @@ function VisitsViewToggle({ gh }: { gh: GithubModel }) {
   )
 }
 
-export function VisitsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
+function VisitsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
   return <EmptyMessage {...props}>No visits</EmptyMessage>
 }
 
@@ -150,11 +150,11 @@ function VisitsGroup({ label, items, isCardView }: {
   )
 }
 
-export function VisitsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
+function VisitsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
   return <section {...props} className={cn('mb-2', className)} />
 }
 
-export function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
+function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
   return (
     <h3
       {...props}
