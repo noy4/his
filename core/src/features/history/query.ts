@@ -5,9 +5,6 @@ import { hiddenExcluded } from '../../db/query/filters.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
-// Data types live in ./types.ts (browser-safe) and are re-exported here.
-export type { ItemDetail, SearchFilter, SearchPage, SearchVisitsPage } from './types.ts'
-
 interface UrlRow {
   id: number
   url: string

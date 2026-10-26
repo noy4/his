@@ -1,2 +1,4 @@
-export { search, searchVisits, getVisits, getItem, type SearchFilter, type SearchPage, type SearchVisitsPage, type ItemDetail } from './query.ts'
-export { stats, type Stats, type StatTotals } from './stats.ts'
+export { getItem, getVisits, search, searchVisits } from './query.ts'
+export { stats } from './stats.ts'
+export type { ItemDetail, SearchFilter, SearchPage, SearchVisitsPage, Stats, StatTotals } from './types.ts'
+

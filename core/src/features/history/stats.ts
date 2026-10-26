@@ -8,9 +8,6 @@ import type { KyselyDb } from '../../db/db.ts'
 // Dashboard aggregates; shape mirrors the WebUI Stats 1:1.
 // Buckets use server-local time, days 'YYYY-MM-DD'; month ('YYYY-MM') scopes
 // everything to that calendar month (totals count URLs visited in it).
-// Data types live in ./types.ts (browser-safe) and are re-exported here.
-
-export type { Stats, StatTotals } from './types.ts'
 
 // time bucketing uses plain SQL.
 export async function stats(db: KyselyDb, month?: string): Promise<Stats> {

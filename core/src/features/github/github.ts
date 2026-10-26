@@ -8,9 +8,6 @@ import { topBy } from '../../util/top.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
 // GitHub Insights read API: githubStats (aggregate) + githubVisits (paged list).
-// Data types live in ./types.ts (browser-safe) and are re-exported here.
-
-export type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter } from './types.ts'
 
 const TOP = 5
 const DAY_TOP = 3
