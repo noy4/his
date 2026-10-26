@@ -1,4 +1,5 @@
 import { useModel } from '@/lib/useModel'
+import { isoDay, relativeDateLabel } from '@/lib/date'
 import { AppModel } from '@/app/app'
 import { UrlsModel } from './urls.model'
 import { SearchBar } from '@/components/SearchBar'
@@ -9,6 +10,7 @@ import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-g
 import { ViewRoot } from '../View.components'
 import { cn } from 'cn'
 import type { ComponentProps } from 'react'
+import type { HistoryItem } from '@/app/api'
 import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
 
@@ -23,6 +25,7 @@ export function Urls({ app }: { app: AppModel }) {
     setView,
   } = useModel(() => new UrlsModel(app.api))
 
+  const groups = groupByDay(items.value)
   const isCardView = view.value === 'card'
 
   return (
@@ -33,19 +36,24 @@ export function Urls({ app }: { app: AppModel }) {
           <span className="ml-auto" />
           <UrlsViewToggle view={view.value} onChange={setView} />
         </UrlsToolbarRoot>
-        {isCardView ? (
-          <HistoryCardGrid>
-            {items.value.map((it) => (
-              <HistoryItemCard key={it.id} item={it} />
-            ))}
-          </HistoryCardGrid>
-        ) : (
-          <UrlsList>
-            {items.value.map((it) => (
-              <HistoryItemRow key={it.id} item={it} />
-            ))}
-          </UrlsList>
-        )}
+        {groups.map((g) => (
+          <UrlsGroupRoot key={g.key}>
+            <UrlsGroupTitle text={g.label} />
+            {isCardView ? (
+              <HistoryCardGrid>
+                {g.items.map((it) => (
+                  <HistoryItemCard key={it.id} item={it} />
+                ))}
+              </HistoryCardGrid>
+            ) : (
+              <UrlsGroupContent>
+                {g.items.map((it) => (
+                  <HistoryItemRow key={it.id} item={it} />
+                ))}
+              </UrlsGroupContent>
+            )}
+          </UrlsGroupRoot>
+        ))}
         {loading.value && <UrlsLoading />}
         {done.value && items.value.length === 0 && <UrlsEmpty />}
         <UrlsLoadMoreSentinel ref={setSentinel} />
@@ -76,7 +84,22 @@ function UrlsViewToggle({ view, onChange }: { view: string; onChange: (v: string
   )
 }
 
-function UrlsList({ className, ...props }: ComponentProps<'div'>) {
+function UrlsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
+  return <section {...props} className={cn('mb-2', className)} />
+}
+
+function UrlsGroupTitle({ text, className, ...props }: Omit<ComponentProps<'h3'>, 'children'> & { text: string }) {
+  return (
+    <h3
+      {...props}
+      className={cn('sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted', className)}
+    >
+      {text}
+    </h3>
+  )
+}
+
+function UrlsGroupContent({ className, ...props }: ComponentProps<'div'>) {
   return <div {...props} className={cn('grid', className)} />
 }
 
@@ -90,4 +113,28 @@ function UrlsEmpty() {
 
 function UrlsLoadMoreSentinel(props: ComponentProps<'div'>) {
   return <div {...props} aria-hidden="true" />
+}
+
+// --- helpers ---
+
+interface DayGroup {
+  key: string
+  label: string
+  items: HistoryItem[]
+}
+
+function groupByDay(items: HistoryItem[]): DayGroup[] {
+  const groups: DayGroup[] = []
+  const byKey = new Map<string, DayGroup>()
+  for (const item of items) {
+    const key = isoDay(item.lastVisit)
+    let g = byKey.get(key)
+    if (!g) {
+      g = { key, label: relativeDateLabel(item.lastVisit), items: [] }
+      byKey.set(key, g)
+      groups.push(g)
+    }
+    g.items.push(item)
+  }
+  return groups
 }
