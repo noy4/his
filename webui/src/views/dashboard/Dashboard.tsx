@@ -20,7 +20,7 @@ import {
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
-} from '@/views/shared/Stats.components'
+} from '@/views/shared/Stats'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 

@@ -15,7 +15,7 @@ import {
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
-} from '@/views/shared/Stats.components'
+} from '@/views/shared/Stats'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
 import { RecentVisitsCard } from './RecentVisitsCard'

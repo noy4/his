@@ -1,5 +1,5 @@
 import { cn } from 'cn'
-import { Sk } from './Stats.components'
+import { Sk } from './Stats'
 
 const ROWS = 10
 
