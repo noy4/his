@@ -11,9 +11,15 @@ import CalendarIcon from '~icons/mdi/calendar-range'
 import ActiveIcon from '~icons/mdi/calendar-check'
 import AvgIcon from '~icons/mdi/calculator-variant'
 import EyeIcon from '~icons/mdi/eye-outline'
+import MedalFirst from '~icons/hugeicons/medal-first-place'
+import MedalSecond from '~icons/hugeicons/medal-second-place'
+import MedalThird from '~icons/hugeicons/medal-third-place'
 import LinkIcon from '~icons/mdi/link-variant'
 import PeakIcon from '~icons/mdi/trending-up'
 import WebIcon from '~icons/mdi/web'
+
+const MEDALS = [MedalFirst, MedalSecond, MedalThird]
+const MEDAL_COLORS = ['text-gold', 'text-silver', 'text-bronze']
 import { ViewRoot } from '@/views/shared/ViewRoot'
 import { DashboardModel } from './dashboard.model'
 import { DashboardSkeleton } from './Dashboard.components'
@@ -63,6 +69,7 @@ export function Dashboard({ app }: { app: AppModel }) {
   const byDow = stats.byDow.map((d) => d.visits)
   const topDomains = stats.topDomains
   const busiestDays = stats.busiestDays
+  const maxDomainVisits = Math.max(1, ...topDomains.map((d) => d.visits))
 
   const daily = (() => {
     const byDay = stats.byDay ?? []
@@ -150,16 +157,41 @@ export function Dashboard({ app }: { app: AppModel }) {
         <Card>
           <CardTitle>Top Domains</CardTitle>
           <ol className="space-y-1 text-sm">
-            {topDomains.map((d) => (
-              <li
-                key={d.domain}
-                className={cn('-mx-1 flex items-center gap-2 rounded px-1', isLocalDomain(d.domain) && 'bg-primary-soft')}
-              >
-                <Favicon host={d.domain} size={18} />
-                <span className="min-w-0 flex-1 truncate text-text-2">{d.domain}</span>
-                <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
-              </li>
-            ))}
+            {topDomains.map((d, i) => {
+              const top = i < 3
+              const Medal = MEDALS[i]
+              return (
+                <li
+                  key={d.domain}
+                  className={cn('relative -mx-1 overflow-hidden rounded', i === 3 && 'mt-1 border-t border-border-2')}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-y-0 left-0 bg-primary/10"
+                    style={{ width: `${(d.visits / maxDomainVisits) * 100}%` }}
+                  />
+                  <div className={cn('relative flex items-center gap-2 px-1', top ? 'py-1' : 'py-0.5')}>
+                    <span className="flex w-5 shrink-0 items-center justify-center">
+                      {top && Medal ? (
+                        <Medal className={cn('size-5', MEDAL_COLORS[i])} />
+                      ) : (
+                        <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
+                      )}
+                    </span>
+                    <Favicon host={d.domain} size={top ? 20 : 18} />
+                    <span className={cn('min-w-0 flex-1 truncate', top ? 'font-medium text-text' : 'text-text-2')}>
+                      {d.domain}
+                    </span>
+                    {isLocalDomain(d.domain) && (
+                      <span className="shrink-0 rounded-full bg-primary-soft px-1.5 py-px text-[9px] font-medium tracking-wide text-primary uppercase">
+                        local
+                      </span>
+                    )}
+                    <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
+                  </div>
+                </li>
+              )
+            })}
           </ol>
         </Card>
 

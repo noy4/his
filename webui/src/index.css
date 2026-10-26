@@ -23,6 +23,9 @@
   );
   --color-warn: #d29922;
   --color-warn-soft: color-mix(in oklab, var(--color-warn) 15%, transparent);
+  --color-gold: #d4af37;
+  --color-silver: #a8b1bd;
+  --color-bronze: #cd7f32;
 }
 
 :root {
@@ -47,6 +50,9 @@
     );
     --color-warn: #9a6700;
     --color-warn-soft: color-mix(in oklab, var(--color-warn) 10%, transparent);
+    --color-gold: #b8860b;
+    --color-silver: #7b8494;
+    --color-bronze: #a05a2c;
     color-scheme: light;
   }
 }
