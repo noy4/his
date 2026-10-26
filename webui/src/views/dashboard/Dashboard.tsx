@@ -3,6 +3,7 @@ import { Card, CardTitle } from '@/components/ui/card'
 import { cn } from 'cn'
 import dayjs from 'dayjs'
 import { dateLabel, daySpan, isoDay } from '@/lib/date'
+import { ALL_TIME_DAYS, dailySeries } from '@/lib/time-series'
 import { isLocalDomain } from '@/lib/domain'
 import { fmtNum } from '@/lib/format'
 import { useModel } from '@/lib/useModel'
@@ -29,23 +30,6 @@ import {
 } from '@/views/shared/Stats'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const ALL_TIME_DAYS = 90
-
-// zero-fill the byDay series across [from, to] so the trend is continuous
-function dailySeries(
-  byDay: { day: string; visits: number }[],
-  from: string,
-  to: string,
-): { day: string; visits: number }[] {
-  const counts = new Map(byDay.map((d) => [d.day, d.visits]))
-  const end = dayjs(to)
-  const out: { day: string; visits: number }[] = []
-  for (let cur = dayjs(from); !cur.isAfter(end, 'day'); cur = cur.add(1, 'day')) {
-    const day = cur.format('YYYY-MM-DD')
-    out.push({ day, visits: counts.get(day) ?? 0 })
-  }
-  return out
-}
 
 export function Dashboard({ app }: { app: AppModel }) {
   const dashboard = useModel(() => new DashboardModel(app.api))
@@ -70,12 +54,12 @@ export function Dashboard({ app }: { app: AppModel }) {
     const byDay = stats.byDay ?? []
     if (monthly) {
       const start = `${dashboard.monthKey.value}-01`
-      return dailySeries(byDay, start, dayjs(start).endOf('month').format('YYYY-MM-DD'))
+      return dailySeries(byDay, start, dayjs(start).endOf('month').format('YYYY-MM-DD'), { visits: 0 })
     }
     if (totals.lastVisit === 0) return []
     const end = dayjs(totals.lastVisit)
     const from = Math.max(totals.firstVisit, end.subtract(ALL_TIME_DAYS - 1, 'day').valueOf())
-    return dailySeries(byDay, isoDay(from), isoDay(totals.lastVisit))
+    return dailySeries(byDay, isoDay(from), isoDay(totals.lastVisit), { visits: 0 })
   })()
   const dailyTotal = daily.reduce((sum, d) => sum + d.visits, 0)
   const dailyPeak = daily.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 })

@@ -74,3 +74,59 @@ function githubMonthRows(db: KyselyDb, month: string): Promise<GithubRow[]> {
     .groupBy('urls.id')
     .execute()
 }
+
+// per-(day, url) visit counts, for daily charts. kind is not classified here (needs parseGithubUrl).
+export interface GithubDayRow {
+  day: string
+  url: string
+  visits: number
+}
+
+export async function getGithubVisitDays(db: KyselyDb, month?: string): Promise<GithubDayRow[]> {
+  const rows = month === undefined
+    ? await githubAllDays(db)
+    : await githubMonthDays(db, month)
+  return rows.map((row) => ({ day: row.day, url: row.url, visits: Number(row.visits) }))
+}
+
+interface GithubDayQueryRow {
+  day: string
+  url: string
+  visits: number
+}
+
+function githubAllDays(db: KyselyDb): Promise<GithubDayQueryRow[]> {
+  return db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select([
+      sql<string>`DATE(visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
+      'urls.url as url',
+      sql<number>`COUNT(*)`.as('visits'),
+    ])
+    .where(githubUrl)
+    .where(hiddenExcluded)
+    .groupBy(sql`day`)
+    .groupBy('urls.url')
+    .orderBy(sql`day`)
+    .execute()
+}
+
+function githubMonthDays(db: KyselyDb, month: string): Promise<GithubDayQueryRow[]> {
+  const [start, end] = monthRange(month)
+  return db
+    .selectFrom('visits')
+    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .select([
+      sql<string>`DATE(visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
+      'urls.url as url',
+      sql<number>`COUNT(*)`.as('visits'),
+    ])
+    .where(githubUrl)
+    .where(monthWindow(start, end))
+    .where(hiddenExcluded)
+    .groupBy(sql`day`)
+    .groupBy('urls.url')
+    .orderBy(sql`day`)
+    .execute()
+}

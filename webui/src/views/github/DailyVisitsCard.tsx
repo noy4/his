@@ -1,0 +1,50 @@
+import type { GithubVisitKind } from '@/app/api'
+import { Card, CardTitle } from '@/components/ui/card'
+import dayjs from 'dayjs'
+import { useState } from 'react'
+import { isoDay } from '@/lib/date'
+import { ALL_TIME_DAYS, dailySeries } from '@/lib/time-series'
+import { DailyVisitsChart } from './DailyVisitsChart'
+import { FilterChip } from './GitHub.components'
+import type { GithubModel } from './github.model'
+
+const KINDS: { value: GithubVisitKind; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'repo', label: 'Repos' },
+  { value: 'issue_pr', label: 'Issues/PRs' },
+  { value: 'other', label: 'Other' },
+]
+
+const ZERO = { all: 0, repo: 0, issue_pr: 0, other: 0 }
+
+export function DailyVisitsCard({ gh }: { gh: GithubModel }) {
+  const [kind, setKind] = useState<GithubVisitKind>('repo')
+  const stats = gh.stats.value
+  if (!stats) return null
+
+  const daily = (() => {
+    if (gh.mode.value === 'month') {
+      const start = `${gh.monthKey.value}-01`
+      return dailySeries(stats.byDay, start, dayjs(start).endOf('month').format('YYYY-MM-DD'), ZERO)
+    }
+    const { firstVisit, lastVisit } = stats.totals
+    if (lastVisit === 0) return []
+    const end = dayjs(lastVisit)
+    const from = Math.max(firstVisit, end.subtract(ALL_TIME_DAYS - 1, 'day').valueOf())
+    return dailySeries(stats.byDay, isoDay(from), isoDay(lastVisit), ZERO)
+  })()
+
+  return (
+    <Card>
+      <CardTitle>Daily Visits</CardTitle>
+      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+        {KINDS.map((k) => (
+          <FilterChip key={k.value} selected={kind === k.value} onClick={() => setKind(k.value)}>
+            {k.label}
+          </FilterChip>
+        ))}
+      </div>
+      <DailyVisitsChart data={daily} dataKey={kind} />
+    </Card>
+  )
+}

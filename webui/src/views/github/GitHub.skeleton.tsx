@@ -24,6 +24,13 @@ export function GitHubSkeleton() {
           </div>
         </Card>
         <Card>
+          <CardTitle>Daily Visits</CardTitle>
+          <div className="mb-2 flex gap-1.5">
+            {Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-5 w-12 rounded-full" />)}
+          </div>
+          <Skeleton className="h-32" />
+        </Card>
+        <Card>
           <CardTitle>Top Repos</CardTitle>
           <ListSkeleton />
         </Card>

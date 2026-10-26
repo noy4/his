@@ -19,6 +19,7 @@ import {
 import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/views/shared/rank-medals'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
+import { DailyVisitsCard } from './DailyVisitsCard'
 import { RecentItemsCard } from './RecentItemsCard'
 import { GithubModel } from './github.model'
 import { GitHubSkeleton } from './GitHub.skeleton'
@@ -57,6 +58,7 @@ export function GitHub({ app }: { app: AppModel }) {
 
       <StatsContentRoot>
         <OverviewCard gh={gh} />
+        <DailyVisitsCard gh={gh} />
         <TopReposCard gh={gh} />
         {!monthly && <TopOwnersCard gh={gh} />}
         <TopItemsCard gh={gh} />

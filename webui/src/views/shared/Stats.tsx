@@ -37,13 +37,7 @@ export function Stat({ label, value, icon: Icon }: { label: string; value: strin
   )
 }
 
-const TOOLTIP_CONTENT_STYLE = {
-  background: 'var(--color-bg-2)',
-  border: '1px solid var(--color-border)',
-  borderRadius: 6,
-  padding: '4px 8px',
-  fontSize: 12,
-} as const
+import { TOOLTIP_CONTENT_STYLE, TOOLTIP_ITEM_STYLE, TOOLTIP_LABEL_STYLE } from '@/views/shared/chart-style'
 
 export function Bars({
   data,
@@ -70,8 +64,8 @@ export function Bars({
           cursor={{ fill: 'var(--color-primary-soft)' }}
           formatter={(v) => [fmtNum(Number(v)), 'visits']}
           contentStyle={TOOLTIP_CONTENT_STYLE}
-          labelStyle={{ color: 'var(--color-muted)' }}
-          itemStyle={{ color: 'var(--color-text)' }}
+          labelStyle={TOOLTIP_LABEL_STYLE}
+          itemStyle={TOOLTIP_ITEM_STYLE}
         />
         <Bar dataKey="value" fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
       </BarChart>
@@ -101,8 +95,8 @@ export function DailyBars({ data }: { data: { day: string; visits: number }[] })
           labelFormatter={(v) => dayjs(String(v)).format('ddd, M/D')}
           formatter={(v) => [fmtNum(Number(v)), 'visits']}
           contentStyle={TOOLTIP_CONTENT_STYLE}
-          labelStyle={{ color: 'var(--color-muted)' }}
-          itemStyle={{ color: 'var(--color-text)' }}
+          labelStyle={TOOLTIP_LABEL_STYLE}
+          itemStyle={TOOLTIP_ITEM_STYLE}
         />
         {data.some((d) => d.day === today) && (
           <ReferenceArea x1={today} x2={today} fill="var(--color-warn-soft)" strokeOpacity={0} />

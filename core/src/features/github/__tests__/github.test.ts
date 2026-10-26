@@ -49,6 +49,16 @@ describe('githubStats', () => {
       title: 'New title', url: 'https://github.com/foo/bar/pull/12/files', visits: 3,
     })
     assert.equal(s.topItems[1]?.kind, 'issue')
+    assert.deepEqual(s.byDay, [
+      { day: '2026-09-01', all: 1, repo: 1, issue_pr: 0, other: 0 },
+      { day: '2026-09-10', all: 1, repo: 0, issue_pr: 1, other: 0 },
+      { day: '2026-10-01', all: 1, repo: 1, issue_pr: 0, other: 0 },
+      { day: '2026-10-02', all: 1, repo: 1, issue_pr: 0, other: 0 },
+      { day: '2026-10-03', all: 1, repo: 0, issue_pr: 1, other: 0 },
+      { day: '2026-10-04', all: 1, repo: 0, issue_pr: 1, other: 0 },
+      { day: '2026-10-05', all: 1, repo: 0, issue_pr: 1, other: 0 },
+      { day: '2026-10-06', all: 1, repo: 0, issue_pr: 0, other: 1 },
+    ])
   })
 
   it('month narrows to that month visits', async () => {
@@ -57,10 +67,15 @@ describe('githubStats', () => {
       visits: 2, repos: 2, owners: 1, items: 1,
       firstVisit: at('2026-09-01T10:00'), lastVisit: at('2026-09-10T10:00'),
     })
+    assert.deepEqual(s.byDay, [
+      { day: '2026-09-01', all: 1, repo: 1, issue_pr: 0, other: 0 },
+      { day: '2026-09-10', all: 1, repo: 0, issue_pr: 1, other: 0 },
+    ])
   })
 
   it('empty month', async () => {
     assert.deepEqual((await githubStats(db, '2020-01')).totals, { visits: 0, repos: 0, owners: 0, items: 0, firstVisit: 0, lastVisit: 0 })
+    assert.deepEqual((await githubStats(db, '2020-01')).byDay, [])
   })
 
   it('rejects bad month', async () => {

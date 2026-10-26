@@ -56,6 +56,7 @@ export type { GithubKind, GithubVisitKind }
 
 export interface GithubStats {
   totals: { visits: number; repos: number; owners: number; items: number; firstVisit: number; lastVisit: number }
+  byDay: { day: string; all: number; repo: number; issue_pr: number; other: number }[]
   topRepos: { owner: string; repo: string; visits: number }[]
   topOwners: { owner: string; repos: number; visits: number }[]
   topItems: { owner: string; repo: string; kind: GithubKind; number: number; title: string; url: string; visits: number }[]

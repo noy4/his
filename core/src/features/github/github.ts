@@ -1,5 +1,5 @@
-import { matchesKind, mergeRepoRoots, type GithubKind, type GithubVisitKind } from './parse.ts'
-import { getGithubRows } from './githubRows.ts'
+import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubKind, type GithubVisitKind } from './parse.ts'
+import { getGithubRows, getGithubVisitDays } from './githubRows.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { Page } from '../../db/query/paging.ts'
@@ -10,6 +10,7 @@ import type { KyselyDb } from '../../db/db.ts'
 
 export interface GithubStats {
   totals: { visits: number; repos: number; owners: number; items: number; firstVisit: EpochMs; lastVisit: EpochMs }
+  byDay: { day: string; all: number; repo: number; issue_pr: number; other: number }[]
   topRepos: { owner: string; repo: string; visits: number }[]
   topOwners: { owner: string; repos: number; visits: number }[]
   topItems: { owner: string; repo: string; kind: GithubKind; number: number; title: string; url: string; visits: number }[]
@@ -99,6 +100,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
       firstVisit,
       lastVisit,
     },
+    byDay: await githubByDay(db, month),
     topRepos: topVisited([...repos.values()], (s) => `${s.owner}/${s.repo}`),
     topOwners: topVisited([...owners].map(([owner, ownerStats]) => ({
       owner,
@@ -109,6 +111,21 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
       .map(({ owner, repo, kind, number, title, url, visits }) =>
         ({ owner, repo, kind, number, title, url, visits })),
   }
+}
+
+// daily visit counts split by URL kind; 'all' is the day total
+async function githubByDay(db: KyselyDb, month?: string): Promise<GithubStats['byDay']> {
+  const byDay = new Map<string, GithubStats['byDay'][number]>()
+  for (const row of await getGithubVisitDays(db, month)) {
+    const urlInfo = parseGithubUrl(row.url)
+    if (urlInfo === null) continue
+    const kind = urlInfo.root ? 'repo' : urlInfo.kind === undefined ? 'other' : 'issue_pr'
+    const bucket = byDay.get(row.day) ?? { day: row.day, all: 0, repo: 0, issue_pr: 0, other: 0 }
+    bucket.all += row.visits
+    bucket[kind] += row.visits
+    byDay.set(row.day, bucket)
+  }
+  return [...byDay.values()].sort((a, b) => a.day.localeCompare(b.day))
 }
 
 /** Paged GitHub visits with owner/repo/kind filters (month optional). */

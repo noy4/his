@@ -196,6 +196,7 @@ function computeGithubStats(month?: string): GithubStats {
       firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
       lastVisit,
     },
+    byDay: computeGithubByDay(month),
     topRepos: [...repos.values()].sort(byVisits).slice(0, GITHUB_TOP),
     topOwners: [...owners]
       .map(([owner, o]) => ({ owner, repos: o.repos.size, visits: o.visits }))
@@ -206,6 +207,25 @@ function computeGithubStats(month?: string): GithubStats {
       .slice(0, GITHUB_TOP)
       .map(({ last: _, ...it }) => it),
   }
+}
+
+// per-day visit counts split by github URL kind; 'all' is the row total
+function computeGithubByDay(month?: string): { day: string; all: number; repo: number; issue_pr: number; other: number }[] {
+  const map = new Map<string, { day: string; all: number; repo: number; issue_pr: number; other: number }>()
+  for (const item of visibleItems()) {
+    const urlInfo = parseGithubUrl(item.url)
+    if (!urlInfo) continue
+    const kind = urlInfo.root ? 'repo' : urlInfo.kind ? 'issue_pr' : 'other'
+    for (const visit of MOCK_VISITS.get(item.id) ?? []) {
+      const day = isoDay(visit.visitTime)
+      if (month !== undefined && day.slice(0, 7) !== month) continue
+      const row = map.get(day) ?? { day, all: 0, repo: 0, issue_pr: 0, other: 0 }
+      row.all += 1
+      row[kind] += 1
+      map.set(day, row)
+    }
+  }
+  return [...map.values()].sort((a, b) => a.day.localeCompare(b.day))
 }
 
 function githubVisits(params: GithubVisitsParams): SearchPage {
