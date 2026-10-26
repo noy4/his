@@ -335,7 +335,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <tr><th>Command</th><th>Behavior</th></tr>
         </thead>
         <tbody>
-          <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable; default: configured targets) · <code>--full</code></td></tr>
+          <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable; default: configured targets) · <code>--rescan</code> (bypass the change gate; dedup, no deletions)</td></tr>
           <tr><td><code>serve</code></td><td>Foreground: HTTP + RPC + 6h sync. <code>--port &lt;n&gt;</code> (default 4477) · <code>--open</code></td></tr>
           <tr><td><code>query [text]</code></td><td>Read-only search → JSON. <code>--url</code> · <code>--from</code> · <code>--to</code> · <code>--limit</code></td></tr>
           <tr><td><code>status</code></td><td>Print running instance (exit 1 if none)</td></tr>
@@ -373,7 +373,7 @@ history.stats        { month? }                                          → Sta
 history.githubStats  { month? }                                          → GithubStats
 history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
 sources.list         { check? }                                          → SourceEntry[]    <span class="c"># discovered ∪ registered · check probes source files</span>
-sync.run             { targets?, full? }                                 → SyncSummary      <span class="c"># targets omitted → settings</span>
+sync.run             { targets?, rescan? }                               → SyncSummary      <span class="c"># targets omitted → settings</span>
 sync.status                                                              → LastRun | null
 settings.get                                                             → SettingsInfo     <span class="c"># { hidden_patterns, hidden_url_count, sync_targets }</span>
 settings.set         { hidden_patterns?, sync_targets? }                 → SettingsInfo</pre>

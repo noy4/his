@@ -29,10 +29,10 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
   const logLabel = `${browser.label} · ${target.profile}`
 
   try {
-    // check fingerprint (--full bypasses)
+    // check fingerprint (--rescan bypasses)
     const fingerprint = probeFingerprint(target.dbPath)
 
-    if (!options.full) {
+    if (!options.rescan) {
       const stored = await getTargetFingerprint(db, target.browser, target.profile)
       if (stored === fingerprint) {
         hooks.onLog?.(`${logLabel}: unchanged — skipped`)
@@ -56,7 +56,7 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
       },
       visits,
       options: {
-        full: options.full,
+        rescan: options.rescan,
         now: Date.now(),
       },
     })

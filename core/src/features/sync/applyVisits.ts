@@ -15,7 +15,7 @@ export interface SourceProfileRef {
 }
 
 export interface ApplyVisitsOptions {
-  full?: boolean
+  rescan?: boolean
   now?: EpochMs
 }
 
@@ -82,7 +82,7 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
     checkpoint,
     maxSeen,
     idMode: profile.idMode,
-    full: options.full,
+    rescan: options.rescan,
   })
   const pending = processAll ? visits.length : aboveCheckpoint
   const candidates = visits.filter((visit) => visit.sourceVisitId > skipBelow)
@@ -305,14 +305,14 @@ export interface ComputeSkipParams {
   checkpoint: SyncCheckpoint
   maxSeen: number
   idMode: IdMode
-  full?: boolean
+  rescan?: boolean
 }
 
 // decide cleared / offset / skipBelow from the checkpoint and this batch's ids
-export function computeSkip({ checkpoint, maxSeen, idMode, full }: ComputeSkipParams): SkipState {
+export function computeSkip({ checkpoint, maxSeen, idMode, rescan }: ComputeSkipParams): SkipState {
   const hashIds = idMode === 'hash' // hash ids carry no order, skip checkpoint logic
   const cleared = !hashIds && detectCleared(checkpoint, maxSeen)
-  const processAll = hashIds || full || cleared
+  const processAll = hashIds || rescan || cleared
   return {
     cleared,
     processAll,

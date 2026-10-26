@@ -101,9 +101,10 @@ export interface SyncSummary {
 
 // how to run a sync — CLI flags, sync.run RPC params, runner invocations
 export interface SyncOptions {
-  /** limit targets: "browser" (all its profiles) or "browser:profile" (exact) */
+  /** limit targets: "browser" or "browser:profile" */
   targets?: string[]
-  full?: boolean
+  /** bypass the change gate and rescan every source visit (dedup; no deletions) */
+  rescan?: boolean
 }
 
 // the runner's record of the most recent sync execution — sync.status RPC
