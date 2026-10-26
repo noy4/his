@@ -1,7 +1,12 @@
 import type { EpochMs } from '../../types.ts'
-import type { GithubKind, GithubVisitKind } from './parse.ts'
 
-// Browser-safe GitHub data types (no DB/Node imports). Functions live in github.ts.
+// Browser-safe GitHub data types (no DB/Node imports). Functions live in github.ts / parse.ts.
+
+export type GithubKind = 'pull' | 'issue'
+// 'repo' = repo root only
+// 'issue_pr' = single PR/Issue
+// 'other' = owner pages and repo pages without root / PR / Issue
+export type GithubVisitKind = 'all' | 'repo' | 'issue_pr' | 'other'
 
 /** kinds that can be charted per day ('all' is the row total) */
 export type GithubDayKind = Exclude<GithubVisitKind, 'all'>

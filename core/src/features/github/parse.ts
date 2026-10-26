@@ -1,10 +1,6 @@
 // github.com URL → owner / repo / PR・Issue
 
-export type GithubKind = 'pull' | 'issue'
-// 'repo' = repo root only
-// 'issue_pr' = single PR/Issue
-// 'other' = owner pages and repo pages without root / PR / Issue
-export type GithubVisitKind = 'all' | 'repo' | 'issue_pr' | 'other'
+import type { GithubKind, GithubVisitKind } from './types.ts'
 
 export interface GithubUrlInfo {
   owner: string
