@@ -1,6 +1,7 @@
 import type { GithubDayItem, GithubDayKind, GithubVisitKind } from '@/app/api'
 import dayjs from 'dayjs'
-import { Bar, BarChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
+import { useState } from 'react'
+import { Bar, BarChart, LabelList, ReferenceArea, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import { fmtNum } from '@/lib/format'
 import WebIcon from '~icons/mdi/web'
 import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
@@ -24,9 +25,19 @@ export interface DailyVisitRow {
 // Tooltip breaks the hovered day down: kind totals for 'all', most recently visited items otherwise.
 export function DailyVisitsChart({ data, dataKey }: { data: DailyVisitRow[]; dataKey: GithubVisitKind }) {
   const today = dayjs().format('YYYY-MM-DD')
+  const [width, setWidth] = useState(0)
+  let peakDay = ''
+  let peakMax = -1
+  for (const d of data) {
+    if (d[dataKey] > peakMax) {
+      peakMax = d[dataKey]
+      peakDay = d.day
+    }
+  }
+  if (peakMax <= 0) peakDay = ''
   return (
-    <ResponsiveContainer width="100%" height={160}>
-      <BarChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
+    <ResponsiveContainer width="100%" height={160} onResize={(w) => setWidth(w)}>
+      <BarChart data={data} margin={{ top: 16, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
         <XAxis
           dataKey="day"
           tickFormatter={(v: string) => dayjs(v).format('M/D')}
@@ -40,7 +51,31 @@ export function DailyVisitsChart({ data, dataKey }: { data: DailyVisitRow[]; dat
         {data.some((d) => d.day === today) && (
           <ReferenceArea x1={today} x2={today} fill="var(--color-warn-soft)" strokeOpacity={0} />
         )}
-        <Bar dataKey={dataKey} fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+        <Bar dataKey={dataKey} fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false}>
+          <LabelList
+            dataKey={dataKey}
+            content={(props) => {
+              if (props.index === undefined || data[props.index]?.day !== peakDay) return <g />
+              const text = fmtNum(Number(props.value))
+              const center = Number(props.x) + Number(props.width) / 2
+              const half = (text.length * 5.5) / 2
+              const y = Number(props.y) - 4
+              const nearLeft = width > 0 && center - half < 2
+              const nearRight = width > 0 && center + half > width - 2
+              return (
+                <text
+                  x={nearLeft ? 2 : nearRight ? width - 2 : center}
+                  y={y}
+                  textAnchor={nearLeft ? 'start' : nearRight ? 'end' : 'middle'}
+                  fontSize={10}
+                  fill="var(--color-muted)"
+                >
+                  {text}
+                </text>
+              )
+            }}
+          />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   )
