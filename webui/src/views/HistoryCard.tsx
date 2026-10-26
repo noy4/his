@@ -1,5 +1,5 @@
 import type { HistoryItem, HistoryVisit } from '@/app/api'
-import { timeLabel } from '@/lib/date'
+import { dateLabel, timeLabel } from '@/lib/date'
 import { cn } from 'cn'
 import { hostWithoutWww } from '@his/core'
 import type { ComponentProps, ReactNode } from 'react'
@@ -110,6 +110,12 @@ function HistoryCountBadge({ value, className, ...props }: Omit<ComponentProps<'
 
 function HistoryTime({ value, className, ...props }: Omit<ComponentProps<'time'>, 'children'> & { value: number }) {
   return (
-    <time {...props} className={cn('font-mono text-xs text-muted', className)}>{timeLabel(value)}</time>
+    <time
+      {...props}
+      title={`${dateLabel(value)} ${timeLabel(value)}`}
+      className={cn('font-mono text-xs text-muted', className)}
+    >
+      {timeLabel(value)}
+    </time>
   )
 }
