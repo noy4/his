@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { useState } from 'react'
 import { Bar, BarChart, LabelList, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
@@ -36,31 +37,54 @@ export function Stat({ label, value, icon: Icon }: { label: string; value: strin
   )
 }
 
-export function Bars({ data, labels }: { data: number[]; labels?: string[] }) {
-  const max = Math.max(1, ...data)
+const TOOLTIP_CONTENT_STYLE = {
+  background: 'var(--color-bg-2)',
+  border: '1px solid var(--color-border)',
+  borderRadius: 6,
+  padding: '4px 8px',
+  fontSize: 12,
+} as const
+
+export function Bars({
+  data,
+  labels,
+  interval = 'preserveStartEnd',
+}: {
+  data: number[]
+  labels?: string[]
+  interval?: number | 'preserveStart' | 'preserveEnd' | 'preserveStartEnd'
+}) {
+  const chartData = data.map((v, i) => ({ label: labels?.[i] ?? String(i), value: v }))
   return (
-    <div className="flex h-32 items-stretch gap-1">
-      {data.map((v, i) => (
-        <div key={i} className="flex min-w-0 flex-1 flex-col items-center gap-1">
-          <div className="flex w-full flex-1 items-end">
-            <div
-              className="w-full rounded-t bg-primary/70 hover:bg-primary"
-              style={{ height: `${(v / max) * 100}%` }}
-              title={`${labels?.[i] ?? i}: ${fmtNum(v)}`}
-            />
-          </div>
-          <span className="text-[10px] text-muted/70">{labels ? labels[i] : ''}</span>
-        </div>
-      ))}
-    </div>
+    <ResponsiveContainer width="100%" height={128}>
+      <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
+        <XAxis
+          dataKey="label"
+          interval={interval}
+          minTickGap={24}
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
+        />
+        <Tooltip
+          cursor={{ fill: 'var(--color-primary-soft)' }}
+          formatter={(v) => [fmtNum(Number(v)), 'visits']}
+          contentStyle={TOOLTIP_CONTENT_STYLE}
+          labelStyle={{ color: 'var(--color-muted)' }}
+          itemStyle={{ color: 'var(--color-text)' }}
+        />
+        <Bar dataKey="value" fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+      </BarChart>
+    </ResponsiveContainer>
   )
 }
 
 // daily trend — Recharts bar chart, one bar per day, value labelled on the peak
 export function DailyBars({ data }: { data: { day: string; visits: number }[] }) {
   const peakDay = data.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 }).day
+  const [width, setWidth] = useState(0)
   return (
-    <ResponsiveContainer width="100%" height={160}>
+    <ResponsiveContainer width="100%" height={160} onResize={(w) => setWidth(w)}>
       <BarChart data={data} margin={{ top: 16, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
         <XAxis
           dataKey="day"
@@ -75,13 +99,7 @@ export function DailyBars({ data }: { data: { day: string; visits: number }[] })
           cursor={{ fill: 'var(--color-primary-soft)' }}
           labelFormatter={(v) => dayjs(String(v)).format('ddd, M/D')}
           formatter={(v) => [fmtNum(Number(v)), 'visits']}
-          contentStyle={{
-            background: 'var(--color-bg-2)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 6,
-            padding: '4px 8px',
-            fontSize: 12,
-          }}
+          contentStyle={TOOLTIP_CONTENT_STYLE}
           labelStyle={{ color: 'var(--color-muted)' }}
           itemStyle={{ color: 'var(--color-text)' }}
         />
@@ -90,15 +108,21 @@ export function DailyBars({ data }: { data: { day: string; visits: number }[] })
             dataKey="visits"
             content={(props) => {
               if (props.index === undefined || data[props.index]?.day !== peakDay) return <g />
+              const text = fmtNum(Number(props.value))
+              const center = Number(props.x) + Number(props.width) / 2
+              const half = (text.length * 5.5) / 2
+              const y = Number(props.y) - 4
+              const nearLeft = width > 0 && center - half < 2
+              const nearRight = width > 0 && center + half > width - 2
               return (
                 <text
-                  x={Number(props.x) + Number(props.width) / 2}
-                  y={Number(props.y) - 4}
-                  textAnchor="middle"
+                  x={nearLeft ? 2 : nearRight ? width - 2 : center}
+                  y={y}
+                  textAnchor={nearLeft ? 'start' : nearRight ? 'end' : 'middle'}
                   fontSize={10}
                   fill="var(--color-muted)"
                 >
-                  {fmtNum(Number(props.value))}
+                  {text}
                 </text>
               )
             }}

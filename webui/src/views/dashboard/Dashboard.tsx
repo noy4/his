@@ -65,7 +65,7 @@ export function Dashboard({ app }: { app: AppModel }) {
   const days = daySpan(totals.firstVisit, totals.lastVisit)
 
   const byHour = stats.byHour.map((h) => h.visits)
-  const byHourLabels = stats.byHour.map((h) => (h.hour % 6 === 0 ? String(h.hour) : ''))
+  const byHourLabels = stats.byHour.map((h) => `${h.hour}:00`)
   const byDow = stats.byDow.map((d) => d.visits)
   const topDomains = stats.topDomains
   const busiestDays = stats.busiestDays
@@ -150,7 +150,7 @@ export function Dashboard({ app }: { app: AppModel }) {
           </Card>
           <Card>
             <CardTitle>By Day of Week</CardTitle>
-            <Bars data={byDow} labels={DOW} />
+            <Bars data={byDow} labels={DOW} interval={0} />
           </Card>
         </div>
 
