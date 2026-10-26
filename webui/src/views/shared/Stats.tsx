@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { useState } from 'react'
-import { Bar, BarChart, LabelList, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
+import { Bar, BarChart, LabelList, ReferenceArea, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import ChevronLeft from '~icons/mdi/chevron-left'
 import ChevronRight from '~icons/mdi/chevron-right'
 import type { ComponentProps, ReactNode } from 'react'
@@ -82,6 +82,7 @@ export function Bars({
 // daily trend — Recharts bar chart, one bar per day, value labelled on the peak
 export function DailyBars({ data }: { data: { day: string; visits: number }[] }) {
   const peakDay = data.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 }).day
+  const today = dayjs().format('YYYY-MM-DD')
   const [width, setWidth] = useState(0)
   return (
     <ResponsiveContainer width="100%" height={160} onResize={(w) => setWidth(w)}>
@@ -103,6 +104,9 @@ export function DailyBars({ data }: { data: { day: string; visits: number }[] })
           labelStyle={{ color: 'var(--color-muted)' }}
           itemStyle={{ color: 'var(--color-text)' }}
         />
+        {data.some((d) => d.day === today) && (
+          <ReferenceArea x1={today} x2={today} fill="var(--color-warn-soft)" strokeOpacity={0} />
+        )}
         <Bar dataKey="visits" fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false}>
           <LabelList
             dataKey="visits"
