@@ -8,7 +8,7 @@ import type { ComponentProps } from 'react'
 import ListIcon from '~icons/mdi/format-list-bulleted'
 import GridIcon from '~icons/mdi/view-grid-outline'
 import { HistoryItemRow } from '@/views/shared/HistoryRow'
-import { GitHubVisitCard, GitHubVisitCardGrid } from './GitHubVisitCard'
+import { GitHubItemCard, GitHubItemCardGrid } from './GitHubItemCard'
 import {
   EmptyMessage,
   FilterChip,
@@ -18,25 +18,25 @@ import {
 } from './GitHub.components'
 import type { GithubModel } from './github.model'
 
-export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
+export function RecentItemsCard({ gh }: { gh: GithubModel }) {
   const hasMore = gh.nextCursor.value !== null
   const isCardView = gh.view.value === 'card'
-  const groups = groupVisitsByDate(gh.visits.value)
+  const groups = groupItemsByDate(gh.visits.value)
 
   return (
     <Card className="mt-4">
-      <CardTitle>Recent Visits</CardTitle>
-      <VisitsToolbarRoot>
-        <VisitsKindFilter gh={gh} />
+      <CardTitle>Recent Items</CardTitle>
+      <ItemsToolbarRoot>
+        <ItemsKindFilter gh={gh} />
         <span className="ml-auto" />
-        <VisitsActiveFilter gh={gh} />
-        <VisitsViewToggle gh={gh} />
-      </VisitsToolbarRoot>
+        <ItemsActiveFilter gh={gh} />
+        <ItemsViewToggle gh={gh} />
+      </ItemsToolbarRoot>
 
-      {groups.length === 0 && <VisitsEmptyMessage />}
+      {groups.length === 0 && <ItemsEmptyMessage />}
 
       {groups.map((group) => (
-        <VisitsGroup
+        <ItemsGroup
           key={group.label}
           label={group.label}
           items={group.items}
@@ -50,18 +50,18 @@ export function RecentVisitsCard({ gh }: { gh: GithubModel }) {
 
 // --- components ---
 
-function groupVisitsByDate(visits: HistoryItem[]) {
+function groupItemsByDate(items: HistoryItem[]) {
   const groups: { label: string; items: HistoryItem[] }[] = []
-  for (const v of visits) {
-    const label = relativeDateLabel(v.lastVisit)
+  for (const item of items) {
+    const label = relativeDateLabel(item.lastVisit)
     const last = groups.at(-1)
-    if (last?.label === label) last.items.push(v)
-    else groups.push({ label, items: [v] })
+    if (last?.label === label) last.items.push(item)
+    else groups.push({ label, items: [item] })
   }
   return groups
 }
 
-function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
+function ItemsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       {...props}
@@ -77,7 +77,7 @@ const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
-function VisitsKindFilter({ gh }: { gh: GithubModel }) {
+function ItemsKindFilter({ gh }: { gh: GithubModel }) {
   const kind = gh.kind.value
   return (
     <>
@@ -94,7 +94,7 @@ function VisitsKindFilter({ gh }: { gh: GithubModel }) {
   )
 }
 
-function VisitsActiveFilter({ gh }: { gh: GithubModel }) {
+function ItemsActiveFilter({ gh }: { gh: GithubModel }) {
   const filter = gh.filter.value
   if (!filter) return null
   const label = filter.repo ? `${filter.owner}/${filter.repo}` : filter.owner
@@ -112,7 +112,7 @@ const VIEW_OPTIONS: IconToggleOption[] = [
   { value: 'card', label: 'Cards', Icon: GridIcon },
 ]
 
-function VisitsViewToggle({ gh }: { gh: GithubModel }) {
+function ItemsViewToggle({ gh }: { gh: GithubModel }) {
   return (
     <IconToggleGroup
       aria-label="View"
@@ -123,38 +123,38 @@ function VisitsViewToggle({ gh }: { gh: GithubModel }) {
   )
 }
 
-function VisitsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
-  return <EmptyMessage {...props}>No visits</EmptyMessage>
+function ItemsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
+  return <EmptyMessage {...props}>No items</EmptyMessage>
 }
 
-function VisitsGroup({ label, items, isCardView }: {
+function ItemsGroup({ label, items, isCardView }: {
   label: string
   items: HistoryItem[]
   isCardView: boolean
 }) {
   return (
-    <VisitsGroupRoot>
-      <VisitsGroupTitle>{label}</VisitsGroupTitle>
+    <ItemsGroupRoot>
+      <ItemsGroupTitle>{label}</ItemsGroupTitle>
       {isCardView ? (
-        <GitHubVisitCardGrid>
+        <GitHubItemCardGrid>
           {items.map((item) => (
-            <GitHubVisitCard key={item.id} item={item} />
+            <GitHubItemCard key={item.id} item={item} />
           ))}
-        </GitHubVisitCardGrid>
+        </GitHubItemCardGrid>
       ) : (
         items.map((item) => (
-          <GitHubVisitRow key={item.id} item={item} />
+          <GitHubItemRow key={item.id} item={item} />
         ))
       )}
-    </VisitsGroupRoot>
+    </ItemsGroupRoot>
   )
 }
 
-function VisitsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
+function ItemsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
   return <section {...props} className={cn('mb-2', className)} />
 }
 
-function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
+function ItemsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
   return (
     <h3
       {...props}
@@ -163,7 +163,7 @@ function VisitsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
   )
 }
 
-function GitHubVisitRow({ item }: { item: HistoryItem }) {
+function GitHubItemRow({ item }: { item: HistoryItem }) {
   const urlInfo = parseGithubUrl(item.url)
   if (!urlInfo) return null
   const titleInfo = urlInfo.root ? parseGithubTitle(item.title || item.url, urlInfo) : undefined

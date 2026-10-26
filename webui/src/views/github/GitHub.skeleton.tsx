@@ -39,7 +39,7 @@ export function GitHubSkeleton() {
       </StatsContentRoot>
       <div className="mt-4">
         <Card>
-          <CardTitle>Recent Visits</CardTitle>
+          <CardTitle>Recent Items</CardTitle>
           <div className="mb-3 flex gap-1.5">
             {Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-5 w-12 rounded-full" />)}
           </div>

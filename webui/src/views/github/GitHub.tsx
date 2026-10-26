@@ -18,7 +18,7 @@ import {
 } from '@/views/shared/Stats'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
-import { RecentVisitsCard } from './RecentVisitsCard'
+import { RecentItemsCard } from './RecentItemsCard'
 import { GithubModel } from './github.model'
 import { GitHubSkeleton } from './GitHub.skeleton'
 
@@ -60,7 +60,7 @@ export function GitHub({ app }: { app: AppModel }) {
         <TopOwnersCard gh={gh} />
         <TopItemsCard gh={gh} />
       </StatsContentRoot>
-      <RecentVisitsCard gh={gh} />
+      <RecentItemsCard gh={gh} />
     </ViewRoot>
   )
 }
