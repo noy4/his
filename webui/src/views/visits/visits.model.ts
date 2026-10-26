@@ -11,6 +11,7 @@ export class VisitsModel {
   readonly loading = signal(false)
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
+  readonly view = signal('list')
   #api: Pick<HisApi, 'searchVisits'>
   #requestId = 0
 
@@ -20,6 +21,10 @@ export class VisitsModel {
 
   setSentinel = (el: Element | null): void => {
     this.sentinel.value = el
+  }
+
+  setView = (next: string): void => {
+    this.view.value = next
   }
 
   subscribe(): () => void {

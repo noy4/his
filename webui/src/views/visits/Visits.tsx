@@ -3,11 +3,15 @@ import { isoDay, relativeDateLabel } from '@/lib/date'
 import { AppModel } from '@/app/app'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryVisitRow } from '@/views/HistoryRow'
+import { HistoryCardGrid, HistoryVisitCard } from '@/views/HistoryCard'
+import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-group'
 import type { HistoryVisit } from '@/app/api'
 import { Card } from '@/components/ui/card'
 import { ViewRoot } from '../View.components'
 import { cn } from 'cn'
 import type { ComponentProps } from 'react'
+import ListIcon from '~icons/mdi/format-list-bulleted'
+import GridIcon from '~icons/mdi/view-grid-outline'
 import { VisitsModel } from './visits.model'
 
 export function Visits({ app }: { app: AppModel }) {
@@ -17,23 +21,36 @@ export function Visits({ app }: { app: AppModel }) {
     loading,
     done,
     setSentinel,
+    view,
+    setView,
   } = useModel(() => new VisitsModel(app.api))
   const groups = groupByDay(items.value)
+  const isCardView = view.value === 'card'
 
   return (
     <ViewRoot>
       <Card>
         <VisitsToolbarRoot>
           <SearchBar filters={filters} />
+          <span className="ml-auto" />
+          <VisitsViewToggle view={view.value} onChange={setView} />
         </VisitsToolbarRoot>
         {groups.map((g) => (
           <VisitsGroupRoot key={g.key}>
             <VisitsGroupTitle text={g.label} />
-            <VisitsGroupContent>
-              {g.items.map((it) => (
-                <HistoryVisitRow key={it.id} item={it} />
-              ))}
-            </VisitsGroupContent>
+            {isCardView ? (
+              <HistoryCardGrid>
+                {g.items.map((it) => (
+                  <HistoryVisitCard key={it.id} item={it} />
+                ))}
+              </HistoryCardGrid>
+            ) : (
+              <VisitsGroupContent>
+                {g.items.map((it) => (
+                  <HistoryVisitRow key={it.id} item={it} />
+                ))}
+              </VisitsGroupContent>
+            )}
           </VisitsGroupRoot>
         ))}
         {loading.value && <VisitsLoading />}
@@ -48,7 +65,23 @@ export function Visits({ app }: { app: AppModel }) {
 
 function VisitsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <div {...props} className={cn('mb-3', className)} />
+    <div {...props} className={cn('mb-3 flex flex-wrap items-center gap-1.5', className)} />
+  )
+}
+
+const VIEW_OPTIONS: IconToggleOption[] = [
+  { value: 'list', label: 'List', Icon: ListIcon },
+  { value: 'card', label: 'Cards', Icon: GridIcon },
+]
+
+function VisitsViewToggle({ view, onChange }: { view: string; onChange: (v: string) => void }) {
+  return (
+    <IconToggleGroup
+      aria-label="View"
+      value={view}
+      onChange={onChange}
+      options={VIEW_OPTIONS}
+    />
   )
 }
 

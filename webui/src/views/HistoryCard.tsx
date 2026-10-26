@@ -1,4 +1,4 @@
-import type { HistoryItem } from '@/app/api'
+import type { HistoryItem, HistoryVisit } from '@/app/api'
 import { timeLabel } from '@/lib/date'
 import { cn } from 'cn'
 import { hostWithoutWww } from '@his/core'
@@ -9,27 +9,56 @@ export function HistoryCardGrid({ children }: { children: ReactNode }) {
   return <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-2">{children}</div>
 }
 
-export function HistoryCard({ item }: { item: HistoryItem }) {
-  const host = hostWithoutWww(item.url)
+export function HistoryItemCard({ item }: { item: HistoryItem }) {
   return (
-    <HistoryCardRoot href={item.url}>
+    <HistoryCardFrame
+      href={item.url}
+      title={item.title || item.url}
+      host={hostWithoutWww(item.url)}
+      time={item.lastVisit}
+      visitCount={item.visitCount}
+    />
+  )
+}
+
+export function HistoryVisitCard({ item }: { item: HistoryVisit }) {
+  return (
+    <HistoryCardFrame
+      href={item.url}
+      title={item.title || item.url}
+      host={hostWithoutWww(item.url)}
+      time={item.visitTime}
+      visitCount={item.visitCount}
+    />
+  )
+}
+
+// --- components ---
+
+function HistoryCardFrame({ href, title, host, time, visitCount }: {
+  href: string
+  title: string
+  host: string
+  time: number
+  visitCount: number
+}) {
+  return (
+    <HistoryCardRoot href={href}>
       <HistoryCardHeader>
         <Favicon host={host} size={28} />
         <HistoryCardHeading>
-          <HistoryCardTitle text={item.title || item.url} />
+          <HistoryCardTitle text={title} />
           <HistoryCardMeta text={host} />
         </HistoryCardHeading>
       </HistoryCardHeader>
 
       <HistoryCardFooter>
-        <HistoryCountBadge value={item.visitCount} />
-        <HistoryTime value={item.lastVisit} />
+        <HistoryCountBadge value={visitCount} />
+        <HistoryTime value={time} />
       </HistoryCardFooter>
     </HistoryCardRoot>
   )
 }
-
-// --- components ---
 
 function HistoryCardRoot({ className, ...props }: ComponentProps<'a'>) {
   return (

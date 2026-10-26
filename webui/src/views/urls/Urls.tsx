@@ -3,7 +3,7 @@ import { AppModel } from '@/app/app'
 import { UrlsModel } from './urls.model'
 import { SearchBar } from '@/components/SearchBar'
 import { HistoryItemRow } from '@/views/HistoryRow'
-import { HistoryCard, HistoryCardGrid } from '@/views/HistoryCard'
+import { HistoryCardGrid, HistoryItemCard } from '@/views/HistoryCard'
 import { Card } from '@/components/ui/card'
 import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-group'
 import { ViewRoot } from '../View.components'
@@ -36,7 +36,7 @@ export function Urls({ app }: { app: AppModel }) {
         {isCardView ? (
           <HistoryCardGrid>
             {items.value.map((it) => (
-              <HistoryCard key={it.id} item={it} />
+              <HistoryItemCard key={it.id} item={it} />
             ))}
           </HistoryCardGrid>
         ) : (
