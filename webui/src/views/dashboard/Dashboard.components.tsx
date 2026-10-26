@@ -1,13 +1,15 @@
 import { Card, CardTitle } from '@/components/ui/card'
-import { ListSkeleton, Sk, StatsContentRoot, StatsHeaderRoot } from '@/views/shared/Stats'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ListSkeleton } from '@/views/shared/ListSkeleton'
+import { StatsContentRoot, StatsHeaderRoot } from '@/views/shared/Stats'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 
 export function DashboardSkeleton() {
   return (
     <ViewRoot>
       <StatsHeaderRoot>
-        <Sk className="h-8 w-36" />
-        <Sk className="h-8 w-44" />
+        <Skeleton className="h-8 w-36" />
+        <Skeleton className="h-8 w-44" />
       </StatsHeaderRoot>
       <StatsContentRoot>
         <Card>
@@ -15,21 +17,21 @@ export function DashboardSkeleton() {
           <div className="grid grid-cols-2 gap-4">
             {Array.from({ length: 4 }, (_, i) => (
               <div key={i} className="space-y-1.5">
-                <Sk className="h-7 w-20" />
-                <Sk className="h-3 w-16" />
+                <Skeleton className="h-7 w-20" />
+                <Skeleton className="h-3 w-16" />
               </div>
             ))}
           </div>
-          <Sk className="mt-3 h-3 w-32" />
+          <Skeleton className="mt-3 h-3 w-32" />
         </Card>
         <div className="grid gap-4">
           <Card>
             <CardTitle>By Hour of Day</CardTitle>
-            <Sk className="h-32" />
+            <Skeleton className="h-32" />
           </Card>
           <Card>
             <CardTitle>By Day of Week</CardTitle>
-            <Sk className="h-32" />
+            <Skeleton className="h-32" />
           </Card>
         </div>
         <Card>
