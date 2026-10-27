@@ -37,7 +37,7 @@ export function Dashboard({ app }: { app: AppModel }) {
   }
 
   const { totals } = stats
-  const monthly = dashboard.mode.value === 'month'
+  const monthly = dashboard.period.mode.value === 'month'
   const days = daySpan(totals.firstVisit, totals.lastVisit)
 
   const byHour = stats.byHour.map((h) => h.visits)
@@ -49,7 +49,7 @@ export function Dashboard({ app }: { app: AppModel }) {
   const maxBusiestVisits = Math.max(1, ...busiestDays.map((d) => d.visits))
 
   const dailyFrom = monthly
-    ? `${dashboard.monthKey.value}-01`
+    ? `${dashboard.period.monthKey.value}-01`
     : totals.lastVisit === 0
       ? null
       : isoDay(Math.max(totals.firstVisit, dayjs(totals.lastVisit).subtract(ALL_TIME_DAYS - 1, 'day').valueOf()))
@@ -73,21 +73,14 @@ export function Dashboard({ app }: { app: AppModel }) {
       <StatsHeaderRoot>
         {monthly ? (
           <MonthNav
-            value={dashboard.monthKey.value}
-            onPrev={() => dashboard.shiftMonth(-1)}
-            onNext={() => dashboard.shiftMonth(1)}
+            value={dashboard.period.monthKey.value}
+            onPrev={() => dashboard.period.shiftMonth(-1)}
+            onNext={() => dashboard.period.shiftMonth(1)}
           />
         ) : (
           <div />
         )}
-        <PeriodToggle
-          value={dashboard.mode.value}
-          onChange={(m) => dashboard.setMode(m)}
-          options={[
-            { value: 'month', label: 'Monthly' },
-            { value: 'all', label: 'All time' },
-          ]}
-        />
+        <PeriodToggle value={dashboard.period.mode.value} onChange={(m) => dashboard.period.setMode(m)} />
       </StatsHeaderRoot>
 
       <StatsContentRoot>

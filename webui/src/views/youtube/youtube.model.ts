@@ -16,7 +16,7 @@ export class YoutubeModel {
 
   constructor(api: HisApi) {
     this.api = api
-    this.period = new PeriodModel(() => this.loadVisits())
+    this.period = new PeriodModel({ onChange: () => this.loadVisits() })
   }
 
   subscribe(): () => void {

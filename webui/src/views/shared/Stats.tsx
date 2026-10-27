@@ -8,6 +8,7 @@ import type { IconComponent } from '@/components/icons'
 import { buttonSmGhost } from '@/components/ui/button'
 import { ToggleGroupItem, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { fmtNum } from '@/lib/format'
+import type { PeriodMode } from '@/lib/signal/period'
 
 export function StatsHeaderRoot({ children }: { children: React.ReactNode }) {
   return (
@@ -139,18 +140,15 @@ export function DailyBars({ data, avg }: { data: { day: string; visits: number }
   )
 }
 
-export function PeriodToggle<T extends string>({
-  value,
-  onChange,
-  options,
-}: {
-  value: T
-  onChange: (next: T) => void
-  options: { value: T; label: string }[]
-}) {
+const PERIOD_OPTIONS: { value: PeriodMode; label: string }[] = [
+  { value: 'month', label: 'Monthly' },
+  { value: 'all', label: 'All time' },
+]
+
+export function PeriodToggle({ value, onChange }: { value: PeriodMode; onChange: (next: PeriodMode) => void }) {
   return (
     <ToggleGroupRoot aria-label="Stats period" className="gap-1 text-sm">
-      {options.map((o) => (
+      {PERIOD_OPTIONS.map((o) => (
         <ToggleGroupItem
           key={o.value}
           selected={value === o.value}

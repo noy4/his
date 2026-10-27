@@ -46,14 +46,7 @@ export function Github({ app }: { app: AppModel }) {
         ) : (
           <div />
         )}
-        <PeriodToggle
-          value={gh.period.mode.value}
-          onChange={(m) => gh.period.setMode(m)}
-          options={[
-            { value: 'month', label: 'Monthly' },
-            { value: 'all', label: 'All time' },
-          ]}
-        />
+        <PeriodToggle value={gh.period.mode.value} onChange={(m) => gh.period.setMode(m)} />
       </StatsHeaderRoot>
 
       <StatsContentRoot>

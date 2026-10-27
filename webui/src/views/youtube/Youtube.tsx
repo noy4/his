@@ -21,14 +21,7 @@ export function Youtube({ app }: { app: AppModel }) {
         ) : (
           <div />
         )}
-        <PeriodToggle
-          value={yt.period.mode.value}
-          onChange={(m) => yt.period.setMode(m)}
-          options={[
-            { value: 'month', label: 'Monthly' },
-            { value: 'all', label: 'All time' },
-          ]}
-        />
+        <PeriodToggle value={yt.period.mode.value} onChange={(m) => yt.period.setMode(m)} />
       </StatsHeaderRoot>
       <YoutubeRecentItemsCard yt={yt} />
     </ViewRoot>

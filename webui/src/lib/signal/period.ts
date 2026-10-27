@@ -10,7 +10,7 @@ export class PeriodModel {
   readonly monthKey = signal(dayjs().format(MONTH_FORMAT))
   #onChange: () => void
 
-  constructor(onChange: () => void) {
+  constructor({ onChange }: { onChange: () => void }) {
     this.#onChange = onChange
   }
 

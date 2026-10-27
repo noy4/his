@@ -21,7 +21,7 @@ export class GithubModel {
 
   constructor(api: HisApi) {
     this.api = api
-    this.period = new PeriodModel(() => this.reload())
+    this.period = new PeriodModel({ onChange: () => this.reload() })
   }
 
   subscribe(): () => void {
