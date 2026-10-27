@@ -19,7 +19,7 @@ export function YoutubeRecentItemsCard({ yt }: { yt: YoutubeModel }) {
     <Card>
       <CardTitle>Recent Items</CardTitle>
       <ItemsToolbarRoot>
-        <ItemsKindFilter yt={yt} />
+        <YoutubeItemsKindFilter yt={yt} />
         <span className="ml-auto" />
         <ItemsViewToggle
           value={yt.view.value}
@@ -30,7 +30,7 @@ export function YoutubeRecentItemsCard({ yt }: { yt: YoutubeModel }) {
       {groups.length === 0 && <EmptyMessage text="No items" />}
 
       {groups.map((group) => (
-        <ItemsGroup
+        <YoutubeItemsGroup
           key={group.label}
           label={group.label}
           items={group.items}
@@ -53,7 +53,7 @@ const KIND_OPTIONS: { value: YoutubeVisitKind; label: string }[] = [
   { value: 'other', label: YOUTUBE_KIND_LABELS.other },
 ]
 
-function ItemsKindFilter({ yt }: { yt: YoutubeModel }) {
+function YoutubeItemsKindFilter({ yt }: { yt: YoutubeModel }) {
   const kind = yt.kind.value
   return (
     <>
@@ -70,7 +70,7 @@ function ItemsKindFilter({ yt }: { yt: YoutubeModel }) {
   )
 }
 
-function ItemsGroup({ label, items, isCardView }: {
+function YoutubeItemsGroup({ label, items, isCardView }: {
   label: string
   items: HistoryItem[]
   isCardView: boolean

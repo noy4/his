@@ -18,9 +18,9 @@ export function GithubRecentItemsCard({ gh }: { gh: GithubModel }) {
     <Card className="mt-4">
       <CardTitle>Recent Items</CardTitle>
       <ItemsToolbarRoot>
-        <ItemsKindFilter gh={gh} />
+        <GithubItemsKindFilter gh={gh} />
         <span className="ml-auto" />
-        <ItemsActiveFilter gh={gh} />
+        <GithubItemsActiveFilter gh={gh} />
         <ItemsViewToggle
           value={gh.view.value}
           onChange={(v) => gh.setView(v)}
@@ -30,7 +30,7 @@ export function GithubRecentItemsCard({ gh }: { gh: GithubModel }) {
       {groups.length === 0 && <EmptyMessage text="No items" />}
 
       {groups.map((group) => (
-        <ItemsGroup
+        <GithubItemsGroup
           key={group.label}
           label={group.label}
           items={group.items}
@@ -51,7 +51,7 @@ const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
-function ItemsKindFilter({ gh }: { gh: GithubModel }) {
+function GithubItemsKindFilter({ gh }: { gh: GithubModel }) {
   const kind = gh.kind.value
   return (
     <>
@@ -68,7 +68,7 @@ function ItemsKindFilter({ gh }: { gh: GithubModel }) {
   )
 }
 
-function ItemsActiveFilter({ gh }: { gh: GithubModel }) {
+function GithubItemsActiveFilter({ gh }: { gh: GithubModel }) {
   const filter = gh.filter.value
   if (!filter) return null
   const label = filter.repo ? `${filter.owner}/${filter.repo}` : filter.owner
@@ -81,7 +81,7 @@ function ItemsActiveFilter({ gh }: { gh: GithubModel }) {
   )
 }
 
-function ItemsGroup({ label, items, isCardView }: {
+function GithubItemsGroup({ label, items, isCardView }: {
   label: string
   items: HistoryItem[]
   isCardView: boolean

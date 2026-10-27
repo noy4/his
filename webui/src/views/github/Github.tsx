@@ -22,7 +22,7 @@ import { GithubAvatar, GithubKindAvatar } from './Github.components'
 import { GithubDailyVisitsCard } from './GithubDailyVisitsCard'
 import { GithubRecentItemsCard } from './GithubRecentItemsCard'
 import { GithubModel } from './github.model'
-import { GithubSkeleton } from './Github.skeleton'
+import { GithubSkeleton } from './GithubSkeleton'
 
 const rowCls = '-mx-1 flex items-center gap-2 rounded px-1 hover:bg-bg-3'
 const DAY = 86_400_000
