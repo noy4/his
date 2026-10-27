@@ -23,14 +23,19 @@ type ViewDef = {
   content: ComponentType<{ app: AppModel }>
 }
 
-const VIEWS: ViewDef[] = [
+type NavItem = ViewDef | { type: 'divider' }
+
+const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: ChartBoxOutline, content: Dashboard },
   { id: 'visits', label: 'Visits', icon: History, content: Visits },
   { id: 'urls', label: 'URLs', icon: LinkVariant, content: Urls },
   { id: 'github', label: 'GitHub', icon: GithubIcon, content: GitHub },
+  { type: 'divider' },
   { id: 'sources', label: 'Sources', icon: DatabaseImport, content: Sources },
   { id: 'settings', label: 'Settings', icon: Cog, content: Settings },
 ]
+
+const VIEWS = NAV_ITEMS.filter((item): item is ViewDef => !('type' in item))
 
 export default function App() {
   const app = useModel(() => new AppModel())
@@ -81,14 +86,18 @@ function ViewNav({ app }: { app: AppModel }) {
 
   return (
     <ViewNavRoot>
-      {VIEWS.map((v) => (
-        <ViewNavItem
-          key={v.id}
-          view={v}
-          active={view === v.id}
-          onClick={() => app.setView(v.id)}
-        />
-      ))}
+      {NAV_ITEMS.map((item, i) =>
+        'type' in item
+          ? <ViewNavDivider key={`divider-${i}`} />
+          : (
+            <ViewNavItem
+              key={item.id}
+              view={item}
+              active={view === item.id}
+              onClick={() => app.setView(item.id)}
+            />
+          ),
+      )}
     </ViewNavRoot>
   )
 }
@@ -102,6 +111,10 @@ function ViewNavRoot({ children }: { children: ReactNode }) {
       {children}
     </nav>
   )
+}
+
+function ViewNavDivider() {
+  return <span aria-hidden="true" className="mx-1 h-4 w-px self-center bg-border" />
 }
 
 function ViewNavItem({
