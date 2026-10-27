@@ -43,22 +43,18 @@ afterEach(() => {
 })
 
 describe('listSourceProfiles', () => {
-  it('leaves pending null unless check is requested', async () => {
-    assert.equal((await listSourceProfiles(db))[0]!.pending, null)
-  })
-
   it('reports pending when the profile was never synced', async () => {
-    assert.equal((await listSourceProfiles(db, { check: true }))[0]!.pending, true)
+    assert.equal((await listSourceProfiles(db))[0]!.pending, true)
   })
 
   it('reports not pending when the stored fingerprint matches the source now', async () => {
     await setFingerprint(probeSourceFingerprint(sourceFile))
-    assert.equal((await listSourceProfiles(db, { check: true }))[0]!.pending, false)
+    assert.equal((await listSourceProfiles(db))[0]!.pending, false)
   })
 
   it('reports pending when the source changed after the last sync', async () => {
     await setFingerprint('stale')
-    assert.equal((await listSourceProfiles(db, { check: true }))[0]!.pending, true)
+    assert.equal((await listSourceProfiles(db))[0]!.pending, true)
   })
 })
 

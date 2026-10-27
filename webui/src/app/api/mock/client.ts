@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -395,7 +395,7 @@ function wantedKeys(params: SyncRunParams): Set<string> {
 }
 
 // discovered ∪ registered
-function sourceEntries(check: boolean): SourceEntry[] {
+function sourceEntries(): SourceEntry[] {
   const registeredByKey = new Map(sources.map((source) => [sourceKey(source), source]))
   const entries: SourceEntry[] = []
   const seen = new Set<string>()
@@ -404,13 +404,13 @@ function sourceEntries(check: boolean): SourceEntry[] {
     seen.add(key)
     const source = registeredByKey.get(key)
     entries.push(source
-      ? { ...source, pending: check ? source.pending : null, registered: true }
+      ? { ...source, registered: true }
       : { browser: target.browser, profile: target.profile, registered: false })
   }
   for (const source of sources) {
     const key = sourceKey(source)
     if (seen.has(key)) continue
-    entries.push({ ...source, pending: check ? source.pending : null, registered: true })
+    entries.push({ ...source, registered: true })
   }
   return entries
 }
@@ -565,8 +565,8 @@ export const mockApi: HisApi = {
     },
   },
   sources: {
-    async list(params?: SourcesListParams): Promise<SourceEntry[]> {
-      return sourceEntries(params?.check === true)
+    async list(): Promise<SourceEntry[]> {
+      return sourceEntries()
     },
   },
   sync: {

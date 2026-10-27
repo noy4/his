@@ -30,7 +30,7 @@ export class SourcesModel {
   async reload(): Promise<void> {
     try {
       const [entries, settings] = await Promise.all([
-        this.api.sources.list({ check: true }),
+        this.api.sources.list(),
         this.api.settings.get(),
       ])
       this.entries.value = entries

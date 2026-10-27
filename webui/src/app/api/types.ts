@@ -6,11 +6,6 @@ export type {
 
 export type SyncRunParams = SyncOptions
 
-export interface SourcesListParams {
-  /** probe each source and report whether it changed since the last sync */
-  check?: boolean
-}
-
 // notifications — not implemented (db.changed / sync.progress)
 export interface HisEvents {
   [event: string]: (...args: any[]) => void
@@ -31,7 +26,7 @@ export interface HisApi {
     search(params: YoutubeSearchParams): Promise<SearchPage>
   }
   sources: {
-    list(params?: SourcesListParams): Promise<SourceEntry[]>
+    list(): Promise<SourceEntry[]>
   }
   sync: {
     run(params: SyncRunParams): Promise<SyncSummary>

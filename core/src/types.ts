@@ -72,8 +72,8 @@ export interface RegisteredSource {
   /** listing aggregates over the profile's visits (sources.list) */
   visits: number
   lastVisit: EpochMs | null
-  /** source changed since the last sync; null when not checked (sources.list check) */
-  pending: boolean | null
+  /** Estimated change since last sync from source file mtimes and sizes, not a guarantee of new visits. */
+  pending: boolean
 }
 
 export type SourceEntry = RegisteredSourceEntry | UnregisteredSourceEntry

@@ -14,7 +14,7 @@ const registered = (browser: string, profile: string): RegisteredSource => ({
   checkpoint: { sourceProfileId: 1, lastSourceVisitId: 0, sourceIdOffset: 0, lastRunAt: null },
   visits: 0,
   lastVisit: null,
-  pending: null,
+  pending: true,
 })
 
 describe('mergeEntries', () => {

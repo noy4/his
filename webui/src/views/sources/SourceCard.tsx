@@ -94,7 +94,6 @@ function SourceCardName({ name, detail }: { name: string; detail: string }) {
 
 function SourceCardStatus({ entry }: { entry: SourceEntry }) {
   if (!entry.registered || entry.checkpoint.lastRunAt === null) return <SourceCardStatusDot label="never synced" />
-  if (entry.pending === null) return null
   return <SourceCardStatusDot label={entry.pending ? 'sync needed' : 'up to date'} warn={entry.pending} />
 }
 

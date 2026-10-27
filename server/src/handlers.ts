@@ -19,7 +19,7 @@ export function createHandlers({ db, runner, home }: {
     'youtube.stats': (params) => youtube.stats(db, params),
     'youtube.search': (params) => youtube.search(db, params),
 
-    'sources.list': (params) => sources.list(db, { home, check: params?.check === true }),
+    'sources.list': () => sources.list(db, { home }),
 
     'sync.run': (params) => runner.run(params),
     'sync.status': () => runner.lastRun(),

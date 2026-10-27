@@ -5,24 +5,19 @@ import type { KyselyDb } from '../../db/db.ts'
 import { discoverAllTargets } from './discover.ts'
 import { sourceKey } from './utils.ts'
 
-export interface ListSourceProfilesOptions {
-  /** probe each profile's source files and report whether it changed since the last sync */
-  check?: boolean
-}
-
-export type ListSourcesOptions = ListSourceProfilesOptions & {
+export type ListSourcesOptions = {
   home: string
 }
 
 // the sources listing: discovered ∪ registered
 export async function listSources(db: KyselyDb, options: ListSourcesOptions): Promise<SourceEntry[]> {
   const discovered = discoverAllTargets(options.home)
-  const registered = await listSourceProfiles(db, { check: options.check })
+  const registered = await listSourceProfiles(db)
   return mergeEntries(discovered, registered)
 }
 
 // registered profiles only
-export async function listSourceProfiles(db: KyselyDb, options: ListSourceProfilesOptions = {}): Promise<RegisteredSource[]> {
+export async function listSourceProfiles(db: KyselyDb): Promise<RegisteredSource[]> {
   const rows = await db
     .selectFrom('source_profiles as sp')
     .leftJoin('sync_checkpoints as sc', 'sc.source_profile_id', 'sp.id')
@@ -58,7 +53,7 @@ export async function listSourceProfiles(db: KyselyDb, options: ListSourceProfil
     },
     visits: Number(row.visits),
     lastVisit: row.last_visit_time === null ? null : Number(row.last_visit_time),
-    pending: options.check ? isPending(row) : null,
+    pending: isPending(row),
   }))
 }
 
