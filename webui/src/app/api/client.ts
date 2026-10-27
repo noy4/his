@@ -1,5 +1,5 @@
-import type { GithubStats, GithubVisitsFilter, HisApi, HisEvents, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SourceEntry, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from './types'
-import { mockApi } from './mock/client'
+import type { GithubStats, GithubVisitsFilter, HisApi, HisEvents, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SourceEntry, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeVisitsFilter } from './types'
+import { mockApi, mockYoutubeVisits } from './mock/client'
 import { RpcTransport } from '@/lib/rpc-transport'
 
 export function createApi(): HisApi {
@@ -13,6 +13,8 @@ export function createApi(): HisApi {
     stats: (month?: string) => transport.call<Stats>('history.stats', { month }),
     githubStats: (month?: string) => transport.call<GithubStats>('history.githubStats', { month }),
     githubVisits: (params: GithubVisitsFilter) => transport.call<SearchPage>('history.githubVisits', params),
+    // Temporary: no server RPC yet — serve the YouTube view from mock data.
+    youtubeVisits: (params: YoutubeVisitsFilter) => Promise.resolve(mockYoutubeVisits(params)),
     sourcesList: (params?: SourcesListParams) => transport.call<SourceEntry[]>('sources.list', params),
     syncRun: (params: SyncRunParams) => transport.call<SyncSummary>('sync.run', params),
     syncStatus: () => transport.call<SyncLastRun | null>('sync.status'),

@@ -1,6 +1,8 @@
 // Package root (browser-safe). Node-only code lives in ./node.ts.
 export * from './features/github/parse.ts'
 export * from './features/github/types.ts'
+export * from './features/youtube/parse.ts'
+export * from './features/youtube/types.ts'
 export * from './features/history/types.ts'
 export * from './features/settings/hidden-patterns.ts'
 export type { SettingsInfo, SettingsPatch } from './features/settings/index.ts'

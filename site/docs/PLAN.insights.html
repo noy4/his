@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="created_at" content="2026-10-27T17:00:00+09:00">
+<title>his | Insights plan</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+<link rel="stylesheet" href="assets/base.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/sidebar.css">
+<link rel="stylesheet" href="assets/toc.css">
+<style>
+  :root {
+    --green: #4ADE80;
+    --green-soft: rgba(74, 222, 128, 0.15);
+    --cyan: #38BDF8;
+    --purple: #A78BFA;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --green: #16A34A;
+      --green-soft: rgba(22, 163, 74, 0.1);
+      --cyan: #0284C7;
+      --purple: #7C3AED;
+    }
+  }
+
+  /* Badge (accent variant) */
+  .badge-top {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="badge-top">
+      <iconify-icon icon="mdi:rocket-launch-outline"></iconify-icon>
+      IMPLEMENTATION PLAN
+    </div>
+    <h1><iconify-icon icon="mdi:history" width="30"></iconify-icon>his insights plan</h1>
+    <p class="tagline">Turn the GitHub view into a plugin shape, then add YouTube on top of it.</p>
+  </header>
+
+  <!-- INTENT -->
+  <section>
+    <h2><iconify-icon icon="mdi:puzzle-outline" width="24"></iconify-icon>Intent</h2>
+    <p class="section-desc">
+      The GitHub view is a domain classifier + aggregator. Make that generic, register it, then YouTube is a spec — not a copy.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:filter-variant"></iconify-icon>
+          <h4>Domain insight</h4>
+        </div>
+        <p>A host filter (SQL prefilter) + a URL→entity classifier. GitHub, YouTube are two instances of the same shape.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:shape-outline"></iconify-icon>
+          <h4>Registry, not loader</h4>
+        </div>
+        <p>Specs are compiled in and registered by id. No dynamic import — type-safe, no runtime plugin surface.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:code-braces"></iconify-icon>The spec</h3>
+
+    <pre><span class="c">// core/src/features/insights/spec.ts</span>
+export interface Classified {
+  key: string                             <span class="c">// stable entity key</span>
+  kind: string                            <span class="c">// ∈ spec.kinds</span>
+  title?: string
+}
+
+export interface InsightSpec {
+  id: string                              <span class="c">// 'github' | 'youtube'</span>
+  urlLikes: readonly string[]             <span class="c">// SQL prefilter · 'https://github.com/%'</span>
+  kinds: readonly { value: string; label: string }[]
+  classify(url: string): Classified | null
+  mergeRoots?(rows: Row[]): Row[]         <span class="c">// optional fold (?tab=…, #readme)</span>
+}</pre>
+
+    <h3><iconify-icon icon="mdi:vector-polyline"></iconify-icon>What collapses</h3>
+
+    <p class="section-desc">
+      Today YouTube would touch nine files. After the registry, a new view = one spec + one card group.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>File</th><th>Today</th><th>After</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><code>features/*/parse.ts</code></td><td>per domain</td><td>spec.classify</td></tr>
+          <tr><td>2</td><td><code>*Rows.ts</code> LIKE filter</td><td>hardcoded</td><td>spec.urlLikes</td></tr>
+          <tr><td>3</td><td><code>*.ts</code> aggregate</td><td>per domain</td><td>shared <code>aggregate.ts</code></td></tr>
+          <tr><td>4</td><td><code>types.ts</code> byDay kinds</td><td>fixed shape</td><td><code>Record&lt;kind, number&gt;</code></td></tr>
+          <tr><td>5–6</td><td><code>node.ts</code> / <code>index.ts</code></td><td>named export</td><td>registry export</td></tr>
+          <tr><td>7</td><td><code>server/handlers.ts</code></td><td>2 RPCs</td><td><code>insights.*</code> (generic)</td></tr>
+          <tr><td>8</td><td><code>app/api/*</code></td><td>per domain</td><td>one <code>insights*</code> pair</td></tr>
+          <tr><td>9</td><td><code>App.tsx</code> NAV_ITEMS</td><td>hand-written</td><td>view registry</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section>
+    <h2><iconify-icon icon="mdi:format-list-numbered" width="24"></iconify-icon>Roadmap</h2>
+    <p class="section-desc">
+      Generalize first (no behavior change), then add YouTube. GitHub is the migration canary.
+    </p>
+
+    <div class="timeline">
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:code-braces" style="color:var(--primary)"></iconify-icon>
+              Phase 1 — Insight spec
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            Extract the generic half of <code>github.ts</code> — the classifier stays, the aggregation moves out.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">insights/spec.ts</div>
+                <div class="task-desc"><code>InsightSpec</code> · <code>Classified</code> · <code>kinds</code> vocabulary</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:table-search"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">insights/rows.ts</div>
+                <div class="task-desc">generic <code>getRows(db, spec, month)</code> · <code>urlLikes</code> → LIKE OR · hidden excluded</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:chart-box-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">insights/aggregate.ts</div>
+                <div class="task-desc">totals · byDay / byDayTop · top entities — kinds become <code>Record&lt;kind, number&gt;</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:file-tree-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">insights/types.ts</div>
+                <div class="task-desc">generic <code>InsightStats</code> / <code>InsightFilter</code> — replaces <code>GithubStats</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:github" style="color:var(--green)"></iconify-icon>
+              Phase 2 — GitHub migration
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            Rewrite GitHub as the first spec. Same output — the browser-safe parse stays where it is.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:shape-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">insights/github.ts</div>
+                <div class="task-desc"><code>urlLikes</code> · <code>classify = parseGithubUrl</code> · <code>kinds: repo / issue_pr / other</code> · <code>mergeRoots</code> moved here</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:format-list-bulleted"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">insights/registry.ts</div>
+                <div class="task-desc"><code>{ github } satisfies Record&lt;string, InsightSpec&gt;</code> — one place to add views</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:check-decagram"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Regression gate</div>
+                <div class="task-desc">existing <code>__tests__</code> must pass unchanged · <code>github.stats</code> kept as a thin alias</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:broadcast" style="color:var(--accent)"></iconify-icon>
+              Phase 3 — RPC &amp; API
+            </span>
+            <span class="step-meta">P1 · server</span>
+          </div>
+          <div class="step-body">
+            Two generic endpoints replace the per-domain pair. The registry dispatches by <code>id</code>.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:swap-horizontal"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">handlers.ts</div>
+                <div class="task-desc"><code>insights.list</code> · <code>insights.stats { id, month? }</code> · <code>insights.visits { id, ... }</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:lan-connect"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">api/client.ts</div>
+                <div class="task-desc"><code>insightsList / insightsStats(id) / insightsVisits(id, params)</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:code-json"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">api/mock</div>
+                <div class="task-desc">registry-driven mock · keep <code>VITE_USE_MOCK_API</code> contract</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:youtube" style="color:#FF0000"></iconify-icon>
+              Phase 4 — YouTube spec
+            </span>
+            <span class="step-meta">P1 · core</span>
+          </div>
+          <div class="step-body">
+            The whole server-side of the new view — one file plus URL parsing.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:link-variant"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">insights/youtube.ts</div>
+                <div class="task-desc"><code>urlLikes</code>: <code>youtube.com</code> · <code>www.</code> · <code>m.</code> · <code>youtu.be</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:directions-fork"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">classify</div>
+                <div class="task-desc"><code>/watch?v=</code> · <code>/shorts/</code> → video · <code>/playlist?list=</code> → playlist · <code>/@h</code> <code>/channel/</code> <code>/c/</code> <code>/user/</code> → channel</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:shape-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">kinds</div>
+                <div class="task-desc"><code>video / channel / playlist / other</code> · register in <code>registry.ts</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:application-brackets-outline" style="color:var(--purple)"></iconify-icon>
+              Phase 5 — Generic view
+            </span>
+            <span class="step-meta">P2 · webui</span>
+          </div>
+          <div class="step-body">
+            One <code>&lt;InsightView&gt;</code> drives every insight. Shared parts stay shared; cards are injected.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:signal"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">insight.model.ts</div>
+                <div class="task-desc">generic model — <code>GithubModel</code> with an <code>id</code> and spec-supplied kinds</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:view-dashboard-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">InsightView</div>
+                <div class="task-desc">reuses <code>views/shared/Stats</code> · <code>DailyVisitsCard</code> · <code>RecentItemsCard</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:card-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">cards slot</div>
+                <div class="task-desc">per-view stat grid + avatar/row rendering injected — Top entities stay bespoke</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:menu"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">App.tsx registry</div>
+                <div class="task-desc"><code>NAV_ITEMS</code> built from the webui registry · divider + order per view</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:youtube" style="color:#FF0000"></iconify-icon>
+              Phase 6 — YouTube view
+            </span>
+            <span class="step-meta">P2 · webui</span>
+          </div>
+          <div class="step-body">
+            Only what is genuinely YouTube — thumbnail + channel avatar, and its three cards.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:image-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Thumbnails</div>
+                <div class="task-desc">video id → <code>i.ytimg.com/vi/&lt;id&gt;/mqdefault.jpg</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:account-circle-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Channel avatar</div>
+                <div class="task-desc">handle/@id → channel chip · fallback to kind icon</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:card-multiple-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Cards</div>
+                <div class="task-desc">Top Channels · Top Videos · Top Playlists — same payout as GitHub's cards</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:brush-outline" style="color:var(--cyan)"></iconify-icon>
+              Phase 7 — Polish &amp; docs
+            </span>
+            <span class="step-meta">P3 · all</span>
+          </div>
+          <div class="step-body">
+            The states that only matter once data is real, and the docs that describe the plugin shape.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:circle-slice-8"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">States</div>
+                <div class="task-desc">skeleton · empty · error with retry — shared across insight views</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:file-document-edit-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">SPEC.html</div>
+                <div class="task-desc">document <code>insights.*</code>, the spec shape, and the YouTube source row</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Add-a-view note</div>
+                <div class="task-desc">"one spec + one card group" recipe — proves the plugin claim</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="colophon">his insights plan · created 2026-10-27</div>
+  </footer>
+</div>
+
+<nav id="sidebar" class="sidebar" aria-label="Docs"></nav>
+<script src="assets/sidebar.js" defer></script>
+
+<nav id="toc" class="toc" aria-label="On this page"></nav>
+
+<script src="assets/toc.js" defer></script>
+</body>
+</html>

@@ -58,6 +58,7 @@ const REPO_PAIRS = [
 ] as const
 
 const USERS = ['noy', 'hiro', 'anna', 'kenji', 'sana']
+const YT_CHANNELS = ['Fireship', 'Theo - t3.gg', 'Web Dev Simplified', 'ByteByteGo', 'Hussein Nasser', 'freeCodeCamp.org']
 const SUBREDDITS = ['typescript', 'reactjs', 'webdev', 'sqlite', 'commandline']
 const MDN_APIS = ['IntersectionObserver', 'WebSocket', 'crypto.randomUUID', 'structuredClone', 'Intl.DateTimeFormat']
 
@@ -103,7 +104,21 @@ const SITES: Site[] = [
   },
   {
     domain: 'www.youtube.com',
-    make: (r, topic) => ({ path: `/watch?v=${base62(r, 11)}`, title: `${topic} - YouTube` }),
+    make: (r, topic, slug) => {
+      const roll = r()
+      if (roll < 0.55) return { path: `/watch?v=${base62(r, 11)}`, title: `${topic} - YouTube` }
+      if (roll < 0.68) return { path: `/shorts/${base62(r, 11)}`, title: `${topic} #shorts - YouTube` }
+      if (roll < 0.8) return { path: `/playlist?list=PL${base62(r, 16)}`, title: `${topic} playlist - YouTube` }
+      if (roll < 0.92) {
+        const channel = pick(r, YT_CHANNELS)
+        return { path: `/@${kebab(channel)}`, title: `${channel} - YouTube` }
+      }
+      return { path: `/results?search_query=${encodeURIComponent(slug)}`, title: `${topic} - YouTube` }
+    },
+  },
+  {
+    domain: 'youtu.be',
+    make: (r, topic) => ({ path: `/${base62(r, 11)}`, title: `${topic} - YouTube` }),
   },
   {
     domain: 'zenn.dev',

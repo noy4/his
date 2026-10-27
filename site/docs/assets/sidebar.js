@@ -22,6 +22,7 @@
       items: [
         { text: "Plan", link: "PLAN.html", icon: "mdi:clipboard-list-outline" },
         { text: "WebUI", link: "PLAN.web.html", icon: "mdi:application-brackets-outline" },
+        { text: "Insights", link: "PLAN.insights.html", icon: "mdi:puzzle-outline" },
       ],
     },
     {

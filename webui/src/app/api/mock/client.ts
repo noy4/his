@@ -1,6 +1,6 @@
-import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeVisitsFilter } from '../types'
 import { isoDay } from '@/lib/date'
-import { hostWithoutWww, matchesHidden, matchesKind, mergeRepoRoots, parseGithubUrl, sourceKey, type GithubUrlInfo } from '@his/core'
+import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -308,6 +308,23 @@ function githubVisits(params: GithubVisitsFilter): SearchPage {
   return paginate(rows, params.cursor, params.limit)
 }
 
+// --- youtube ---
+
+// Temporary: the real server has no `history.youtubeVisits` yet, so this is
+// exported and reused by the RPC client too (see app/api/client.ts).
+export function mockYoutubeVisits(params: YoutubeVisitsFilter): SearchPage {
+  const kind = params.kind ?? 'all'
+  const rows = visibleItems()
+    .flatMap((item) => {
+      const info = parseYoutubeUrl(item.url)
+      if (info === null || !matchesYoutubeKind(info, kind)) return []
+      const it = inPeriod(item, params.month)
+      return it === null ? [] : [it]
+    })
+    .sort(byLastVisitDesc)
+  return paginate(rows, params.cursor, params.limit)
+}
+
 // --- sources ---
 
 // configured sync targets; empty means nothing syncs (explicit targets override)
@@ -493,6 +510,10 @@ export const mockApi: HisApi = {
 
   async githubVisits(params: GithubVisitsFilter): Promise<SearchPage> {
     return githubVisits(params)
+  },
+
+  async youtubeVisits(params: YoutubeVisitsFilter): Promise<SearchPage> {
+    return mockYoutubeVisits(params)
   },
 
   async sourcesList(params?: SourcesListParams): Promise<SourceEntry[]> {
