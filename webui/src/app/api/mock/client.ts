@@ -444,7 +444,7 @@ async function syncRun(params: SyncRunParams): Promise<SyncSummary> {
       const bump = 1 + (hashKey(sourceKey(source)) % 800)
       source.visits += bump
       source.lastVisit = runAt - (hashKey(source.profile) % 3_600_000)
-      source.checkpoint.lastRunAt = runAt
+      source.lastRunAt = runAt
       inserted += bump
     }
     const synced = targets.length - skipped

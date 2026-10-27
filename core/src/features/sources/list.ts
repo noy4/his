@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import type { RegisteredSource, RegisteredSourceEntry, SourceEntry, SourceKind, UnregisteredSourceEntry } from '../../types.ts'
+import type { RegisteredSource, RegisteredSourceEntry, SourceEntry, UnregisteredSourceEntry } from '../../types.ts'
 import { probeSourceFingerprint } from './fingerprint.ts'
 import type { KyselyDb } from '../../db/db.ts'
 import { discoverAllTargets } from './discover.ts'
@@ -24,13 +24,9 @@ export async function listSourceProfiles(db: KyselyDb): Promise<RegisteredSource
     .leftJoin('sync_checkpoints as sc', 'sc.source_profile_id', 'sp.id')
     .leftJoin('visits as v', 'v.source_profile_id', 'sp.id')
     .select([
-      'sp.id',
       'sp.browser',
       'sp.profile',
-      'sp.kind',
       'sp.source_path',
-      'sc.last_source_visit_id',
-      'sc.source_id_offset',
       'sc.last_run_at',
       'sc.last_fingerprint',
       sql<number>`COUNT(v.id)`.as('visits'),
@@ -41,19 +37,12 @@ export async function listSourceProfiles(db: KyselyDb): Promise<RegisteredSource
     .orderBy('sp.profile')
     .execute()
   return rows.map((row) => ({
-    id: row.id,
     browser: row.browser,
     profile: row.profile,
-    kind: row.kind as SourceKind,
     sourcePath: row.source_path,
-    checkpoint: {
-      sourceProfileId: row.id,
-      lastSourceVisitId: row.last_source_visit_id ?? 0,
-      sourceIdOffset: row.source_id_offset ?? 0,
-      lastRunAt: row.last_run_at,
-    },
-    visits: Number(row.visits),
-    lastVisit: row.last_visit_time === null ? null : Number(row.last_visit_time),
+    visits: row.visits,
+    lastVisit: row.last_visit_time,
+    lastRunAt: row.last_run_at,
     pending: isPending(row),
   }))
 }

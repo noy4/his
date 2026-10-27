@@ -6,12 +6,10 @@ import { mergeEntries } from '../list.ts'
 const ref = (browser: string, profile: string) => ({ browser, profile, sourcePath: `/x/${browser}/${profile}` })
 
 const registered = (browser: string, profile: string): RegisteredSource => ({
-  id: 1,
   browser,
   profile,
-  kind: 'chromium',
   sourcePath: `/x/${browser}/${profile}`,
-  checkpoint: { sourceProfileId: 1, lastSourceVisitId: 0, sourceIdOffset: 0, lastRunAt: null },
+  lastRunAt: null,
   visits: 0,
   lastVisit: null,
   pending: true,

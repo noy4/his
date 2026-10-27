@@ -63,15 +63,13 @@ export interface SyncCheckpoint {
 }
 
 export interface RegisteredSource {
-  id: number
   browser: string
   profile: string
-  kind: SourceKind
   sourcePath: string
-  checkpoint: SyncCheckpoint
   /** listing aggregates over the profile's visits (sources.list) */
   visits: number
   lastVisit: EpochMs | null
+  lastRunAt: EpochMs | null
   /** Estimated change since last sync from source file mtimes and sizes, not a guarantee of new visits. */
   pending: boolean
 }
