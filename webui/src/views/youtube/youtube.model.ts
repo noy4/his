@@ -46,7 +46,7 @@ export class YoutubeModel {
   async reload(): Promise<void> {
     const id = ++this.#statsReq
     const visits = this.loadVisits()
-    const result = await this.api.youtubeStats(this.period.month)
+    const result = await this.api.youtube.stats(this.period.month)
     if (id === this.#statsReq) this.stats.value = result
     await visits
   }
@@ -55,7 +55,7 @@ export class YoutubeModel {
     const id = ++this.#visitsReq
     const cursor = append ? this.nextCursor.value ?? undefined : undefined
     if (append && !cursor) return
-    const page = await this.api.youtubeItems({
+    const page = await this.api.youtube.items({
       month: this.period.month,
       kind: this.kind.value,
       cursor,

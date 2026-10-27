@@ -54,7 +54,7 @@ export class GithubModel {
   async reload(): Promise<void> {
     const id = ++this.#statsReq
     const visits = this.loadVisits()
-    const result = await this.api.githubStats(this.period.month)
+    const result = await this.api.github.stats(this.period.month)
     if (id === this.#statsReq) this.stats.value = result
     await visits
   }
@@ -64,7 +64,7 @@ export class GithubModel {
     const cursor = append ? this.nextCursor.value ?? undefined : undefined
     if (append && !cursor) return
     const f = this.filter.value
-    const page = await this.api.githubItems({
+    const page = await this.api.github.items({
       month: this.period.month,
       owner: f?.owner,
       repo: f?.repo,

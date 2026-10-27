@@ -55,7 +55,7 @@ export class UrlsModel {
   }
 
   stats(): Promise<Stats> {
-    return this.api.stats()
+    return this.api.history.stats()
   }
 
   private fetchNext(): Promise<void> {
@@ -68,7 +68,7 @@ export class UrlsModel {
     if (this.loading.value || this.done.value) return
     this.loading.value = true
     try {
-      const page = await this.api.search({
+      const page = await this.api.history.search({
         query: this.filters.query.value || undefined,
         from: this.filters.from.value ?? undefined,
         to: this.filters.to.value ?? undefined,

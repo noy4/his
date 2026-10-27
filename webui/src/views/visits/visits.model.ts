@@ -12,10 +12,10 @@ export class VisitsModel {
   readonly done = signal(false)
   readonly sentinel = signal<Element | null>(null)
   readonly view = signal('list')
-  #api: Pick<HisApi, 'searchVisits'>
+  #api: { history: Pick<HisApi['history'], 'searchVisits'> }
   #requestId = 0
 
-  constructor(api: Pick<HisApi, 'searchVisits'>) {
+  constructor(api: { history: Pick<HisApi['history'], 'searchVisits'> }) {
     this.#api = api
   }
 
@@ -51,7 +51,7 @@ export class VisitsModel {
     const requestId = this.#requestId
     this.loading.value = true
     try {
-      const page = await this.#api.searchVisits({
+      const page = await this.#api.history.searchVisits({
         query: this.filters.query.peek() || undefined,
         from: this.filters.from.peek() ?? undefined,
         to: this.filters.to.peek() ?? undefined,

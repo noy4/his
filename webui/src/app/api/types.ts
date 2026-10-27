@@ -30,16 +30,26 @@ export interface HisEvents {
 }
 
 export interface HisApi {
-  search(params: SearchFilter): Promise<SearchPage>
-  searchVisits(params: SearchFilter): Promise<SearchVisitsPage>
-  stats(month?: string): Promise<Stats>
-  githubStats(month?: string): Promise<GithubStats>
-  githubItems(params: GithubItemsFilter): Promise<SearchPage>
-  youtubeItems(params: YoutubeItemsFilter): Promise<SearchPage>
-  youtubeStats(month?: string): Promise<YoutubeStats>
-  sourcesList(params?: SourcesListParams): Promise<SourceEntry[]>
-  syncRun(params: SyncRunParams): Promise<SyncSummary>
-  syncStatus(): Promise<SyncLastRun | null>
+  history: {
+    search(params: SearchFilter): Promise<SearchPage>
+    searchVisits(params: SearchFilter): Promise<SearchVisitsPage>
+    stats(month?: string): Promise<Stats>
+  }
+  github: {
+    stats(month?: string): Promise<GithubStats>
+    items(params: GithubItemsFilter): Promise<SearchPage>
+  }
+  youtube: {
+    stats(month?: string): Promise<YoutubeStats>
+    items(params: YoutubeItemsFilter): Promise<SearchPage>
+  }
+  sources: {
+    list(params?: SourcesListParams): Promise<SourceEntry[]>
+  }
+  sync: {
+    run(params: SyncRunParams): Promise<SyncSummary>
+    status(): Promise<SyncLastRun | null>
+  }
   settings: {
     get(): Promise<SettingsInfo>
     set(params: SettingsPatch): Promise<SettingsInfo>

@@ -20,11 +20,13 @@ describe('VisitsModel', () => {
   it('keeps repeated URL visits across pages and their cumulative count', async () => {
     const calls: SearchFilter[] = []
     const model = new VisitsModel({
-      async searchVisits(params) {
-        calls.push(params)
-        return params.cursor
-          ? { items: [visit(2), visit(1)], nextCursor: null }
-          : { items: [visit(3)], nextCursor: 'next' }
+      history: {
+        async searchVisits(params) {
+          calls.push(params)
+          return params.cursor
+            ? { items: [visit(2), visit(1)], nextCursor: null }
+            : { items: [visit(3)], nextCursor: 'next' }
+        },
       },
     })
 
@@ -44,9 +46,11 @@ describe('VisitsModel', () => {
     const response = deferred<SearchVisitsPage>()
     let calls = 0
     const model = new VisitsModel({
-      searchVisits() {
-        calls += 1
-        return response.promise
+      history: {
+        searchVisits() {
+          calls += 1
+          return response.promise
+        },
       },
     })
     const pending = model.reload()
@@ -62,9 +66,11 @@ describe('VisitsModel', () => {
     const current = deferred<SearchVisitsPage>()
     const calls: SearchFilter[] = []
     const model = new VisitsModel({
-      searchVisits(params) {
-        calls.push(params)
-        return calls.length === 1 ? initial.promise : current.promise
+      history: {
+        searchVisits(params) {
+          calls.push(params)
+          return calls.length === 1 ? initial.promise : current.promise
+        },
       },
     })
     const state = model.filters
@@ -93,9 +99,11 @@ describe('VisitsModel', () => {
   it('retains loaded visits on resubscription but reloads when filters changed while unsubscribed', async () => {
     let calls = 0
     const model = new VisitsModel({
-      async searchVisits() {
-        calls += 1
-        return { items: [visit(calls)], nextCursor: null }
+      history: {
+        async searchVisits() {
+          calls += 1
+          return { items: [visit(calls)], nextCursor: null }
+        },
       },
     })
     const state = model.filters
@@ -119,9 +127,11 @@ describe('VisitsModel', () => {
   it('clears loading after a failed request and allows retry', async () => {
     let calls = 0
     const model = new VisitsModel({
-      async searchVisits() {
-        if (++calls === 1) throw new Error('offline')
-        return { items: [], nextCursor: null }
+      history: {
+        async searchVisits() {
+          if (++calls === 1) throw new Error('offline')
+          return { items: [], nextCursor: null }
+        },
       },
     })
     await assert.rejects(model.reload(), /offline/)
@@ -154,12 +164,14 @@ describe('VisitsModel', () => {
     ]
     let failNext = false
     const model = new VisitsModel({
-      async searchVisits() {
-        if (failNext) {
-          failNext = false
-          throw new Error('offline')
-        }
-        return pages.shift()!
+      history: {
+        async searchVisits() {
+          if (failNext) {
+            failNext = false
+            throw new Error('offline')
+          }
+          return pages.shift()!
+        },
       },
     })
     model.setSentinel({} as Element)
@@ -191,8 +203,10 @@ describe('VisitsModel', () => {
   it('owns filters independently from Urls and resets them for a new view instance', (t) => {
     t.mock.timers.enable({ apis: ['setTimeout'] })
     const api = {
-      async search() { return { items: [], nextCursor: null } },
-      async searchVisits() { return { items: [], nextCursor: null } },
+      history: {
+        async search() { return { items: [], nextCursor: null } },
+        async searchVisits() { return { items: [], nextCursor: null } },
+      },
     } as unknown as HisApi
     const urls = new UrlsModel(api)
     const visits = new VisitsModel(api)

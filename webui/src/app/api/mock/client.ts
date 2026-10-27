@@ -537,44 +537,44 @@ function searchVisits(params: SearchFilter): SearchVisitsPage {
 }
 
 export const mockApi: HisApi = {
-  async search(params: SearchFilter): Promise<SearchPage> {
-    return paginate(findVisible(params), params.cursor, params.limit)
+  history: {
+    async search(params: SearchFilter): Promise<SearchPage> {
+      return paginate(findVisible(params), params.cursor, params.limit)
+    },
+    async searchVisits(params: SearchFilter): Promise<SearchVisitsPage> {
+      return searchVisits(params)
+    },
+    async stats(month?: string): Promise<Stats> {
+      return month === undefined ? computeStats() : computeMonthlyStats(month)
+    },
   },
-
-  async searchVisits(params: SearchFilter): Promise<SearchVisitsPage> {
-    return searchVisits(params)
+  github: {
+    async stats(month?: string): Promise<GithubStats> {
+      return computeGithubStats(month)
+    },
+    async items(params: GithubItemsFilter): Promise<SearchPage> {
+      return mockGithubItems(params)
+    },
   },
-
-  async stats(month?: string): Promise<Stats> {
-    return month === undefined ? computeStats() : computeMonthlyStats(month)
+  youtube: {
+    async stats(month?: string): Promise<YoutubeStats> {
+      return mockYoutubeStats(month)
+    },
+    async items(params: YoutubeItemsFilter): Promise<SearchPage> {
+      return mockYoutubeItems(params)
+    },
   },
-
-  async githubStats(month?: string): Promise<GithubStats> {
-    return computeGithubStats(month)
+  sources: {
+    async list(params?: SourcesListParams): Promise<SourceEntry[]> {
+      return sourceEntries(params?.check === true)
+    },
   },
-
-  async githubItems(params: GithubItemsFilter): Promise<SearchPage> {
-    return mockGithubItems(params)
+  sync: {
+    run: (params: SyncRunParams) => syncRun(params),
+    async status(): Promise<SyncLastRun | null> {
+      return lastRunRecord === null ? null : { ...lastRunRecord }
+    },
   },
-
-  async youtubeItems(params: YoutubeItemsFilter): Promise<SearchPage> {
-    return mockYoutubeItems(params)
-  },
-
-  async youtubeStats(month?: string): Promise<YoutubeStats> {
-    return mockYoutubeStats(month)
-  },
-
-  async sourcesList(params?: SourcesListParams): Promise<SourceEntry[]> {
-    return sourceEntries(params?.check === true)
-  },
-
-  syncRun: (params: SyncRunParams) => syncRun(params),
-
-  async syncStatus(): Promise<SyncLastRun | null> {
-    return lastRunRecord === null ? null : { ...lastRunRecord }
-  },
-
   settings: {
     async get(): Promise<SettingsInfo> {
       return {

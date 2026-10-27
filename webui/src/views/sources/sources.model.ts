@@ -30,7 +30,7 @@ export class SourcesModel {
   async reload(): Promise<void> {
     try {
       const [entries, settings] = await Promise.all([
-        this.api.sourcesList({ check: true }),
+        this.api.sources.list({ check: true }),
         this.api.settings.get(),
       ])
       this.entries.value = entries
@@ -74,7 +74,7 @@ export class SourcesModel {
     if (this.running.value || keys.length === 0) return
     this.running.value = true
     try {
-      this.lastSync.value = await this.api.syncRun({ targets: keys })
+      this.lastSync.value = await this.api.sync.run({ targets: keys })
       await this.reload()
     } catch {
       // sync failures surface through sync.status once wired
