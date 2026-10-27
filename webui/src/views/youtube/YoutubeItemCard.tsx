@@ -2,7 +2,8 @@ import type { HistoryItem } from '@/app/api'
 import { parseYoutubeTitle, parseYoutubeUrl } from '@his/core'
 import { cn } from 'cn'
 import type { ReactNode } from 'react'
-import { VisitCount, YoutubeItemAvatar } from './Youtube.components'
+import { VisitCount } from '@/views/shared/RecentItems'
+import { YoutubeItemAvatar } from './Youtube.components'
 import { youtubeItemLabel } from './youtube.labels'
 
 export function YoutubeItemCardGrid({ children }: { children: ReactNode }) {

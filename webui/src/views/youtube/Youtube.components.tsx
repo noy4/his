@@ -1,59 +1,8 @@
-import type { ComponentProps } from 'react'
 import type { YoutubeUrlInfo } from '@his/core'
 import { cn } from 'cn'
-import { fmtNum } from '@/lib/format'
 import PlayIcon from '~icons/mdi/play-circle-outline'
 import PlaylistIcon from '~icons/mdi/playlist-play'
 import YoutubeIcon from '~icons/mdi/youtube'
-
-export function EmptyMessage({ className, ...props }: ComponentProps<'p'>) {
-  return (
-    <p
-      {...props}
-      className={cn('py-6 text-center text-sm text-muted', className)}
-    />
-  )
-}
-
-export function LoadMoreButton({ children = 'Show more', className, ...props }: ComponentProps<'button'>) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={cn('mt-2 w-full rounded py-1.5 text-sm text-muted hover:bg-bg-3 hover:text-text', className)}
-    >
-      {children}
-    </button>
-  )
-}
-
-export function FilterChip({ selected = false, className, ...props }: ComponentProps<'button'> & { selected?: boolean }) {
-  return (
-    <button
-      type="button"
-      {...props}
-      aria-pressed={selected}
-      className={cn(
-        'rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
-        selected
-          ? 'border-primary bg-primary-soft text-primary'
-          : 'text-muted hover:text-text',
-        className,
-      )}
-    />
-  )
-}
-
-export function VisitCount({ n }: { n: number }) {
-  return (
-    <span
-      title="visit count"
-      className="shrink-0 font-mono text-xs text-muted tabular-nums"
-    >
-      {fmtNum(n)}
-    </span>
-  )
-}
 
 // 16:9 preview frame — real thumbnail when we have a video id, else a kind placeholder
 export function YoutubeThumb({ id, shorts, width = 64, className }: { id?: string; shorts?: boolean; width?: number; className?: string }) {

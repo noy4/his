@@ -1,7 +1,7 @@
 import { Card, CardTitle } from '@/components/ui/card'
 import { dateLabel } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
-import { VisitCount } from './GitHub.components'
+import { VisitCount } from '@/views/shared/RecentItems'
 import { useModel } from '@/lib/useModel'
 import type { AppModel } from '@/app/app'
 import { cn } from 'cn'

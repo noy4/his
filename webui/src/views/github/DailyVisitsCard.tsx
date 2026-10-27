@@ -1,11 +1,11 @@
 import type { GithubVisitKind } from '@/app/api'
 import { Card, CardTitle } from '@/components/ui/card'
+import { ToggleChip } from '@/components/ui/toggle-chip'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { isoDay } from '@/lib/date'
 import { ALL_TIME_DAYS, dailySeries } from '@/lib/time-series'
 import { DailyVisitsChart, type DailyVisitTop } from './DailyVisitsChart'
-import { FilterChip } from './GitHub.components'
 import type { GithubModel } from './github.model'
 
 const KINDS: { value: GithubVisitKind; label: string }[] = [
@@ -42,9 +42,13 @@ export function DailyVisitsCard({ gh }: { gh: GithubModel }) {
       <CardTitle>Daily Visits</CardTitle>
       <div className="mb-2 flex flex-wrap items-center gap-1.5">
         {KINDS.map((k) => (
-          <FilterChip key={k.value} selected={kind === k.value} onClick={() => setKind(k.value)}>
+          <ToggleChip
+            key={k.value}
+            selected={kind === k.value}
+            onClick={() => setKind(k.value)}
+          >
             {k.label}
-          </FilterChip>
+          </ToggleChip>
         ))}
       </div>
       <DailyVisitsChart data={daily} dataKey={kind} />

@@ -1,20 +1,12 @@
 import type { HistoryItem, YoutubeVisitKind } from '@/app/api'
 import { Card, CardTitle } from '@/components/ui/card'
-import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-group'
-import { relativeDateLabel } from '@/lib/date'
+import { ToggleChip } from '@/components/ui/toggle-chip'
 import { parseYoutubeTitle, parseYoutubeUrl } from '@his/core'
-import { cn } from 'cn'
-import type { ComponentProps } from 'react'
-import ListIcon from '~icons/mdi/format-list-bulleted'
-import GridIcon from '~icons/mdi/view-grid-outline'
 import { HistoryItemRow } from '@/views/shared/HistoryRow'
+import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreButton } from '@/views/shared/RecentItems'
+import { groupItemsByDate } from '@/views/shared/group-items'
 import { YoutubeItemCard, YoutubeItemCardGrid } from './YoutubeItemCard'
-import {
-  EmptyMessage,
-  FilterChip,
-  LoadMoreButton,
-  YoutubeItemAvatar,
-} from './Youtube.components'
+import { YoutubeItemAvatar } from './Youtube.components'
 import { YOUTUBE_KIND_LABELS } from './youtube.labels'
 import type { YoutubeModel } from './youtube.model'
 
@@ -29,10 +21,13 @@ export function RecentItemsCard({ yt }: { yt: YoutubeModel }) {
       <ItemsToolbarRoot>
         <ItemsKindFilter yt={yt} />
         <span className="ml-auto" />
-        <ItemsViewToggle yt={yt} />
+        <ItemsViewToggle
+          value={yt.view.value}
+          onChange={(v) => yt.setView(v)}
+        />
       </ItemsToolbarRoot>
 
-      {groups.length === 0 && <EmptyMessage>No items</EmptyMessage>}
+      {groups.length === 0 && <EmptyMessage text="No items" />}
 
       {groups.map((group) => (
         <ItemsGroup
@@ -49,26 +44,6 @@ export function RecentItemsCard({ yt }: { yt: YoutubeModel }) {
 
 // --- components ---
 
-function groupItemsByDate(items: HistoryItem[]) {
-  const groups: { label: string; items: HistoryItem[] }[] = []
-  for (const item of items) {
-    const label = relativeDateLabel(item.lastVisit)
-    const last = groups.at(-1)
-    if (last?.label === label) last.items.push(item)
-    else groups.push({ label, items: [item] })
-  }
-  return groups
-}
-
-function ItemsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      {...props}
-      className={cn('mb-2 flex flex-wrap items-center gap-1.5', className)}
-    />
-  )
-}
-
 const KIND_OPTIONS: { value: YoutubeVisitKind; label: string }[] = [
   { value: 'all', label: YOUTUBE_KIND_LABELS.all },
   { value: 'video', label: YOUTUBE_KIND_LABELS.video },
@@ -83,31 +58,15 @@ function ItemsKindFilter({ yt }: { yt: YoutubeModel }) {
   return (
     <>
       {KIND_OPTIONS.map(({ value, label }) => (
-        <FilterChip
+        <ToggleChip
           key={value}
           selected={kind === value}
           onClick={() => yt.setKind(value)}
         >
           {label}
-        </FilterChip>
+        </ToggleChip>
       ))}
     </>
-  )
-}
-
-const VIEW_OPTIONS: IconToggleOption[] = [
-  { value: 'list', label: 'List', Icon: ListIcon },
-  { value: 'card', label: 'Cards', Icon: GridIcon },
-]
-
-function ItemsViewToggle({ yt }: { yt: YoutubeModel }) {
-  return (
-    <IconToggleGroup
-      aria-label="View"
-      value={yt.view.value}
-      onChange={(v) => yt.setView(v)}
-      options={VIEW_OPTIONS}
-    />
   )
 }
 
@@ -131,19 +90,6 @@ function ItemsGroup({ label, items, isCardView }: {
         ))
       )}
     </ItemsGroupRoot>
-  )
-}
-
-function ItemsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
-  return <section {...props} className={cn('mb-2', className)} />
-}
-
-function ItemsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
-  return (
-    <h3
-      {...props}
-      className={cn('sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted', className)}
-    />
   )
 }
 

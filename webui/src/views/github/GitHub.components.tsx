@@ -4,45 +4,6 @@ import type { ComponentProps, ReactNode } from 'react'
 import CloseIcon from '~icons/mdi/close'
 import PullIcon from '~icons/octicon/git-pull-request-16'
 import IssueIcon from '~icons/octicon/issue-opened-16'
-import { fmtNum } from '@/lib/format'
-
-export function EmptyMessage({ className, ...props }: ComponentProps<'p'>) {
-  return (
-    <p
-      {...props}
-      className={cn('py-6 text-center text-sm text-muted', className)}
-    />
-  )
-}
-
-export function LoadMoreButton({ children = 'Show more', className, ...props }: ComponentProps<'button'>) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={cn('mt-2 w-full rounded py-1.5 text-sm text-muted hover:bg-bg-3 hover:text-text', className)}
-    >
-      {children}
-    </button>
-  )
-}
-
-export function FilterChip({ selected = false, className, ...props }: ComponentProps<'button'> & { selected?: boolean }) {
-  return (
-    <button
-      type="button"
-      {...props}
-      aria-pressed={selected}
-      className={cn(
-        'rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
-        selected
-          ? 'border-primary bg-primary-soft text-primary'
-          : 'text-muted hover:text-text',
-        className,
-      )}
-    />
-  )
-}
 
 type RemovableChipProps = ComponentProps<'span'> & {
   label?: ReactNode
@@ -122,15 +83,4 @@ export function GitHubItemAvatar({ kind, ...props }: GitHubAvatarProps & { kind?
   return kind
     ? <GitHubKindAvatar {...props} kind={kind} />
     : <GitHubAvatar {...props} />
-}
-
-export function VisitCount({ n }: { n: number }) {
-  return (
-    <span
-      title='visit count'
-      className="shrink-0 font-mono text-xs text-muted tabular-nums"
-    >
-      {fmtNum(n)}
-    </span>
-  )
 }

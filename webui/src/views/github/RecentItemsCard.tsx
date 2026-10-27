@@ -1,21 +1,12 @@
 import type { GithubVisitKind, HistoryItem } from '@/app/api'
 import { Card, CardTitle } from '@/components/ui/card'
-import { IconToggleGroup, type IconToggleOption } from '@/components/ui/toggle-group'
-import { relativeDateLabel } from '@/lib/date'
+import { ToggleChip } from '@/components/ui/toggle-chip'
 import { parseGithubTitle, parseGithubUrl } from '@his/core'
-import { cn } from 'cn'
-import type { ComponentProps } from 'react'
-import ListIcon from '~icons/mdi/format-list-bulleted'
-import GridIcon from '~icons/mdi/view-grid-outline'
 import { HistoryItemRow } from '@/views/shared/HistoryRow'
+import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreButton } from '@/views/shared/RecentItems'
+import { groupItemsByDate } from '@/views/shared/group-items'
 import { GitHubItemCard, GitHubItemCardGrid } from './GitHubItemCard'
-import {
-  EmptyMessage,
-  FilterChip,
-  GitHubItemAvatar,
-  LoadMoreButton,
-  RemovableChip,
-} from './GitHub.components'
+import { GitHubItemAvatar, RemovableChip } from './GitHub.components'
 import type { GithubModel } from './github.model'
 
 export function RecentItemsCard({ gh }: { gh: GithubModel }) {
@@ -30,10 +21,13 @@ export function RecentItemsCard({ gh }: { gh: GithubModel }) {
         <ItemsKindFilter gh={gh} />
         <span className="ml-auto" />
         <ItemsActiveFilter gh={gh} />
-        <ItemsViewToggle gh={gh} />
+        <ItemsViewToggle
+          value={gh.view.value}
+          onChange={(v) => gh.setView(v)}
+        />
       </ItemsToolbarRoot>
 
-      {groups.length === 0 && <ItemsEmptyMessage />}
+      {groups.length === 0 && <EmptyMessage text="No items" />}
 
       {groups.map((group) => (
         <ItemsGroup
@@ -50,26 +44,6 @@ export function RecentItemsCard({ gh }: { gh: GithubModel }) {
 
 // --- components ---
 
-function groupItemsByDate(items: HistoryItem[]) {
-  const groups: { label: string; items: HistoryItem[] }[] = []
-  for (const item of items) {
-    const label = relativeDateLabel(item.lastVisit)
-    const last = groups.at(-1)
-    if (last?.label === label) last.items.push(item)
-    else groups.push({ label, items: [item] })
-  }
-  return groups
-}
-
-function ItemsToolbarRoot({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      {...props}
-      className={cn('mb-2 flex flex-wrap items-center gap-1.5', className)}
-    />
-  )
-}
-
 const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'repo', label: 'Repos' },
@@ -82,13 +56,13 @@ function ItemsKindFilter({ gh }: { gh: GithubModel }) {
   return (
     <>
       {KIND_OPTIONS.map(({ value, label }) => (
-        <FilterChip
+        <ToggleChip
           key={value}
           selected={kind === value}
           onClick={() => gh.setKind(value)}
         >
           {label}
-        </FilterChip>
+        </ToggleChip>
       ))}
     </>
   )
@@ -105,26 +79,6 @@ function ItemsActiveFilter({ gh }: { gh: GithubModel }) {
       label={label}
     />
   )
-}
-
-const VIEW_OPTIONS: IconToggleOption[] = [
-  { value: 'list', label: 'List', Icon: ListIcon },
-  { value: 'card', label: 'Cards', Icon: GridIcon },
-]
-
-function ItemsViewToggle({ gh }: { gh: GithubModel }) {
-  return (
-    <IconToggleGroup
-      aria-label="View"
-      value={gh.view.value}
-      onChange={(v) => gh.setView(v)}
-      options={VIEW_OPTIONS}
-    />
-  )
-}
-
-function ItemsEmptyMessage(props: Omit<ComponentProps<'p'>, 'children'>) {
-  return <EmptyMessage {...props}>No items</EmptyMessage>
 }
 
 function ItemsGroup({ label, items, isCardView }: {
@@ -147,19 +101,6 @@ function ItemsGroup({ label, items, isCardView }: {
         ))
       )}
     </ItemsGroupRoot>
-  )
-}
-
-function ItemsGroupRoot({ className, ...props }: ComponentProps<'section'>) {
-  return <section {...props} className={cn('mb-2', className)} />
-}
-
-function ItemsGroupTitle({ className, ...props }: ComponentProps<'h3'>) {
-  return (
-    <h3
-      {...props}
-      className={cn('sticky -top-4 z-10 bg-bg-2 py-1 text-xs font-semibold text-muted', className)}
-    />
   )
 }
 
