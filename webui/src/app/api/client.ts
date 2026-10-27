@@ -6,34 +6,34 @@ export function createApi(): HisApi {
   if (import.meta.env.VITE_USE_MOCK_API === 'true') return mockApi
 
   const transport = new RpcTransport<HisEvents>(rpcUrl())
-  function call<T>(method: string, params?: unknown): Promise<T> {
-    return transport.call<T>(method, params)
+  function handler<T>(method: string) {
+    return (params?: unknown) => transport.call<T>(method, params)
   }
 
   return {
     history: {
-      search: (params) => call<SearchPage>('history.search', params),
-      searchVisits: (params) => call<SearchVisitsPage>('history.searchVisits', params),
-      stats: (params) => call<Stats>('history.stats', params),
+      search: handler<SearchPage>('history.search'),
+      searchVisits: handler<SearchVisitsPage>('history.searchVisits'),
+      stats: handler<Stats>('history.stats'),
     },
     github: {
-      stats: (params) => call<GithubStats>('history.githubStats', params),
-      items: (params) => call<SearchPage>('history.githubItems', params),
+      stats: handler<GithubStats>('history.githubStats'),
+      items: handler<SearchPage>('history.githubItems'),
     },
     youtube: {
-      stats: (params) => call<YoutubeStats>('history.youtubeStats', params),
-      items: (params) => call<SearchPage>('history.youtubeItems', params),
+      stats: handler<YoutubeStats>('history.youtubeStats'),
+      items: handler<SearchPage>('history.youtubeItems'),
     },
     sources: {
-      list: (params) => call<SourceEntry[]>('sources.list', params),
+      list: handler<SourceEntry[]>('sources.list'),
     },
     sync: {
-      run: (params) => call<SyncSummary>('sync.run', params),
-      status: () => call<SyncLastRun | null>('sync.status'),
+      run: handler<SyncSummary>('sync.run'),
+      status: handler<SyncLastRun | null>('sync.status'),
     },
     settings: {
-      get: () => call<SettingsInfo>('settings.get'),
-      set: (params) => call<SettingsInfo>('settings.set', params),
+      get: handler<SettingsInfo>('settings.get'),
+      set: handler<SettingsInfo>('settings.set'),
     },
     on: (event, handler) => transport.on(event, handler),
   }
