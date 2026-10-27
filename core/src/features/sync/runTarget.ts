@@ -30,7 +30,7 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
 
   try {
     // check fingerprint (--rescan bypasses)
-    const fingerprint = probeSourceFingerprint(target.dbPath)
+    const fingerprint = probeSourceFingerprint(target.sourcePath)
 
     if (!options.rescan) {
       const stored = await getStoredFingerprint(db, target.browser, target.profile)
@@ -52,7 +52,7 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
         profile: target.profile,
         kind: engine.kind,
         idMode: engine.idMode,
-        profilePath: target.dbPath,
+        sourcePath: target.sourcePath,
       },
       visits,
       options: {

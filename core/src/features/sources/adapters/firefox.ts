@@ -26,13 +26,13 @@ export function resolveFirefox(profile: string | undefined, platform: NodeJS.Pla
   for (const root of roots) {
     if (!fs.existsSync(root)) continue
     for (const dir of listDirs(root)) {
-      const dbPath = path.join(root, dir, 'places.sqlite')
-      if (!fs.existsSync(dbPath)) continue
+      const sourcePath = path.join(root, dir, 'places.sqlite')
+      if (!fs.existsSync(sourcePath)) continue
       if (profile !== undefined && dirToProfileName(dir) !== profile) continue
       targets.push({
         browser: 'firefox',
         profile: dirToProfileName(dir),
-        dbPath,
+        sourcePath,
       })
     }
   }

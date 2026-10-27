@@ -5,7 +5,7 @@ export interface SyncTarget {
   // browser slug
   browser: string
   profile: string
-  dbPath: string
+  sourcePath: string
 }
 
 // parse engine, shared by every browser built on it; stateless

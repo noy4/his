@@ -15,19 +15,19 @@ const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
 export function snapshot(target: SyncTarget, home: string): SnapshotResult {
   const dir = snapshotDir(home, target.browser, target.profile)
   fs.mkdirSync(dir, { recursive: true })
-  const snapshotPath = path.join(dir, path.basename(target.dbPath))
+  const snapshotPath = path.join(dir, path.basename(target.sourcePath))
 
-  if (isJson(target.dbPath)) {
-    fs.copyFileSync(target.dbPath, snapshotPath)
+  if (isJson(target.sourcePath)) {
+    fs.copyFileSync(target.sourcePath, snapshotPath)
     return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via: 'file-copy' }
   }
 
-  const via = vacuumInto(target.dbPath, snapshotPath) ?? copyTrio(target.dbPath, snapshotPath)
+  const via = vacuumInto(target.sourcePath, snapshotPath) ?? copyTrio(target.sourcePath, snapshotPath)
   return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via }
 }
 
-function isJson(dbPath: string): boolean {
-  return dbPath.endsWith('.json')
+function isJson(sourcePath: string): boolean {
+  return sourcePath.endsWith('.json')
 }
 
 // Primary route: read the source through SQLite itself and serialize the

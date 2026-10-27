@@ -20,9 +20,9 @@ export const SAFARI_BROWSER: Browser = { name: 'safari', label: 'Safari', engine
 export function resolveSafari(profile: string | undefined, platform: NodeJS.Platform = process.platform, home: string | null = os.homedir()): SyncTarget[] {
   if (platform !== 'darwin' || home === null) return []
   if (profile !== undefined && profile !== 'default') return []
-  const dbPath = path.join(home, 'Library', 'Safari', 'History.db')
-  if (!fs.existsSync(dbPath)) return []
-  return [{ browser: 'safari', profile: 'default', dbPath }]
+  const sourcePath = path.join(home, 'Library', 'Safari', 'History.db')
+  if (!fs.existsSync(sourcePath)) return []
+  return [{ browser: 'safari', profile: 'default', sourcePath }]
 }
 
 // --- parse ---

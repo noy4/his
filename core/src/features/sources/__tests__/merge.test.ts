@@ -3,14 +3,14 @@ import { describe, it } from 'node:test'
 import type { RegisteredSource } from '../../../types.ts'
 import { mergeEntries } from '../list.ts'
 
-const ref = (browser: string, profile: string) => ({ browser, profile, dbPath: `/x/${browser}/${profile}` })
+const ref = (browser: string, profile: string) => ({ browser, profile, sourcePath: `/x/${browser}/${profile}` })
 
 const registered = (browser: string, profile: string): RegisteredSource => ({
   id: 1,
   browser,
   profile,
   kind: 'chromium',
-  profilePath: `/x/${browser}/${profile}`,
+  sourcePath: `/x/${browser}/${profile}`,
   checkpoint: { sourceProfileId: 1, lastSourceVisitId: 0, sourceIdOffset: 0, lastRunAt: null },
   visits: 0,
   lastVisit: null,
@@ -21,7 +21,7 @@ describe('mergeEntries', () => {
   it('marks a discovered profile without a row as unregistered', () => {
     const entries = mergeEntries([ref('chrome', 'Default')], [])
     assert.deepEqual(entries, [
-      { browser: 'chrome', profile: 'Default', profilePath: '/x/chrome/Default', registered: false },
+      { browser: 'chrome', profile: 'Default', sourcePath: '/x/chrome/Default', registered: false },
     ])
   })
 
@@ -29,7 +29,7 @@ describe('mergeEntries', () => {
     const [entry] = mergeEntries([ref('chrome', 'Default')], [registered('chrome', 'Default')])
     assert.equal(entry!.registered, true)
     assert.equal(entry!.browser, 'chrome')
-    assert.equal(entry!.profilePath, '/x/chrome/Default')
+    assert.equal(entry!.sourcePath, '/x/chrome/Default')
   })
 
   it('appends registered profiles that were not discovered', () => {

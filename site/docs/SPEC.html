@@ -461,7 +461,7 @@ settings.set         { hidden_patterns?, sync_targets? }                 → Set
         <text class="tm" x="352" y="349">browser</text>
         <text class="tm" x="352" y="362">profile</text>
         <text class="tm" x="352" y="375">kind · chromium, firefox, safari, takeout</text>
-        <text class="tm" x="352" y="388">profile_path</text>
+        <text class="tm" x="352" y="388">source_path</text>
         <text class="tm" x="352" y="401" style="font-style: italic">UNIQUE(browser, profile)</text>
 
         <!-- sync_checkpoints -->
@@ -482,7 +482,7 @@ CREATE TABLE source_profiles (          <span class="c">-- browser profiles</spa
   browser       TEXT    NOT NULL,       <span class="c">-- chrome, brave, ...</span>
   profile       TEXT    NOT NULL,       <span class="c">-- profile dir</span>
   kind          TEXT    NOT NULL,       <span class="c">-- engine</span>
-  profile_path  TEXT    NOT NULL,
+  source_path   TEXT    NOT NULL,
   UNIQUE(browser, profile)
 );
 

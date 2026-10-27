@@ -28,7 +28,7 @@ export async function listSourceProfiles(db: KyselyDb): Promise<RegisteredSource
       'sp.browser',
       'sp.profile',
       'sp.kind',
-      'sp.profile_path',
+      'sp.source_path',
       'sc.last_source_visit_id',
       'sc.source_id_offset',
       'sc.last_run_at',
@@ -45,7 +45,7 @@ export async function listSourceProfiles(db: KyselyDb): Promise<RegisteredSource
     browser: row.browser,
     profile: row.profile,
     kind: row.kind as SourceKind,
-    profilePath: row.profile_path,
+    sourcePath: row.source_path,
     checkpoint: {
       sourceProfileId: row.id,
       lastSourceVisitId: row.last_source_visit_id ?? 0,
@@ -81,9 +81,9 @@ export function mergeEntries(
 }
 
 // compare the source files to the last stored fingerprint
-function isPending(row: { last_fingerprint: string | null; profile_path: string }): boolean {
+function isPending(row: { last_fingerprint: string | null; source_path: string }): boolean {
   if (row.last_fingerprint === null) return true
-  return probeSourceFingerprint(row.profile_path) !== row.last_fingerprint
+  return probeSourceFingerprint(row.source_path) !== row.last_fingerprint
 }
 
 function toRegistered(source: RegisteredSource): RegisteredSourceEntry {
@@ -94,7 +94,7 @@ function toUnregistered(target: SyncTarget): UnregisteredSourceEntry {
   return {
     browser: target.browser,
     profile: target.profile,
-    profilePath: target.dbPath,
+    sourcePath: target.sourcePath,
     registered: false,
   }
 }

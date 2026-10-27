@@ -6,7 +6,7 @@ export const sourceProfile = {
   browser: 'chrome',
   profile: 'Default',
   kind: 'chromium',
-  profile_path: '/x',
+  source_path: '/x',
 }
 
 let nextVisitId = 1

@@ -39,16 +39,16 @@ export function resolveTakeout(home: string, profile: string | undefined): SyncT
   const base = path.basename(profile)
   if (base !== profile || base === '.' || base === '..') return []
   const name = base.endsWith('.json') ? base : `${base}.json`
-  const dbPath = path.join(dir, name)
-  return fs.existsSync(dbPath) ? [takeoutTarget(dir, name)] : []
+  const sourcePath = path.join(dir, name)
+  return fs.existsSync(sourcePath) ? [takeoutTarget(dir, name)] : []
 }
 
 function takeoutTarget(dir: string, name: string): SyncTarget {
-  const dbPath = path.join(dir, name)
+  const sourcePath = path.join(dir, name)
   return {
     browser: 'takeout' as const,
-    profile: takeoutProfileKey(dbPath),
-    dbPath,
+    profile: takeoutProfileKey(sourcePath),
+    sourcePath,
   }
 }
 

@@ -5,10 +5,10 @@ const DATA_SIDECARS = ['-wal', '-journal']
 
 // mtime/size probe of the target's source files (main + sidecars, or the
 // takeout json) serialized for cross-run comparison.
-export function probeSourceFingerprint(dbPath: string): string {
-  const files = dbPath.endsWith('.json')
-    ? [dbPath]
-    : [dbPath, ...DATA_SIDECARS.map((ext) => dbPath + ext)]
+export function probeSourceFingerprint(sourcePath: string): string {
+  const files = sourcePath.endsWith('.json')
+    ? [sourcePath]
+    : [sourcePath, ...DATA_SIDECARS.map((ext) => sourcePath + ext)]
   return JSON.stringify(files.map(statEntry))
 }
 

@@ -20,7 +20,7 @@ export function SourceCard({ entry, enabled, onToggle }: Props) {
         <SourceCardName
           name={browserName(entry.browser)}
           detail={entry.profile}
-          path={entry.profilePath}
+          path={entry.sourcePath}
         />
       </SourceCardHead>
       <SourceCardStats entry={entry} />

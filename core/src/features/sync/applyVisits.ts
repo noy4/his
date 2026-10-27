@@ -9,7 +9,7 @@ export interface SourceProfileRef {
   browser: string
   profile: string
   kind: SourceKind
-  profilePath: string
+  sourcePath: string
   idMode: IdMode
 }
 
@@ -127,11 +127,11 @@ export async function ensureSourceProfile(db: KyselyDb, profile: SourceProfileRe
       browser: profile.browser,
       profile: profile.profile,
       kind: profile.kind,
-      profile_path: profile.profilePath,
+      source_path: profile.sourcePath,
     })
     .onConflict((oc) => oc.columns(['browser', 'profile']).doUpdateSet({
       kind: profile.kind,
-      profile_path: profile.profilePath,
+      source_path: profile.sourcePath,
     }))
     .returning('id')
     .executeTakeFirst()

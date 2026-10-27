@@ -23,7 +23,7 @@ beforeEach(async () => {
   db = createDb(handle)
   await db
     .insertInto('source_profiles')
-    .values({ ...sourceProfile, profile_path: sourceFile })
+    .values({ ...sourceProfile, source_path: sourceFile })
     .execute()
   await db
     .insertInto('sync_checkpoints')

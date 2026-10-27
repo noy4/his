@@ -23,7 +23,7 @@ export interface SourceProfiles {
   id: Generated<number>;
   kind: string;
   profile: string;
-  profile_path: string;
+  source_path: string;
 }
 
 export interface SyncCheckpoints {

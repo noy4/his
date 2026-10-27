@@ -67,7 +67,7 @@ export interface RegisteredSource {
   browser: string
   profile: string
   kind: SourceKind
-  profilePath: string
+  sourcePath: string
   checkpoint: SyncCheckpoint
   /** listing aggregates over the profile's visits (sources.list) */
   visits: number
@@ -85,7 +85,7 @@ export type RegisteredSourceEntry = RegisteredSource & {
 export type UnregisteredSourceEntry = {
   browser: string
   profile: string
-  profilePath: string
+  sourcePath: string
   registered: false
 }
 

@@ -6,7 +6,7 @@ import { applyTargetFilter } from '../targets.ts'
 const target = (browser: string, profile: string): SyncTarget => ({
   browser,
   profile,
-  dbPath: `/x/${browser}/${profile}`,
+  sourcePath: `/x/${browser}/${profile}`,
 })
 
 describe('applyTargetFilter', () => {
