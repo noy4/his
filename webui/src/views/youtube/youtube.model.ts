@@ -46,7 +46,7 @@ export class YoutubeModel {
   async reload(): Promise<void> {
     const id = ++this.#statsReq
     const visits = this.loadVisits()
-    const result = await this.api.youtube.stats(this.period.month)
+    const result = await this.api.youtube.stats({ month: this.period.month })
     if (id === this.#statsReq) this.stats.value = result
     await visits
   }

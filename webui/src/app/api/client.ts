@@ -1,6 +1,6 @@
-import type { GithubItemsFilter, GithubStats, HisApi, HisEvents, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SourceEntry, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeItemsFilter, YoutubeStats } from './types'
-import { mockApi } from './mock/client'
 import { RpcTransport } from '@/lib/rpc-transport'
+import { mockApi } from './mock/client'
+import type { GithubStats, HisApi, HisEvents, SearchPage, SearchVisitsPage, SettingsInfo, SourceEntry, Stats, SyncLastRun, SyncSummary, YoutubeStats } from './types'
 
 export function createApi(): HisApi {
   if (import.meta.env.VITE_USE_MOCK_API === 'true') return mockApi
@@ -12,23 +12,23 @@ export function createApi(): HisApi {
 
   return {
     history: {
-      search: (params: SearchFilter) => call<SearchPage>('history.search', params),
-      searchVisits: (params: SearchFilter) => call<SearchVisitsPage>('history.searchVisits', params),
-      stats: (month?: string) => call<Stats>('history.stats', { month }),
+      search: (params) => call<SearchPage>('history.search', params),
+      searchVisits: (params) => call<SearchVisitsPage>('history.searchVisits', params),
+      stats: (params) => call<Stats>('history.stats', params),
     },
     github: {
-      stats: (month?: string) => call<GithubStats>('history.githubStats', { month }),
-      items: (params: GithubItemsFilter) => call<SearchPage>('history.githubItems', params),
+      stats: (params) => call<GithubStats>('history.githubStats', params),
+      items: (params) => call<SearchPage>('history.githubItems', params),
     },
     youtube: {
-      stats: (month?: string) => call<YoutubeStats>('history.youtubeStats', { month }),
-      items: (params: YoutubeItemsFilter) => call<SearchPage>('history.youtubeItems', params),
+      stats: (params) => call<YoutubeStats>('history.youtubeStats', params),
+      items: (params) => call<SearchPage>('history.youtubeItems', params),
     },
     sources: {
-      list: (params?: SourcesListParams) => call<SourceEntry[]>('sources.list', params),
+      list: (params) => call<SourceEntry[]>('sources.list', params),
     },
     sync: {
-      run: (params: SyncRunParams) => call<SyncSummary>('sync.run', params),
+      run: (params) => call<SyncSummary>('sync.run', params),
       status: () => call<SyncLastRun | null>('sync.status'),
     },
     settings: {

@@ -24,7 +24,7 @@ export class DashboardModel {
 
   async reload(): Promise<void> {
     const id = ++this.#request
-    const result = await this.api.history.stats(this.period.month)
+    const result = await this.api.history.stats({ month: this.period.month })
     if (id === this.#request) this.stats.value = result
   }
 }

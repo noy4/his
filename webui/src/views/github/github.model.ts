@@ -54,7 +54,7 @@ export class GithubModel {
   async reload(): Promise<void> {
     const id = ++this.#statsReq
     const visits = this.loadVisits()
-    const result = await this.api.github.stats(this.period.month)
+    const result = await this.api.github.stats({ month: this.period.month })
     if (id === this.#statsReq) this.stats.value = result
     await visits
   }

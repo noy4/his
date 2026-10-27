@@ -544,12 +544,12 @@ export const mockApi: HisApi = {
     async searchVisits(params: SearchFilter): Promise<SearchVisitsPage> {
       return searchVisits(params)
     },
-    async stats(month?: string): Promise<Stats> {
+    async stats({ month } = {}): Promise<Stats> {
       return month === undefined ? computeStats() : computeMonthlyStats(month)
     },
   },
   github: {
-    async stats(month?: string): Promise<GithubStats> {
+    async stats({ month } = {}): Promise<GithubStats> {
       return computeGithubStats(month)
     },
     async items(params: GithubItemsFilter): Promise<SearchPage> {
@@ -557,7 +557,7 @@ export const mockApi: HisApi = {
     },
   },
   youtube: {
-    async stats(month?: string): Promise<YoutubeStats> {
+    async stats({ month } = {}): Promise<YoutubeStats> {
       return mockYoutubeStats(month)
     },
     async items(params: YoutubeItemsFilter): Promise<SearchPage> {
