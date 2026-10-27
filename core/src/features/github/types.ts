@@ -23,12 +23,38 @@ export interface GithubDayItem {
 }
 
 export interface GithubStats {
-  totals: { visits: number; repos: number; owners: number; items: number; firstVisit: EpochMs; lastVisit: EpochMs }
-  byDay: { day: string; all: number; repo: number; issue_pr: number; other: number }[]
-  byDayTop: { day: string; repo: GithubDayItem[]; issue_pr: GithubDayItem[]; other: GithubDayItem[] }[]
+  totals: {
+    visits: number
+    repos: number
+    owners: number
+    items: number
+    firstVisit: EpochMs
+    lastVisit: EpochMs
+  }
+  byDay: {
+    day: string
+    all: number
+    repo: number
+    issue_pr: number
+    other: number
+  }[]
+  byDayTop: {
+    day: string
+    repo: GithubDayItem[]
+    issue_pr: GithubDayItem[]
+    other: GithubDayItem[]
+  }[]
   topRepos: { owner: string; repo: string; visits: number }[]
   topOwners: { owner: string; repos: number; visits: number }[]
-  topItems: { owner: string; repo: string; kind: GithubKind; number: number; title: string; url: string; visits: number }[]
+  topItems: {
+    owner: string
+    repo: string
+    kind: GithubKind
+    number: number
+    title: string
+    url: string
+    visits: number
+  }[]
 }
 
 export interface GithubSearchParams {

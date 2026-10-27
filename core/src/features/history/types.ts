@@ -1,18 +1,6 @@
 import type { EpochMs, HistoryItem, HistoryVisit } from '../../types.ts'
 import type { Page } from '../../db/query/paging.ts'
 
-export interface SearchParams {
-  query?: string
-  url?: string
-  from?: EpochMs
-  to?: EpochMs
-  cursor?: string
-  limit?: number
-}
-
-export type SearchPage = Page<HistoryItem>
-export type SearchVisitsPage = Page<HistoryVisit>
-
 export interface StatsParams {
   month?: string
 }
@@ -33,3 +21,15 @@ export interface Stats {
   topDomains: { domain: string; visits: number }[]
   busiestDays: { day: string; visits: number }[]
 }
+
+export interface SearchParams {
+  query?: string
+  url?: string
+  from?: EpochMs
+  to?: EpochMs
+  cursor?: string
+  limit?: number
+}
+
+export type SearchPage = Page<HistoryItem>
+export type SearchVisitsPage = Page<HistoryVisit>
