@@ -12,6 +12,13 @@ export interface YoutubeStats {
     firstVisit: EpochMs
     lastVisit: EpochMs
   }
+  byDay: {
+    day: string
+    all: number
+    video: number
+    shorts: number
+    other: number
+  }[]
   topVideos: {
     id: string
     shorts: boolean

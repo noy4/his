@@ -26,15 +26,7 @@ export interface GithubDailyVisitRow {
 export function GithubDailyVisitsChart({ data, dataKey }: { data: GithubDailyVisitRow[]; dataKey: GithubVisitKind }) {
   const today = dayjs().format('YYYY-MM-DD')
   const [width, setWidth] = useState(0)
-  let peakDay = ''
-  let peakMax = -1
-  for (const d of data) {
-    if (d[dataKey] > peakMax) {
-      peakMax = d[dataKey]
-      peakDay = d.day
-    }
-  }
-  if (peakMax <= 0) peakDay = ''
+  const peakValue = data.reduce((max, d) => Math.max(max, Number(d[dataKey])), 0)
   return (
     <ResponsiveContainer width="100%" height={160} onResize={(w) => setWidth(w)}>
       <BarChart data={data} margin={{ top: 16, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
@@ -55,8 +47,8 @@ export function GithubDailyVisitsChart({ data, dataKey }: { data: GithubDailyVis
           <LabelList
             dataKey={dataKey}
             content={(props) => {
-              if (props.index === undefined || data[props.index]?.day !== peakDay) return <g />
-              const text = fmtNum(Number(props.value))
+              if (peakValue <= 0 || Number(props.value) !== peakValue) return <g />
+              const text = fmtNum(peakValue)
               const center = Number(props.x) + Number(props.width) / 2
               const half = (text.length * 5.5) / 2
               const y = Number(props.y) - 4

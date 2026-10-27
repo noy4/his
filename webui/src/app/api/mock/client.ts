@@ -334,7 +334,7 @@ export function mockYoutubeStats(month?: string): YoutubeStats {
   let lastVisit = 0
   for (const item of visibleItems()) {
     const info = parseYoutubeUrl(item.url)
-    if (info === null || info.kind === undefined) continue
+    if (info === null) continue
     const it = inPeriod(item, month)
     if (it === null) continue
     visits += it.visitCount
@@ -360,8 +360,27 @@ export function mockYoutubeStats(month?: string): YoutubeStats {
       firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
       lastVisit,
     },
+    byDay: computeYoutubeByDay(month),
     topVideos: [...top.values()].sort((a, b) => b.visits - a.visits).slice(0, 5),
   }
+}
+
+function computeYoutubeByDay(month?: string): YoutubeStats['byDay'] {
+  const map = new Map<string, YoutubeStats['byDay'][number]>()
+  for (const item of visibleItems()) {
+    const info = parseYoutubeUrl(item.url)
+    if (info === null) continue
+    const kind = info.kind !== 'video' ? 'other' : info.shorts === true ? 'shorts' : 'video'
+    for (const visit of MOCK_VISITS.get(item.id) ?? []) {
+      const day = isoDay(visit.visitTime)
+      if (month !== undefined && day.slice(0, 7) !== month) continue
+      const row = map.get(day) ?? { day, all: 0, video: 0, shorts: 0, other: 0 }
+      row.all += 1
+      row[kind] += 1
+      map.set(day, row)
+    }
+  }
+  return [...map.values()].sort((a, b) => a.day.localeCompare(b.day))
 }
 
 // --- sources ---

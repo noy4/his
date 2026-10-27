@@ -2,7 +2,7 @@ import type { AppModel } from '@/app/app'
 import { Card, CardTitle } from '@/components/ui/card'
 import { parseYoutubeTitle } from '@his/core'
 import { cn } from 'cn'
-import { dateLabel } from '@/lib/date'
+import { dateLabel, daySpan } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
 import { MonthNav, PeriodToggle } from '@/lib/period/Period'
 import { useModel } from '@/lib/useModel'
@@ -13,12 +13,11 @@ import { VisitCount } from '@/views/shared/RecentItems'
 import { Stat, StatsContentRoot, StatsHeaderRoot } from '@/views/shared/Stats'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/views/shared/rank-medals'
+import { YoutubeDailyVisitsCard } from './YoutubeDailyVisitsCard'
 import { YoutubeItemAvatar } from './Youtube.components'
 import { YoutubeRecentItemsCard } from './YoutubeRecentItemsCard'
 import { YoutubeSkeleton } from './YoutubeSkeleton'
 import { YoutubeModel } from './youtube.model'
-
-const DAY = 86_400_000
 
 export function Youtube({ app }: { app: AppModel }) {
   const yt = useModel(() => new YoutubeModel(app.api))
@@ -34,6 +33,7 @@ export function Youtube({ app }: { app: AppModel }) {
       </StatsHeaderRoot>
       <StatsContentRoot>
         <OverviewCard yt={yt} />
+        <YoutubeDailyVisitsCard yt={yt} />
         {!monthly && <TopVideosCard yt={yt} />}
       </StatsContentRoot>
       <YoutubeRecentItemsCard yt={yt} />
@@ -47,7 +47,7 @@ function OverviewCard({ yt }: { yt: YoutubeModel }) {
   const stats = yt.stats.value
   if (!stats) return null
   const totals = stats.totals
-  const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY) + 1
+  const days = daySpan(totals.firstVisit, totals.lastVisit)
   const monthly = yt.period.monthly.value
   return (
     <Card>

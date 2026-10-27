@@ -70,7 +70,7 @@ export function Bars({
 
 // daily trend — Recharts bar chart, value labelled on the peak, optional dashed average line
 export function DailyBars({ data, avg }: { data: { day: string; visits: number }[]; avg?: number }) {
-  const peakDay = data.reduce((max, d) => (d.visits > max.visits ? d : max), { day: '', visits: 0 }).day
+  const peakValue = data.reduce((max, d) => Math.max(max, d.visits), 0)
   const today = dayjs().format('YYYY-MM-DD')
   const [width, setWidth] = useState(0)
   return (
@@ -108,8 +108,8 @@ export function DailyBars({ data, avg }: { data: { day: string; visits: number }
           <LabelList
             dataKey="visits"
             content={(props) => {
-              if (props.index === undefined || data[props.index]?.day !== peakDay) return <g />
-              const text = fmtNum(Number(props.value))
+              if (peakValue <= 0 || Number(props.value) !== peakValue) return <g />
+              const text = fmtNum(peakValue)
               const center = Number(props.x) + Number(props.width) / 2
               const half = (text.length * 5.5) / 2
               const y = Number(props.y) - 4

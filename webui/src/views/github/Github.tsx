@@ -1,5 +1,5 @@
 import { Card, CardTitle } from '@/components/ui/card'
-import { dateLabel } from '@/lib/date'
+import { dateLabel, daySpan } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
 import { VisitCount } from '@/views/shared/RecentItems'
 import { useModel } from '@/lib/useModel'
@@ -24,7 +24,6 @@ import { GithubModel } from './github.model'
 import { GithubSkeleton } from './GithubSkeleton'
 
 const rowCls = '-mx-1 flex items-center gap-2 rounded px-1 hover:bg-bg-3'
-const DAY = 86_400_000
 
 export function Github({ app }: { app: AppModel }) {
   const gh = useModel(() => new GithubModel(app.api))
@@ -58,7 +57,7 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
   const stats = gh.stats.value
   if (!stats) return null
   const totals = stats.totals
-  const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY) + 1
+  const days = daySpan(totals.firstVisit, totals.lastVisit)
   const monthly = gh.period.monthly.value
   return (
     <Card>
