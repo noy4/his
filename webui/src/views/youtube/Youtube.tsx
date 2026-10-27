@@ -7,23 +7,23 @@ import { YoutubeModel } from './youtube.model'
 
 export function Youtube({ app }: { app: AppModel }) {
   const yt = useModel(() => new YoutubeModel(app.api))
-  const monthly = yt.mode.value === 'month'
+  const monthly = yt.period.mode.value === 'month'
 
   return (
     <ViewRoot>
       <StatsHeaderRoot>
         {monthly ? (
           <MonthNav
-            value={yt.monthKey.value}
-            onPrev={() => yt.shiftMonth(-1)}
-            onNext={() => yt.shiftMonth(1)}
+            value={yt.period.monthKey.value}
+            onPrev={() => yt.period.shiftMonth(-1)}
+            onNext={() => yt.period.shiftMonth(1)}
           />
         ) : (
           <div />
         )}
         <PeriodToggle
-          value={yt.mode.value}
-          onChange={(m) => yt.setMode(m)}
+          value={yt.period.mode.value}
+          onChange={(m) => yt.period.setMode(m)}
           options={[
             { value: 'month', label: 'Monthly' },
             { value: 'all', label: 'All time' },

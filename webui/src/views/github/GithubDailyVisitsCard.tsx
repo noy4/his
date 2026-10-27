@@ -26,8 +26,8 @@ export function GithubDailyVisitsCard({ gh }: { gh: GithubModel }) {
   const topByDay = new Map(stats.byDayTop.map((d) => [d.day, { repo: d.repo, issue_pr: d.issue_pr, other: d.other }]))
   const source = stats.byDay.map((d) => ({ ...d, top: topByDay.get(d.day) ?? EMPTY_TOP }))
   const daily = (() => {
-    if (gh.mode.value === 'month') {
-      const start = `${gh.monthKey.value}-01`
+    if (gh.period.mode.value === 'month') {
+      const start = `${gh.period.monthKey.value}-01`
       return dailySeries(source, start, dayjs(start).endOf('month').format('YYYY-MM-DD'), ZERO)
     }
     const { firstVisit, lastVisit } = stats.totals

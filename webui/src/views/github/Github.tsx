@@ -32,23 +32,23 @@ export function Github({ app }: { app: AppModel }) {
   const stats = gh.stats.value
   if (!stats) return <GithubSkeleton />
 
-  const monthly = gh.mode.value === 'month'
+  const monthly = gh.period.mode.value === 'month'
 
   return (
     <ViewRoot>
       <StatsHeaderRoot>
         {monthly ? (
           <MonthNav
-            value={gh.monthKey.value}
-            onPrev={() => gh.shiftMonth(-1)}
-            onNext={() => gh.shiftMonth(1)}
+            value={gh.period.monthKey.value}
+            onPrev={() => gh.period.shiftMonth(-1)}
+            onNext={() => gh.period.shiftMonth(1)}
           />
         ) : (
           <div />
         )}
         <PeriodToggle
-          value={gh.mode.value}
-          onChange={(m) => gh.setMode(m)}
+          value={gh.period.mode.value}
+          onChange={(m) => gh.period.setMode(m)}
           options={[
             { value: 'month', label: 'Monthly' },
             { value: 'all', label: 'All time' },
@@ -75,7 +75,7 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
   if (!stats) return null
   const totals = stats.totals
   const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY) + 1
-  const monthly = gh.mode.value === 'month'
+  const monthly = gh.period.mode.value === 'month'
   return (
     <Card>
       <CardTitle>Overview</CardTitle>
