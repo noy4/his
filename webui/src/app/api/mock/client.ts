@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeVisitsFilter } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeStats, YoutubeVisitsFilter } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -325,6 +325,35 @@ export function mockYoutubeVisits(params: YoutubeVisitsFilter): SearchPage {
   return paginate(rows, params.cursor, params.limit)
 }
 
+export function mockYoutubeStats(month?: string): YoutubeStats {
+  const videos = new Set<string>()
+  const shorts = new Set<string>()
+  let visits = 0
+  let firstVisit = Number.POSITIVE_INFINITY
+  let lastVisit = 0
+  for (const item of visibleItems()) {
+    const info = parseYoutubeUrl(item.url)
+    if (info === null || info.kind === undefined) continue
+    const it = inPeriod(item, month)
+    if (it === null) continue
+    visits += it.visitCount
+    firstVisit = Math.min(firstVisit, it.firstVisit)
+    lastVisit = Math.max(lastVisit, it.lastVisit)
+    if (info.kind === 'video' && info.id !== undefined) {
+      (info.shorts === true ? shorts : videos).add(info.id)
+    }
+  }
+  return {
+    totals: {
+      visits,
+      videos: videos.size,
+      shorts: shorts.size,
+      firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
+      lastVisit,
+    },
+  }
+}
+
 // --- sources ---
 
 // configured sync targets; empty means nothing syncs (explicit targets override)
@@ -514,6 +543,10 @@ export const mockApi: HisApi = {
 
   async youtubeVisits(params: YoutubeVisitsFilter): Promise<SearchPage> {
     return mockYoutubeVisits(params)
+  },
+
+  async youtubeStats(month?: string): Promise<YoutubeStats> {
+    return mockYoutubeStats(month)
   },
 
   async sourcesList(params?: SourcesListParams): Promise<SourceEntry[]> {

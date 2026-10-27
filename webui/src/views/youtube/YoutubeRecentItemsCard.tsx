@@ -16,7 +16,7 @@ export function YoutubeRecentItemsCard({ yt }: { yt: YoutubeModel }) {
   const groups = groupItemsByDate(yt.visits.value)
 
   return (
-    <Card>
+    <Card className="mt-4">
       <CardTitle>Recent Items</CardTitle>
       <ItemsToolbarRoot>
         <YoutubeItemsKindFilter yt={yt} />
