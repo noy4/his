@@ -20,7 +20,7 @@ export function Sources({ app }: { app: AppModel }) {
   return (
     <SourcesRoot>
       <SourcesHeader>
-        <SourcesDescription text="Pick the sources to import. Selected ones sync automatically." />
+        <SourcesDescription text="Pick sources to sync automatically." />
         <SourcesStatus>
           <RunSummary run={model.lastSync.value} />
           {notice !== null && <SourcesNotice text={notice} />}
