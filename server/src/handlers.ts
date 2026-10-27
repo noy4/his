@@ -12,7 +12,6 @@ export function createHandlers({ db, runner, home }: {
     'history.search': (params) => history.search(db, params as SearchFilter),
     'history.searchVisits': (params) => history.searchVisits(db, params as SearchFilter),
     'history.getVisits': (params) => history.getVisits(db, params.urlId, params.limit),
-    'history.getItem': (params) => history.getItem(db, params.id),
     'history.stats': (params) => history.stats(db, params.month),
     'history.githubStats': (params) => github.stats(db, params.month),
     'history.githubItems': (params) => github.items(db, params as GithubItemsFilter),

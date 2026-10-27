@@ -375,7 +375,6 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
 history.search       { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
 history.searchVisits { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
 history.getVisits    { urlId, limit? }                                   → VisitItem[]
-history.getItem      { id }                                              → { item, visits } | null
 history.stats        { month? }                                          → Stats
 history.githubStats  { month? }                                          → GithubStats
 history.githubItems  { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }

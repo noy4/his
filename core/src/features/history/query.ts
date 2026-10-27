@@ -1,6 +1,6 @@
 import { sql, type RawBuilder, type SqlBool } from 'kysely'
 import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../../types.ts'
-import type { ItemDetail, SearchFilter, SearchPage, SearchVisitsPage } from './types.ts'
+import type { SearchFilter, SearchPage, SearchVisitsPage } from './types.ts'
 import { hiddenExcluded } from '../../db/query/filters.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { KyselyDb } from '../../db/db.ts'
@@ -99,19 +99,6 @@ export async function getVisits(db: KyselyDb, urlId: number, limit?: number): Pr
     ? await query.execute()
     : await query.limit(clampLimit(limit)).execute()
   return rows.map(toVisitItem)
-}
-
-export async function getItem(db: KyselyDb, id: number): Promise<ItemDetail | null> {
-  const row = await db
-    .selectFrom('urls')
-    .selectAll()
-    .where('id', '=', id)
-    .executeTakeFirst()
-  if (row === undefined) return null
-  return {
-    item: toHistoryItem(row),
-    visits: await getVisits(db, id),
-  }
 }
 
 // --- helpers ---

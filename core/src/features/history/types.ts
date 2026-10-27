@@ -1,4 +1,4 @@
-import type { EpochMs, HistoryItem, HistoryVisit, VisitItem } from '../../types.ts'
+import type { EpochMs, HistoryItem, HistoryVisit } from '../../types.ts'
 import type { Page } from '../../db/query/paging.ts'
 
 // Browser-safe history data types (type-only imports; no runtime/DB code).
@@ -11,11 +11,6 @@ export interface SearchFilter {
   to?: EpochMs
   cursor?: string
   limit?: number
-}
-
-export interface ItemDetail {
-  item: HistoryItem
-  visits: VisitItem[]
 }
 
 export type SearchPage = Page<HistoryItem>

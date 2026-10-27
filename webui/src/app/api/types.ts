@@ -1,7 +1,7 @@
-import type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubKind, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, ItemDetail, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeItemsFilter, YoutubeStats, YoutubeVisitKind } from '@his/core'
+import type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubKind, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeItemsFilter, YoutubeStats, YoutubeVisitKind } from '@his/core'
 
 // share types (incl. history stats/pages) — single source is @his/core
-export type { HistoryItem, HistoryVisit, ItemDetail, SearchFilter, SearchPage, SearchVisitsPage }
+export type { HistoryItem, HistoryVisit, SearchFilter, SearchPage, SearchVisitsPage }
 export type { SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, Transition, VisitItem }
 export type { SyncLastRun, SyncSummary }
 
@@ -33,7 +33,6 @@ export interface HisApi {
   search(params: SearchFilter): Promise<SearchPage>
   searchVisits(params: SearchFilter): Promise<SearchVisitsPage>
   getVisits(urlId: number, limit?: number): Promise<VisitItem[]>
-  getItem(id: number): Promise<ItemDetail | null>
   stats(month?: string): Promise<Stats>
   githubStats(month?: string): Promise<GithubStats>
   githubItems(params: GithubItemsFilter): Promise<SearchPage>
