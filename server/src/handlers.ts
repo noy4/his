@@ -1,4 +1,4 @@
-import type { GithubVisitsFilter, KyselyDb, SearchFilter, SyncOptions, YoutubeItemsFilter } from '@his/core/node'
+import type { GithubItemsFilter, KyselyDb, SearchFilter, SyncOptions, YoutubeItemsFilter } from '@his/core/node'
 import { github, history, settings, sources, youtube } from '@his/core/node'
 import type { Handler } from './rpc.ts'
 import type { SyncRunner } from './sync-runner.ts'
@@ -15,7 +15,7 @@ export function createHandlers({ db, runner, home }: {
     'history.getItem': (params) => history.getItem(db, params.id),
     'history.stats': (params) => history.stats(db, params.month),
     'history.githubStats': (params) => github.stats(db, params.month),
-    'history.githubVisits': (params) => github.visits(db, params as GithubVisitsFilter),
+    'history.githubItems': (params) => github.items(db, params as GithubItemsFilter),
     'history.youtubeStats': (params) => youtube.stats(db, params.month),
     'history.youtubeItems': (params) => youtube.items(db, params as YoutubeItemsFilter),
     'sources.list': (params) => sources.list(db, { home, check: params?.check === true }),

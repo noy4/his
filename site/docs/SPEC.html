@@ -378,7 +378,7 @@ history.getVisits    { urlId, limit? }                                   → Vis
 history.getItem      { id }                                              → { item, visits } | null
 history.stats        { month? }                                          → Stats
 history.githubStats  { month? }                                          → GithubStats
-history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
+history.githubItems  { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
 history.youtubeStats { month? }                                          → YoutubeStats
 history.youtubeItems { month?, kind?, cursor?, limit? }                  → { items, nextCursor }
 sources.list         { check? }                                          → SourceEntry[]    <span class="c"># discovered ∪ registered · check probes source files</span>

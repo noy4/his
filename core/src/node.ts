@@ -6,7 +6,7 @@ export * from './db/query/paging.ts'
 export * from './db/schema.ts'
 
 export * as github from './features/github/index.ts'
-export type { GithubStats, GithubDayItem, GithubDayKind, GithubVisitsFilter } from './features/github/index.ts'
+export type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubStats } from './features/github/index.ts'
 export * as history from './features/history/index.ts'
 export type { SearchFilter, SearchPage, SearchVisitsPage, ItemDetail, Stats, StatTotals } from './features/history/index.ts'
 export * as settings from './features/settings/index.ts'

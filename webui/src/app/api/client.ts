@@ -1,4 +1,4 @@
-import type { GithubStats, GithubVisitsFilter, HisApi, HisEvents, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SourceEntry, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeItemsFilter, YoutubeStats } from './types'
+import type { GithubItemsFilter, GithubStats, HisApi, HisEvents, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SourceEntry, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeItemsFilter, YoutubeStats } from './types'
 import { mockApi } from './mock/client'
 import { RpcTransport } from '@/lib/rpc-transport'
 
@@ -12,7 +12,7 @@ export function createApi(): HisApi {
     getItem: (id: number) => transport.call<ItemDetail | null>('history.getItem', { id }),
     stats: (month?: string) => transport.call<Stats>('history.stats', { month }),
     githubStats: (month?: string) => transport.call<GithubStats>('history.githubStats', { month }),
-    githubVisits: (params: GithubVisitsFilter) => transport.call<SearchPage>('history.githubVisits', params),
+    githubItems: (params: GithubItemsFilter) => transport.call<SearchPage>('history.githubItems', params),
     youtubeStats: (month?: string) => transport.call<YoutubeStats>('history.youtubeStats', { month }),
     youtubeItems: (params: YoutubeItemsFilter) => transport.call<SearchPage>('history.youtubeItems', params),
     sourcesList: (params?: SourcesListParams) => transport.call<SourceEntry[]>('sources.list', params),

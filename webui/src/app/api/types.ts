@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisitKind, GithubVisitsFilter, HistoryItem, HistoryVisit, ItemDetail, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeItemsFilter, YoutubeStats, YoutubeVisitKind } from '@his/core'
+import type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubKind, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, ItemDetail, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeItemsFilter, YoutubeStats, YoutubeVisitKind } from '@his/core'
 
 // share types (incl. history stats/pages) — single source is @his/core
 export type { HistoryItem, HistoryVisit, ItemDetail, SearchFilter, SearchPage, SearchVisitsPage }
@@ -13,7 +13,7 @@ export type SyncRunParams = SyncOptions
 
 // --- GitHub insights (types come from @his/core) ---
 
-export type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisitKind, GithubVisitsFilter }
+export type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubKind, GithubStats, GithubVisitKind }
 
 // --- YouTube insights (types come from @his/core) ---
 
@@ -36,7 +36,7 @@ export interface HisApi {
   getItem(id: number): Promise<ItemDetail | null>
   stats(month?: string): Promise<Stats>
   githubStats(month?: string): Promise<GithubStats>
-  githubVisits(params: GithubVisitsFilter): Promise<SearchPage>
+  githubItems(params: GithubItemsFilter): Promise<SearchPage>
   youtubeItems(params: YoutubeItemsFilter): Promise<SearchPage>
   youtubeStats(month?: string): Promise<YoutubeStats>
   sourcesList(params?: SourcesListParams): Promise<SourceEntry[]>

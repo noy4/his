@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { DatabaseSync } from 'node:sqlite'
 import { before, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
-import { githubStats, githubVisits } from '../github.ts'
+import { githubStats, githubItems } from '../github.ts'
 import { monthRange } from '../../../db/query/filters.ts'
 import { sourceProfile, seedUrl } from '../../../testing/db.ts'
 
@@ -131,8 +131,8 @@ describe('githubStats', () => {
   })
 })
 
-describe('githubVisits', () => {
-  const urls = async (p: Parameters<typeof githubVisits>[1]) => (await githubVisits(db, p)).items.map((it) => it.url)
+describe('githubItems', () => {
+  const urls = async (p: Parameters<typeof githubItems>[1]) => (await githubItems(db, p)).items.map((it) => it.url)
 
   it('newest first, github.com only', async () => {
     assert.deepEqual(await urls({}), [
@@ -160,7 +160,7 @@ describe('githubVisits', () => {
   })
 
   it('month uses that month visits', async () => {
-    const page = await githubVisits(db, { month: '2026-09' })
+    const page = await githubItems(db, { month: '2026-09' })
     assert.deepEqual(page.items.map((it) => [it.url, it.visitCount]), [
       ['https://github.com/foo/baz/issues/3', 1],
       ['https://github.com/Foo/Bar', 1],
@@ -172,7 +172,7 @@ describe('githubVisits', () => {
     const seen: string[] = []
     let cursor: string | undefined
     do {
-      const page = await githubVisits(db, { limit: 2, cursor })
+      const page = await githubItems(db, { limit: 2, cursor })
       seen.push(...page.items.map((it) => it.url))
       cursor = page.nextCursor ?? undefined
     } while (cursor)
@@ -222,7 +222,7 @@ describe('githubVisits', () => {
       const qux = 'https://github.com/qux/bar'
       const pull = 'https://github.com/foo/bar/pull/1'
       const code = 'https://github.com/foo/bar/tree/main'
-      const cases: [NonNullable<Parameters<typeof githubVisits>[1]>, string[]][] = [
+      const cases: [NonNullable<Parameters<typeof githubItems>[1]>, string[]][] = [
         [{}, [root, baz, qux, pull, code]],
         [{ owner: 'FOO', repo: 'BAR' }, [root, pull, code]],
         [{ kind: 'repo' }, [root, baz, qux]],
@@ -232,18 +232,18 @@ describe('githubVisits', () => {
         [{ kind: 'issue_pr' }, [pull]],
       ]
       for (const month of [undefined, '2026-10']) {
-        const [merged] = (await githubVisits(rdb, { month, owner: 'foo', repo: 'bar', kind: 'repo' })).items
+        const [merged] = (await githubItems(rdb, { month, owner: 'foo', repo: 'bar', kind: 'repo' })).items
         assert.deepEqual(merged, {
           id: 3, url: root, title: 'title3', visitCount: 3, typedCount: 2,
           firstVisit: at('2026-10-01T10:00'), lastVisit: at('2026-10-10T10:00'),
         })
         for (const [filter, expectedUrls] of cases) {
-          const expected = (await githubVisits(rdb, { ...filter, month })).items
+          const expected = (await githubItems(rdb, { ...filter, month })).items
           assert.deepEqual(expected.map((item) => item.url), expectedUrls)
           const seen = []
           let cursor: string | undefined
           do {
-            const page = await githubVisits(rdb, { ...filter, month, limit: 1, cursor })
+            const page = await githubItems(rdb, { ...filter, month, limit: 1, cursor })
             seen.push(...page.items)
             cursor = page.nextCursor ?? undefined
           } while (cursor)
@@ -271,12 +271,12 @@ describe('month boundaries', () => {
         assert.deepEqual((await githubStats(bdb, month)).totals, {
           visits: 3, repos: 1, owners: 1, items: 0, firstVisit: start, lastVisit: end - 1,
         })
-        const [item] = (await githubVisits(bdb, { month })).items
+        const [item] = (await githubItems(bdb, { month })).items
         assert.equal(item?.visitCount, 3)
         assert.equal(item?.firstVisit, start)
         assert.equal(item?.lastVisit, end - 1)
         await assert.rejects(() => githubStats(bdb, '2026-13'), /YYYY-MM/)
-        await assert.rejects(() => githubVisits(bdb, { month: '2026-13' }), /YYYY-MM/)
+        await assert.rejects(() => githubItems(bdb, { month: '2026-13' }), /YYYY-MM/)
       } finally {
         boundaryHandle.close()
       }
