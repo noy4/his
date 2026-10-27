@@ -1,14 +1,10 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubKind, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, RegisteredSource, SearchParams, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, StatsParams, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind } from '@his/core'
+import type { GithubSearchParams, GithubStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncLastRun, SyncOptions, SyncSummary, YoutubeSearchParams, YoutubeStats } from '@his/core'
 
-export type { HistoryItem, HistoryVisit, SearchParams, SearchPage, SearchVisitsPage }
-export type { SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, StatsParams, Transition, VisitItem }
-export type { SyncLastRun, SyncSummary }
+export type {
+  GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource as SourceProfile, Stats, StatsParams, StatTotals, SyncLastRun, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
+} from '@his/core'
 
-export type SourceProfile = RegisteredSource
 export type SyncRunParams = SyncOptions
-
-export type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubKind, GithubStats, GithubVisitKind }
-export type { YoutubeSearchParams, YoutubeStats, YoutubeVisitKind }
 
 export interface SourcesListParams {
   /** probe each source and report whether it changed since the last sync */
