@@ -85,6 +85,7 @@ export type RegisteredSourceEntry = RegisteredSource & {
 export type UnregisteredSourceEntry = {
   browser: string
   profile: string
+  profilePath: string
   registered: false
 }
 

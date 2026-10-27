@@ -4,6 +4,7 @@ import { probeSourceFingerprint } from './fingerprint.ts'
 import type { KyselyDb } from '../../db/db.ts'
 import { discoverAllTargets } from './discover.ts'
 import { sourceKey } from './utils.ts'
+import type { SyncTarget } from './types.ts'
 
 export type ListSourcesOptions = {
   home: string
@@ -59,7 +60,7 @@ export async function listSourceProfiles(db: KyselyDb): Promise<RegisteredSource
 
 // discovered first, then the registered profiles that were not discovered
 export function mergeEntries(
-  discovered: readonly { browser: string; profile: string }[],
+  discovered: readonly SyncTarget[],
   registered: readonly RegisteredSource[],
 ): SourceEntry[] {
   const registeredByKey = new Map(registered.map((source) => [sourceKey(source), source]))
@@ -89,10 +90,11 @@ function toRegistered(source: RegisteredSource): RegisteredSourceEntry {
   return { ...source, registered: true }
 }
 
-function toUnregistered(target: { browser: string; profile: string }): UnregisteredSourceEntry {
+function toUnregistered(target: SyncTarget): UnregisteredSourceEntry {
   return {
     browser: target.browser,
     profile: target.profile,
+    profilePath: target.dbPath,
     registered: false,
   }
 }

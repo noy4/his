@@ -405,7 +405,7 @@ function sourceEntries(): SourceEntry[] {
     const source = registeredByKey.get(key)
     entries.push(source
       ? { ...source, registered: true }
-      : { browser: target.browser, profile: target.profile, registered: false })
+      : { ...target, registered: false })
   }
   for (const source of sources) {
     const key = sourceKey(source)

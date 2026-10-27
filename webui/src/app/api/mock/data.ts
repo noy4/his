@@ -237,16 +237,16 @@ export const MOCK_ITEMS: readonly HistoryItem[] = data.items
 export const MOCK_VISITS: ReadonlyMap<number, VisitItem[]> = data.visits
 
 // every profile on this machine, including ones never synced
-export const MOCK_DISCOVERED: { browser: string; profile: string }[] = [
-  { browser: 'brave', profile: 'Default' },
-  { browser: 'brave', profile: 'Profile 2' },
-  { browser: 'chrome', profile: 'Default' },
-  { browser: 'chrome', profile: 'Profile 1' },
-  { browser: 'arc', profile: 'Default' },
-  { browser: 'vivaldi', profile: 'Default' },
-  { browser: 'firefox', profile: 'vpw8f8gt.default-release' },
-  { browser: 'safari', profile: 'default' },
-  { browser: 'takeout', profile: 'History-2026-09-30' },
+export const MOCK_DISCOVERED: { browser: string; profile: string; profilePath: string }[] = [
+  { browser: 'brave', profile: 'Default', profilePath: '/Users/*/Library/Application Support/BraveSoftware/Brave-Browser/Default/History' },
+  { browser: 'brave', profile: 'Profile 2', profilePath: '/Users/*/Library/Application Support/BraveSoftware/Brave-Browser/Profile 2/History' },
+  { browser: 'chrome', profile: 'Default', profilePath: '/Users/*/Library/Application Support/Google/Chrome/Default/History' },
+  { browser: 'chrome', profile: 'Profile 1', profilePath: '/Users/*/Library/Application Support/Google/Chrome/Profile 1/History' },
+  { browser: 'arc', profile: 'Default', profilePath: '/Users/*/Library/Application Support/Arc/User Data/Default/History' },
+  { browser: 'vivaldi', profile: 'Default', profilePath: '/Users/*/Library/Application Support/Vivaldi/Default/History' },
+  { browser: 'firefox', profile: 'vpw8f8gt.default-release', profilePath: '/Users/*/Library/Application Support/Firefox/Profiles/vpw8f8gt.default-release/places.sqlite' },
+  { browser: 'safari', profile: 'default', profilePath: '/Users/*/Library/Safari/History.db' },
+  { browser: 'takeout', profile: 'History-2026-09-30', profilePath: '~/.his/takeout/History-2026-09-30.json' },
 ]
 
 export const MOCK_SOURCES: SourceProfile[] = [

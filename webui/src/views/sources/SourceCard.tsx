@@ -20,6 +20,7 @@ export function SourceCard({ entry, enabled, onToggle }: Props) {
         <SourceCardName
           name={browserName(entry.browser)}
           detail={entry.profile}
+          path={entry.profilePath}
         />
       </SourceCardHead>
       <SourceCardStats entry={entry} />
@@ -81,11 +82,11 @@ function SourceCardIcon({ browser }: { browser: string }) {
   )
 }
 
-function SourceCardName({ name, detail }: { name: string; detail: string }) {
+function SourceCardName({ name, detail, path }: { name: string; detail: string; path: string }) {
   return (
     <span className="grid min-w-0">
       <span className="truncate text-sm font-medium">{name}</span>
-      <span className="truncate font-mono text-xs text-muted">{detail}</span>
+      <span title={path} className="truncate font-mono text-xs text-muted">{detail}</span>
     </span>
   )
 }
