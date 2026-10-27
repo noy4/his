@@ -16,14 +16,16 @@ const DAY_TOP = 3
 export async function githubStats(db: KyselyDb, month?: string): Promise<GithubStats> {
   const repos = new Map<string, { owner: string; repo: string; visits: number }>()
   const owners = new Map<string, { visits: number; repos: Set<string> }>()
-  const items = new Map<string, GithubStats['topItems'][number] & { last: EpochMs }>()
+  const items = new Map<string, {
+    value: GithubStats['topItems'][number]
+    last: EpochMs
+  }>()
   let visits = 0
   let firstVisit = 0
   let lastVisit = 0
 
   for (const { item, urlInfo } of await getGithubRows(db, month)) {
-    const visitCount = item.visitCount
-    visits += visitCount
+    visits += item.visitCount
     firstVisit = firstVisit === 0 || item.firstVisit < firstVisit
       ? item.firstVisit
       : firstVisit
@@ -34,7 +36,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
       visits: 0,
       repos: new Set<string>(),
     }
-    ownerStats.visits += visitCount
+    ownerStats.visits += item.visitCount
     owners.set(urlInfo.owner, ownerStats)
     if (urlInfo.repo === undefined) continue
     ownerStats.repos.add(urlInfo.repo)
@@ -46,7 +48,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
       repo: urlInfo.repo,
       visits: 0,
     }
-    repoStats.visits += visitCount
+    repoStats.visits += item.visitCount
     repos.set(repoKey, repoStats)
 
     // only PR/Issue URLs become items
@@ -55,24 +57,25 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
     const itemStats = items.get(itemKey)
     if (itemStats === undefined) {
       items.set(itemKey, {
-        owner: urlInfo.owner,
-        repo: urlInfo.repo,
-        kind: urlInfo.kind,
-        number: urlInfo.number,
-        title: cleanTitle(item.title),
-        url: item.url,
-        visits: visitCount,
+        value: {
+          owner: urlInfo.owner,
+          repo: urlInfo.repo,
+          kind: urlInfo.kind,
+          number: urlInfo.number,
+          title: cleanTitle(item.title),
+          url: item.url,
+          visits: item.visitCount,
+        },
         last: item.lastVisit,
       })
     } else {
-      itemStats.visits += visitCount
+      itemStats.value.visits += item.visitCount
       // latest visit wins for title / url
-      if (item.lastVisit > itemStats.last)
-        Object.assign(itemStats, {
-          title: cleanTitle(item.title),
-          url: item.url,
-          last: item.lastVisit,
-        })
+      if (item.lastVisit > itemStats.last) {
+        itemStats.value.title = cleanTitle(item.title)
+        itemStats.value.url = item.url
+        itemStats.last = item.lastVisit
+      }
     }
   }
 
@@ -93,9 +96,7 @@ export async function githubStats(db: KyselyDb, month?: string): Promise<GithubS
       repos: ownerStats.repos.size,
       visits: ownerStats.visits
     })), (s) => s.owner),
-    topItems: topVisited([...items.values()], (s) => s.url)
-      .map(({ owner, repo, kind, number, title, url, visits }) =>
-        ({ owner, repo, kind, number, title, url, visits })),
+    topItems: topVisited([...items.values()].map((e) => e.value), (s) => s.url),
   }
 }
 
@@ -105,7 +106,11 @@ async function githubByDay(db: KyselyDb, month?: string): Promise<GithubStats['b
   for (const row of await getGithubVisitDays(db, month)) {
     const urlInfo = parseGithubUrl(row.url)
     if (urlInfo === null) continue
-    const kind = urlInfo.root ? 'repo' : urlInfo.kind === undefined ? 'other' : 'issue_pr'
+    const kind = urlInfo.root
+      ? 'repo'
+      : urlInfo.kind === undefined
+        ? 'other'
+        : 'issue_pr'
     const bucket = byDay.get(row.day) ?? { day: row.day, all: 0, repo: 0, issue_pr: 0, other: 0 }
     bucket.all += row.visits
     bucket[kind] += row.visits

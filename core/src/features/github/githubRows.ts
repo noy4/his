@@ -11,7 +11,7 @@ interface GithubRow {
   id: number
   url: string
   title: string | null
-  visit_count: number | bigint
+  visit_count: number
   typed_count: number
   first_visit_time: number
   last_visit_time: number
@@ -54,11 +54,13 @@ function githubAllRows(db: KyselyDb): Promise<GithubRow[]> {
     .execute()
 }
 
+// month rows: recount from visits (urls cannot scope to a month);
+// urls-first (crossJoin) so the LIKE filter spares non-github visits — revisit for narrow windows
 function githubMonthRows(db: KyselyDb, month: string): Promise<GithubRow[]> {
   const [start, end] = monthRange(month)
   return db
-    .selectFrom('visits')
-    .innerJoin('urls', 'urls.id', 'visits.url_id')
+    .selectFrom('urls')
+    .crossJoin('visits')
     .select([
       'urls.id',
       'urls.url',
@@ -68,6 +70,7 @@ function githubMonthRows(db: KyselyDb, month: string): Promise<GithubRow[]> {
       sql<number>`MIN(visits.visit_time)`.as('first_visit_time'),
       sql<number>`MAX(visits.visit_time)`.as('last_visit_time'),
     ])
+    .whereRef('visits.url_id', '=', 'urls.id')
     .where(githubUrl)
     .where(monthWindow(start, end))
     .where(hiddenExcluded)
@@ -85,56 +88,23 @@ export interface GithubDayRow {
 }
 
 export async function getGithubVisitDays(db: KyselyDb, month?: string): Promise<GithubDayRow[]> {
-  const rows = month === undefined
-    ? await githubAllDays(db)
-    : await githubMonthDays(db, month)
-  return rows.map((row) => ({
-    day: row.day,
-    url: row.url,
-    visits: Number(row.visits),
-    lastVisit: Number(row.lastVisit),
-  }))
-}
-
-interface GithubDayQueryRow {
-  day: string
-  url: string
-  visits: number
-  lastVisit: number | bigint
-}
-
-function githubAllDays(db: KyselyDb): Promise<GithubDayQueryRow[]> {
-  return db
-    .selectFrom('visits')
-    .innerJoin('urls', 'urls.id', 'visits.url_id')
+  let builder = db
+    .selectFrom('urls')
+    .crossJoin('visits')
     .select([
-      sql<string>`DATE(visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
+      sql<string>`DATE(visits.visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
       'urls.url as url',
       sql<number>`COUNT(*)`.as('visits'),
-      sql<number>`MAX(visit_time)`.as('lastVisit'),
+      sql<number>`MAX(visits.visit_time)`.as('lastVisit'),
     ])
+    .whereRef('visits.url_id', '=', 'urls.id')
     .where(githubUrl)
     .where(hiddenExcluded)
-    .groupBy(sql`day`)
-    .groupBy('urls.url')
-    .orderBy(sql`day`)
-    .execute()
-}
-
-function githubMonthDays(db: KyselyDb, month: string): Promise<GithubDayQueryRow[]> {
-  const [start, end] = monthRange(month)
-  return db
-    .selectFrom('visits')
-    .innerJoin('urls', 'urls.id', 'visits.url_id')
-    .select([
-      sql<string>`DATE(visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
-      'urls.url as url',
-      sql<number>`COUNT(*)`.as('visits'),
-      sql<number>`MAX(visit_time)`.as('lastVisit'),
-    ])
-    .where(githubUrl)
-    .where(monthWindow(start, end))
-    .where(hiddenExcluded)
+  if (month !== undefined) {
+    const [start, end] = monthRange(month)
+    builder = builder.where(monthWindow(start, end))
+  }
+  return builder
     .groupBy(sql`day`)
     .groupBy('urls.url')
     .orderBy(sql`day`)
