@@ -28,7 +28,7 @@ export interface YoutubeStats {
   }[]
 }
 
-export interface YoutubeItemsFilter {
+export interface YoutubeSearchFilter {
   month?: string
   kind?: YoutubeVisitKind
   cursor?: string

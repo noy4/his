@@ -1,13 +1,13 @@
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubUrlInfo } from './parse.ts'
 import { getGithubRows, getGithubVisitDays } from './githubRows.ts'
-import type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubStats } from './types.ts'
+import type { GithubDayItem, GithubDayKind, GithubSearchFilter, GithubStats } from './types.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { Page } from '../../db/query/paging.ts'
 import { topBy } from '../../util/top.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
-// GitHub Insights read API: githubStats (aggregate) + githubItems (paged list).
+// GitHub Insights read API: githubStats (aggregate) + githubSearch (paged list).
 
 const TOP = 5
 const DAY_TOP = 3
@@ -174,8 +174,8 @@ function topRecent(items: GithubDayItem[]): GithubDayItem[] {
     .slice(0, DAY_TOP)
 }
 
-/** Paged GitHub visits with owner/repo/kind filters (month optional). */
-export async function githubItems(db: KyselyDb, filter: GithubItemsFilter = {}): Promise<Page<HistoryItem>> {
+/** Paged GitHub history items with owner/repo/kind filters (month optional). */
+export async function githubSearch(db: KyselyDb, filter: GithubSearchFilter = {}): Promise<Page<HistoryItem>> {
   const owner = filter.owner?.toLowerCase()
   const repo = filter.repo?.toLowerCase()
   const kind = filter.kind ?? 'all'

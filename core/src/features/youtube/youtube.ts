@@ -1,13 +1,13 @@
 import { matchesYoutubeKind, parseYoutubeUrl } from './parse.ts'
 import { getYoutubeRows, getYoutubeVisitDays } from './youtubeRows.ts'
-import type { YoutubeStats, YoutubeItemsFilter } from './types.ts'
+import type { YoutubeStats, YoutubeSearchFilter } from './types.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { Page } from '../../db/query/paging.ts'
 import { topBy } from '../../util/top.ts'
 import type { KyselyDb } from '../../db/db.ts'
 
-// YouTube Insights read API: youtubeStats (aggregate) + youtubeItems (paged list).
+// YouTube Insights read API: youtubeStats (aggregate) + youtubeSearch (paged list).
 
 const TOP = 5
 
@@ -97,8 +97,8 @@ async function youtubeByDay(db: KyselyDb, month?: string): Promise<YoutubeStats[
   return [...byDay.values()].sort((a, b) => a.day.localeCompare(b.day))
 }
 
-/** Paged YouTube visits with a kind filter (month optional). */
-export async function youtubeItems(db: KyselyDb, filter: YoutubeItemsFilter = {}): Promise<Page<HistoryItem>> {
+/** Paged YouTube history items with a kind filter (month optional). */
+export async function youtubeSearch(db: KyselyDb, filter: YoutubeSearchFilter = {}): Promise<Page<HistoryItem>> {
   const kind = filter.kind ?? 'all'
   const limit = clampLimit(filter.limit)
   const cursor = filter.cursor === undefined

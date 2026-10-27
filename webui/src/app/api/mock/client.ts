@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeItemsFilter, YoutubeStats } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubSearchFilter, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeSearchFilter, YoutubeStats } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -297,7 +297,7 @@ function topRecent(items: GithubDayItem[]): GithubDayItem[] {
     .slice(0, DAY_TOP)
 }
 
-function mockGithubItems(params: GithubItemsFilter): SearchPage {
+function mockGithubSearch(params: GithubSearchFilter): SearchPage {
   const owner = params.owner?.toLowerCase()
   const repo = params.repo?.toLowerCase()
   const kind = params.kind ?? 'all'
@@ -310,7 +310,7 @@ function mockGithubItems(params: GithubItemsFilter): SearchPage {
 
 // --- youtube ---
 
-export function mockYoutubeItems(params: YoutubeItemsFilter): SearchPage {
+export function mockYoutubeSearch(params: YoutubeSearchFilter): SearchPage {
   const kind = params.kind ?? 'all'
   const rows = visibleItems()
     .flatMap((item) => {
@@ -538,30 +538,30 @@ function searchVisits(params: SearchFilter): SearchVisitsPage {
 
 export const mockApi: HisApi = {
   history: {
+    async stats({ month } = {}): Promise<Stats> {
+      return month === undefined ? computeStats() : computeMonthlyStats(month)
+    },
     async search(params: SearchFilter): Promise<SearchPage> {
       return paginate(findVisible(params), params.cursor, params.limit)
     },
     async searchVisits(params: SearchFilter): Promise<SearchVisitsPage> {
       return searchVisits(params)
     },
-    async stats({ month } = {}): Promise<Stats> {
-      return month === undefined ? computeStats() : computeMonthlyStats(month)
-    },
   },
   github: {
     async stats({ month } = {}): Promise<GithubStats> {
       return computeGithubStats(month)
     },
-    async items(params: GithubItemsFilter): Promise<SearchPage> {
-      return mockGithubItems(params)
+    async search(params: GithubSearchFilter): Promise<SearchPage> {
+      return mockGithubSearch(params)
     },
   },
   youtube: {
     async stats({ month } = {}): Promise<YoutubeStats> {
       return mockYoutubeStats(month)
     },
-    async items(params: YoutubeItemsFilter): Promise<SearchPage> {
-      return mockYoutubeItems(params)
+    async search(params: YoutubeSearchFilter): Promise<SearchPage> {
+      return mockYoutubeSearch(params)
     },
   },
   sources: {

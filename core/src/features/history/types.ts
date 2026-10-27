@@ -1,9 +1,6 @@
 import type { EpochMs, HistoryItem, HistoryVisit } from '../../types.ts'
 import type { Page } from '../../db/query/paging.ts'
 
-// Browser-safe history data types (type-only imports; no runtime/DB code).
-// The functions live in query.ts / stats.ts (Node-only).
-
 export interface SearchFilter {
   query?: string
   url?: string

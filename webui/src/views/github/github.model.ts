@@ -64,7 +64,7 @@ export class GithubModel {
     const cursor = append ? this.nextCursor.value ?? undefined : undefined
     if (append && !cursor) return
     const f = this.filter.value
-    const page = await this.api.github.items({
+    const page = await this.api.github.search({
       month: this.period.month,
       owner: f?.owner,
       repo: f?.repo,

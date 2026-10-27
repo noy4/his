@@ -376,9 +376,9 @@ history.search       { query?, url?, from?, to?, cursor?, limit? }        → { 
 history.searchVisits { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
 history.stats        { month? }                                          → Stats
 github.stats         { month? }                                          → GithubStats
-github.items         { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
+github.search        { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
 youtube.stats        { month? }                                          → YoutubeStats
-youtube.items        { month?, kind?, cursor?, limit? }                  → { items, nextCursor }
+youtube.search       { month?, kind?, cursor?, limit? }                  → { items, nextCursor }
 sources.list         { check? }                                          → SourceEntry[]    <span class="c"># discovered ∪ registered · check probes source files</span>
 sync.run             { targets?, rescan? }                               → SyncSummary      <span class="c"># targets omitted → settings</span>
 sync.status                                                              → LastRun | null

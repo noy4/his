@@ -12,17 +12,17 @@ export function createApi(): HisApi {
 
   return {
     history: {
+      stats: rpc('history.stats'),
       search: rpc('history.search'),
       searchVisits: rpc('history.searchVisits'),
-      stats: rpc('history.stats'),
     },
     github: {
       stats: rpc('github.stats'),
-      items: rpc('github.items'),
+      search: rpc('github.search'),
     },
     youtube: {
       stats: rpc('youtube.stats'),
-      items: rpc('youtube.items'),
+      search: rpc('youtube.search'),
     },
     sources: {
       list: rpc('sources.list'),

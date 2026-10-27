@@ -31,7 +31,7 @@ export interface GithubStats {
   topItems: { owner: string; repo: string; kind: GithubKind; number: number; title: string; url: string; visits: number }[]
 }
 
-export interface GithubItemsFilter {
+export interface GithubSearchFilter {
   month?: string
   owner?: string
   repo?: string
