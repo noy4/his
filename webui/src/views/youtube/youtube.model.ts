@@ -55,7 +55,7 @@ export class YoutubeModel {
     const id = ++this.#visitsReq
     const cursor = append ? this.nextCursor.value ?? undefined : undefined
     if (append && !cursor) return
-    const page = await this.api.youtubeVisits({
+    const page = await this.api.youtubeItems({
       month: this.period.month,
       kind: this.kind.value,
       cursor,

@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisitKind, GithubVisitsFilter, HistoryItem, HistoryVisit, ItemDetail, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeStats, YoutubeVisitKind, YoutubeVisitsFilter } from '@his/core'
+import type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisitKind, GithubVisitsFilter, HistoryItem, HistoryVisit, ItemDetail, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeItemsFilter, YoutubeStats, YoutubeVisitKind } from '@his/core'
 
 // share types (incl. history stats/pages) — single source is @his/core
 export type { HistoryItem, HistoryVisit, ItemDetail, SearchFilter, SearchPage, SearchVisitsPage }
@@ -17,7 +17,7 @@ export type { GithubDayItem, GithubDayKind, GithubKind, GithubStats, GithubVisit
 
 // --- YouTube insights (types come from @his/core) ---
 
-export type { YoutubeVisitKind, YoutubeVisitsFilter, YoutubeStats }
+export type { YoutubeItemsFilter, YoutubeStats, YoutubeVisitKind }
 
 export interface SourcesListParams {
   /** probe each source and report whether it changed since the last sync */
@@ -37,7 +37,7 @@ export interface HisApi {
   stats(month?: string): Promise<Stats>
   githubStats(month?: string): Promise<GithubStats>
   githubVisits(params: GithubVisitsFilter): Promise<SearchPage>
-  youtubeVisits(params: YoutubeVisitsFilter): Promise<SearchPage>
+  youtubeItems(params: YoutubeItemsFilter): Promise<SearchPage>
   youtubeStats(month?: string): Promise<YoutubeStats>
   sourcesList(params?: SourcesListParams): Promise<SourceEntry[]>
   syncRun(params: SyncRunParams): Promise<SyncSummary>

@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeStats, YoutubeVisitsFilter } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubStats, GithubVisitsFilter, HisApi, HistoryItem, HistoryVisit, ItemDetail, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeItemsFilter, YoutubeStats } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -310,9 +310,7 @@ function githubVisits(params: GithubVisitsFilter): SearchPage {
 
 // --- youtube ---
 
-// Temporary: the real server has no `history.youtubeVisits` yet, so this is
-// exported and reused by the RPC client too (see app/api/client.ts).
-export function mockYoutubeVisits(params: YoutubeVisitsFilter): SearchPage {
+export function mockYoutubeItems(params: YoutubeItemsFilter): SearchPage {
   const kind = params.kind ?? 'all'
   const rows = visibleItems()
     .flatMap((item) => {
@@ -570,8 +568,8 @@ export const mockApi: HisApi = {
     return githubVisits(params)
   },
 
-  async youtubeVisits(params: YoutubeVisitsFilter): Promise<SearchPage> {
-    return mockYoutubeVisits(params)
+  async youtubeItems(params: YoutubeItemsFilter): Promise<SearchPage> {
+    return mockYoutubeItems(params)
   },
 
   async youtubeStats(month?: string): Promise<YoutubeStats> {

@@ -111,7 +111,7 @@
         ├── node.ts               <span class="c"># node entry</span>
         ├── types.ts              <span class="c"># HistoryItem · VisitItem · Transition · epoch ms</span>
         ├── db/                   <span class="c"># migrations/ · db.ts · schema.ts · query/</span>
-        ├── features/             <span class="c"># history/ · github/ · settings/ · sources/ · sync/</span>
+        ├── features/             <span class="c"># history/ · github/ · youtube/ · settings/ · sources/ · sync/</span>
         ├── util/                 <span class="c"># url · top</span>
         └── testing/              <span class="c"># fixtures</span>
 📦 cli/                           <span class="c"># npm package: his</span>
@@ -140,7 +140,7 @@
         ├── app/                  <span class="c"># app model · api</span>
         ├── components/           <span class="c"># SearchBar · icons · ui</span>
         ├── lib/                  <span class="c"># transport · date · domain · format · signals</span>
-        └── views/                <span class="c"># dashboard · visits · urls · github · sources · settings</span>
+        └── views/                <span class="c"># dashboard · visits · urls · github · youtube · sources · settings</span>
 🖥️ desktop/                       <span class="c"># Electron shell</span>
     ├── package.json
     ├── vite.config.ts
@@ -309,6 +309,13 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
       </div>
       <div class="card">
         <div class="card-head">
+          <iconify-icon icon="mdi:youtube"></iconify-icon>
+          <h4>YouTube</h4>
+        </div>
+        <p>Video / shorts stats, daily chart + recent items.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
           <iconify-icon icon="mdi:database-import"></iconify-icon>
           <h4>Sources</h4>
         </div>
@@ -372,6 +379,8 @@ history.getItem      { id }                                              → { i
 history.stats        { month? }                                          → Stats
 history.githubStats  { month? }                                          → GithubStats
 history.githubVisits { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
+history.youtubeStats { month? }                                          → YoutubeStats
+history.youtubeItems { month?, kind?, cursor?, limit? }                  → { items, nextCursor }
 sources.list         { check? }                                          → SourceEntry[]    <span class="c"># discovered ∪ registered · check probes source files</span>
 sync.run             { targets?, rescan? }                               → SyncSummary      <span class="c"># targets omitted → settings</span>
 sync.status                                                              → LastRun | null

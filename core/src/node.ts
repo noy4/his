@@ -11,6 +11,8 @@ export * as history from './features/history/index.ts'
 export type { SearchFilter, SearchPage, SearchVisitsPage, ItemDetail, Stats, StatTotals } from './features/history/index.ts'
 export * as settings from './features/settings/index.ts'
 export * as sources from './features/sources/index.ts'
+export * as youtube from './features/youtube/index.ts'
+export type { YoutubeItemsFilter, YoutubeStats, YoutubeUrlKind, YoutubeVisitKind } from './features/youtube/index.ts'
 export * from './features/sync/index.ts'
 
 export * from './paths.ts'
