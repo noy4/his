@@ -6,34 +6,34 @@ export function createApi(): HisApi {
   if (import.meta.env.VITE_USE_MOCK_API === 'true') return mockApi
 
   const transport = new RpcTransport<HisEvents>(rpcUrl())
-  function handler<T>(method: string) {
+  function rpc<T>(method: string) {
     return (params?: unknown) => transport.call<T>(method, params)
   }
 
   return {
     history: {
-      search: handler('history.search'),
-      searchVisits: handler('history.searchVisits'),
-      stats: handler('history.stats'),
+      search: rpc('history.search'),
+      searchVisits: rpc('history.searchVisits'),
+      stats: rpc('history.stats'),
     },
     github: {
-      stats: handler('history.githubStats'),
-      items: handler('history.githubItems'),
+      stats: rpc('history.githubStats'),
+      items: rpc('history.githubItems'),
     },
     youtube: {
-      stats: handler('history.youtubeStats'),
-      items: handler('history.youtubeItems'),
+      stats: rpc('history.youtubeStats'),
+      items: rpc('history.youtubeItems'),
     },
     sources: {
-      list: handler('sources.list'),
+      list: rpc('sources.list'),
     },
     sync: {
-      run: handler('sync.run'),
-      status: handler('sync.status'),
+      run: rpc('sync.run'),
+      status: rpc('sync.status'),
     },
     settings: {
-      get: handler('settings.get'),
-      set: handler('settings.set'),
+      get: rpc('settings.get'),
+      set: rpc('settings.set'),
     },
     on: (event, handler) => transport.on(event, handler),
   }
