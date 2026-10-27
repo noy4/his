@@ -2,7 +2,7 @@ import type { IconComponent } from '@/components/icons'
 import { cn } from 'cn'
 import { AppModel } from '@/app/app'
 import { Dashboard } from '@/views/dashboard/Dashboard'
-import { GitHub } from '@/views/github/GitHub'
+import { Github } from '@/views/github/Github'
 import { Urls } from '@/views/urls/Urls'
 import { Sources } from '@/views/sources/Sources'
 import { Visits } from '@/views/visits/Visits'
@@ -31,7 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: ChartBoxOutline, content: Dashboard },
   { id: 'visits', label: 'Visits', icon: History, content: Visits },
   { id: 'urls', label: 'URLs', icon: LinkVariant, content: Urls },
-  { id: 'github', label: 'GitHub', icon: GithubIcon, content: GitHub },
+  { id: 'github', label: 'GitHub', icon: GithubIcon, content: Github },
   { id: 'youtube', label: 'YouTube', icon: YoutubeIcon, content: Youtube },
   { type: 'divider' },
   { id: 'sources', label: 'Sources', icon: DatabaseImport, content: Sources },

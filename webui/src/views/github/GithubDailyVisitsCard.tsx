@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 import { useState } from 'react'
 import { isoDay } from '@/lib/date'
 import { ALL_TIME_DAYS, dailySeries } from '@/lib/time-series'
-import { DailyVisitsChart, type DailyVisitTop } from './DailyVisitsChart'
+import { GithubDailyVisitsChart, type GithubDailyVisitTop } from './GithubDailyVisitsChart'
 import type { GithubModel } from './github.model'
 
 const KINDS: { value: GithubVisitKind; label: string }[] = [
@@ -15,10 +15,10 @@ const KINDS: { value: GithubVisitKind; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
-const EMPTY_TOP: DailyVisitTop = { repo: [], issue_pr: [], other: [] }
+const EMPTY_TOP: GithubDailyVisitTop = { repo: [], issue_pr: [], other: [] }
 const ZERO = { all: 0, repo: 0, issue_pr: 0, other: 0, top: EMPTY_TOP }
 
-export function DailyVisitsCard({ gh }: { gh: GithubModel }) {
+export function GithubDailyVisitsCard({ gh }: { gh: GithubModel }) {
   const [kind, setKind] = useState<GithubVisitKind>('repo')
   const stats = gh.stats.value
   if (!stats) return null
@@ -51,7 +51,7 @@ export function DailyVisitsCard({ gh }: { gh: GithubModel }) {
           </ToggleChip>
         ))}
       </div>
-      <DailyVisitsChart data={daily} dataKey={kind} />
+      <GithubDailyVisitsChart data={daily} dataKey={kind} />
     </Card>
   )
 }

@@ -18,19 +18,19 @@ import {
 } from '@/views/shared/Stats'
 import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/views/shared/rank-medals'
 import { ViewRoot } from '@/views/shared/ViewRoot'
-import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
-import { DailyVisitsCard } from './DailyVisitsCard'
-import { RecentItemsCard } from './RecentItemsCard'
+import { GithubAvatar, GithubKindAvatar } from './Github.components'
+import { GithubDailyVisitsCard } from './GithubDailyVisitsCard'
+import { GithubRecentItemsCard } from './GithubRecentItemsCard'
 import { GithubModel } from './github.model'
-import { GitHubSkeleton } from './GitHub.skeleton'
+import { GithubSkeleton } from './Github.skeleton'
 
 const rowCls = '-mx-1 flex items-center gap-2 rounded px-1 hover:bg-bg-3'
 const DAY = 86_400_000
 
-export function GitHub({ app }: { app: AppModel }) {
+export function Github({ app }: { app: AppModel }) {
   const gh = useModel(() => new GithubModel(app.api))
   const stats = gh.stats.value
-  if (!stats) return <GitHubSkeleton />
+  if (!stats) return <GithubSkeleton />
 
   const monthly = gh.mode.value === 'month'
 
@@ -58,12 +58,12 @@ export function GitHub({ app }: { app: AppModel }) {
 
       <StatsContentRoot>
         <OverviewCard gh={gh} />
-        <DailyVisitsCard gh={gh} />
+        <GithubDailyVisitsCard gh={gh} />
         <TopReposCard gh={gh} />
         {!monthly && <TopOwnersCard gh={gh} />}
         <TopItemsCard gh={gh} />
       </StatsContentRoot>
-      <RecentItemsCard gh={gh} />
+      <GithubRecentItemsCard gh={gh} />
     </ViewRoot>
   )
 }
@@ -133,7 +133,7 @@ function TopReposCard({ gh }: { gh: GithubModel }) {
                     <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
                   )}
                 </span>
-                <GitHubAvatar owner={r.owner} />
+                <GithubAvatar owner={r.owner} />
                 <div className="min-w-0 flex-1 truncate text-text-2">
                   <span className="text-muted">{r.owner}/</span>{r.repo}
                 </div>
@@ -177,7 +177,7 @@ function TopOwnersCard({ gh }: { gh: GithubModel }) {
                     <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
                   )}
                 </span>
-                <GitHubAvatar owner={o.owner} />
+                <GithubAvatar owner={o.owner} />
                 <span className="min-w-0 flex-1 truncate text-text-2">
                   {o.owner}
                 </span>
@@ -210,7 +210,7 @@ function TopItemsCard({ gh }: { gh: GithubModel }) {
                 target="_blank"
                 rel="noreferrer"
               >
-                <GitHubKindAvatar
+                <GithubKindAvatar
                   owner={it.owner}
                   kind={it.kind}
                   className="mt-0.5"

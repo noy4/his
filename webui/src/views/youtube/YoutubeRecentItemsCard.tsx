@@ -10,7 +10,7 @@ import { YoutubeItemAvatar } from './Youtube.components'
 import { YOUTUBE_KIND_LABELS } from './youtube.labels'
 import type { YoutubeModel } from './youtube.model'
 
-export function RecentItemsCard({ yt }: { yt: YoutubeModel }) {
+export function YoutubeRecentItemsCard({ yt }: { yt: YoutubeModel }) {
   const hasMore = yt.nextCursor.value !== null
   const isCardView = yt.view.value === 'card'
   const groups = groupItemsByDate(yt.visits.value)

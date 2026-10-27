@@ -4,26 +4,26 @@ import { useState } from 'react'
 import { Bar, BarChart, LabelList, ReferenceArea, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import { fmtNum } from '@/lib/format'
 import WebIcon from '~icons/mdi/web'
-import { GitHubAvatar, GitHubKindAvatar } from './GitHub.components'
+import { GithubAvatar, GithubKindAvatar } from './Github.components'
 
-export interface DailyVisitTop {
+export interface GithubDailyVisitTop {
   repo: GithubDayItem[]
   issue_pr: GithubDayItem[]
   other: GithubDayItem[]
 }
 
-export interface DailyVisitRow {
+export interface GithubDailyVisitRow {
   day: string
   all: number
   repo: number
   issue_pr: number
   other: number
-  top: DailyVisitTop
+  top: GithubDailyVisitTop
 }
 
 // GitHub-only daily visits chart: one bar per day.
 // Tooltip breaks the hovered day down: kind totals for 'all', most recently visited items otherwise.
-export function DailyVisitsChart({ data, dataKey }: { data: DailyVisitRow[]; dataKey: GithubVisitKind }) {
+export function GithubDailyVisitsChart({ data, dataKey }: { data: GithubDailyVisitRow[]; dataKey: GithubVisitKind }) {
   const today = dayjs().format('YYYY-MM-DD')
   const [width, setWidth] = useState(0)
   let peakDay = ''
@@ -95,7 +95,7 @@ function DailyVisitsTooltip({
   dataKey,
 }: {
   active?: boolean
-  payload?: readonly { payload?: DailyVisitRow }[]
+  payload?: readonly { payload?: GithubDailyVisitRow }[]
   dataKey: GithubVisitKind
 }) {
   const row = payload?.[0]?.payload
@@ -112,7 +112,7 @@ function DailyVisitsTooltip({
   )
 }
 
-function KindBreakdown({ row }: { row: DailyVisitRow }) {
+function KindBreakdown({ row }: { row: GithubDailyVisitRow }) {
   const rows = KIND_ROWS.filter(({ key }) => row[key] > 0)
   if (rows.length === 0) return null
   return (
@@ -149,8 +149,8 @@ function DayItemRow({ item }: { item: GithubDayItem }) {
   return (
     <div className="flex items-center gap-1.5">
       <span className="w-9 shrink-0 font-mono text-muted tabular-nums">{dayjs(item.lastVisit).format('HH:mm')}</span>
-      {item.kind === 'repo' && <GitHubAvatar owner={item.owner} size={14} />}
-      {item.kind === 'issue_pr' && <GitHubKindAvatar owner={item.owner} kind={item.pullKind ?? 'pull'} size={14} />}
+      {item.kind === 'repo' && <GithubAvatar owner={item.owner} size={14} />}
+      {item.kind === 'issue_pr' && <GithubKindAvatar owner={item.owner} kind={item.pullKind ?? 'pull'} size={14} />}
       {item.kind === 'other' && <WebIcon aria-hidden="true" className="size-3.5 shrink-0 text-muted" />}
       <span className="min-w-0 flex-1 truncate text-text-2">{label}</span>
       <span className="shrink-0 font-mono text-muted tabular-nums">{fmtNum(item.visits)}</span>

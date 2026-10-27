@@ -5,11 +5,11 @@ import { parseGithubTitle, parseGithubUrl } from '@his/core'
 import { HistoryItemRow } from '@/views/shared/HistoryRow'
 import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreButton } from '@/views/shared/RecentItems'
 import { groupItemsByDate } from '@/views/shared/group-items'
-import { GitHubItemCard, GitHubItemCardGrid } from './GitHubItemCard'
-import { GitHubItemAvatar, RemovableChip } from './GitHub.components'
+import { GithubItemCard, GithubItemCardGrid } from './GithubItemCard'
+import { GithubItemAvatar, RemovableChip } from './Github.components'
 import type { GithubModel } from './github.model'
 
-export function RecentItemsCard({ gh }: { gh: GithubModel }) {
+export function GithubRecentItemsCard({ gh }: { gh: GithubModel }) {
   const hasMore = gh.nextCursor.value !== null
   const isCardView = gh.view.value === 'card'
   const groups = groupItemsByDate(gh.visits.value)
@@ -90,21 +90,21 @@ function ItemsGroup({ label, items, isCardView }: {
     <ItemsGroupRoot>
       <ItemsGroupTitle>{label}</ItemsGroupTitle>
       {isCardView ? (
-        <GitHubItemCardGrid>
+        <GithubItemCardGrid>
           {items.map((item) => (
-            <GitHubItemCard key={item.id} item={item} />
+            <GithubItemCard key={item.id} item={item} />
           ))}
-        </GitHubItemCardGrid>
+        </GithubItemCardGrid>
       ) : (
         items.map((item) => (
-          <GitHubItemRow key={item.id} item={item} />
+          <GithubItemRow key={item.id} item={item} />
         ))
       )}
     </ItemsGroupRoot>
   )
 }
 
-function GitHubItemRow({ item }: { item: HistoryItem }) {
+function GithubItemRow({ item }: { item: HistoryItem }) {
   const urlInfo = parseGithubUrl(item.url)
   if (!urlInfo) return null
   const titleInfo = urlInfo.root ? parseGithubTitle(item.title || item.url, urlInfo) : undefined
@@ -120,7 +120,7 @@ function GitHubItemRow({ item }: { item: HistoryItem }) {
         </>
       )}
       icon={(
-        <GitHubItemAvatar
+        <GithubItemAvatar
           owner={urlInfo.owner}
           kind={urlInfo.kind}
           size={24}

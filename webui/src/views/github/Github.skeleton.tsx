@@ -4,7 +4,7 @@ import { ListSkeleton } from '@/views/shared/ListSkeleton'
 import { StatsContentRoot, StatsHeaderRoot } from '@/views/shared/Stats'
 import { ViewRoot } from '@/views/shared/ViewRoot'
 
-export function GitHubSkeleton() {
+export function GithubSkeleton() {
   return (
     <ViewRoot>
       <StatsHeaderRoot>

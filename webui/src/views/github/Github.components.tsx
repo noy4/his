@@ -40,13 +40,13 @@ export function RemovableChip({
   )
 }
 
-type GitHubAvatarProps = {
+type GithubAvatarProps = {
   owner: string
   size?: number
   className?: string
 }
 
-export function GitHubAvatar({ owner, size = 18, className }: GitHubAvatarProps) {
+export function GithubAvatar({ owner, size = 18, className }: GithubAvatarProps) {
   return (
     <img
       src={`https://github.com/${owner}.png?size=${size * 2}`}
@@ -58,7 +58,7 @@ export function GitHubAvatar({ owner, size = 18, className }: GitHubAvatarProps)
   )
 }
 
-export function GitHubKindAvatar({ owner, kind, size = 18, className }: GitHubAvatarProps & { kind: GithubKind }) {
+export function GithubKindAvatar({ owner, kind, size = 18, className }: GithubAvatarProps & { kind: GithubKind }) {
   const Icon = kind === 'pull' ? PullIcon : IssueIcon
   const badgeSize = Math.round(size * 0.6)
   return (
@@ -66,7 +66,7 @@ export function GitHubKindAvatar({ owner, kind, size = 18, className }: GitHubAv
       className={cn('relative block shrink-0', className)}
       title={kind === 'pull' ? 'Pull request' : 'Issue'}
     >
-      <GitHubAvatar owner={owner} size={size} />
+      <GithubAvatar owner={owner} size={size} />
       <Icon
         width={badgeSize}
         height={badgeSize}
@@ -79,8 +79,8 @@ export function GitHubKindAvatar({ owner, kind, size = 18, className }: GitHubAv
   )
 }
 
-export function GitHubItemAvatar({ kind, ...props }: GitHubAvatarProps & { kind?: GithubKind }) {
+export function GithubItemAvatar({ kind, ...props }: GithubAvatarProps & { kind?: GithubKind }) {
   return kind
-    ? <GitHubKindAvatar {...props} kind={kind} />
-    : <GitHubAvatar {...props} />
+    ? <GithubKindAvatar {...props} kind={kind} />
+    : <GithubAvatar {...props} />
 }

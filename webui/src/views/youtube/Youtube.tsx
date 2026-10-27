@@ -2,7 +2,7 @@ import type { AppModel } from '@/app/app'
 import { useModel } from '@/lib/useModel'
 import { MonthNav, PeriodToggle, StatsHeaderRoot } from '@/views/shared/Stats'
 import { ViewRoot } from '@/views/shared/ViewRoot'
-import { RecentItemsCard } from './RecentItemsCard'
+import { YoutubeRecentItemsCard } from './YoutubeRecentItemsCard'
 import { YoutubeModel } from './youtube.model'
 
 export function Youtube({ app }: { app: AppModel }) {
@@ -30,7 +30,7 @@ export function Youtube({ app }: { app: AppModel }) {
           ]}
         />
       </StatsHeaderRoot>
-      <RecentItemsCard yt={yt} />
+      <YoutubeRecentItemsCard yt={yt} />
     </ViewRoot>
   )
 }
