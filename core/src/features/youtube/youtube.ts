@@ -1,6 +1,7 @@
 import { matchesYoutubeKind, parseYoutubeUrl } from './parse.ts'
 import { getYoutubeRows, getYoutubeVisitDays } from './youtubeRows.ts'
 import type { YoutubeStats, YoutubeSearchFilter } from './types.ts'
+import type { StatsParams } from '../history/types.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { Page } from '../../db/query/paging.ts'
@@ -12,7 +13,7 @@ import type { KyselyDb } from '../../db/db.ts'
 const TOP = 5
 
 /** YouTube totals + top videos (month-scoped when given). */
-export async function youtubeStats(db: KyselyDb, month?: string): Promise<YoutubeStats> {
+export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): Promise<YoutubeStats> {
   const videoIds = new Set<string>()
   const shortIds = new Set<string>()
   const top = new Map<string, {

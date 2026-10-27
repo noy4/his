@@ -1,6 +1,7 @@
 import { matchesKind, mergeRepoRoots, parseGithubUrl, type GithubUrlInfo } from './parse.ts'
 import { getGithubRows, getGithubVisitDays } from './githubRows.ts'
 import type { GithubDayItem, GithubDayKind, GithubSearchFilter, GithubStats } from './types.ts'
+import type { StatsParams } from '../history/types.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { Page } from '../../db/query/paging.ts'
@@ -13,7 +14,7 @@ const TOP = 5
 const DAY_TOP = 3
 
 /** GitHub totals + top repos/owners/items (month-scoped when given). */
-export async function githubStats(db: KyselyDb, month?: string): Promise<GithubStats> {
+export async function githubStats(db: KyselyDb, { month }: StatsParams = {}): Promise<GithubStats> {
   const repos = new Map<string, { owner: string; repo: string; visits: number }>()
   const owners = new Map<string, { visits: number; repos: Set<string> }>()
   const items = new Map<string, {

@@ -13,6 +13,10 @@ export interface SearchFilter {
 export type SearchPage = Page<HistoryItem>
 export type SearchVisitsPage = Page<HistoryVisit>
 
+export interface StatsParams {
+  month?: string
+}
+
 export interface StatTotals {
   items: number
   visits: number

@@ -11,12 +11,12 @@ export function createHandlers({ db, runner, home }: {
   const handlers: Record<string, Handler> = {
     'history.search': (params) => history.search(db, params as SearchFilter),
     'history.searchVisits': (params) => history.searchVisits(db, params as SearchFilter),
-    'history.stats': (params) => history.stats(db, params?.month),
+    'history.stats': (params) => history.stats(db, params),
 
-    'github.stats': (params) => github.stats(db, params?.month),
+    'github.stats': (params) => github.stats(db, params),
     'github.search': (params) => github.search(db, params as GithubSearchFilter),
 
-    'youtube.stats': (params) => youtube.stats(db, params?.month),
+    'youtube.stats': (params) => youtube.stats(db, params),
     'youtube.search': (params) => youtube.search(db, params as YoutubeSearchFilter),
 
     'sources.list': (params) => sources.list(db, { home, check: params?.check === true }),

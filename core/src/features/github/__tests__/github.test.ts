@@ -102,7 +102,7 @@ describe('githubStats', () => {
   })
 
   it('month narrows to that month visits', async () => {
-    const s = await githubStats(db, '2026-09')
+    const s = await githubStats(db, { month: '2026-09' })
     assert.deepEqual(s.totals, {
       visits: 2, repos: 2, owners: 1, items: 1,
       firstVisit: at('2026-09-01T10:00'), lastVisit: at('2026-09-10T10:00'),
@@ -121,13 +121,13 @@ describe('githubStats', () => {
   })
 
   it('empty month', async () => {
-    assert.deepEqual((await githubStats(db, '2020-01')).totals, { visits: 0, repos: 0, owners: 0, items: 0, firstVisit: 0, lastVisit: 0 })
-    assert.deepEqual((await githubStats(db, '2020-01')).byDay, [])
-    assert.deepEqual((await githubStats(db, '2020-01')).byDayTop, [])
+    assert.deepEqual((await githubStats(db, { month: '2020-01' })).totals, { visits: 0, repos: 0, owners: 0, items: 0, firstVisit: 0, lastVisit: 0 })
+    assert.deepEqual((await githubStats(db, { month: '2020-01' })).byDay, [])
+    assert.deepEqual((await githubStats(db, { month: '2020-01' })).byDayTop, [])
   })
 
   it('rejects bad month', async () => {
-    await assert.rejects(() => githubStats(db, '2026-13'))
+    await assert.rejects(() => githubStats(db, { month: '2026-13' }))
   })
 })
 
@@ -268,14 +268,14 @@ describe('month boundaries', () => {
         const times = [start - 1, start, start + 1, end - 1, end, end + 1]
         await seedUrl(bdb, { id: 1, url: 'https://github.com/foo/bar', title: 'foo/bar', times })
 
-        assert.deepEqual((await githubStats(bdb, month)).totals, {
+        assert.deepEqual((await githubStats(bdb, { month })).totals, {
           visits: 3, repos: 1, owners: 1, items: 0, firstVisit: start, lastVisit: end - 1,
         })
         const [item] = (await githubSearch(bdb, { month })).items
         assert.equal(item?.visitCount, 3)
         assert.equal(item?.firstVisit, start)
         assert.equal(item?.lastVisit, end - 1)
-        await assert.rejects(() => githubStats(bdb, '2026-13'), /YYYY-MM/)
+        await assert.rejects(() => githubStats(bdb, { month: '2026-13' }), /YYYY-MM/)
         await assert.rejects(() => githubSearch(bdb, { month: '2026-13' }), /YYYY-MM/)
       } finally {
         boundaryHandle.close()

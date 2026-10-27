@@ -1,7 +1,7 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchFilter, GithubKind, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeSearchFilter, YoutubeStats, YoutubeVisitKind } from '@his/core'
+import type { GithubDayItem, GithubDayKind, GithubSearchFilter, GithubKind, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, StatsParams, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeSearchFilter, YoutubeStats, YoutubeVisitKind } from '@his/core'
 
 export type { HistoryItem, HistoryVisit, SearchFilter, SearchPage, SearchVisitsPage }
-export type { SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, Transition, VisitItem }
+export type { SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, StatsParams, Transition, VisitItem }
 export type { SyncLastRun, SyncSummary }
 
 export type SourceProfile = RegisteredSource
@@ -13,10 +13,6 @@ export type { YoutubeSearchFilter, YoutubeStats, YoutubeVisitKind }
 export interface SourcesListParams {
   /** probe each source and report whether it changed since the last sync */
   check?: boolean
-}
-
-export interface StatsParams {
-  month?: string
 }
 
 // notifications — not implemented (db.changed / sync.progress)

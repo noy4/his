@@ -53,7 +53,7 @@ describe('monthly queries', () => {
       const times = [start - 1, start, start + 1, end - 1, end, end + 1]
       await seedUrl(db, { id: 1, url: 'https://github.com/foo/bar', title: 'foo/bar', times })
 
-      const summary = await stats(db, month)
+      const summary = await stats(db, { month })
       assert.deepEqual(summary.totals, {
         items: 1, visits: 3, domains: 1, firstVisit: start, lastVisit: end - 1,
       })
@@ -73,7 +73,7 @@ describe('monthly queries', () => {
         { day: `${month}-${new Date(end - 1).getDate()}`, visits: 1 },
       ])
 
-      await assert.rejects(() => stats(db, '2026-13'), /YYYY-MM/)
+      await assert.rejects(() => stats(db, { month: '2026-13' }), /YYYY-MM/)
     })
   }
 })

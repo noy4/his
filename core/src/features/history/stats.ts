@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import type { Stats, StatTotals } from './types.ts'
+import type { Stats, StatsParams, StatTotals } from './types.ts'
 import { hostWithoutWww } from '../../util/url.ts'
 import { topBy } from '../../util/top.ts'
 import { hiddenExcluded, monthRange, monthWindow } from '../../db/query/filters.ts'
@@ -10,7 +10,7 @@ import type { KyselyDb } from '../../db/db.ts'
 // everything to that calendar month (totals count URLs visited in it).
 
 // time bucketing uses plain SQL.
-export async function stats(db: KyselyDb, month?: string): Promise<Stats> {
+export async function stats(db: KyselyDb, { month }: StatsParams = {}): Promise<Stats> {
   return month === undefined
     ? allTimeStats(db)
     : monthStats(db, month)
