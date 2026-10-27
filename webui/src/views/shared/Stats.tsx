@@ -1,14 +1,8 @@
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { Bar, BarChart, LabelList, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
-import ChevronLeft from '~icons/mdi/chevron-left'
-import ChevronRight from '~icons/mdi/chevron-right'
-import type { ComponentProps, ReactNode } from 'react'
 import type { IconComponent } from '@/components/icons'
-import { buttonSmGhost } from '@/components/ui/button'
-import { ToggleGroupItem, ToggleGroupRoot } from '@/components/ui/toggle-group'
 import { fmtNum } from '@/lib/format'
-import type { PeriodMode } from '@/lib/signal/period'
 
 export function StatsHeaderRoot({ children }: { children: React.ReactNode }) {
   return (
@@ -137,73 +131,5 @@ export function DailyBars({ data, avg }: { data: { day: string; visits: number }
         </Bar>
       </BarChart>
     </ResponsiveContainer>
-  )
-}
-
-const PERIOD_OPTIONS: { value: PeriodMode; label: string }[] = [
-  { value: 'month', label: 'Monthly' },
-  { value: 'all', label: 'All time' },
-]
-
-export function PeriodToggle({ value, onChange }: { value: PeriodMode; onChange: (next: PeriodMode) => void }) {
-  return (
-    <ToggleGroupRoot aria-label="Stats period" className="gap-1 text-sm">
-      {PERIOD_OPTIONS.map((o) => (
-        <ToggleGroupItem
-          key={o.value}
-          selected={value === o.value}
-          onClick={() => onChange(o.value)}
-          className="px-3 py-1 font-medium"
-        >
-          {o.label}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroupRoot>
-  )
-}
-
-export function MonthNav({
-  value,
-  onPrev,
-  onNext,
-}: {
-  value: string
-  onPrev: () => void
-  onNext: () => void
-}) {
-  const month = dayjs(`${value}-01`)
-  return (
-    <div className="inline-flex items-center gap-0.5 rounded-sm border bg-bg-2 text-sm">
-      <NavButton
-        icon={<ChevronLeft width={15} height={15} />}
-        aria-label="Previous month"
-        onClick={onPrev}
-      />
-      <span className="px-1 font-medium tabular-nums">
-        {month.format('MMM YYYY')}
-      </span>
-      <NavButton
-        icon={<ChevronRight width={15} height={15} />}
-        aria-label="Next month"
-        onClick={onNext}
-      />
-    </div>
-  )
-}
-
-function NavButton({
-  icon,
-  children,
-  ...props
-}: ComponentProps<'button'> & { icon: ReactNode }) {
-  return (
-    <button
-      type="button"
-      className={buttonSmGhost}
-      {...props}
-    >
-      {icon}
-      {children}
-    </button>
   )
 }

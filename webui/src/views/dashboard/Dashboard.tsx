@@ -16,11 +16,10 @@ import { ViewRoot } from '@/views/shared/ViewRoot'
 import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/views/shared/rank-medals'
 import { DashboardModel } from './dashboard.model'
 import { DashboardSkeleton } from './Dashboard.components'
+import { MonthNav, PeriodToggle } from '@/lib/period/Period'
 import {
   Bars,
   DailyBars,
-  MonthNav,
-  PeriodToggle,
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
@@ -37,7 +36,7 @@ export function Dashboard({ app }: { app: AppModel }) {
   }
 
   const { totals } = stats
-  const monthly = dashboard.period.mode.value === 'month'
+  const monthly = dashboard.period.monthly.value
   const days = daySpan(totals.firstVisit, totals.lastVisit)
 
   const byHour = stats.byHour.map((h) => h.visits)
@@ -71,16 +70,8 @@ export function Dashboard({ app }: { app: AppModel }) {
   return (
     <ViewRoot>
       <StatsHeaderRoot>
-        {monthly ? (
-          <MonthNav
-            value={dashboard.period.monthKey.value}
-            onPrev={() => dashboard.period.shiftMonth(-1)}
-            onNext={() => dashboard.period.shiftMonth(1)}
-          />
-        ) : (
-          <div />
-        )}
-        <PeriodToggle value={dashboard.period.mode.value} onChange={(m) => dashboard.period.setMode(m)} />
+        {monthly ? <MonthNav period={dashboard.period} /> : <div />}
+        <PeriodToggle period={dashboard.period} />
       </StatsHeaderRoot>
 
       <StatsContentRoot>

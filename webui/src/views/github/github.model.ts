@@ -1,6 +1,6 @@
 import { signal } from '@preact/signals-react'
 import type { GithubStats, GithubVisitKind, HisApi, HistoryItem } from '@/app/api'
-import { PeriodModel } from '@/lib/signal/period'
+import { PeriodModel } from '@/lib/period/period.model'
 
 export type GithubFilter = { owner: string; repo?: string } | null
 

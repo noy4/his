@@ -9,9 +9,8 @@ import AccountIcon from '~icons/mdi/account-group-outline'
 import EyeIcon from '~icons/mdi/eye-outline'
 import PullIcon from '~icons/octicon/git-pull-request-16'
 import RepoIcon from '~icons/octicon/repo-16'
+import { MonthNav, PeriodToggle } from '@/lib/period/Period'
 import {
-  MonthNav,
-  PeriodToggle,
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
@@ -32,21 +31,13 @@ export function Github({ app }: { app: AppModel }) {
   const stats = gh.stats.value
   if (!stats) return <GithubSkeleton />
 
-  const monthly = gh.period.mode.value === 'month'
+  const monthly = gh.period.monthly.value
 
   return (
     <ViewRoot>
       <StatsHeaderRoot>
-        {monthly ? (
-          <MonthNav
-            value={gh.period.monthKey.value}
-            onPrev={() => gh.period.shiftMonth(-1)}
-            onNext={() => gh.period.shiftMonth(1)}
-          />
-        ) : (
-          <div />
-        )}
-        <PeriodToggle value={gh.period.mode.value} onChange={(m) => gh.period.setMode(m)} />
+        {monthly ? <MonthNav period={gh.period} /> : <div />}
+        <PeriodToggle period={gh.period} />
       </StatsHeaderRoot>
 
       <StatsContentRoot>
@@ -68,7 +59,7 @@ function OverviewCard({ gh }: { gh: GithubModel }) {
   if (!stats) return null
   const totals = stats.totals
   const days = Math.round((totals.lastVisit - totals.firstVisit) / DAY) + 1
-  const monthly = gh.period.mode.value === 'month'
+  const monthly = gh.period.monthly.value
   return (
     <Card>
       <CardTitle>Overview</CardTitle>

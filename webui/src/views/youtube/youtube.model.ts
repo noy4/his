@@ -1,6 +1,6 @@
 import { signal } from '@preact/signals-react'
 import type { HisApi, HistoryItem, YoutubeVisitKind } from '@/app/api'
-import { PeriodModel } from '@/lib/signal/period'
+import { PeriodModel } from '@/lib/period/period.model'
 
 const PAGE = 30
 

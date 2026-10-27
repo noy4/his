@@ -1,4 +1,4 @@
-import { signal } from '@preact/signals-react'
+import { computed, signal } from '@preact/signals-react'
 import dayjs from 'dayjs'
 
 export type PeriodMode = 'month' | 'all'
@@ -8,6 +8,7 @@ const MONTH_FORMAT = 'YYYY-MM'
 export class PeriodModel {
   readonly mode = signal<PeriodMode>('month')
   readonly monthKey = signal(dayjs().format(MONTH_FORMAT))
+  readonly monthly = computed(() => this.mode.value === 'month')
   #onChange: () => void
 
   constructor({ onChange }: { onChange: () => void }) {
@@ -16,7 +17,7 @@ export class PeriodModel {
 
   // effective month — undefined in 'all' mode
   get month(): string | undefined {
-    return this.mode.value === 'month' ? this.monthKey.value : undefined
+    return this.monthly.value ? this.monthKey.value : undefined
   }
 
   setMode(next: PeriodMode): void {
@@ -27,6 +28,6 @@ export class PeriodModel {
 
   shiftMonth(delta: number): void {
     this.monthKey.value = dayjs(`${this.monthKey.value}-01`).add(delta, 'month').format(MONTH_FORMAT)
-    if (this.mode.value === 'month') this.#onChange()
+    if (this.monthly.value) this.#onChange()
   }
 }

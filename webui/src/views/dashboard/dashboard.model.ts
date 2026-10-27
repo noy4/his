@@ -1,6 +1,6 @@
 import { signal } from '@preact/signals-react'
 import type { HisApi, Stats } from '@/app/api'
-import { PeriodModel } from '@/lib/signal/period'
+import { PeriodModel } from '@/lib/period/period.model'
 
 export class DashboardModel {
   readonly api: HisApi
