@@ -12,6 +12,13 @@ export interface YoutubeStats {
     firstVisit: EpochMs
     lastVisit: EpochMs
   }
+  topVideos: {
+    id: string
+    shorts: boolean
+    title: string
+    url: string
+    visits: number
+  }[]
 }
 
 export interface YoutubeVisitsFilter {
