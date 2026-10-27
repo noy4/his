@@ -1,6 +1,6 @@
 import { RpcTransport } from '@/lib/rpc-transport'
 import { mockApi } from './mock/client'
-import type { GithubStats, HisApi, HisEvents, SearchPage, SearchVisitsPage, SettingsInfo, SourceEntry, Stats, SyncLastRun, SyncSummary, YoutubeStats } from './types'
+import type { HisApi, HisEvents } from './types'
 
 export function createApi(): HisApi {
   if (import.meta.env.VITE_USE_MOCK_API === 'true') return mockApi
@@ -12,28 +12,28 @@ export function createApi(): HisApi {
 
   return {
     history: {
-      search: handler<SearchPage>('history.search'),
-      searchVisits: handler<SearchVisitsPage>('history.searchVisits'),
-      stats: handler<Stats>('history.stats'),
+      search: handler('history.search'),
+      searchVisits: handler('history.searchVisits'),
+      stats: handler('history.stats'),
     },
     github: {
-      stats: handler<GithubStats>('history.githubStats'),
-      items: handler<SearchPage>('history.githubItems'),
+      stats: handler('history.githubStats'),
+      items: handler('history.githubItems'),
     },
     youtube: {
-      stats: handler<YoutubeStats>('history.youtubeStats'),
-      items: handler<SearchPage>('history.youtubeItems'),
+      stats: handler('history.youtubeStats'),
+      items: handler('history.youtubeItems'),
     },
     sources: {
-      list: handler<SourceEntry[]>('sources.list'),
+      list: handler('sources.list'),
     },
     sync: {
-      run: handler<SyncSummary>('sync.run'),
-      status: handler<SyncLastRun | null>('sync.status'),
+      run: handler('sync.run'),
+      status: handler('sync.status'),
     },
     settings: {
-      get: handler<SettingsInfo>('settings.get'),
-      set: handler<SettingsInfo>('settings.set'),
+      get: handler('settings.get'),
+      set: handler('settings.set'),
     },
     on: (event, handler) => transport.on(event, handler),
   }
