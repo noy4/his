@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { afterEach, beforeEach, describe, it } from 'node:test'
 import { createDb, migrate, type KyselyDb } from '../../../db/db.ts'
 import { decodeCursor, encodeCursor } from '../../../db/query/paging.ts'
-import { getVisits, search, searchVisits } from '../query.ts'
+import { search, searchVisits } from '../query.ts'
 import { sourceProfile } from '../../../testing/db.ts'
 
 let handle: DatabaseSync
@@ -157,7 +157,7 @@ describe('shared search behavior', () => {
 })
 
 describe('search', () => {
-  it('preserves URL search aggregation, lastVisit ranges, cursors, and getVisits', async () => {
+  it('preserves URL search aggregation, lastVisit ranges, and cursors', async () => {
     assert.deepEqual((await search(db)).items.map((item) => item.id), [30, 10, 20])
     const first = await search(db, { limit: 2 })
     assert.deepEqual(first.items[1], {
@@ -169,10 +169,5 @@ describe('search', () => {
     assert.deepEqual(await search(db, { from: 200, to: 300 }), { items: [], nextCursor: null })
     assert.deepEqual((await search(db, { from: 500, to: 500 })).items.map((item) => item.id), [20])
     assert.deepEqual((await search(db, { query: 'guide' })).items.map((item) => item.id), [10])
-    assert.deepEqual(await getVisits(db, 20), [
-      { id: 205, urlId: 20, visitTime: 400, transition: 'typed' },
-      { id: 204, urlId: 20, visitTime: 200, transition: 'link' },
-    ])
-    assert.deepEqual(await getVisits(db, 20, 1), [{ id: 205, urlId: 20, visitTime: 400, transition: 'typed' }])
   })
 })

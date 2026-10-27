@@ -374,7 +374,6 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
     <pre><span class="c"># request / response</span>
 history.search       { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
 history.searchVisits { query?, url?, from?, to?, cursor?, limit? }        → { items, nextCursor }
-history.getVisits    { urlId, limit? }                                   → VisitItem[]
 history.stats        { month? }                                          → Stats
 history.githubStats  { month? }                                          → GithubStats
 history.githubItems  { month?, owner?, repo?, kind?, cursor?, limit? }   → { items, nextCursor }
@@ -549,7 +548,6 @@ END;</pre>
         </thead>
         <tbody>
           <tr><td><code>history.search</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/search">browser.history.search()</a> — plus <code>cursor</code> / <code>limit</code></td></tr>
-          <tr><td><code>history.getVisits</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/getVisits">browser.history.getVisits()</a></td></tr>
           <tr><td><code>HistoryItem</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/HistoryItem">HistoryItem</a></td></tr>
           <tr><td><code>VisitItem</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/VisitItem">VisitItem</a></td></tr>
           <tr><td><code>transition</code></td><td><a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/history/TransitionType">TransitionType</a></td></tr>

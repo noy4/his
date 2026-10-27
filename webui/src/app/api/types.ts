@@ -32,7 +32,6 @@ export interface HisEvents {
 export interface HisApi {
   search(params: SearchFilter): Promise<SearchPage>
   searchVisits(params: SearchFilter): Promise<SearchVisitsPage>
-  getVisits(urlId: number, limit?: number): Promise<VisitItem[]>
   stats(month?: string): Promise<Stats>
   githubStats(month?: string): Promise<GithubStats>
   githubItems(params: GithubItemsFilter): Promise<SearchPage>

@@ -89,18 +89,6 @@ export async function searchVisits(db: KyselyDb, filter: SearchFilter = {}): Pro
   return paginate(rows.map(toHistoryVisit), limit, (item) => [item.visitTime, item.id])
 }
 
-export async function getVisits(db: KyselyDb, urlId: number, limit?: number): Promise<VisitItem[]> {
-  const query = db
-    .selectFrom('visits')
-    .select(['id', 'url_id', 'visit_time', 'transition'])
-    .where('url_id', '=', urlId)
-    .orderBy('visit_time', 'desc')
-  const rows = limit === undefined
-    ? await query.execute()
-    : await query.limit(clampLimit(limit)).execute()
-  return rows.map(toVisitItem)
-}
-
 // --- helpers ---
 
 function hasFts(query: string): boolean {

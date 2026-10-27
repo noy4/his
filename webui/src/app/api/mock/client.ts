@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, VisitItem, YoutubeItemsFilter, YoutubeStats } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubItemsFilter, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeItemsFilter, YoutubeStats } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -543,11 +543,6 @@ export const mockApi: HisApi = {
 
   async searchVisits(params: SearchFilter): Promise<SearchVisitsPage> {
     return searchVisits(params)
-  },
-
-  async getVisits(urlId: number, limit?: number): Promise<VisitItem[]> {
-    const visits = MOCK_VISITS.get(urlId) ?? []
-    return limit === undefined ? visits : visits.slice(0, limit)
   },
 
   async stats(month?: string): Promise<Stats> {
