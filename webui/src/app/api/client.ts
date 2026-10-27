@@ -17,12 +17,12 @@ export function createApi(): HisApi {
       stats: rpc('history.stats'),
     },
     github: {
-      stats: rpc('history.githubStats'),
-      items: rpc('history.githubItems'),
+      stats: rpc('github.stats'),
+      items: rpc('github.items'),
     },
     youtube: {
-      stats: rpc('history.youtubeStats'),
-      items: rpc('history.youtubeItems'),
+      stats: rpc('youtube.stats'),
+      items: rpc('youtube.items'),
     },
     sources: {
       list: rpc('sources.list'),
