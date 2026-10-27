@@ -1,4 +1,4 @@
-import type { GithubSearchParams, KyselyDb, SearchParams, SyncOptions, YoutubeSearchParams } from '@his/core/node'
+import type { KyselyDb } from '@his/core/node'
 import { github, history, settings, sources, youtube } from '@his/core/node'
 import type { Handler } from './rpc.ts'
 import type { SyncRunner } from './sync-runner.ts'
@@ -9,19 +9,19 @@ export function createHandlers({ db, runner, home }: {
   home: string,
 }): Record<string, Handler> {
   const handlers: Record<string, Handler> = {
-    'history.search': (params) => history.search(db, params as SearchParams),
-    'history.searchVisits': (params) => history.searchVisits(db, params as SearchParams),
+    'history.search': (params) => history.search(db, params),
+    'history.searchVisits': (params) => history.searchVisits(db, params),
     'history.stats': (params) => history.stats(db, params),
 
     'github.stats': (params) => github.stats(db, params),
-    'github.search': (params) => github.search(db, params as GithubSearchParams),
+    'github.search': (params) => github.search(db, params),
 
     'youtube.stats': (params) => youtube.stats(db, params),
-    'youtube.search': (params) => youtube.search(db, params as YoutubeSearchParams),
+    'youtube.search': (params) => youtube.search(db, params),
 
     'sources.list': (params) => sources.list(db, { home, check: params?.check === true }),
 
-    'sync.run': (params) => runner.run(params as SyncOptions),
+    'sync.run': (params) => runner.run(params),
     'sync.status': () => runner.lastRun(),
 
     'settings.get': () => settings.get(db),
