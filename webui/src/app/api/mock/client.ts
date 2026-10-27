@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchFilter, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchFilter, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeSearchFilter, YoutubeStats } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, SourcesListParams, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -297,7 +297,7 @@ function topRecent(items: GithubDayItem[]): GithubDayItem[] {
     .slice(0, DAY_TOP)
 }
 
-function mockGithubSearch(params: GithubSearchFilter): SearchPage {
+function mockGithubSearch(params: GithubSearchParams): SearchPage {
   const owner = params.owner?.toLowerCase()
   const repo = params.repo?.toLowerCase()
   const kind = params.kind ?? 'all'
@@ -310,7 +310,7 @@ function mockGithubSearch(params: GithubSearchFilter): SearchPage {
 
 // --- youtube ---
 
-export function mockYoutubeSearch(params: YoutubeSearchFilter): SearchPage {
+export function mockYoutubeSearch(params: YoutubeSearchParams): SearchPage {
   const kind = params.kind ?? 'all'
   const rows = visibleItems()
     .flatMap((item) => {
@@ -478,7 +478,7 @@ function decodeCursor(cursor: string): { time: number; id: number } | null {
   }
 }
 
-function findVisible(params: SearchFilter): HistoryItem[] {
+function findVisible(params: SearchParams): HistoryItem[] {
   const q = params.query?.trim().toLowerCase() ?? ''
   const from = params.from ?? -Infinity
   const to = params.to ?? Infinity
@@ -506,7 +506,7 @@ function paginate(rows: HistoryItem[], cursorText?: string, limit = DEFAULT_LIMI
   return { items: page, nextCursor }
 }
 
-function searchVisits(params: SearchFilter): SearchVisitsPage {
+function searchVisits(params: SearchParams): SearchVisitsPage {
   const query = params.query?.trim().toLowerCase() ?? ''
   const from = params.from ?? -Infinity
   const to = params.to ?? Infinity
@@ -541,10 +541,10 @@ export const mockApi: HisApi = {
     async stats({ month } = {}): Promise<Stats> {
       return month === undefined ? computeStats() : computeMonthlyStats(month)
     },
-    async search(params: SearchFilter): Promise<SearchPage> {
+    async search(params: SearchParams): Promise<SearchPage> {
       return paginate(findVisible(params), params.cursor, params.limit)
     },
-    async searchVisits(params: SearchFilter): Promise<SearchVisitsPage> {
+    async searchVisits(params: SearchParams): Promise<SearchVisitsPage> {
       return searchVisits(params)
     },
   },
@@ -552,7 +552,7 @@ export const mockApi: HisApi = {
     async stats({ month } = {}): Promise<GithubStats> {
       return computeGithubStats(month)
     },
-    async search(params: GithubSearchFilter): Promise<SearchPage> {
+    async search(params: GithubSearchParams): Promise<SearchPage> {
       return mockGithubSearch(params)
     },
   },
@@ -560,7 +560,7 @@ export const mockApi: HisApi = {
     async stats({ month } = {}): Promise<YoutubeStats> {
       return mockYoutubeStats(month)
     },
-    async search(params: YoutubeSearchFilter): Promise<SearchPage> {
+    async search(params: YoutubeSearchParams): Promise<SearchPage> {
       return mockYoutubeSearch(params)
     },
   },

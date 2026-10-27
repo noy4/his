@@ -1,7 +1,7 @@
 import type { EpochMs, HistoryItem, HistoryVisit } from '../../types.ts'
 import type { Page } from '../../db/query/paging.ts'
 
-export interface SearchFilter {
+export interface SearchParams {
   query?: string
   url?: string
   from?: EpochMs

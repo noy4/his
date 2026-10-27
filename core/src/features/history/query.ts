@@ -1,6 +1,6 @@
 import { sql, type RawBuilder, type SqlBool } from 'kysely'
 import type { EpochMs, HistoryItem, HistoryVisit, Transition, VisitItem } from '../../types.ts'
-import type { SearchFilter, SearchPage, SearchVisitsPage } from './types.ts'
+import type { SearchParams, SearchPage, SearchVisitsPage } from './types.ts'
 import { hiddenExcluded } from '../../db/query/filters.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
 import type { KyselyDb } from '../../db/db.ts'
@@ -32,20 +32,20 @@ interface VisitUrlRow extends VisitRow {
 // --- queries ---
 
 // FTS matching and cursor paging use raw SQL fragments.
-export async function search(db: KyselyDb, filter: SearchFilter = {}): Promise<SearchPage> {
-  const limit = clampLimit(filter.limit)
-  const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
-  const text = filter.query?.trim()
+export async function search(db: KyselyDb, params: SearchParams = {}): Promise<SearchPage> {
+  const limit = clampLimit(params.limit)
+  const cursor = params.cursor === undefined ? null : decodeCursor(params.cursor)
+  const text = params.query?.trim()
   let builder = db
     .selectFrom('urls')
     .selectAll()
     .where(hiddenExcluded)
-  if (filter.url)
-    builder = builder.where('urls.url', '=', filter.url)
-  if (filter.from !== undefined)
-    builder = builder.where('urls.last_visit_time', '>=', filter.from)
-  if (filter.to !== undefined)
-    builder = builder.where('urls.last_visit_time', '<=', filter.to)
+  if (params.url)
+    builder = builder.where('urls.url', '=', params.url)
+  if (params.from !== undefined)
+    builder = builder.where('urls.last_visit_time', '>=', params.from)
+  if (params.to !== undefined)
+    builder = builder.where('urls.last_visit_time', '<=', params.to)
   if (text && hasFts(text))
     builder = builder.where(ftsCondition(text))
   if (text && hasLike(text))
@@ -60,21 +60,21 @@ export async function search(db: KyselyDb, filter: SearchFilter = {}): Promise<S
   return paginate(rows.map(toHistoryItem), limit, (item) => [item.lastVisit, item.id])
 }
 
-export async function searchVisits(db: KyselyDb, filter: SearchFilter = {}): Promise<SearchVisitsPage> {
-  const limit = clampLimit(filter.limit)
-  const cursor = filter.cursor === undefined ? null : decodeCursor(filter.cursor)
-  const text = filter.query?.trim()
+export async function searchVisits(db: KyselyDb, params: SearchParams = {}): Promise<SearchVisitsPage> {
+  const limit = clampLimit(params.limit)
+  const cursor = params.cursor === undefined ? null : decodeCursor(params.cursor)
+  const text = params.query?.trim()
   let builder = db
     .selectFrom('visits')
     .innerJoin('urls', 'urls.id', 'visits.url_id')
     .select(['visits.id', 'visits.url_id', 'visits.visit_time', 'visits.transition', 'urls.url', 'urls.title', 'urls.visit_count'])
     .where(hiddenExcluded)
-  if (filter.url)
-    builder = builder.where('urls.url', '=', filter.url)
-  if (filter.from !== undefined)
-    builder = builder.where('visits.visit_time', '>=', filter.from)
-  if (filter.to !== undefined)
-    builder = builder.where('visits.visit_time', '<=', filter.to)
+  if (params.url)
+    builder = builder.where('urls.url', '=', params.url)
+  if (params.from !== undefined)
+    builder = builder.where('visits.visit_time', '>=', params.from)
+  if (params.to !== undefined)
+    builder = builder.where('visits.visit_time', '<=', params.to)
   if (text && hasFts(text))
     builder = builder.where(ftsCondition(text))
   if (text && hasLike(text))

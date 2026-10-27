@@ -1,14 +1,14 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchFilter, GithubKind, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, RegisteredSource, SearchFilter, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, StatsParams, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeSearchFilter, YoutubeStats, YoutubeVisitKind } from '@his/core'
+import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubKind, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, RegisteredSource, SearchParams, SearchPage, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, StatsParams, SyncLastRun, SyncOptions, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind } from '@his/core'
 
-export type { HistoryItem, HistoryVisit, SearchFilter, SearchPage, SearchVisitsPage }
+export type { HistoryItem, HistoryVisit, SearchParams, SearchPage, SearchVisitsPage }
 export type { SettingsInfo, SettingsPatch, SourceEntry, StatTotals, Stats, StatsParams, Transition, VisitItem }
 export type { SyncLastRun, SyncSummary }
 
 export type SourceProfile = RegisteredSource
 export type SyncRunParams = SyncOptions
 
-export type { GithubDayItem, GithubDayKind, GithubSearchFilter, GithubKind, GithubStats, GithubVisitKind }
-export type { YoutubeSearchFilter, YoutubeStats, YoutubeVisitKind }
+export type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubKind, GithubStats, GithubVisitKind }
+export type { YoutubeSearchParams, YoutubeStats, YoutubeVisitKind }
 
 export interface SourcesListParams {
   /** probe each source and report whether it changed since the last sync */
@@ -23,16 +23,16 @@ export interface HisEvents {
 export interface HisApi {
   history: {
     stats(params?: StatsParams): Promise<Stats>
-    search(params: SearchFilter): Promise<SearchPage>
-    searchVisits(params: SearchFilter): Promise<SearchVisitsPage>
+    search(params: SearchParams): Promise<SearchPage>
+    searchVisits(params: SearchParams): Promise<SearchVisitsPage>
   }
   github: {
     stats(params?: StatsParams): Promise<GithubStats>
-    search(params: GithubSearchFilter): Promise<SearchPage>
+    search(params: GithubSearchParams): Promise<SearchPage>
   }
   youtube: {
     stats(params?: StatsParams): Promise<YoutubeStats>
-    search(params: YoutubeSearchFilter): Promise<SearchPage>
+    search(params: YoutubeSearchParams): Promise<SearchPage>
   }
   sources: {
     list(params?: SourcesListParams): Promise<SourceEntry[]>

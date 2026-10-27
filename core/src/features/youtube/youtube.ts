@@ -1,6 +1,6 @@
 import { matchesYoutubeKind, parseYoutubeUrl } from './parse.ts'
 import { getYoutubeRows, getYoutubeVisitDays } from './youtubeRows.ts'
-import type { YoutubeStats, YoutubeSearchFilter } from './types.ts'
+import type { YoutubeStats, YoutubeSearchParams } from './types.ts'
 import type { StatsParams } from '../history/types.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
@@ -99,14 +99,14 @@ async function youtubeByDay(db: KyselyDb, month?: string): Promise<YoutubeStats[
 }
 
 /** Paged YouTube history items with a kind filter (month optional). */
-export async function youtubeSearch(db: KyselyDb, filter: YoutubeSearchFilter = {}): Promise<Page<HistoryItem>> {
-  const kind = filter.kind ?? 'all'
-  const limit = clampLimit(filter.limit)
-  const cursor = filter.cursor === undefined
+export async function youtubeSearch(db: KyselyDb, params: YoutubeSearchParams = {}): Promise<Page<HistoryItem>> {
+  const kind = params.kind ?? 'all'
+  const limit = clampLimit(params.limit)
+  const cursor = params.cursor === undefined
     ? null
-    : decodeCursor(filter.cursor)
+    : decodeCursor(params.cursor)
 
-  const rows = (await getYoutubeRows(db, filter.month))
+  const rows = (await getYoutubeRows(db, params.month))
     .filter(({ urlInfo }) => matchesYoutubeKind(urlInfo, kind))
     .map(({ item }) => item)
   const rowsAfterCursor = cursor === null
