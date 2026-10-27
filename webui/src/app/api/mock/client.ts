@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, SourceProfile, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -385,7 +385,7 @@ function computeYoutubeByDay(month?: string): YoutubeStats['byDay'] {
 
 // configured sync targets; empty means nothing syncs (explicit targets override)
 let syncTargets: string[] = []
-let sources: SourceProfile[] = MOCK_SOURCES.map((s) => ({ ...s }))
+let sources: RegisteredSource[] = MOCK_SOURCES.map((s) => ({ ...s }))
 let inRun = false
 let lastRunRecord: SyncLastRun | null = null
 

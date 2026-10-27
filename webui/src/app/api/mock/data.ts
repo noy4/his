@@ -1,4 +1,4 @@
-import type { HistoryItem, SourceProfile, Transition, VisitItem } from '../types'
+import type { HistoryItem, RegisteredSource, Transition, VisitItem } from '../types'
 
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
@@ -249,7 +249,7 @@ export const MOCK_DISCOVERED: { browser: string; profile: string; sourcePath: st
   { browser: 'takeout', profile: 'History-2026-09-30', sourcePath: '~/.his/takeout/History-2026-09-30.json' },
 ]
 
-export const MOCK_SOURCES: SourceProfile[] = [
+export const MOCK_SOURCES: RegisteredSource[] = [
   {
     id: 1,
     browser: 'brave',

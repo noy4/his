@@ -1,7 +1,7 @@
 import type { GithubSearchParams, GithubStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncLastRun, SyncOptions, SyncSummary, YoutubeSearchParams, YoutubeStats } from '@his/core'
 
 export type {
-  GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource as SourceProfile, Stats, StatsParams, StatTotals, SyncLastRun, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
+  GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource, Stats, StatsParams, StatTotals, SyncLastRun, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
 } from '@his/core'
 
 export type SyncRunParams = SyncOptions
