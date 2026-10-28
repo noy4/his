@@ -138,8 +138,12 @@ export class HisApp {
   // --- serve controller ---
 
   #spawnServe(): ChildProcess {
-    const cliEntry = process.env.HIS_CLI ?? path.join(import.meta.dirname, '../../cli/bin.ts')
-    const proc = spawn('node', [cliEntry, 'serve'], { stdio: ['ignore', 'ignore', 'pipe'], env: process.env })
+    const packaged = this.app.isPackaged
+    const cliEntry = process.env.HIS_CLI ?? (packaged
+      ? path.join(process.resourcesPath, 'cli', 'dist', 'bin.mjs')
+      : path.join(import.meta.dirname, '../../cli/bin.ts'))
+    const env = packaged ? { ...process.env, ELECTRON_RUN_AS_NODE: '1' } : process.env
+    const proc = spawn(packaged ? process.execPath : 'node', [cliEntry, 'serve'], { stdio: ['ignore', 'ignore', 'pipe'], env })
     const onEnd = () => {
       if (this.#serveProc === proc) this.#serveProc = undefined
     }

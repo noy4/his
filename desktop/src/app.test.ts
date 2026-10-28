@@ -78,6 +78,19 @@ test('terminates a process that times out', async () => {
   assert.fail('timed-out process is still alive')
 })
 
+test('packaged server uses the bundled runtime without Node on PATH', async () => {
+  const cli = path.join(dir, 'packaged.cjs')
+  fs.writeFileSync(cli, `if (process.env.ELECTRON_RUN_AS_NODE !== '1') process.exit(1); require('node:fs').writeFileSync(require('node:path').join(process.env.HIS_HOME, 'state.json'), JSON.stringify({ pid: process.pid, port: 4477, url: 'http://127.0.0.1:4477', db: 'test.db' })); setInterval(() => {}, 1000)`)
+  process.env.HIS_CLI = cli
+  process.env.PATH = dir
+  const app = new HisApp({ isPackaged: true } as App)
+  const state = await app.ensureServe()
+  assert.notEqual(state.pid, process.pid)
+  process.kill(state.pid, 'SIGTERM')
+  fs.rmSync(path.join(dir, 'state.json'))
+  process.env.PATH = originalEnv.PATH
+})
+
 test('openWindow reports a server startup failure', async () => {
   process.env.PATH = dir
   errors.length = 0
