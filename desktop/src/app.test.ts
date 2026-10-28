@@ -207,7 +207,7 @@ test('Sync Now reports target errors and unexpected disconnects', async () => {
     response = null
     sync()
     await new Promise((resolve) => setTimeout(resolve, 0))
-    assert.equal(errors[1], '/rpc disconnected')
+    assert.equal(errors[1], 'RPC connection closed')
   } finally {
     globalThis.WebSocket = originalWebSocket
     fs.rmSync(path.join(dir, 'state.json'))
