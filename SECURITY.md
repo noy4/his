@@ -5,7 +5,7 @@
 his is a **local-first, single-user** tool. It has no accounts and no login — its
 security model is *network isolation* plus two gates on the RPC socket: `his serve`
 binds to `127.0.0.1` only, so nothing outside your machine can reach it, and the
-socket accepts only an allow-listed `Origin` and the per-run token. It also holds
+socket requires the per-run token and checks `Origin` when present. It also holds
 sensitive data (your full browsing history) and can trigger side effects
 (snapshotting browser profiles, writing the archive), so the notes below matter
 if any of that changes.
@@ -38,8 +38,11 @@ if any of that changes.
 
 - **No user accounts.** Intentional for a loopback single-user tool. The Origin
   gate and token guard the *socket*, not *people*: a hostile page is blocked and
-  other users cannot read `state.json`, but a process running as your own user can
-  still read the token and connect.
+  other users cannot read an owner-only `state.json`, but any local user can obtain
+  the token from the WebUI page served on loopback and connect to RPC. They can
+  therefore read history and trigger sync. Isolation from other local users is out
+  of scope for the first release and may be considered later. A process running as
+  your own user can also read the token and connect.
 - **TLS / remote exposure is out of scope.** See *Exposing beyond loopback* below.
 
 ### Known, accepted behaviors (not vulnerabilities)
@@ -51,7 +54,7 @@ if any of that changes.
   archive is included.
 - **Everything running as your user is trusted.** Any process running as your user
   can reach the socket and read `~/.his/state.json` (which holds the token); mode
-  `0600` only stops *other* users. The desktop app spawns the server as
+  `0600` restricts access to that file, not to the loopback WebUI. The desktop app spawns the server as
   `node <cli>/bin.ts serve` and honours `HIS_CLI`, so treat your environment as
   trusted input.
 

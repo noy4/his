@@ -58,7 +58,7 @@
         <p>Publish a signed and notarized DMG on GitHub Releases. The installed app must work without a repository checkout or system Node.</p>
       </div>
     </div>
-    <p class="section-desc">Windows, Linux, an independent download server and automatic updates are outside the proposed first release. Manual reinstall is the initial update path.</p>
+    <p class="section-desc">Windows, Linux, an independent download server, automatic updates and isolation from other local users are outside the proposed first release. Manual reinstall is the initial update path.</p>
   </section>
 
   <section>
@@ -131,7 +131,7 @@
           <div class="step-head"><span class="step-title"><iconify-icon icon="mdi:shield-check-outline" style="color:var(--green)"></iconify-icon>Phase 4 — Safety &amp; reliability</span><span class="step-meta">P0 · hardening</span></div>
           <div class="step-body">Browser history is sensitive. Verify behavior at process, user and data boundaries.</div>
           <div class="tasks">
-            <div class="task"><iconify-icon icon="mdi:lock-outline"></iconify-icon><div class="task-text"><div class="task-title">Local access</div><div class="task-desc">Review loopback token exposure and Electron navigation against the chosen threat model</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:lock-outline"></iconify-icon><div class="task-text"><div class="task-title">Local access</div><div class="task-desc">Review hostile web origins and Electron navigation · isolation from other local users deferred</div></div></div>
             <div class="task"><iconify-icon icon="mdi:database-lock-outline"></iconify-icon><div class="task-text"><div class="task-title">Data protection</div><div class="task-desc">Set and test permissions · document snapshots, deletion, backup and favicon requests</div></div></div>
             <div class="task done"><iconify-icon icon="mdi:application-cog-outline"></iconify-icon><div class="task-text"><div class="task-title">Desktop process ownership</div><div class="task-desc">Single instance · stop only the server started by Desktop · CLI uses Ctrl+C</div></div></div>
             <div class="task"><iconify-icon icon="mdi:timer-sand"></iconify-icon><div class="task-text"><div class="task-title">Concurrent startup</div><div class="task-desc">Startup races and stale state · deferred</div></div></div>
@@ -184,7 +184,7 @@
         <p><a href="https://download.deepseek.com/dsh-desk/feeds/mac-arm64/nightly-mac.yml" target="_blank" rel="noopener noreferrer">macOS nightly update feed</a> · published metadata references a ZIP; the installer itself was not tested.</p>
       </div>
     </div>
-    <p class="section-desc">A dedicated update feed and automatic updates can be considered after the first stable release. If added, publish binaries before update metadata and verify checksums.</p>
+    <p class="section-desc">A dedicated update feed, automatic updates and isolation from other local users can be considered after the first stable release. If adding updates, publish binaries before update metadata and verify checksums.</p>
   </section>
 
   <footer>
