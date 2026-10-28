@@ -89,6 +89,8 @@ export type UnregisteredSourceEntry = {
 
 // one sync execution — returned by runSync / sync.run RPC
 export interface SyncSummary {
+  startedAt: EpochMs
+  finishedAt: EpochMs
   attempted: number
   failures: number
   skipped: number
@@ -104,16 +106,4 @@ export interface SyncOptions {
   targets?: string[]
   /** bypass the change gate and rescan every source visit (dedup; no deletions) */
   rescan?: boolean
-}
-
-// the runner's record of the most recent sync execution — sync.status RPC
-export interface SyncLastRun {
-  startedAt: EpochMs
-  finishedAt: EpochMs
-  ok: boolean
-  error: string | null
-  attempted: number
-  failures: number
-  insertedVisits: number
-  touchedUrls: number
 }

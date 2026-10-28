@@ -61,7 +61,7 @@ test('rejects RPC errors and malformed responses', async () => {
 test('rejects disconnects and timeouts', async (t) => {
   let result = callRpc('ws://localhost/rpc', 'example.run')
   sockets[0]!.dispatchEvent(new Event('close'))
-  await assert.rejects(result, /\/rpc disconnected/)
+  await assert.rejects(result, /RPC connection closed/)
   assert.equal(sockets[0]!.closed, true)
 
   t.mock.timers.enable({ apis: ['setTimeout'] })

@@ -6,6 +6,7 @@ import type { SyncSummary } from '@/app/api'
 import { sourceKey } from '@his/core'
 import { cn } from 'cn'
 import { buttonPrimary } from '@/components/ui/button'
+import { dateLabel, relativeAgo, timeLabel } from '@/lib/date'
 import { type ComponentProps, type ReactNode } from 'react'
 
 export function Sources({ app }: { app: AppModel }) {
@@ -21,7 +22,7 @@ export function Sources({ app }: { app: AppModel }) {
       <SourcesHeader>
         <SourcesDescription text="Pick sources to sync automatically." />
         <SourcesStatus>
-          <RunSummary run={model.lastSync.value} />
+          <LastSync lastSync={model.lastSync.value} />
           {notice !== null && <SourcesNotice text={notice} />}
         </SourcesStatus>
         <SyncButton
@@ -31,7 +32,7 @@ export function Sources({ app }: { app: AppModel }) {
           {enabledCount > 0 ? `Sync now (${enabledCount})` : 'Sync now'}
         </SyncButton>
       </SourcesHeader>
-      <SourcesErrors run={model.lastSync.value} error={model.error.value} />
+      <SourcesErrors error={model.error.value} />
 
       <SourcesBody>
         {!model.loaded.value
@@ -92,21 +93,28 @@ function SyncButton(props: ComponentProps<'button'>) {
   )
 }
 
-function RunSummary({ run }: { run: SyncSummary | null }) {
-  if (run === null) return null
-  const synced = run.attempted - run.failures
-  const text = `${synced}/${run.attempted} synced · ${run.skipped} skipped · +${run.insertedVisits.toLocaleString()} visits`
+function LastSync({ lastSync }: { lastSync: SyncSummary | null }) {
+  if (lastSync === null) return null
+  const text = `Last sync: ${dateLabel(lastSync.finishedAt)} ${timeLabel(lastSync.finishedAt)}`
   return (
-    <span title={text} className="min-w-0 truncate font-mono text-xs text-muted">{text}</span>
+    <time
+      dateTime={new Date(lastSync.finishedAt).toISOString()}
+      title={text}
+      className="min-w-0 truncate font-mono text-xs text-muted"
+    >
+      Last sync: {relativeAgo(lastSync.finishedAt)}
+    </time>
   )
 }
 
-function SourcesErrors({ run, error }: { run: SyncSummary | null; error: string | null }) {
-  const errors = [...(run?.errors ?? []), ...(error === null ? [] : [error])]
-  if (errors.length === 0) return null
+function SourcesErrors({ error }: { error: string | null }) {
+  if (error === null) return null
   return (
-    <div role="alert" className="max-h-40 shrink-0 space-y-1 overflow-y-auto px-4 pb-2 font-mono text-xs text-warn">
-      {errors.map((message, index) => <p key={index} className="whitespace-pre-wrap wrap-break-word">{message}</p>)}
+    <div
+      role="alert"
+      className="max-h-40 shrink-0 space-y-1 overflow-y-auto px-4 pb-2 font-mono text-xs text-warn"
+    >
+      <p className="whitespace-pre-wrap wrap-break-word">{error}</p>
     </div>
   )
 }

@@ -1,7 +1,7 @@
-import type { GithubSearchParams, GithubStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncLastRun, SyncOptions, SyncSummary, YoutubeSearchParams, YoutubeStats } from '@his/core'
+import type { GithubSearchParams, GithubStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncOptions, SyncSummary, YoutubeSearchParams, YoutubeStats } from '@his/core'
 
 export type {
-  GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource, Stats, StatsParams, StatTotals, SyncLastRun, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
+  GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource, Stats, StatsParams, StatTotals, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
 } from '@his/core'
 
 export type SyncRunParams = SyncOptions
@@ -30,7 +30,7 @@ export interface HisApi {
   }
   sync: {
     run(params: SyncRunParams): Promise<SyncSummary>
-    status(): Promise<SyncLastRun | null>
+    status(): Promise<SyncSummary | null>
   }
   settings: {
     get(): Promise<SettingsInfo>

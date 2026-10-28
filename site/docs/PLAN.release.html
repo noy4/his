@@ -132,11 +132,12 @@
           <div class="step-body">Browser history is sensitive. Verify behavior at process, user and data boundaries.</div>
           <div class="tasks">
             <div class="task"><iconify-icon icon="mdi:lock-outline"></iconify-icon><div class="task-text"><div class="task-title">Local access</div><div class="task-desc">Review hostile web origins and Electron navigation · isolation from other local users deferred</div></div></div>
-            <div class="task"><iconify-icon icon="mdi:database-lock-outline"></iconify-icon><div class="task-text"><div class="task-title">Data protection</div><div class="task-desc">Set and test permissions · document snapshots, deletion, backup and favicon requests</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:database-lock-outline"></iconify-icon><div class="task-text"><div class="task-title">Data protection</div><div class="task-desc">Additional permissions and documentation for snapshots, deletion, backup and favicon requests · deferred</div></div></div>
             <div class="task done"><iconify-icon icon="mdi:application-cog-outline"></iconify-icon><div class="task-text"><div class="task-title">Desktop process ownership</div><div class="task-desc">Single instance · stop only the server started by Desktop · CLI uses Ctrl+C</div></div></div>
             <div class="task"><iconify-icon icon="mdi:timer-sand"></iconify-icon><div class="task-text"><div class="task-title">Concurrent startup</div><div class="task-desc">Startup races and stale state · deferred</div></div></div>
             <div class="task done"><iconify-icon icon="mdi:sync-alert"></iconify-icon><div class="task-text"><div class="task-title">Manual sync errors</div><div class="task-desc">Show sync failure details in Desktop and WebUI</div></div></div>
-            <div class="task"><iconify-icon icon="mdi:sync-alert"></iconify-icon><div class="task-text"><div class="task-title">Actionable failures</div><div class="task-desc">Background sync visibility · explain Safari permission denial and retry</div></div></div>
+            <div class="task done"><iconify-icon icon="mdi:sync-alert"></iconify-icon><div class="task-text"><div class="task-title">Background sync errors</div><div class="task-desc">Show the latest failed sync in Sources · refresh while the page is open</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:sync-alert"></iconify-icon><div class="task-text"><div class="task-title">Actionable failures</div><div class="task-desc">Explain Safari permission denial and retry</div></div></div>
           </div>
         </div>
       </div>

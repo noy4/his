@@ -1,4 +1,4 @@
-import type { EpochMs, SyncLastRun, SyncOptions, SyncSummary } from '@his/core/node'
+import type { SyncOptions, SyncSummary } from '@his/core/node'
 import { runSync } from '@his/core/node'
 
 const SYNC_INTERVAL = 6 * 60 * 60 * 1000
@@ -11,7 +11,7 @@ export interface SyncRunnerOptions {
 export class SyncRunner {
   private readonly home: string
   private running = false
-  private last: SyncLastRun | null = null
+  lastSummary: SyncSummary | null = null
 
   constructor(options: SyncRunnerOptions) {
     this.home = options.home
@@ -23,33 +23,26 @@ export class SyncRunner {
     this.running = true
     const startedAt = Date.now()
     try {
-      const summary = await runSync(this.home, options)
-      this.recordLast(startedAt, {
-        ok: summary.failures === 0,
-        error: summary.errors.length === 0 ? null : summary.errors.join(' | '),
-        attempted: summary.attempted,
-        failures: summary.failures,
-        insertedVisits: summary.insertedVisits,
-        touchedUrls: summary.touchedUrls,
-      })
-      return summary
+      this.lastSummary = await runSync(this.home, options)
+      return this.lastSummary
     } catch (error) {
-      // setup can reject (db open, migrations) — record it, then surface
-      this.recordLast(startedAt, {
-        ok: false,
-        error: error instanceof Error ? error.message : String(error),
+      this.lastSummary = {
+        startedAt,
+        finishedAt: Date.now(),
+        errors: [error instanceof Error ? error.message : String(error)],
         attempted: 0,
         failures: 0,
+        skipped: 0,
         insertedVisits: 0,
         touchedUrls: 0,
-      })
+      }
       throw error
     } finally {
       this.running = false
     }
   }
 
-  // fire-and-forget; skips if busy, errors go to lastRun()
+  // fire-and-forget; skips if busy, errors go to lastSummary
   trigger(): void {
     if (this.running) return
     void this.run().catch(() => { })
@@ -60,17 +53,5 @@ export class SyncRunner {
     const timer = setInterval(() => this.trigger(), interval)
     timer.unref()
     return () => clearInterval(timer)
-  }
-
-  isRunning(): boolean {
-    return this.running
-  }
-
-  lastRun(): SyncLastRun | null {
-    return this.last
-  }
-
-  private recordLast(startedAt: EpochMs, result: Omit<SyncLastRun, 'startedAt' | 'finishedAt'>): void {
-    this.last = { startedAt, finishedAt: Date.now(), ...result }
   }
 }

@@ -22,7 +22,7 @@ export function createHandlers({ db, runner, home }: {
     'sources.list': () => sources.list(db, { home }),
 
     'sync.run': (params) => runner.run(params),
-    'sync.status': () => runner.lastRun(),
+    'sync.status': () => runner.lastSummary,
 
     'settings.get': () => settings.get(db),
     'settings.set': (params) => settings.set(db, params),

@@ -380,7 +380,7 @@ youtube.stats        { month? }                                          → You
 youtube.search       { month?, kind?, cursor?, limit? }                  → { items, nextCursor }
 sources.list         { check? }                                          → SourceEntry[]    <span class="c"># discovered ∪ registered · check probes source files</span>
 sync.run             { targets?, rescan? }                               → SyncSummary      <span class="c"># targets omitted → settings</span>
-sync.status                                                              → LastRun | null
+sync.status                                                              → SyncSummary | null <span class="c"># latest server run; timestamps and errors included</span>
 settings.get                                                             → SettingsInfo     <span class="c"># { hidden_patterns, hidden_url_count, sync_targets }</span>
 settings.set         { hidden_patterns?, sync_targets? }                 → SettingsInfo</pre>
 

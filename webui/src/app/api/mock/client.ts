@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncLastRun, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -387,7 +387,7 @@ function computeYoutubeByDay(month?: string): YoutubeStats['byDay'] {
 let syncTargets: string[] = []
 let sources: RegisteredSource[] = MOCK_SOURCES.map((s) => ({ ...s }))
 let inRun = false
-let lastRunRecord: SyncLastRun | null = null
+let lastRunRecord: SyncSummary | null = null
 
 // explicit targets win, otherwise the configured targets
 function wantedKeys(params: SyncRunParams): Set<string> {
@@ -448,17 +448,9 @@ async function syncRun(params: SyncRunParams): Promise<SyncSummary> {
       inserted += bump
     }
     const synced = targets.length - skipped
-    lastRunRecord = {
-      startedAt,
-      finishedAt: Date.now(),
-      ok: true,
-      error: null,
-      attempted: targets.length,
-      failures: 0,
-      insertedVisits: inserted,
-      touchedUrls: synced,
-    }
-    return { attempted: targets.length, failures: 0, skipped, insertedVisits: inserted, touchedUrls: synced, errors: [] }
+    const summary: SyncSummary = { startedAt, finishedAt: Date.now(), attempted: targets.length, failures: 0, skipped, insertedVisits: inserted, touchedUrls: synced, errors: [] }
+    lastRunRecord = summary
+    return summary
   } finally {
     inRun = false
   }
@@ -571,7 +563,7 @@ export const mockApi: HisApi = {
   },
   sync: {
     run: (params: SyncRunParams) => syncRun(params),
-    async status(): Promise<SyncLastRun | null> {
+    async status(): Promise<SyncSummary | null> {
       return lastRunRecord === null ? null : { ...lastRunRecord }
     },
   },

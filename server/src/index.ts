@@ -85,7 +85,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   process.on('SIGTERM', shutdown)
 
   // Startup catch-up — async so serve returns early; the 6h interval
-  // retries failures (which land on lastRun()).
+  // retries failures (which land on lastSummary).
   runner.trigger()
   const stopSchedule = runner.schedule()
 

@@ -183,7 +183,10 @@ test('Sync Now reports target errors and unexpected disconnects', async () => {
     pid: process.pid, port: 4477, url: 'http://127.0.0.1:4477', db: 'test.db', token: 'test',
   }))
   const originalWebSocket = globalThis.WebSocket
-  let response: object | null = { id: 1, result: { failures: 1, errors: ['Safari: Permission denied'] } }
+  let response: object | null = { id: 1, result: {
+    startedAt: 1, finishedAt: 2, attempted: 1, failures: 1, skipped: 0,
+    insertedVisits: 0, touchedUrls: 0, errors: ['Safari: Permission denied'],
+  } }
   class Socket extends EventTarget {
     constructor() {
       super()

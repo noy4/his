@@ -16,15 +16,16 @@ export async function runSync(
   hooks: SyncHooks = {},
 ): Promise<SyncSummary> {
   const db = await initDb(historyDbPath(home))
+  const summary = {
+    startedAt: Date.now(),
+    attempted: 0,
+    failures: 0,
+    skipped: 0,
+    insertedVisits: 0,
+    touchedUrls: 0,
+    errors: [] as string[],
+  }
   try {
-    const summary: SyncSummary = {
-      attempted: 0,
-      failures: 0,
-      skipped: 0,
-      insertedVisits: 0,
-      touchedUrls: 0,
-      errors: [],
-    }
     const targets = options.targets !== undefined
       ? resolveTargets(home, options.targets)
       : await resolveConfiguredTargets(db, home)
@@ -48,8 +49,8 @@ export async function runSync(
           break
       }
     }
-    return summary
   } finally {
     await db.destroy()
   }
+  return { ...summary, finishedAt: Date.now() }
 }
