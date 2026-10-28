@@ -14,6 +14,7 @@
   ],
   "scripts": {
     "build": "pnpm -C ../webui run build && node build.mjs",
+    "test:pack": "pnpm run build && node --test test/pack.test.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "his": "node bin.ts"
