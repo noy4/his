@@ -4,21 +4,27 @@
   "version": "0.0.0",
   "type": "module",
   "bin": {
-    "his": "./bin.ts"
+    "his": "./dist/bin.mjs"
   },
+  "engines": {
+    "node": ">=22.22.3"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "pnpm -C ../webui run build && node build.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "his": "node bin.ts"
   },
-  "dependencies": {
+  "devDependencies": {
     "@his/core": "workspace:*",
     "@his/server": "workspace:*",
-    "cac": "^7.0.0"
-  },
-  "devDependencies": {
     "@types/node": "^24.13.3",
+    "cac": "^7.0.0",
     "oxlint": "^1.81.0",
+    "tsdown": "^0.23.2",
     "typescript": "~6.0.2"
   }
 }
