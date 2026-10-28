@@ -62,6 +62,10 @@ if any of that changes.
 
 No releases yet (version `0.0.0`, work in progress). Fixes land on `main`.
 
+Planned first release: the CLI as `@noy4/his` on npm (Node `>=22.22.3`) and an
+unsigned desktop DMG for macOS 12+ on Apple silicon (arm64) only. The app is not
+notarized, so macOS Gatekeeper requires a right-click-open on first launch.
+
 ## Reporting a vulnerability
 
 Please report privately — do not open a public issue.

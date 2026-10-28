@@ -24,6 +24,7 @@ try {
   const paths = await packager({
     dir: app,
     name: 'his',
+    appBundleId: 'com.noy4.his',
     platform: 'darwin',
     arch: process.arch,
     electronVersion: version,
