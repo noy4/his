@@ -73,11 +73,15 @@ export class SourcesModel {
   async #sync(keys: string[]): Promise<void> {
     if (this.running.value || keys.length === 0) return
     this.running.value = true
+    this.error.value = null
+    this.lastSync.value = null
     try {
       this.lastSync.value = await this.api.sync.run({ targets: keys })
-      await this.reload()
-    } catch {
-      // sync failures surface through sync.status once wired
+      await this.reload().catch(() => {
+        this.error.value = 'Could not refresh sources'
+      })
+    } catch (error) {
+      this.error.value = error instanceof Error ? error.message : String(error)
     } finally {
       this.running.value = false
     }

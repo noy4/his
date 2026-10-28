@@ -14,8 +14,7 @@ export function Sources({ app }: { app: AppModel }) {
   const enabled = model.enabled.value
   const enabledCount = enabled.size
   const running = model.running.value
-  const error = model.error.value
-  const notice = error ?? (entries.length > 0 && enabledCount === 0 ? 'no sync targets selected' : null)
+  const notice = entries.length > 0 && enabledCount === 0 ? 'no sync targets selected' : null
 
   return (
     <SourcesRoot>
@@ -32,6 +31,7 @@ export function Sources({ app }: { app: AppModel }) {
           {enabledCount > 0 ? `Sync now (${enabledCount})` : 'Sync now'}
         </SyncButton>
       </SourcesHeader>
+      <SourcesErrors run={model.lastSync.value} error={model.error.value} />
 
       <SourcesBody>
         {!model.loaded.value
@@ -98,6 +98,16 @@ function RunSummary({ run }: { run: SyncSummary | null }) {
   const text = `${synced}/${run.attempted} synced · ${run.skipped} skipped · +${run.insertedVisits.toLocaleString()} visits`
   return (
     <span title={text} className="min-w-0 truncate font-mono text-xs text-muted">{text}</span>
+  )
+}
+
+function SourcesErrors({ run, error }: { run: SyncSummary | null; error: string | null }) {
+  const errors = [...(run?.errors ?? []), ...(error === null ? [] : [error])]
+  if (errors.length === 0) return null
+  return (
+    <div role="alert" className="max-h-40 shrink-0 space-y-1 overflow-y-auto px-4 pb-2 font-mono text-xs text-warn">
+      {errors.map((message, index) => <p key={index} className="whitespace-pre-wrap wrap-break-word">{message}</p>)}
+    </div>
   )
 }
 

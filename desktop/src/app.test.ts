@@ -177,3 +177,39 @@ test('start and Sync Now report startup failures', async () => {
   assert.match(errors[1]!, /ENOENT/)
   process.env.PATH = originalEnv.PATH
 })
+
+test('Sync Now reports target errors and unexpected disconnects', async () => {
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({
+    pid: process.pid, port: 4477, url: 'http://127.0.0.1:4477', db: 'test.db', token: 'test',
+  }))
+  const originalWebSocket = globalThis.WebSocket
+  let response: object | null = { id: 1, result: { failures: 1, errors: ['Safari: Permission denied'] } }
+  class Socket extends EventTarget {
+    constructor() {
+      super()
+      queueMicrotask(() => this.dispatchEvent(new Event('open')))
+    }
+    send(): void {
+      queueMicrotask(() => this.dispatchEvent(response === null
+        ? new Event('close')
+        : new MessageEvent('message', { data: JSON.stringify(response) })))
+    }
+    close(): void { this.dispatchEvent(new Event('close')) }
+  }
+  globalThis.WebSocket = Socket as unknown as typeof WebSocket
+  try {
+    errors.length = 0
+    new HisApp({} as App).start()
+    const sync = menu.find((item) => item.label === 'Sync Now')!.click!
+    sync()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    assert.deepEqual(errors, ['Safari: Permission denied'])
+    response = null
+    sync()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    assert.equal(errors[1], '/rpc disconnected')
+  } finally {
+    globalThis.WebSocket = originalWebSocket
+    fs.rmSync(path.join(dir, 'state.json'))
+  }
+})

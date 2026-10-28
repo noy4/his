@@ -1,5 +1,6 @@
 import { Menu, Tray, nativeImage } from 'electron'
 import path from 'node:path'
+import type { SyncSummary } from '@his/core'
 import type { HisApp } from './app.ts'
 
 // Menubar tray: Sync Now (RPC), Open, Quit his. HisApp owns the instance.
@@ -53,21 +54,24 @@ async function runSyncRpc(wsUrl: string): Promise<void> {
       ws.send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'sync.run' }))
     })
     ws.addEventListener('message', (event) => {
-      let message: { id?: number; error?: { message?: string } }
+      let message: { id?: number; error?: { message?: string }; result?: SyncSummary } | null
       try {
         message = JSON.parse(String(event.data))
       } catch {
         return
       }
+      if (message === null || message.id !== 1) return
+      clearTimeout(timeout)
       if (message.error !== undefined) {
-        clearTimeout(timeout)
-        ws.close()
         reject(new Error(message.error.message))
-      } else if (message.id === 1) {
-        clearTimeout(timeout)
-        ws.close()
+      } else if (!message.result) {
+        reject(new Error('Invalid sync response'))
+      } else if (message.result.failures) {
+        reject(new Error(message.result.errors.join('\n') || 'Sync failed'))
+      } else {
         resolve()
       }
+      ws.close()
     })
     ws.addEventListener('error', () => {
       clearTimeout(timeout)
@@ -75,7 +79,7 @@ async function runSyncRpc(wsUrl: string): Promise<void> {
     })
     ws.addEventListener('close', () => {
       clearTimeout(timeout)
-      resolve()
+      reject(new Error('/rpc disconnected'))
     })
   })
 }
