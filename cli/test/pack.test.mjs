@@ -54,13 +54,13 @@ test('packed CLI works outside the workspace', { timeout: 60_000 }, async () => 
       server.once('error', (error) => { clearTimeout(timer); reject(error) })
       server.once('exit', (code) => { clearTimeout(timer); reject(new Error(`server exited ${code}: ${output}`)) })
     })
-    // check webui and stop
+    // check webui and stop the server
     const response = await fetch(url)
     assert.equal(response.status, 200)
     assert.match(await response.text(), /<div id="root">/)
     assert.equal(JSON.parse(run('status')).url, url)
     const exited = once(server, 'exit')
-    run('stop')
+    server.kill('SIGINT')
     const [code] = await Promise.race([
       exited,
       new Promise((_, reject) => {

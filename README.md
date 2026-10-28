@@ -41,7 +41,6 @@ his sync --target chrome          # sync Chrome once
 his sync                          # sync selected sources
 his query "sqlite"                # search the archive as JSON
 his status                        # show the running server
-his stop                          # stop the server
 ```
 
 Data is stored in `~/.his` (override with `--home` or `HIS_HOME`).

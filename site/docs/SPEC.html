@@ -122,7 +122,7 @@
         ├── sync.ts               <span class="c"># sync command</span>
         ├── query.ts              <span class="c"># query command</span>
         ├── serve.ts              <span class="c"># serve command · delegates to @his/server</span>
-        └── status.ts             <span class="c"># status · stop commands</span>
+        └── status.ts             <span class="c"># status command</span>
 🔌 server/                        <span class="c"># @his/server — transport over core</span>
     ├── package.json
     └── src/
@@ -346,7 +346,6 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
           <tr><td><code>serve</code></td><td>Foreground: HTTP + RPC + 6h sync. <code>--port &lt;n&gt;</code> (default 4477) · <code>--open</code></td></tr>
           <tr><td><code>query [text]</code></td><td>Read-only search → JSON. <code>--url</code> · <code>--from</code> · <code>--to</code> · <code>--limit</code></td></tr>
           <tr><td><code>status</code></td><td>Print running instance (exit 1 if none)</td></tr>
-          <tr><td><code>stop</code></td><td>Stop the running instance</td></tr>
           <tr><td><code>--home &lt;dir&gt;</code></td><td>Archive home (default <code>~/.his</code>, env <code>HIS_HOME</code>)</td></tr>
           <tr><td><code>-h</code> / <code>-v</code></td><td>Help / version</td></tr>
         </tbody>

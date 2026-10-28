@@ -51,7 +51,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
       db: historyDbPath(home),
       token,
     }
-    writeState(home, instance)
   } catch (error) {
     await db.destroy()
     throw error
@@ -66,6 +65,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   const { promise: done, resolve: finish } = Promise.withResolvers<void>()
 
   let closing = false
+  let published = false
   const shutdown = (): void => {
     if (closing) return
     closing = true
@@ -76,7 +76,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     server.closeAllConnections()
     server.close(() => {
       db.destroy().finally(() => {
-        clearState(home)
+        if (published) clearState(home)
         finish()
       })
     })
@@ -88,6 +88,15 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   // retries failures (which land on lastRun()).
   runner.trigger()
   const stopSchedule = runner.schedule()
+
+  try {
+    writeState(home, instance)
+    published = true
+  } catch (error) {
+    shutdown()
+    await done
+    throw error
+  }
 
   if (options.open === true) openUrl(instance.url)
 
@@ -103,7 +112,11 @@ function allowedOrigins(port: number): string[] {
 async function bind(server: http.Server, startPort: number): Promise<number> {
   for (let offset = 0; offset < PORT_ATTEMPTS; offset += 1) {
     const port = startPort + offset
-    if (await tryListen(server, port)) return port
+    if (await tryListen(server, port)) {
+      const address = server.address()
+      if (address !== null && typeof address !== 'string') return address.port
+      throw new Error('server address unavailable')
+    }
   }
   throw new Error(`no free port in ${startPort}..${startPort + PORT_ATTEMPTS - 1}`)
 }

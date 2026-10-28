@@ -4,7 +4,7 @@ import pkg from './package.json' with { type: 'json' }
 import { withCtx } from './src/context.ts'
 import { query } from './src/query.ts'
 import { serveCommand } from './src/serve.ts'
-import { status, stop } from './src/status.ts'
+import { status } from './src/status.ts'
 import { sync } from './src/sync.ts'
 
 const cli = cac('his')
@@ -37,10 +37,6 @@ cli
 cli
   .command('status', 'print the running instance (url + archive)')
   .action(withCtx((ctx) => status(ctx)))
-
-cli
-  .command('stop', 'SIGTERM the running instance')
-  .action(withCtx((ctx) => stop(ctx)))
 
 cli
   .command('serve', 'start http + rpc')

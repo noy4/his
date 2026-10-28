@@ -38,7 +38,7 @@ export function readState(home: string): InstanceState | null {
 export function writeState(home: string, state: InstanceState): void {
   const file = stateFilePath(home)
   const tmp = `${file}.${process.pid}.tmp`
-  // Holds the /rpc token, so only the owner can read it (0600)
+  // holds the rpc token, so only the owner can read it
   fs.writeFileSync(tmp, `${JSON.stringify(state, null, 2)}\n`, { mode: 0o600 })
   fs.renameSync(tmp, file)
   fs.chmodSync(file, 0o600)
@@ -57,7 +57,7 @@ function parseState(raw: string): InstanceState | null {
   }
   if (typeof parsed !== 'object' || parsed === null) return null
   const { pid, port, url, db, token } = parsed as Record<string, unknown>
-  if (typeof pid !== 'number' || typeof port !== 'number' || typeof url !== 'string' || typeof db !== 'string') {
+  if (typeof pid !== 'number' || !Number.isSafeInteger(pid) || pid < 1 || typeof port !== 'number' || typeof url !== 'string' || typeof db !== 'string') {
     return null
   }
   return { pid, port, url, db, token: typeof token === 'string' ? token : undefined }
