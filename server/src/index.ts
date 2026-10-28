@@ -94,7 +94,7 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   return { kind: 'started', instance, done }
 }
 
-// --- bind & lifecycle ---
+// --- networking ---
 
 function allowedOrigins(port: number): string[] {
   return [`http://${HOST}:${port}`, `http://localhost:${port}`]
@@ -128,6 +128,8 @@ function tryListen(server: http.Server, port: number): Promise<boolean> {
     server.listen(port, HOST)
   })
 }
+
+// --- browser ---
 
 function openUrl(url: string): void {
   // Best effort — a missing opener falls back to printing the URL.

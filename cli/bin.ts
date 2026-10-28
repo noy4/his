@@ -26,14 +26,13 @@ cli
   .option('--from <ms|date>', 'from timestamp')
   .option('--to <ms|date>', 'to timestamp')
   .option('--limit <n>', 'max results')
-  .action(withCtx((ctx, text: string[], opts) =>
-    query(ctx, {
-      text,
-      url: opts.url,
-      from: opts.from,
-      to: opts.to,
-      limit: opts.limit,
-    })))
+  .action(withCtx((ctx, text, opts) => query(ctx, {
+    text,
+    url: opts.url,
+    from: opts.from,
+    to: opts.to,
+    limit: opts.limit,
+  })))
 
 cli
   .command('status', 'print the running instance (url + archive)')
