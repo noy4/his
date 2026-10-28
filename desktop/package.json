@@ -12,7 +12,8 @@
     "start": "electron .",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint"
+    "lint": "oxlint",
+    "test": "node --experimental-test-module-mocks --test \"src/**/*.test.ts\""
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

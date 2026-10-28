@@ -18,16 +18,16 @@ export function createTray(host: HisApp): Tray {
       const base = state.url.endsWith('/') ? state.url : `${state.url}/`
       const wsUrl = `${base.replace(/^http:/, 'ws:')}rpc?token=${encodeURIComponent(state.token ?? '')}`
       await runSyncRpc(wsUrl)
-    } catch {
-      // stay silent — tooltip is static
+    } catch (error) {
+      host.showError('Unable to sync his', error)
     } finally {
       syncing = false
     }
   }
 
   const menu = Menu.buildFromTemplate([
-    { label: 'Sync Now', click: () => void syncNow() },
-    { label: 'Open', click: () => void host.openWindow() },
+    { label: 'Sync Now', click: () => syncNow() },
+    { label: 'Open', click: () => host.openWindow() },
     { type: 'separator' },
     { label: 'Quit his', click: () => host.quit() },
   ])

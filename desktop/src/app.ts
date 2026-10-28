@@ -1,4 +1,4 @@
-import { BrowserWindow, Tray, type App } from 'electron'
+import { BrowserWindow, dialog, Tray, type App } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import path from 'node:path'
 import { defaultHome } from '@his/core/paths'
@@ -22,9 +22,9 @@ export class HisApp {
   start(): void {
     this.app.dock?.hide()
     this.#tray = createTray(this)
-    // void this.openWindow()
+    // this.openWindow()
     // spawn serve at boot
-    this.ensureServe().catch((error) => console.error(`his: ${error instanceof Error ? error.message : String(error)}`))
+    this.ensureServe().catch((error) => this.showError('Unable to start his', error))
   }
 
   // Quit funnel: destroy tray, stop serve, exit (app.exit bypasses before-quit).
@@ -32,16 +32,25 @@ export class HisApp {
     this.#quitting = true
     this.#tray?.destroy()
     this.#tray = null
-    void this.#stopServe().finally(() => this.app.exit(0))
+    this.#stopServe().finally(() => this.app.exit(0))
   }
 
   // --- window ---
 
   async openWindow(): Promise<void> {
-    if (this.#win === null) this.#win = this.#createWindow()
-    const state = await this.ensureServe()
-    if (this.#win.webContents.getURL() !== state.url) void this.#win.loadURL(state.url)
-    this.#win.show()
+    try {
+      if (this.#win === null) this.#win = this.#createWindow()
+      const state = await this.ensureServe()
+      if (this.#win.webContents.getURL() !== state.url) await this.#win.loadURL(state.url)
+      this.#win.show()
+    } catch (error) {
+      this.showError('Unable to open his', error)
+    }
+  }
+
+  showError(title: string, error: unknown): void {
+    if (!this.#quitting)
+      dialog.showErrorBox(title, error instanceof Error ? error.message : String(error))
   }
 
   #createWindow(): BrowserWindow {
@@ -75,24 +84,67 @@ export class HisApp {
   }
 
   async #bootServe(timeoutMs: number): Promise<InstanceState> {
-    this.#spawnServe()
-    const deadline = Date.now() + timeoutMs
-    while (Date.now() < deadline) {
-      const state = readState(defaultHome())
-      if (state !== null) return state
-      await new Promise((resolve) => setTimeout(resolve, 100))
-    }
-    throw new Error('his serve did not come up — check the CLI entry')
+    const proc = this.#spawnServe()
+    return new Promise((resolve, reject) => {
+      // capture stderr and clean up listeners
+      let stderr = ''
+      const onData = (chunk: Buffer): void => { stderr = (stderr + chunk.toString()).slice(-4096) }
+      const cleanup = (): void => {
+        clearInterval(interval)
+        clearTimeout(timeout)
+        proc.stderr?.off('data', onData)
+        proc.off('error', onError)
+        proc.off('close', onExit)
+      }
+      // detect startup failures
+      const onError = (error: Error): void => {
+        cleanup()
+        reject(new Error(`Could not start his serve: ${error.message}`))
+      }
+      const onExit = (code: number | null, signal: NodeJS.Signals | null): void => {
+        cleanup()
+        const detail = stderr.trim()
+        reject(new Error(`his serve exited (${signal ?? `code ${code}`}).${detail ? `\n\n${detail}` : ''}`))
+      }
+      proc.stderr?.on('data', onData)
+      proc.once('error', onError)
+      proc.once('close', onExit)
+
+      // wait for server state
+      const interval = setInterval(() => {
+        try {
+          const state = readState(defaultHome())
+          if (state !== null) {
+            cleanup()
+            proc.stderr?.resume()
+            resolve(state)
+          }
+        } catch (error) {
+          cleanup()
+          proc.kill()
+          reject(error)
+        }
+      }, 100)
+
+      // stop stalled startup
+      const timeout = setTimeout(() => {
+        cleanup()
+        proc.kill()
+        reject(new Error('his serve did not start in time. Check the CLI entry and try again.'))
+      }, timeoutMs)
+    })
   }
 
   // --- serve controller ---
 
   #spawnServe(): ChildProcess {
     const cliEntry = process.env.HIS_CLI ?? path.join(import.meta.dirname, '../../cli/bin.ts')
-    const proc = spawn('node', [cliEntry, 'serve'], { stdio: 'ignore', env: process.env })
-    proc.on('exit', () => {
+    const proc = spawn('node', [cliEntry, 'serve'], { stdio: ['ignore', 'ignore', 'pipe'], env: process.env })
+    const onEnd = () => {
       if (this.#serveProc === proc) this.#serveProc = undefined
-    })
+    }
+    proc.on('error', onEnd)
+    proc.on('exit', onEnd)
     this.#serveProc = proc
     return proc
   }

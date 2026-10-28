@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="created_at" content="2026-10-28T10:48:00+09:00">
+<title>his | Release plan</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+<link rel="stylesheet" href="assets/base.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/sidebar.css">
+<link rel="stylesheet" href="assets/toc.css">
+<style>
+  :root {
+    --green: #4ADE80;
+    --green-soft: rgba(74, 222, 128, 0.15);
+    --cyan: #38BDF8;
+    --purple: #A78BFA;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --green: #16A34A;
+      --green-soft: rgba(22, 163, 74, 0.1);
+      --cyan: #0284C7;
+      --purple: #7C3AED;
+    }
+  }
+  .badge-top {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="badge-top">
+      <iconify-icon icon="mdi:rocket-launch-outline"></iconify-icon>
+      RELEASE PLAN
+    </div>
+    <h1><iconify-icon icon="mdi:history" width="30"></iconify-icon>his release plan</h1>
+    <p class="tagline">Ship the CLI and Desktop as verified, installable releases.</p>
+  </header>
+
+  <section>
+    <h2><iconify-icon icon="mdi:target" width="24"></iconify-icon>First release</h2>
+    <p class="section-desc">Proposed scope, pending decisions on package name, platforms, runtime and signing. Start with a prerelease; publish a stable release only after testing the installed artifacts.</p>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><iconify-icon icon="mdi:console"></iconify-icon><h4>CLI · npm</h4></div>
+        <p>Publish an installable package with the runtime assets needed for <code>sync</code>, <code>query</code> and <code>serve</code>. Define and test its Node requirement.</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><iconify-icon icon="mdi:laptop"></iconify-icon><h4>Desktop · macOS</h4></div>
+        <p>Publish a signed and notarized DMG on GitHub Releases. The installed app must work without a repository checkout or system Node.</p>
+      </div>
+    </div>
+    <p class="section-desc">Windows, Linux, an independent download server and automatic updates are outside the proposed first release. Manual reinstall is the initial update path.</p>
+  </section>
+
+  <section>
+    <h2><iconify-icon icon="mdi:clipboard-search-outline" width="24"></iconify-icon>Starting point</h2>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><iconify-icon icon="mdi:package-variant"></iconify-icon><h4>Not yet distributable</h4></div>
+        <p>Packages are private and the CLI points to TypeScript source. Desktop starts the repository's CLI using <code>node</code> from PATH. Packaging and release workflows are not configured.</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><iconify-icon icon="mdi:shield-alert-outline"></iconify-icon><h4>Release blockers</h4></div>
+        <p>Bundle the WebUI and SQL migrations, verify clean builds, and resolve process ownership and access to sensitive history data before publishing.</p>
+      </div>
+    </div>
+    <p class="section-desc">At investigation time, local <code>main</code> was 36 commits ahead of <code>origin/main</code>. Review and publish the intended commit before tagging; do not assume the remote contains the release candidate.</p>
+  </section>
+
+  <section>
+    <h2><iconify-icon icon="mdi:format-list-numbered" width="24"></iconify-icon>Roadmap</h2>
+    <p class="section-desc">Define the contract, create self-contained artifacts, harden them, then release the exact artifacts that passed verification.</p>
+    <div class="timeline">
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head"><span class="step-title"><iconify-icon icon="mdi:target" style="color:var(--primary)"></iconify-icon>Phase 1 — Release contract</span><span class="step-meta">P0 · decisions</span></div>
+          <div class="step-body">Fix the support and security boundaries before choosing build and publish settings.</div>
+          <div class="tasks">
+            <div class="task"><iconify-icon icon="mdi:tag-outline"></iconify-icon><div class="task-text"><div class="task-title">Names &amp; versions</div><div class="task-desc">npm name and ownership · app ID · version and tag convention · prerelease channel</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:devices"></iconify-icon><div class="task-text"><div class="task-title">Supported environments</div><div class="task-desc">Node version · macOS minimum and architectures · verify SQLite FTS5</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:account-check-outline"></iconify-icon><div class="task-text"><div class="task-title">First-run consent</div><div class="task-desc">Select sources explicitly · explain that an empty selection syncs nothing</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:shield-account-outline"></iconify-icon><div class="task-text"><div class="task-title">Trust &amp; ownership</div><div class="task-desc">Define local-user threat model · data retention · shared server lifetime</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head"><span class="step-title"><iconify-icon icon="mdi:console" style="color:var(--cyan)"></iconify-icon>Phase 2 — CLI package</span><span class="step-meta">P0 · npm</span></div>
+          <div class="step-body">Make the CLI runnable outside the workspace without source-relative dependencies.</div>
+          <div class="tasks">
+            <div class="task"><iconify-icon icon="mdi:language-typescript"></iconify-icon><div class="task-text"><div class="task-title">Build &amp; manifest</div><div class="task-desc">Build JavaScript · executable entry · engines · resolve <code>workspace:*</code> dependencies</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:folder-multiple-outline"></iconify-icon><div class="task-text"><div class="task-title">Runtime assets</div><div class="task-desc">Package WebUI and SQL migrations · make asset paths work after installation</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:package-check"></iconify-icon><div class="task-text"><div class="task-title">Packed install</div><div class="task-desc">Inspect the tarball · install it in a clean directory · exercise every CLI command</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:book-open-page-variant-outline"></iconify-icon><div class="task-text"><div class="task-title">Getting started</div><div class="task-desc">Install, choose sources, sync, query and serve · document data and permission requirements</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head"><span class="step-title"><iconify-icon icon="mdi:application-outline" style="color:var(--purple)"></iconify-icon>Phase 3 — Desktop package</span><span class="step-meta">P0 · macOS</span></div>
+          <div class="step-body">Ship a self-contained Electron application, not a wrapper around a developer checkout.</div>
+          <div class="tasks">
+            <div class="task done"><iconify-icon icon="mdi:source-branch"></iconify-icon><div class="task-text"><div class="task-title">Clean build inputs</div><div class="task-desc">Tracked files build without a checked-in renderer entry · verified using existing dependencies</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:tools"></iconify-icon><div class="task-text"><div class="task-title">Reproducible release toolchain</div><div class="task-desc">Node 22.22.3 · pnpm 12.6.0 verified locally on macOS · pin and verify release CI separately</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:package-variant-closed"></iconify-icon><div class="task-text"><div class="task-title">Self-contained runtime</div><div class="task-desc">Include runtime, CLI/server, WebUI, migrations and tray assets · resolve packaged paths</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:certificate-outline"></iconify-icon><div class="task-text"><div class="task-title">Sign &amp; notarize</div><div class="task-desc">App ID, icon and DMG · Developer ID signing · Apple notarization and stapling</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:alert-circle-outline"></iconify-icon><div class="task-text"><div class="task-title">Startup diagnostics</div><div class="task-desc">Server spawn failures, stderr and timeout reported; packaged asset and runtime failures still require verification</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head"><span class="step-title"><iconify-icon icon="mdi:shield-check-outline" style="color:var(--green)"></iconify-icon>Phase 4 — Safety &amp; reliability</span><span class="step-meta">P0 · hardening</span></div>
+          <div class="step-body">Browser history is sensitive. Verify behavior at process, user and data boundaries.</div>
+          <div class="tasks">
+            <div class="task"><iconify-icon icon="mdi:lock-outline"></iconify-icon><div class="task-text"><div class="task-title">Local access</div><div class="task-desc">Review loopback token exposure and Electron navigation against the chosen threat model</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:database-lock-outline"></iconify-icon><div class="task-text"><div class="task-title">Data protection</div><div class="task-desc">Set and test permissions · document snapshots, deletion, backup and favicon requests</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:application-cog-outline"></iconify-icon><div class="task-text"><div class="task-title">Process ownership</div><div class="task-desc">Single instance · race-safe server ownership · PID reuse · do not inadvertently stop a shared server</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:sync-alert"></iconify-icon><div class="task-text"><div class="task-title">Actionable failures</div><div class="task-desc">Report sync failures and timeouts · explain Safari permission denial and retry</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head"><span class="step-title"><iconify-icon icon="mdi:source-pull" style="color:var(--primary)"></iconify-icon>Phase 5 — CI &amp; release</span><span class="step-meta">P0 · automation</span></div>
+          <div class="step-body">Separate artifact creation and verification from publication; promote the tested artifacts without rebuilding.</div>
+          <div class="tasks">
+            <div class="task"><iconify-icon icon="mdi:test-tube"></iconify-icon><div class="task-text"><div class="task-title">PR gates</div><div class="task-desc">Typecheck and tests · supported OS/Node matrix · new and existing database migrations</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:package-check"></iconify-icon><div class="task-text"><div class="task-title">Artifact gates</div><div class="task-desc">Clean CLI install · packaged Desktop smoke test · checksum · signature and notarization checks</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:cloud-upload-outline"></iconify-icon><div class="task-text"><div class="task-title">Approved publication</div><div class="task-desc">Review release commit and tag · publish npm with trusted publishing · attach DMG to GitHub Release</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:backup-restore"></iconify-icon><div class="task-text"><div class="task-title">Recovery</div><div class="task-desc">Define partial-publish retry, prerelease dist-tags and rollback or replacement release procedure</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head"><span class="step-title"><iconify-icon icon="mdi:rocket-launch-outline" style="color:var(--cyan)"></iconify-icon>Phase 6 — Prerelease to stable</span><span class="step-meta">P1 · validation</span></div>
+          <div class="step-body">Release a prerelease first. Promote only after a clean-machine test for each supported target.</div>
+          <div class="tasks">
+            <div class="task"><iconify-icon icon="mdi:download-outline"></iconify-icon><div class="task-text"><div class="task-title">Install &amp; first run</div><div class="task-desc">No checkout or system Node for Desktop · choose sources · sync · search · restart</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:database-sync-outline"></iconify-icon><div class="task-text"><div class="task-title">Upgrade &amp; recovery</div><div class="task-desc">Existing DB migration · reinstall · uninstall · permission denial · shared server behavior</div></div></div>
+            <div class="task"><iconify-icon icon="mdi:clipboard-check-outline"></iconify-icon><div class="task-text"><div class="task-title">Stable gate</div><div class="task-desc">All target checks pass · blockers resolved · release notes and known limitations published</div></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2><iconify-icon icon="mdi:book-search-outline" width="24"></iconify-icon>Reference</h2>
+    <p class="section-desc">deepseek-harness separates package verification from publication. Its CLI is published to npm; Desktop uses a separate update feed rather than GitHub Release assets.</p>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><iconify-icon icon="mdi:npm"></iconify-icon><h4>CLI distribution</h4></div>
+        <p><a href="https://www.npmjs.com/package/@deepseek-ai/dsh" target="_blank" rel="noopener noreferrer">@deepseek-ai/dsh on npm</a> · pack, install-test, then publish. Keep prerelease tags separate from stable.</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><iconify-icon icon="mdi:cloud-download-outline"></iconify-icon><h4>Desktop distribution</h4></div>
+        <p><a href="https://download.deepseek.com/dsh-desk/feeds/mac-arm64/nightly-mac.yml" target="_blank" rel="noopener noreferrer">macOS nightly update feed</a> · published metadata references a ZIP; the installer itself was not tested.</p>
+      </div>
+    </div>
+    <p class="section-desc">A dedicated update feed and automatic updates can be considered after the first stable release. If added, publish binaries before update metadata and verify checksums.</p>
+  </section>
+
+  <footer>
+    <div class="colophon">his release plan · created 2026-10-28</div>
+  </footer>
+</div>
+
+<nav id="sidebar" class="sidebar" aria-label="Docs"></nav>
+<script src="assets/sidebar.js" defer></script>
+<nav id="toc" class="toc" aria-label="On this page"></nav>
+<script src="assets/toc.js" defer></script>
+</body>
+</html>

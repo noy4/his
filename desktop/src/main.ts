@@ -4,7 +4,7 @@ import { HisApp } from './app.ts'
 const hisApp = new HisApp(app)
 
 app.on('second-instance', () => {
-  void hisApp.openWindow()
+  hisApp.openWindow()
 })
 
 app.on('window-all-closed', () => {
