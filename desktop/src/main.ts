@@ -1,6 +1,8 @@
 import { app } from 'electron'
 import { HisApp } from './app.ts'
 
+if (!app.requestSingleInstanceLock()) app.exit(0)
+
 const hisApp = new HisApp(app)
 
 app.on('second-instance', () => {

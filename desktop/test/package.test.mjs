@@ -53,6 +53,18 @@ test('packaged app runs without a checkout or system Node', { timeout: 30_000, s
     const response = await fetch(state.url, { signal: AbortSignal.timeout(5_000) })
     assert.equal(response.status, 200)
     assert.match(await response.text(), /<div id="root">/)
+
+    // a second app instance must not start another server
+    const second = spawn(executable, [], { cwd: dir, env, stdio: 'ignore' })
+    const [code] = await Promise.race([
+      once(second, 'exit'),
+      new Promise((_, reject) => {
+        const timer = setTimeout(() => { second.kill('SIGKILL'); reject(new Error('second instance did not exit')) }, 10_000)
+        timer.unref()
+      }),
+    ])
+    assert.equal(code, 0)
+    assert.equal(JSON.parse(readFileSync(statePath, 'utf8')).pid, serverPid)
   } finally {
     // clean up both processes
     if (serverPid) {

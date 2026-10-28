@@ -19,6 +19,7 @@ mock.module('electron', {
     Tray: class {
       setToolTip(): void {}
       setContextMenu(): void {}
+      destroy(): void {}
     },
     Menu: { buildFromTemplate: (items: typeof menu) => { menu = items; return items } },
     nativeImage: { createFromPath: () => ({ setTemplateImage() {} }) },
@@ -89,6 +90,54 @@ test('packaged server uses the bundled runtime without Node on PATH', async () =
   process.kill(state.pid, 'SIGTERM')
   fs.rmSync(path.join(dir, 'state.json'))
   process.env.PATH = originalEnv.PATH
+})
+
+test('quit leaves an existing server running', async () => {
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({
+    pid: process.pid, port: 4477, url: 'http://127.0.0.1:4477', db: 'test.db',
+  }))
+  let exit!: () => void
+  const exited = new Promise<void>((resolve) => { exit = resolve })
+  const app = new HisApp({ exit } as unknown as App)
+  assert.equal((await app.ensureServe()).pid, process.pid)
+  app.quit()
+  await exited
+  assert.ok(fs.existsSync(path.join(dir, 'state.json')))
+  fs.rmSync(path.join(dir, 'state.json'))
+})
+
+test('quit stops the child while it is starting', async () => {
+  const cli = path.join(dir, 'starting.cjs')
+  const pidFile = path.join(dir, 'starting.pid')
+  fs.writeFileSync(cli, `require('node:fs').writeFileSync(${JSON.stringify(pidFile)}, String(process.pid)); setInterval(() => {}, 1000)`)
+  process.env.HIS_CLI = cli
+  let exit!: () => void
+  const exited = new Promise<void>((resolve) => { exit = resolve })
+  const app = new HisApp({ exit } as unknown as App)
+  const boot = assert.rejects(app.ensureServe(), /his serve exited/)
+  for (let attempt = 0; !fs.existsSync(pidFile) && attempt < 50; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+  assert.ok(fs.existsSync(pidFile))
+  const pid = Number(fs.readFileSync(pidFile, 'utf8'))
+  app.quit()
+  await Promise.all([exited, boot])
+  assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' })
+  await assert.rejects(app.ensureServe(), /his is quitting/)
+})
+
+test('quit stops its own running server', async () => {
+  const cli = path.join(dir, 'running.cjs')
+  fs.writeFileSync(cli, `require('node:fs').writeFileSync(require('node:path').join(process.env.HIS_HOME, 'state.json'), JSON.stringify({ pid: process.pid, port: 4477, url: 'http://127.0.0.1:4477', db: 'test.db' })); setInterval(() => {}, 1000)`)
+  process.env.HIS_CLI = cli
+  let exit!: () => void
+  const exited = new Promise<void>((resolve) => { exit = resolve })
+  const app = new HisApp({ exit } as unknown as App)
+  const state = await app.ensureServe()
+  app.quit()
+  await exited
+  assert.throws(() => process.kill(state.pid, 0), { code: 'ESRCH' })
+  fs.rmSync(path.join(dir, 'state.json'))
 })
 
 test('openWindow reports a server startup failure', async () => {

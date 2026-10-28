@@ -2,7 +2,7 @@ import { BrowserWindow, dialog, Tray, type App } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import path from 'node:path'
 import { defaultHome } from '@his/core/paths'
-import { processAlive, readState, type InstanceState } from '@his/core/state'
+import { readState, type InstanceState } from '@his/core/state'
 import { createTray } from './tray.ts'
 
 export class HisApp {
@@ -74,6 +74,7 @@ export class HisApp {
 
   // Tray actions respawn serve when it is down (spec).
   async ensureServe(timeoutMs = 10_000): Promise<InstanceState> {
+    if (this.#quitting) throw new Error('his is quitting')
     const existing = readState(defaultHome())
     if (existing !== null) return existing
     // single-flight: 'Open' clicked during startup reuses the running boot
@@ -155,22 +156,14 @@ export class HisApp {
 
   async #stopServe(): Promise<void> {
     const proc = this.#serveProc
-    const pid = readState(defaultHome())?.pid
     this.#serveProc = undefined
-    if (proc === undefined && pid === undefined) return
-    if (pid !== undefined) process.kill(pid, 'SIGTERM')
-    // post-SIGTERM the state file is gone, so probe liveness directly
+    if (proc === undefined || proc.exitCode !== null || proc.signalCode !== null) return
+    // stop only the child started by this app
     await new Promise<void>((resolve) => {
-      const deadline = Date.now() + 3_000
-      const check = (): void => {
-        if (pid === undefined || !processAlive(pid)) return resolve()
-        if (Date.now() > deadline) {
-          process.kill(pid, 'SIGKILL')
-          return resolve()
-        }
-        setTimeout(check, 100)
-      }
-      check()
+      const timer = setTimeout(() => proc.kill('SIGKILL'), 3_000)
+      proc.once('exit', () => { clearTimeout(timer); resolve() })
+      proc.once('error', () => { clearTimeout(timer); resolve() })
+      if (!proc.kill('SIGTERM')) { clearTimeout(timer); resolve() }
     })
   }
 }
