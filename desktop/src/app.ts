@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, Tray, type App } from 'electron'
+import { BrowserWindow, dialog, shell, Tray, type App } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import path from 'node:path'
 import { defaultHome } from '@his/core/paths'
@@ -59,6 +59,21 @@ export class HisApp {
       height: 680,
       show: false,
       title: 'his',
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+      },
+    })
+    // The window only ever shows the local WebUI: links go to the OS browser.
+    window.webContents.setWindowOpenHandler(({ url }) => {
+      openExternal(url)
+      return { action: 'deny' }
+    })
+    window.webContents.on('will-navigate', (event, url) => {
+      if (isLocalUrl(url)) return
+      event.preventDefault()
+      openExternal(url)
     })
     window.on('close', (event) => {
       if (!this.#quitting) {
@@ -166,4 +181,25 @@ export class HisApp {
       if (!proc.kill('SIGTERM')) { clearTimeout(timer); resolve() }
     })
   }
+}
+
+// The served WebUI is the only page the window may show.
+function isLocalUrl(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url)
+    return protocol === 'http:' && (hostname === '127.0.0.1' || hostname === 'localhost')
+  } catch {
+    return false
+  }
+}
+
+// Hand http(s) pages to the OS browser; ignore every other scheme.
+function openExternal(url: string): void {
+  let protocol: string
+  try {
+    protocol = new URL(url).protocol
+  } catch {
+    return
+  }
+  if (protocol === 'http:' || protocol === 'https:') void shell.openExternal(url)
 }

@@ -6,16 +6,26 @@ import { after, before, mock, test } from 'node:test'
 import type { App } from 'electron'
 
 const errors: string[] = []
+const openedUrls: string[] = []
 let menu: { label?: string; click?: () => void }[] = []
 let loadError: Error | undefined
+let openHandler: ((details: { url: string }) => { action: string }) | undefined
+let navigateHandler: ((event: { preventDefault(): void }, url: string) => void) | undefined
 mock.module('electron', {
   namedExports: {
     BrowserWindow: class {
-      webContents = { getURL: () => '' }
+      webContents = {
+        getURL: () => '',
+        setWindowOpenHandler: (handler: typeof openHandler) => { openHandler = handler },
+        on: (event: string, handler: typeof navigateHandler) => {
+          if (event === 'will-navigate') navigateHandler = handler
+        },
+      }
       on(): void {}
       show(): void {}
       async loadURL(): Promise<void> { if (loadError) throw loadError }
     },
+    shell: { openExternal: (url: string) => { openedUrls.push(url); return Promise.resolve() } },
     Tray: class {
       setToolTip(): void {}
       setContextMenu(): void {}
@@ -158,6 +168,31 @@ test('openWindow reports a failed window load', async () => {
   await app.openWindow()
   assert.deepEqual(errors, ['page failed to load'])
   loadError = undefined
+})
+
+test('window shows only the local UI and hands external links to the OS browser', async () => {
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({
+    pid: process.pid, port: 4477, url: 'http://127.0.0.1:4477', db: 'test.db',
+  }))
+  const app = new HisApp({} as App)
+  await app.openWindow()
+  openedUrls.length = 0
+
+  assert.deepEqual(openHandler!({ url: 'https://example.com' }), { action: 'deny' })
+  assert.deepEqual(openedUrls, ['https://example.com'])
+
+  assert.deepEqual(openHandler!({ url: 'file:///etc/passwd' }), { action: 'deny' })
+  assert.deepEqual(openedUrls, ['https://example.com'])
+
+  let prevented = false
+  navigateHandler!({ preventDefault: () => { prevented = true } }, 'https://example.com/next')
+  assert.equal(prevented, true)
+  assert.deepEqual(openedUrls, ['https://example.com', 'https://example.com/next'])
+
+  prevented = false
+  navigateHandler!({ preventDefault: () => { prevented = true } }, 'http://127.0.0.1:4477/visits')
+  assert.equal(prevented, false)
+  assert.deepEqual(openedUrls, ['https://example.com', 'https://example.com/next'])
 })
 
 test('start and Sync Now report startup failures', async () => {

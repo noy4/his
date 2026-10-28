@@ -33,6 +33,9 @@ if any of that changes.
   connection (`/rpc?token=…`), compared with `crypto.timingSafeEqual`.
 - **Owner-only state file.** `state.json` carries the token and is written `0600`,
   and the token is injected only into the WebUI page served from loopback.
+- **Window navigation gate.** The Desktop window may only show the loopback WebUI.
+  New windows and navigations are denied in-window, and http(s) links are handed to
+  the OS browser instead (`desktop/src/app.ts`).
 
 ### Known limitations
 
