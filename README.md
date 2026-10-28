@@ -24,14 +24,27 @@ pnpm -C desktop run dev     # launch the menu bar app
 
 ## ⌨️ CLI
 
+The CLI is not published yet. To build and install it from a checkout, use Node.js 22.22.3 or later and pnpm:
+
 ```bash
-pnpm -C cli run his sync                    # archive your browser history
-pnpm -C cli run his sync --target chrome    # limit to one browser
-pnpm -C cli run his query "sqlite"          # search the archive, prints JSON
-pnpm -C cli run his serve --open            # serve the WebUI
+pnpm install
+pnpm -C cli run build
+pnpm -C cli pack
+npm install -g ./cli/his-cli-0.0.0.tgz
 ```
 
-`his sync` and `his serve` write to `~/.his` (override with `--home <dir>` or `HIS_HOME`).
+Choose sync targets in the WebUI's **Sources** page, or specify a browser for a one-time sync:
+
+```bash
+his serve --open                  # open the WebUI and select sources
+his sync --target chrome          # sync Chrome once
+his sync                          # sync selected sources
+his query "sqlite"                # search the archive as JSON
+his status                        # show the running server
+his stop                          # stop the server
+```
+
+Data is stored in `~/.his` (override with `--home` or `HIS_HOME`).
 
 ## 🔗 Related projects
 
