@@ -56,6 +56,11 @@ if any of that changes.
 - **Window navigation gate.** The Desktop window may only show the loopback WebUI.
   New windows and navigations are denied in-window, and http(s) links are handed to
   the OS browser instead (`desktop/src/app.ts`).
+- **Server exits with the app.** The Desktop spawns `his serve` with a stdin pipe
+  and `HIS_EXIT_ON_STDIN_CLOSE=1`; the server exits when that pipe closes, so a
+  crashed or Force Quit app does not leave an orphaned server holding the port or
+  the   archive (`server/src/index.ts`). A server started from a terminal is not
+  affected.
 
 ### Known limitations
 

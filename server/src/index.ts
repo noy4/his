@@ -83,6 +83,13 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
   }
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)
+  // exit when the app that started us goes away.
+  // Opt-in, because stdin may already be closed (`stdio: 'ignore'` and `< /dev/null` read EOF immediately).
+  if (process.env.HIS_EXIT_ON_STDIN_CLOSE === '1') {
+    process.stdin.once('end', shutdown)
+    process.stdin.once('close', shutdown)
+    process.stdin.resume()
+  }
 
   // Startup catch-up — async so serve returns early; the 6h interval
   // retries failures (which land on lastSummary).

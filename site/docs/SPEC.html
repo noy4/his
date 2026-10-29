@@ -681,6 +681,13 @@ END;</pre>
         </div>
         <p>Written once the port is bound, removed on clean shutdown.</p>
       </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:power"></iconify-icon>
+          <h4>Shutdown</h4>
+        </div>
+        <p><code>Ctrl+C</code> or <code>SIGTERM</code> stops the server. A Desktop-spawned server also exits when the app goes away: Desktop holds its stdin pipe and sets <code>HIS_EXIT_ON_STDIN_CLOSE=1</code>, so a crash or Force Quit cannot leave an orphan holding the port or the archive.</p>
+      </div>
     </div>
 
     <h3><iconify-icon icon="mdi:code-json"></iconify-icon>State file</h3>

@@ -158,8 +158,10 @@ export class HisApp {
     const cliEntry = process.env.HIS_CLI ?? (packaged
       ? path.join(process.resourcesPath, 'cli', 'dist', 'bin.mjs')
       : path.join(import.meta.dirname, '../../cli/bin.ts'))
-    const env = packaged ? { ...process.env, ELECTRON_RUN_AS_NODE: '1' } : process.env
-    const proc = spawn(packaged ? process.execPath : 'node', [cliEntry, 'serve'], { stdio: ['ignore', 'ignore', 'pipe'], env })
+    // keep stdin open: the server exits when the app is gone.
+    const env: NodeJS.ProcessEnv = { ...process.env, HIS_EXIT_ON_STDIN_CLOSE: '1' }
+    if (packaged) env.ELECTRON_RUN_AS_NODE = '1'
+    const proc = spawn(packaged ? process.execPath : 'node', [cliEntry, 'serve'], { stdio: ['pipe', 'ignore', 'pipe'], env })
     const onEnd = () => {
       if (this.#serveProc === proc) this.#serveProc = undefined
     }
