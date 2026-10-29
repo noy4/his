@@ -6,6 +6,11 @@
     "name": "@noy4/his",
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noy4/his.git",
+    "directory": "cli"
+  },
   "bin": {
     "his": "./dist/bin.mjs"
   },
