@@ -1,3 +1,5 @@
+# Builds the WebUI demo (mock API) into site/demo and deploys site/ to Pages.
+#
 # https://github.com/actions/starter-workflows/blob/main/pages/static.yml
 # https://vite.dev/guide/static-deploy.html#github-pages
 

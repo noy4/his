@@ -8,7 +8,7 @@ Browser history archive & viewer.
 
 ## ✨ Features
 
-- 🗄️ **One archive** — every browser's history into one file
+- 🗄️ **Archive** — every browser's history into one file
 - 📊 **Stats** — turns your history into charts and totals, per month or all time
 - 🔁 **Automatic sync** — runs on a schedule
 
@@ -16,21 +16,16 @@ Browser history archive & viewer.
 
 A macOS menu bar app that runs the server for you.
 
-```bash
-pnpm install
-pnpm -C webui run build     # build the WebUI
-pnpm -C desktop run dev     # launch the menu bar app
-```
+1. **Download** — the DMG for your Mac from [Releases](../../releases) (`arm64` for Apple Silicon, macOS 12 or later)
+2. **Launch** — on the security warning, click **Done** (not **Move to Trash**), then approve via **Open Anyway** in `System Settings → Privacy & Security`
+    > **Note:** The app isn't verified by Apple — that requires joining the Apple Developer Program, $99/year
+3. **Pick sources** — click the menu bar icon and choose **Open**, then select browsers in **Sources**
 
 ## ⌨️ CLI
 
-The CLI is not published yet. To build and install it from a checkout, use Node.js 22.22.3 or later and pnpm:
-
 ```bash
-pnpm install
-pnpm -C cli run build
-pnpm -C cli pack
-npm install -g ./cli/his-cli-0.0.0.tgz
+npx @noy4/his --version           # try it without installing
+npm install -g @noy4/his          # or install it globally
 ```
 
 Choose sync targets in the WebUI's **Sources** page, or specify a browser for a one-time sync:
@@ -44,6 +39,14 @@ his status                        # show the running server
 ```
 
 Data is stored in `~/.his` (override with `--home` or `HIS_HOME`).
+
+## 🛠️ Development
+
+```bash
+pnpm install
+pnpm -C webui run build                     # build the WebUI
+pnpm -C desktop run dev                     # menu bar app (unpackaged runs use ~/.his-dev)
+```
 
 ## 🔗 Related projects
 
