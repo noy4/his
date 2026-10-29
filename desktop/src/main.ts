@@ -1,5 +1,9 @@
 import { app } from 'electron'
 import { HisApp } from './app.ts'
+import { sandboxDev } from './dev.ts'
+
+// separate the unpackaged app from the installed one
+sandboxDev()
 
 if (!app.requestSingleInstanceLock()) app.exit(0)
 
@@ -10,7 +14,7 @@ app.on('second-instance', () => {
 })
 
 app.on('window-all-closed', () => {
-  // The window hides instead of closing; keep running in the menubar.
+  // the window hides instead of closing
 })
 
 app.on('before-quit', (event) => {

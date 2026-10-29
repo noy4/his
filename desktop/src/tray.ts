@@ -2,6 +2,7 @@ import { Menu, Tray, nativeImage } from 'electron'
 import path from 'node:path'
 import type { SyncSummary } from '@his/core'
 import type { HisApp } from './app.ts'
+import { dev } from './dev.ts'
 import { callRpc } from './rpc.ts'
 
 // Menubar tray
@@ -16,7 +17,7 @@ class TrayController {
 
   constructor(host: HisApp) {
     this.#host = host
-    const icon = nativeImage.createFromPath(path.join(import.meta.dirname, '../assets/trayTemplate@2x.png'))
+    const icon = nativeImage.createFromPath(path.join(import.meta.dirname, '../assets', trayIconFile(dev)))
     icon.setTemplateImage(true)
     this.tray = new Tray(icon)
     this.tray.setToolTip('his')
@@ -46,4 +47,8 @@ class TrayController {
       this.#syncing = false
     }
   }
+}
+
+export function trayIconFile(dev: boolean): string {
+  return dev ? 'trayTemplate-dev@2x.png' : 'trayTemplate@2x.png'
 }

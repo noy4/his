@@ -34,6 +34,10 @@ if any of that changes.
   Desktop, which sends `SIGTERM`).
 - Hidden patterns only filter what the WebUI shows (`hidden_url_count`); matching
   rows stay in the archive.
+- Unpackaged runs are sandboxed: `pnpm -C desktop start` uses `~/.his-dev` and a
+  `-dev` `userData` directory, so it can run next to the installed app without
+  sharing the archive, the state file or the single-instance lock. `HIS_HOME` set
+  in the environment still wins.
 
 ### Defaults that keep it safe
 

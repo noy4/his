@@ -7,12 +7,18 @@ import type { App } from 'electron'
 
 const errors: string[] = []
 const openedUrls: string[] = []
+const appPaths: Record<string, string> = { userData: '/tmp/his-ud' }
 let menu: { label?: string; click?: () => void }[] = []
 let loadError: Error | undefined
 let openHandler: ((details: { url: string }) => { action: string }) | undefined
 let navigateHandler: ((event: { preventDefault(): void }, url: string) => void) | undefined
 mock.module('electron', {
   namedExports: {
+    app: {
+      isPackaged: false,
+      getPath: (name: string) => appPaths[name]!,
+      setPath: (name: string, value: string) => { appPaths[name] = value },
+    },
     BrowserWindow: class {
       webContents = {
         getURL: () => '',
@@ -193,6 +199,22 @@ test('window shows only the local UI and hands external links to the OS browser'
   navigateHandler!({ preventDefault: () => { prevented = true } }, 'http://127.0.0.1:4477/visits')
   assert.equal(prevented, false)
   assert.deepEqual(openedUrls, ['https://example.com', 'https://example.com/next'])
+})
+
+test('dev runs are sandboxed from the installed app', async () => {
+  const { dev, sandboxDev } = await import('./dev.ts')
+  assert.equal(dev, true)
+  const home = process.env.HIS_HOME
+  sandboxDev()
+  assert.equal(appPaths.userData, '/tmp/his-ud-dev')
+  // an explicit HIS_HOME is not overridden
+  assert.equal(process.env.HIS_HOME, home)
+})
+
+test('the tray icon marks unpackaged runs', async () => {
+  const { trayIconFile } = await import('./tray.ts')
+  assert.equal(trayIconFile(false), 'trayTemplate@2x.png')
+  assert.equal(trayIconFile(true), 'trayTemplate-dev@2x.png')
 })
 
 test('start and Sync Now report startup failures', async () => {
