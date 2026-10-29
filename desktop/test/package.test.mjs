@@ -24,6 +24,8 @@ test('packaged app runs without a checkout or system Node', { timeout: 30_000, s
   let serverPid
   try {
     cpSync(process.env.HIS_PACKAGED_APP ?? path.resolve(root, `../release/his-darwin-${process.arch}/his.app`), path.join(dir, 'his.app'), { recursive: true, verbatimSymlinks: true })
+    // ad-hoc signed: Gatekeeper reports an unidentified developer, not a damaged app
+    execFileSync('codesign', ['--verify', '--deep', '--strict', path.join(dir, 'his.app')], { stdio: 'pipe' })
     // sync and query the bundled cli
     execFileSync(executable, ['-e', `require('node:fs').accessSync(${JSON.stringify(path.join(resources, 'app.asar/assets/trayTemplate@2x.png'))})`], {
       cwd: dir, env: { ...env, ELECTRON_RUN_AS_NODE: '1' }, timeout: 10_000,

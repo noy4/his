@@ -60,14 +60,19 @@ if any of that changes.
   `0600` restricts access to that file, not to the loopback WebUI. The desktop app spawns the server as
   `node <cli>/bin.ts serve` and honours `HIS_CLI`, so treat your environment as
   trusted input.
+- **Unnotarized app bundle.** The desktop app is ad-hoc signed, not notarized, so
+  macOS reports an unidentified developer on first launch and the user approves it
+  once in System Settings. Apple Developer Program enrollment is out of scope for
+  the first release.
 
 ## Supported versions
 
 No releases yet (version `0.0.0`, work in progress). Fixes land on `main`.
 
 Planned first release: the CLI as `@noy4/his` on npm (Node `>=22.22.3`) and an
-unsigned desktop DMG for macOS 12+ on Apple silicon (arm64) only. The app is not
-notarized, so macOS Gatekeeper requires a right-click-open on first launch.
+ad-hoc signed desktop DMG for macOS 12+ on Apple silicon (arm64) only. The app is
+not notarized, so Gatekeeper reports an unidentified developer and the first
+launch is approved once in System Settings → Privacy & Security.
 
 ## Reporting a vulnerability
 

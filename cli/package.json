@@ -1,8 +1,11 @@
 {
   "name": "@his/cli",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
+  "publishConfig": {
+    "name": "@noy4/his",
+    "access": "public"
+  },
   "bin": {
     "his": "./dist/bin.mjs"
   },

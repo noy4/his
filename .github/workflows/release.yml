@@ -1,0 +1,168 @@
+# Artifact creation, verification and publication for a release.
+# Publication only runs for a v* tag push, or when explicitly requested.
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the verified artifacts to npm
+        type: boolean
+        default: false
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm -r run lint
+      - name: Typecheck
+        run: pnpm -r run typecheck
+      - name: Typecheck the WebUI
+        run: pnpm -C webui exec tsc -b
+      - name: Check generated DB types
+        run: pnpm -C core run db:check
+      - name: Test
+        run: pnpm -r run test
+
+  cli:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Verify a clean install of the packed CLI runs outside the workspace.
+      - name: Packed install test
+        run: pnpm -C cli run test:pack
+
+      - name: Pack the published tarball
+        run: |
+          mkdir -p dist-artifacts
+          pnpm -C cli pack --pack-destination "$PWD/dist-artifacts"
+      - name: Checksum
+        run: |
+          cd dist-artifacts
+          sha256sum ./*.tgz > SHA256SUMS
+      - uses: actions/upload-artifact@v5
+        with:
+          name: cli-npm
+          path: dist-artifacts/
+          if-no-files-found: error
+
+  desktop:
+    needs: check
+    # macOS 12+ on Apple silicon; package.mjs and dmg.mjs require darwin.
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Package the app and build the DMG
+        run: |
+          pnpm -C desktop run package:mac
+          pnpm -C desktop run dmg:mac
+
+      # Verify the artifact that will be published, not an earlier build.
+      - name: Packaged app smoke test
+        run: pnpm -C desktop run test:package
+      - name: DMG smoke test
+        run: pnpm -C desktop run test:dmg
+
+      - name: Checksum
+        run: |
+          cd desktop/release
+          shasum -a 256 ./*.dmg > SHA256SUMS
+      - uses: actions/upload-artifact@v5
+        with:
+          name: desktop-dmg
+          path: |
+            desktop/release/*.dmg
+            desktop/release/SHA256SUMS
+          if-no-files-found: error
+
+  # Publish the tarball that the cli job packed, tested and checksummed.
+  publish-npm:
+    needs: cli
+    if: github.event_name == 'push' || inputs.publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+      # Trusted publishing needs npm CLI >= 11.5.1.
+      - run: npm install --global npm@latest
+      - uses: actions/download-artifact@v5
+        with:
+          name: cli-npm
+          path: dist-artifacts
+      - name: Publish
+        run: |
+          tag=latest
+          case "$GITHUB_REF_NAME" in *-*) tag=next ;; esac
+          npm publish ./dist-artifacts/*.tgz --access public --tag "$tag"
+
+  # Attach the verified DMG to the release for the pushed tag.
+  release:
+    needs: [cli, desktop]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the tag matches the package version
+        run: test "$GITHUB_REF_NAME" = "v$(node -p "require('./cli/package.json').version")"
+      - uses: actions/download-artifact@v5
+        with:
+          name: desktop-dmg
+          path: artifacts
+      - name: Upload the DMG and its checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" artifacts/*.dmg artifacts/SHA256SUMS --clobber
