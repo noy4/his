@@ -28,6 +28,7 @@ try {
     dir: app,
     name: 'his',
     appBundleId: 'com.noy4.his',
+    icon: path.join(root, 'assets', 'icon.icns'),
     platform: 'darwin',
     arch: process.arch,
     electronVersion: version,
