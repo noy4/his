@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, test } from 'node:test'
-import { callRpc } from './rpc.ts'
+import { callRpc } from '../rpc.ts'
 
 const originalWebSocket = globalThis.WebSocket
 const sockets: Socket[] = []

@@ -42,7 +42,7 @@ mock.module('electron', {
     dialog: { showErrorBox: (_title: string, message: string) => errors.push(message) },
   },
 })
-const { HisApp } = await import('./app.ts')
+const { HisApp } = await import('../app.ts')
 const originalEnv = { ...process.env }
 let dir: string
 
@@ -202,7 +202,7 @@ test('window shows only the local UI and hands external links to the OS browser'
 })
 
 test('dev runs are sandboxed from the installed app', async () => {
-  const { dev, sandboxDev } = await import('./dev.ts')
+  const { dev, sandboxDev } = await import('../dev.ts')
   assert.equal(dev, true)
   const home = process.env.HIS_HOME
   sandboxDev()
@@ -212,7 +212,7 @@ test('dev runs are sandboxed from the installed app', async () => {
 })
 
 test('the tray icon marks unpackaged runs', async () => {
-  const { trayIconFile } = await import('./tray.ts')
+  const { trayIconFile } = await import('../tray.ts')
   assert.equal(trayIconFile(false), 'trayTemplate@2x.png')
   assert.equal(trayIconFile(true), 'trayTemplate-dev@2x.png')
 })
