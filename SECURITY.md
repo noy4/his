@@ -19,6 +19,22 @@ if any of that changes.
 - **Serves** the WebUI and the RPC socket on `127.0.0.1`, using a port from 4477
   upward. `Ctrl+C` removes the state file.
 
+### Data retention
+
+- Everything lives under one home directory — `~/.his` by default, moved with
+  `HIS_HOME` or `--home`: `history.db` (the archive), `snapshots/<browser>/<profile>`
+  (a copy of each synced profile database), an optional `takeout/` for imported
+  files, and `state.json` while an instance is running.
+- Nothing expires on its own. Synced visits and snapshots stay until you delete
+  them; there is no retention limit and no scheduled cleanup.
+- The browser's own database is never written to. Sync reads through `VACUUM INTO`
+  or a copy of the file trio, and only the copy under `snapshots/` is kept.
+- `rm -rf ~/.his` removes the archive and every snapshot; uninstalling the app does
+  not. `state.json` alone is removed on a clean shutdown (`Ctrl+C`, or quitting
+  Desktop, which sends `SIGTERM`).
+- Hidden patterns only filter what the WebUI shows (`hidden_url_count`); matching
+  rows stay in the archive.
+
 ### Defaults that keep it safe
 
 - **Loopback binding.** `server/src/index.ts` hardcodes `HOST = '127.0.0.1'`;
