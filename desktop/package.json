@@ -9,8 +9,8 @@
   },
   "scripts": {
     "build": "vite build",
-    "package:mac": "pnpm -C ../cli run build && pnpm run build && node package.mjs",
-    "dmg:mac": "node dmg.mjs",
+    "package:mac": "pnpm -C ../cli run build && pnpm run build && node scripts/package.mjs",
+    "dmg:mac": "node scripts/dmg.mjs",
     "test:package": "node --test test/package.test.mjs",
     "test:dmg": "node --test test/dmg.test.mjs",
     "start": "electron .",

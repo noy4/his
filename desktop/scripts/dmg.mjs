@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 if (process.platform !== 'darwin') throw new Error('DMG creation requires macOS')
 
-const root = path.dirname(fileURLToPath(import.meta.url))
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const output = path.join(root, 'release', `his-darwin-${process.arch}.dmg`)
 const temp = await mkdtemp(path.join(os.tmpdir(), 'his-dmg-'))
 try {

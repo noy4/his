@@ -6,10 +6,10 @@ import path from 'node:path'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
-const root = path.dirname(fileURLToPath(import.meta.url))
+const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const require = createRequire(import.meta.url)
 const { version } = require('electron/package.json')
-const { version: appVersion } = require('./package.json')
+const { version: appVersion } = require('../package.json')
 // Mach-O magic numbers, read as big-endian.
 const MACH_O_MAGIC = new Set([0xfeedface, 0xfeedfacf, 0xcffaedfe, 0xcefaedfe])
 const temp = await mkdtemp(path.join(os.tmpdir(), 'his-desktop-package-'))
