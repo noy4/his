@@ -27,6 +27,12 @@
       ],
     },
     {
+      text: "Development",
+      items: [
+        { text: "Release", link: "development/release.html", icon: "mdi:rocket-launch-outline" },
+      ],
+    },
+    {
       text: "Archive",
       collapsed: true,
       items: [
