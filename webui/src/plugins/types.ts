@@ -1,10 +1,14 @@
 import type { IconComponent } from '@/components/icons'
-import type { ComponentType } from 'react'
-import type { AppModel } from '@/app/app'
+import type { HisApi } from '@/app/api'
+import type { ReactNode } from 'react'
+
+export interface ViewContext {
+  api: HisApi
+}
 
 export interface ViewPlugin {
   id: string
   label: string
   icon: IconComponent
-  View: ComponentType<{ app: AppModel }>
+  View: (props: { app: ViewContext }) => ReactNode
 }

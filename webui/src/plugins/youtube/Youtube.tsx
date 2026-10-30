@@ -1,4 +1,4 @@
-import type { AppModel } from '@/app/app'
+import type { ViewContext } from '../types'
 import { Card, CardTitle } from '@/components/ui/card'
 import { parseYoutubeTitle } from '@his/core'
 import { cn } from 'cn'
@@ -19,7 +19,7 @@ import { YoutubeRecentItemsCard } from './YoutubeRecentItemsCard'
 import { YoutubeSkeleton } from './YoutubeSkeleton'
 import { YoutubeModel } from './youtube.model'
 
-export function Youtube({ app }: { app: AppModel }) {
+export function Youtube({ app }: { app: ViewContext }) {
   const yt = useModel(() => new YoutubeModel(app.api))
   const stats = yt.stats.value
   if (!stats) return <YoutubeSkeleton />

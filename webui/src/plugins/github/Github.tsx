@@ -3,7 +3,7 @@ import { dateLabel, daySpan } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
 import { VisitCount } from '@/views/shared/RecentItems'
 import { useModel } from '@/lib/useModel'
-import type { AppModel } from '@/app/app'
+import type { ViewContext } from '../types'
 import { cn } from 'cn'
 import AccountIcon from '~icons/mdi/account-group-outline'
 import EyeIcon from '~icons/mdi/eye-outline'
@@ -25,7 +25,7 @@ import { GithubSkeleton } from './GithubSkeleton'
 
 const rowCls = '-mx-1 flex items-center gap-2 rounded px-1 hover:bg-bg-3'
 
-export function Github({ app }: { app: AppModel }) {
+export function Github({ app }: { app: ViewContext }) {
   const gh = useModel(() => new GithubModel(app.api))
   const stats = gh.stats.value
   if (!stats) return <GithubSkeleton />

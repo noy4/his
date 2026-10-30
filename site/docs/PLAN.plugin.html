@@ -167,7 +167,7 @@ export const github: ViewPlugin = {
     <h2><iconify-icon icon="mdi:puzzle-plus-outline" width="24"></iconify-icon>Plugin roadmap</h2>
     <p class="section-desc">
       Frontend first — GitHub is the canary. Then the backend half joins the same module.<br>
-      Status: Phase 1 done · GitHub / YouTube manifests wired · physical co-location and API ownership remain.
+      Status: Phase 1–2 done · views co-located under <code>plugins/</code> · Phase 3 (API ownership) and Phase 5 (backend) remain.
     </p>
 
     <div class="timeline">
@@ -207,19 +207,26 @@ export const github: ViewPlugin = {
                 <div class="task-desc">NAV_ITEMS spreads the registry between URLs and the divider · positions unchanged</div>
               </div>
             </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:vector-polyline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">ViewContext</div>
+                <div class="task-desc">plugins receive <code>{ api }</code> only — no <code>@/app/app</code> dependency</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
               <iconify-icon icon="mdi:github" style="color:var(--green)"></iconify-icon>
               Phase 2 — GitHub extraction
             </span>
-            <span class="step-meta">P1 · webui · partial</span>
+            <span class="step-meta">P1 · webui · done</span>
           </div>
           <div class="step-body">
             Move the GitHub view into its plugin folder and register it. The migration canary — nothing should change on screen.
@@ -236,14 +243,14 @@ export const github: ViewPlugin = {
               <iconify-icon icon="mdi:shape-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Manifest</div>
-                <div class="task-desc"><code>plugins/github/index.ts</code> exports the <code>ViewPlugin</code> — wraps <code>views/github</code> for now</div>
+                <div class="task-desc"><code>plugins/github/index.ts</code> exports the <code>ViewPlugin</code> — imports <code>./Github</code></div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:check-decagram"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Regression</div>
-                <div class="task-desc">layout and behavior identical · existing <code>*.model.test.ts</code> pass unchanged</div>
+                <div class="task-desc">UI verified manually · <code>tsc</code> and <code>oxlint</code> pass</div>
               </div>
             </div>
           </div>

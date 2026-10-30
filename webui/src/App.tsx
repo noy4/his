@@ -7,7 +7,7 @@ import { Sources } from '@/views/sources/Sources'
 import { Visits } from '@/views/visits/Visits'
 import { Settings } from '@/views/settings/Settings'
 import { VIEW_PLUGINS } from '@/plugins/registry'
-import { type ComponentType, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import ChartBoxOutline from '~icons/mdi/chart-box-outline'
 import Cog from '~icons/mdi/cog-outline'
 import DatabaseImport from '~icons/mdi/database-import'
@@ -19,7 +19,7 @@ type ViewDef = {
   id: string
   label: string
   icon: IconComponent
-  content: ComponentType<{ app: AppModel }>
+  content: (props: { app: AppModel }) => ReactNode
 }
 
 type NavItem = ViewDef | { type: 'divider' }
