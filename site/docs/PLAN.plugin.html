@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="created_at" content="2026-10-30T15:00:00+09:00">
+<title>his | Plugin plan</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%234465DB'/%3E%3Cpath d='M12 7v5l3.5 2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+<link rel="stylesheet" href="assets/base.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/sidebar.css">
+<link rel="stylesheet" href="assets/toc.css">
+<style>
+  :root {
+    --green: #4ADE80;
+    --green-soft: rgba(74, 222, 128, 0.15);
+    --cyan: #38BDF8;
+    --purple: #A78BFA;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --green: #16A34A;
+      --green-soft: rgba(22, 163, 74, 0.1);
+      --cyan: #0284C7;
+      --purple: #7C3AED;
+    }
+  }
+
+  /* Badge (accent variant) */
+  .badge-top {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="badge-top">
+      <iconify-icon icon="mdi:rocket-launch-outline"></iconify-icon>
+      IMPLEMENTATION PLAN
+    </div>
+    <h1><iconify-icon icon="mdi:puzzle-outline" width="30"></iconify-icon>his plugin plan</h1>
+    <p class="tagline">Package the GitHub and YouTube views as plugins — frontend and backend half in one module.</p>
+  </header>
+
+  <!-- PLUGIN SHAPE -->
+  <section>
+    <h2><iconify-icon icon="mdi:puzzle-outline" width="24"></iconify-icon>Plugin shape</h2>
+    <p class="section-desc">
+      GitHub and YouTube become self-contained plugins — frontend and backend half in one module, loaded by a build-time registry.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:package-variant-closed"></iconify-icon>
+          <h4>Build-time registry</h4>
+        </div>
+        <p>Plugins are imported and listed in a registry. Type-safe, one bundle, shared singletons preserved. <strong>Chosen.</strong></p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:cloud-download-outline"></iconify-icon>
+          <h4>Runtime load</h4>
+        </div>
+        <p>Drop-in without a rebuild — deferred. The essential costs are noted below; not worth it for a local, first-party app.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:code-braces"></iconify-icon>Frontend contract</h3>
+
+    <p class="section-desc">
+      A plugin owns its view, its model, and (from Phase 3) its API slice. The app only knows the registry.
+    </p>
+
+    <pre><span class="c">// webui/src/plugins/types.ts — the contract</span>
+export interface ViewPlugin {
+  id: string                        <span class="c">// 'github' | 'youtube'</span>
+  label: string
+  icon: IconComponent
+  nav?: { after?: string; group?: 'insights' }   <span class="c">// placement</span>
+  View: ComponentType&lt;{ app: AppModel }&gt;
+}
+
+<span class="c">// webui/src/plugins/registry.ts — the one place to add a view</span>
+export const VIEW_PLUGINS: ViewPlugin[] = [github, youtube]
+
+<span class="c">// webui/src/plugins/github/index.ts — a plugin manifest</span>
+export const github: ViewPlugin = {
+  id: 'github',
+  label: 'GitHub',
+  icon: GithubIcon,
+  nav: { after: 'urls' },
+  View: GithubView,
+}</pre>
+
+    <h3><iconify-icon icon="mdi:vector-polyline"></iconify-icon>What moves</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>File</th><th>Today</th><th>After</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><code>App.tsx</code> NAV_ITEMS</td><td>hand-written entry</td><td>registry</td></tr>
+          <tr><td>2</td><td><code>views/github/*</code></td><td>top-level view</td><td><code>plugins/github/*</code></td></tr>
+          <tr><td>3</td><td><code>app/api/types.ts</code></td><td>fixed <code>github</code> slice</td><td>plugin-owned</td></tr>
+          <tr><td>4</td><td><code>app/api/client.ts</code></td><td>fixed <code>github.*</code> rpc</td><td>plugin-owned</td></tr>
+          <tr><td>5</td><td><code>app/api/mock/*</code></td><td>fixed github mock</td><td>plugin mock</td></tr>
+          <tr><td>6</td><td><code>~icons/*</code></td><td>inlined at build</td><td>plugin-local — fine</td></tr>
+          <tr><td>7</td><td><code>server/handlers.ts</code></td><td>github RPCs</td><td>plugin node entry <span class="c">(see PLAN.insights)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><iconify-icon icon="mdi:alert-outline"></iconify-icon>Runtime load — essential costs</h3>
+
+    <p class="section-desc">
+      Memo. If drop-in plugins are ever required, these are irreducible — not implementation details.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:vector-combine"></iconify-icon>
+          <h4>Shared singletons</h4>
+        </div>
+        <p>React and <code>@preact/signals-react</code> must be one instance across host and plugin. A second copy breaks reactivity — needs an import map or Module Federation shared scope.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:hammer-wrench"></iconify-icon>
+          <h4>Build-time tooling</h4>
+        </div>
+        <p><code>unplugin-icons</code> inlines icons at build time. A runtime plugin cannot use it — it must ship components/SVG through the contract instead.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:package-variant"></iconify-icon>
+          <h4>Shared internals</h4>
+        </div>
+        <p>Plugins lean on <code>views/shared/*</code> and <code>lib/*</code>. Those must become a published SDK, or the plugin is not self-contained.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:shield-alert-outline"></iconify-icon>
+          <h4>Trust</h4>
+        </div>
+        <p>Plugin code runs in-process with full archive access — no sandbox. Acceptable for first-party code, unsafe for third-party distribution.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:database-cog-outline"></iconify-icon>
+          <h4>Lifecycle</h4>
+        </div>
+        <p>Migration ownership, version skew, RPC namespace collisions, load/unload — all fall out of dynamic loading, none from the registry.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLUGIN ROADMAP -->
+  <section>
+    <h2><iconify-icon icon="mdi:puzzle-plus-outline" width="24"></iconify-icon>Plugin roadmap</h2>
+    <p class="section-desc">
+      Frontend first — GitHub is the canary. Then the backend half joins the same module.<br>
+      Status: Phase 1 done · GitHub / YouTube manifests wired · physical co-location and API ownership remain.
+    </p>
+
+    <div class="timeline">
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:check-circle"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:code-braces" style="color:var(--primary)"></iconify-icon>
+              Phase 1 — Plugin contract
+            </span>
+            <span class="step-meta">P1 · webui · done</span>
+          </div>
+          <div class="step-body">
+            Define <code>ViewPlugin</code> and make the app render nav from a registry — existing views move onto it with no behavior change.
+          </div>
+          <div class="tasks">
+            <div class="task done">
+              <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">plugins/types.ts</div>
+                <div class="task-desc"><code>ViewPlugin</code> · <code>id</code> / <code>label</code> / <code>icon</code> / <code>View</code></div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:format-list-bulleted"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">plugins/registry.ts</div>
+                <div class="task-desc"><code>VIEW_PLUGINS = [github, youtube]</code> — fixed order = nav order</div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:menu"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">App.tsx</div>
+                <div class="task-desc">NAV_ITEMS spreads the registry between URLs and the divider · positions unchanged</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:github" style="color:var(--green)"></iconify-icon>
+              Phase 2 — GitHub extraction
+            </span>
+            <span class="step-meta">P1 · webui · partial</span>
+          </div>
+          <div class="step-body">
+            Move the GitHub view into its plugin folder and register it. The migration canary — nothing should change on screen.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:folder-move-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Move</div>
+                <div class="task-desc"><code>views/github/*</code> → <code>plugins/github/*</code></div>
+              </div>
+            </div>
+            <div class="task done">
+              <iconify-icon icon="mdi:shape-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Manifest</div>
+                <div class="task-desc"><code>plugins/github/index.ts</code> exports the <code>ViewPlugin</code> — wraps <code>views/github</code> for now</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:check-decagram"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Regression</div>
+                <div class="task-desc">layout and behavior identical · existing <code>*.model.test.ts</code> pass unchanged</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:swap-horizontal" style="color:var(--accent)"></iconify-icon>
+              Phase 3 — API slice ownership
+            </span>
+            <span class="step-meta">P2 · webui</span>
+          </div>
+          <div class="step-body">
+            The plugin declares the API it calls, so a new view no longer edits <code>api/types.ts</code> or <code>api/client.ts</code>.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:lan-connect"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">AppModel.rpc</div>
+                <div class="task-desc">expose a generic <code>rpc(method, params)</code> handle instead of typed slices</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:code-json"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Plugin api</div>
+                <div class="task-desc">github types + thin client wrapper live inside the plugin</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:flask-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Plugin mock</div>
+                <div class="task-desc">plugin-owned mock · <code>VITE_USE_MOCK_API</code> contract kept · generic <code>insights.*</code> pair from PLAN.insights</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:youtube" style="color:#FF0000"></iconify-icon>
+              Phase 4 — YouTube plugin
+            </span>
+            <span class="step-meta">P2 · webui · partial</span>
+          </div>
+          <div class="step-body">
+            The second plugin — proves the shape is generic, not GitHub-shaped.
+          </div>
+          <div class="tasks">
+            <div class="task done">
+              <iconify-icon icon="mdi:package-variant-closed"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">plugins/youtube/*</div>
+                <div class="task-desc">manifest + registry entry in place · view/model co-location pending</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:card-multiple-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Shared parts</div>
+                <div class="task-desc">reuse common cards / avatars across plugins — pull them into a plugin SDK</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:server-outline" style="color:var(--purple)"></iconify-icon>
+              Phase 5 — Backend entry
+            </span>
+            <span class="step-meta">P3 · node</span>
+          </div>
+          <div class="step-body">
+            The other half of the plugin — RPC handlers beside their view. The server stops hardcoding domains.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">plugin node.ts</div>
+                <div class="task-desc">each plugin exports its handler map <code>{ 'github.stats': … }</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:call-merge"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">server/handlers.ts</div>
+                <div class="task-desc">merge plugin maps (PLAN.insights Phase 3) — remove the hardcoded pair</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:package-variant-plus"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Promote to package</div>
+                <div class="task-desc">plugin becomes a workspace package with <code>.</code> (browser) + <code>./node</code> entries — mirrors core's split</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="colophon">his plugin plan · created 2026-10-30</div>
+  </footer>
+</div>
+
+<nav id="sidebar" class="sidebar" aria-label="Docs"></nav>
+<script src="assets/sidebar.js" defer></script>
+
+<nav id="toc" class="toc" aria-label="On this page"></nav>
+
+<script src="assets/toc.js" defer></script>
+</body>
+</html>

@@ -2,18 +2,15 @@ import type { IconComponent } from '@/components/icons'
 import { cn } from 'cn'
 import { AppModel } from '@/app/app'
 import { Dashboard } from '@/views/dashboard/Dashboard'
-import { Github } from '@/views/github/Github'
 import { Urls } from '@/views/urls/Urls'
 import { Sources } from '@/views/sources/Sources'
 import { Visits } from '@/views/visits/Visits'
 import { Settings } from '@/views/settings/Settings'
-import { Youtube } from '@/views/youtube/Youtube'
+import { VIEW_PLUGINS } from '@/plugins/registry'
 import { type ComponentType, type ReactNode } from 'react'
 import ChartBoxOutline from '~icons/mdi/chart-box-outline'
 import Cog from '~icons/mdi/cog-outline'
 import DatabaseImport from '~icons/mdi/database-import'
-import GithubIcon from '~icons/mdi/github'
-import YoutubeIcon from '~icons/mdi/youtube'
 import LinkVariant from '~icons/mdi/link-variant'
 import History from '~icons/mdi/history'
 import { useModel } from './lib/useModel'
@@ -31,8 +28,12 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: ChartBoxOutline, content: Dashboard },
   { id: 'visits', label: 'Visits', icon: History, content: Visits },
   { id: 'urls', label: 'URLs', icon: LinkVariant, content: Urls },
-  { id: 'github', label: 'GitHub', icon: GithubIcon, content: Github },
-  { id: 'youtube', label: 'YouTube', icon: YoutubeIcon, content: Youtube },
+  ...VIEW_PLUGINS.map((plugin): ViewDef => ({
+    id: plugin.id,
+    label: plugin.label,
+    icon: plugin.icon,
+    content: plugin.View,
+  })),
   { type: 'divider' },
   { id: 'sources', label: 'Sources', icon: DatabaseImport, content: Sources },
   { id: 'settings', label: 'Settings', icon: Cog, content: Settings },
