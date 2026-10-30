@@ -370,6 +370,236 @@ export const github: ViewPlugin = {
     </div>
   </section>
 
+  <!-- PACKAGING PREP -->
+  <section>
+    <h2><iconify-icon icon="mdi:package-variant-plus" width="24"></iconify-icon>Packaging prep</h2>
+    <p class="section-desc">
+      Before the frontend and backend halves can share one package, webui needs a clean kit boundary.
+      This section studies the move — no code changes yet.
+    </p>
+
+    <h3><iconify-icon icon="mdi:vector-polyline"></iconify-icon>What plugins depend on today</h3>
+
+    <pre><span class="c"># plugins/* imports after Phase 1–4</span>
+@his/core
+@/components/ui/{card, toggle-chip, skeleton, toggle-group}
+@/components/view/{RecentItems, ViewRoot, Stats, HistoryRow, ListSkeleton, rank-medals, group-items}
+@/components/icons
+@/lib/{date, format, time-series, useModel, period, rpc-transport}
+react · @preact/signals-react · dayjs · recharts · cn · ~icons/*</pre>
+
+    <p class="section-desc">
+      No <code>@/app</code> dependency remains. What is left is the <strong>view kit</strong> and generic lib.
+    </p>
+
+    <h3><iconify-icon icon="mdi:sitemap-outline"></iconify-icon>Target layers</h3>
+
+    <pre>@his/core
+   ↑
+@his/plugin-kit            ViewPlugin · ViewContext · RpcCall · UI · hooks
+   ↑              ↑
+@his/plugin-*  →  webui    (app shell)
+   ↑
+server                     (./node only)</pre>
+
+    <h3><iconify-icon icon="mdi:alert-outline"></iconify-icon>Blockers</h3>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:at"></iconify-icon>
+          <h4>@/ alias</h4>
+        </div>
+        <p>A package cannot use webui's alias. Kit internals need relative imports or their own <code>@kit/*</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:palette-outline"></iconify-icon>
+          <h4>Tailwind scanning</h4>
+        </div>
+        <p><code>index.css</code> is <code>@import 'tailwindcss'</code> and only scans <code>webui/src</code>. Add <code>@source</code> for each package or classes are never generated.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:emoticon-outline"></iconify-icon>
+          <h4>~icons/*</h4>
+        </div>
+        <p><code>unplugin-icons</code> resolves only in webui's Vite. Consume workspace packages as source, or pass icons as props.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:vhs"></iconify-icon>
+          <h4>Singletons</h4>
+        </div>
+        <p>React and <code>@preact/signals-react</code> must stay one instance — model them as <code>peerDependencies</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:swap-horizontal"></iconify-icon>
+          <h4>RpcCall split</h4>
+        </div>
+        <p><code>RpcCall</code> lives in <code>lib/rpc-transport.ts</code>. Move the type to the kit contract; keep the transport class in webui.</p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <iconify-icon icon="mdi:server-outline"></iconify-icon>
+          <h4>Node feature move</h4>
+        </div>
+        <p><code>core/src/features/{github,youtube}</code> must move into each plugin's <code>./node</code>; parsers go to a shared <code>./parse</code>.</p>
+      </div>
+    </div>
+
+    <h3><iconify-icon icon="mdi:package-variant"></iconify-icon>Kit contents</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>In <code>plugin-kit</code></th><th>Stays in webui</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>components/ui/*</code>, <code>components/view/*</code></td><td><code>app/app.ts</code>, <code>app/api/*</code></td></tr>
+          <tr><td><code>components/icons</code>, <code>components/Favicon</code></td><td><code>views/*</code> (dashboard, visits, urls, sources, settings)</td></tr>
+          <tr><td><code>lib/{date,format,domain,time-series,useModel,period}</code></td><td><code>components/SearchBar</code></td></tr>
+          <tr><td>contract — <code>ViewPlugin</code>, <code>ViewContext</code>, <code>RpcCall</code></td><td><code>lib/{rpc-transport body, events, browser, signal/filter}</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3><iconify-icon icon="mdi:format-list-numbered"></iconify-icon>Steps</h3>
+
+    <div class="timeline">
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:shield-check-outline" style="color:var(--primary)"></iconify-icon>
+              Step A — SDK facade
+            </span>
+            <span class="step-meta">P1 · webui</span>
+          </div>
+          <div class="step-body">
+            Freeze the boundary before moving anything. The facade's export list becomes the future package exports.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">plugins/sdk.ts</div>
+                <div class="task-desc">re-export the allowed surface only · plugins import <code>@/plugins/sdk</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:folder-move-outline" style="color:var(--green)"></iconify-icon>
+              Step B — <code>src/kit</code>
+            </span>
+            <span class="step-meta">P1 · webui</span>
+          </div>
+          <div class="step-body">
+            Consolidate the kit into one folder with relative internals. Verify it never imports <code>@/app</code> or <code>@/views</code>.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:package-variant-closed"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Move into src/kit</div>
+                <div class="task-desc">components/ui · components/view · icons · Favicon · selected lib</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:check-decagram"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Boundary test</div>
+                <div class="task-desc">grep: no <code>@/app</code> / <code>@/views</code> inside <code>src/kit</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:package-variant-plus" style="color:var(--accent)"></iconify-icon>
+              Step C — <code>packages/plugin-kit</code>
+            </span>
+            <span class="step-meta">P2 · workspace</span>
+          </div>
+          <div class="step-body">
+            Promote the folder to a workspace package. Webui starts importing <code>@his/plugin-kit</code>.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:file-cog-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">package.json + tsconfig</div>
+                <div class="task-desc">exports · peerDeps (react, signals, dayjs) · add <code>packages/*</code> to the workspace</div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:palette-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Tailwind @source</div>
+                <div class="task-desc">scan <code>packages/plugin-kit/src</code> from webui's <code>index.css</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step">
+        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <div class="step-content">
+          <div class="step-head">
+            <span class="step-title">
+              <iconify-icon icon="mdi:puzzle-outline" style="color:var(--purple)"></iconify-icon>
+              Step D — <code>packages/plugin-*</code>
+            </span>
+            <span class="step-meta">P3 · workspace</span>
+          </div>
+          <div class="step-body">
+            The original goal — one package with both halves. Webui and server only compose.
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <iconify-icon icon="mdi:web"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">./web</div>
+                <div class="task-desc">view + model + api · imports <code>@his/plugin-kit</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:server-outline"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">./node</div>
+                <div class="task-desc"><code>ServerPlugin</code> + the moved feature · imports <code>@his/core/node</code></div>
+              </div>
+            </div>
+            <div class="task">
+              <iconify-icon icon="mdi:check-decagram"></iconify-icon>
+              <div class="task-text">
+                <div class="task-title">Registries</div>
+                <div class="task-desc">webui <code>VIEW_PLUGINS</code> and server <code>PLUGINS</code> import from packages</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <footer>
     <div class="colophon">his plugin plan · created 2026-10-30</div>
   </footer>
