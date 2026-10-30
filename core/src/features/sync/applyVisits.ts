@@ -1,7 +1,7 @@
 import type { EpochMs, IdMode, NormalizedVisit, SourceKind } from '../../types.ts'
 import { getSettings } from '../settings/settings.ts'
 import { getCheckpoint, setCheckpoint } from './checkpoints.ts'
-import { computeSkip } from './skip.ts'
+import { planBatch } from './skip.ts'
 import type { KyselyDb } from '../../db/db.ts'
 import { applyDeltas, flagHidden, insertVisits, resolveUrlIds } from './writes.ts'
 
@@ -60,43 +60,26 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
       lastRunAt: now,
     }
 
-  // pre-pass: batch max id and the count past the checkpoint
-  let maxSeen = 0
-  let aboveCheckpoint = 0
-  for (const visit of visits) {
-    const id = visit.sourceVisitId
-    if (id > maxSeen)
-      maxSeen = id
-    if (id > checkpoint.lastSourceVisitId)
-      aboveCheckpoint += 1
-  }
-
-  // id space shrank vs the checkpoint: history was cleared, realign
-  const { cleared, offset, skipBelow, processAll } = computeSkip({
+  // plan the batch: max id -> flow policy (cleared / offset) -> candidates
+  const { cleared, offset, maxSeen, candidates } = planBatch({
+    visits,
     checkpoint,
-    maxSeen,
     idMode: profile.idMode,
     rescan: options.rescan,
   })
-  const pending = processAll ? visits.length : aboveCheckpoint
-  const candidates = visits.filter((visit) => visit.sourceVisitId > skipBelow)
 
   // new URLs are flagged hidden at insert time, so sync needs no full recompute
   const { hidden_patterns = [] } = await getSettings(db)
 
-  let insertedVisits = 0
-  let touchedUrls = 0
-
   // all-or-nothing: the checkpoint advances with the commit
-  await db.transaction().execute(async (tx) => {
+  const { insertedVisits, touchedUrls } = await db.transaction().execute(async (tx) => {
     const urlIds = new Map<string, number>()
     await resolveUrlIds(tx, candidates, urlIds)
     if (hidden_patterns.length > 0)
       await flagHidden(tx, urlIds, hidden_patterns)
 
     const deltas = await insertVisits(tx, sourceProfileId, offset, candidates, urlIds)
-    insertedVisits = [...deltas.values()].reduce((sum, delta) => sum + delta.count, 0)
-    touchedUrls = deltas.size
+    const insertedVisits = [...deltas.values()].reduce((sum, delta) => sum + delta.count, 0)
     await applyDeltas(tx, deltas)
 
     await setCheckpoint(tx, sourceProfileId, {
@@ -104,12 +87,17 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
       sourceIdOffset: offset,
       lastRunAt: now,
     })
+
+    return {
+      insertedVisits,
+      touchedUrls: deltas.size,
+    }
   })
 
   return {
     sourceProfileId,
     seenVisits: visits.length,
-    processedVisits: pending,
+    processedVisits: candidates.length,
     insertedVisits,
     touchedUrls,
     cleared,

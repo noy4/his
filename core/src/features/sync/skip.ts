@@ -1,4 +1,4 @@
-import type { IdMode, SyncCheckpoint } from '../../types.ts'
+import type { IdMode, NormalizedVisit, SyncCheckpoint } from '../../types.ts'
 
 // flow policy for one batch, decided before touching any rows
 export interface SkipState {
@@ -34,4 +34,28 @@ export function detectCleared(checkpoint: SyncCheckpoint, sourceMaxVisitId: numb
 
 export function resetOffset(checkpoint: SyncCheckpoint): number {
   return checkpoint.sourceIdOffset + checkpoint.lastSourceVisitId
+}
+
+export type BatchPlan = SkipState & {
+  maxSeen: number
+  candidates: NormalizedVisit[]
+}
+
+export type PlanBatchParams = Omit<ComputeSkipParams, 'maxSeen'> & {
+  visits: NormalizedVisit[]
+}
+
+// plan one batch: batch max id -> flow policy -> the visits to write
+export function planBatch({ visits, checkpoint, idMode, rescan }: PlanBatchParams): BatchPlan {
+  let maxSeen = 0
+  for (const visit of visits) {
+    if (visit.sourceVisitId > maxSeen)
+      maxSeen = visit.sourceVisitId
+  }
+  const skip = computeSkip({ checkpoint, maxSeen, idMode, rescan })
+  return {
+    ...skip,
+    maxSeen,
+    candidates: visits.filter((visit) => visit.sourceVisitId > skip.skipBelow),
+  }
 }
