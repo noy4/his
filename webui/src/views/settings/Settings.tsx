@@ -1,7 +1,7 @@
 import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/app/app'
 import { SettingsModel, parsePatterns } from './settings.model'
-import { ViewRoot } from '@/views/shared/ViewRoot'
+import { ViewRoot } from '@/components/view/ViewRoot'
 import { buttonPrimary } from '@/components/ui/button'
 import { cn } from 'cn'
 import type { ComponentProps, ReactNode } from 'react'

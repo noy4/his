@@ -1,7 +1,7 @@
 import { Card, CardTitle } from '@/components/ui/card'
 import { dateLabel, daySpan } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
-import { VisitCount } from '@/views/shared/RecentItems'
+import { VisitCount } from '@/components/view/RecentItems'
 import { useModel } from '@/lib/useModel'
 import type { ViewContext } from '../types'
 import { cn } from 'cn'
@@ -14,9 +14,9 @@ import {
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
-} from '@/views/shared/Stats'
-import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/views/shared/rank-medals'
-import { ViewRoot } from '@/views/shared/ViewRoot'
+} from '@/components/view/Stats'
+import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/components/view/rank-medals'
+import { ViewRoot } from '@/components/view/ViewRoot'
 import { GithubAvatar, GithubKindAvatar } from './Github.components'
 import { GithubDailyVisitsCard } from './GithubDailyVisitsCard'
 import { GithubRecentItemsCard } from './GithubRecentItemsCard'

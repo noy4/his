@@ -1,4 +1,4 @@
-import type { HistoryItem } from '@/app/api'
+import type { HistoryItem } from '@his/core'
 import { relativeDateLabel } from '@/lib/date'
 
 export interface ItemGroup {

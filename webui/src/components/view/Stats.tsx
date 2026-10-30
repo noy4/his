@@ -32,7 +32,7 @@ export function Stat({ label, value, icon: Icon }: { label: string; value: strin
   )
 }
 
-import { TOOLTIP_CONTENT_STYLE, TOOLTIP_ITEM_STYLE, TOOLTIP_LABEL_STYLE } from '@/views/shared/chart-style'
+import { TOOLTIP_CONTENT_STYLE, TOOLTIP_ITEM_STYLE, TOOLTIP_LABEL_STYLE } from '@/components/view/chart-style'
 
 export function Bars({
   data,

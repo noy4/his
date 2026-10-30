@@ -1,7 +1,7 @@
 import { Card, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { StatsContentRoot, StatsHeaderRoot } from '@/views/shared/Stats'
-import { ViewRoot } from '@/views/shared/ViewRoot'
+import { StatsContentRoot, StatsHeaderRoot } from '@/components/view/Stats'
+import { ViewRoot } from '@/components/view/ViewRoot'
 
 export function YoutubeSkeleton() {
   return (

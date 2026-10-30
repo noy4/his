@@ -1,4 +1,4 @@
-import type { HistoryItem, HistoryVisit } from '@/app/api'
+import type { HistoryItem, HistoryVisit } from '@his/core'
 import { Favicon } from '@/components/Favicon'
 import { dateLabel, timeLabel } from '@/lib/date'
 import { cn } from 'cn'

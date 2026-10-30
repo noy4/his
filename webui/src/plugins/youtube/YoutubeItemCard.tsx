@@ -2,7 +2,7 @@ import type { HistoryItem } from '@his/core'
 import { parseYoutubeTitle, parseYoutubeUrl } from '@his/core'
 import { cn } from 'cn'
 import type { ReactNode } from 'react'
-import { VisitCount } from '@/views/shared/RecentItems'
+import { VisitCount } from '@/components/view/RecentItems'
 import { YoutubeItemAvatar } from './Youtube.components'
 import { youtubeItemLabel } from './youtube.labels'
 

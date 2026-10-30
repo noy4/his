@@ -1,8 +1,8 @@
 import { Card, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ListSkeleton } from '@/views/shared/ListSkeleton'
-import { StatsContentRoot, StatsHeaderRoot } from '@/views/shared/Stats'
-import { ViewRoot } from '@/views/shared/ViewRoot'
+import { ListSkeleton } from '@/components/view/ListSkeleton'
+import { StatsContentRoot, StatsHeaderRoot } from '@/components/view/Stats'
+import { ViewRoot } from '@/components/view/ViewRoot'
 
 export function DashboardSkeleton() {
   return (

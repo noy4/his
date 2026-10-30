@@ -13,8 +13,8 @@ import CalendarIcon from '~icons/mdi/calendar-range'
 import EyeIcon from '~icons/mdi/eye-outline'
 import LinkIcon from '~icons/mdi/link-variant'
 import WebIcon from '~icons/mdi/web'
-import { ViewRoot } from '@/views/shared/ViewRoot'
-import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/views/shared/rank-medals'
+import { ViewRoot } from '@/components/view/ViewRoot'
+import { RANK_MEDALS, RANK_MEDAL_COLORS } from '@/components/view/rank-medals'
 import { DashboardModel } from './dashboard.model'
 import { DashboardSkeleton } from './Dashboard.components'
 import { MonthNav, PeriodToggle } from '@/lib/period/Period'
@@ -24,7 +24,7 @@ import {
   Stat,
   StatsContentRoot,
   StatsHeaderRoot,
-} from '@/views/shared/Stats'
+} from '@/components/view/Stats'
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
