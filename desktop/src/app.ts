@@ -100,6 +100,9 @@ export class HisApp {
         window.hide()
       }
     })
+    // Dock icon exists only while the window is on screen.
+    window.on('show', () => this.app.dock?.show())
+    window.on('hide', () => this.app.dock?.hide())
     return window
   }
 
