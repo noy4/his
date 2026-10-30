@@ -1,0 +1,10 @@
+{
+  "name": "his",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @his/webui --filter @his/desktop run dev",
+    "dev:webui": "pnpm --filter @his/webui run dev",
+    "dev:desktop": "pnpm --filter @his/desktop run dev"
+  }
+}

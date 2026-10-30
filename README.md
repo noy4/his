@@ -44,8 +44,7 @@ Data is stored in `~/.his` (override with `--home` or `HIS_HOME`).
 
 ```bash
 pnpm install
-pnpm -C webui run build                     # build the WebUI
-pnpm -C desktop run dev                     # menu bar app (unpackaged runs use ~/.his-dev)
+pnpm dev           # WebUI dev server + desktop app
 ```
 
 ## 🔗 Related projects

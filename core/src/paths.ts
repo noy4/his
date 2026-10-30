@@ -3,8 +3,8 @@ import path from 'node:path'
 
 // home layout: everything under one home dir
 
-export function defaultHome(): string {
-  return process.env.HIS_HOME ?? path.join(os.homedir(), '.his')
+export function defaultHome({ dev = false }: { dev?: boolean } = {}): string {
+  return process.env.HIS_HOME ?? path.join(os.homedir(), dev ? '.his-dev' : '.his')
 }
 
 export function stateFilePath(home: string): string {

@@ -45,13 +45,13 @@ export default defineConfig({
   ],
 })
 
-// dev only: hand the WebUI the running serve's /rpc token
+// inject /rpc token
 function hisState(): Plugin {
   return {
     name: 'his:state',
     apply: 'serve',
     transformIndexHtml(html) {
-      const state = readState(defaultHome())
+      const state = readState(defaultHome({ dev: true }))
       if (state?.token === undefined) return html
       const tag = `<script>window.__HIS__=${JSON.stringify({ token: state.token })}</script>`
       return html.replace('</head>', `${tag}\n  </head>`)

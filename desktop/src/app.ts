@@ -4,6 +4,7 @@ import path from 'node:path'
 import { defaultHome } from '@his/core/paths'
 import { readState, type InstanceState } from '@his/core/state'
 import { createTray } from './tray.ts'
+import { dev } from './dev.ts'
 
 export class HisApp {
   readonly app: App
@@ -41,7 +42,8 @@ export class HisApp {
     try {
       if (this.#win === null) this.#win = this.#createWindow()
       const state = await this.ensureServe()
-      if (this.#win.webContents.getURL() !== state.url) await this.#win.loadURL(state.url)
+      const url = dev ? devUrl() : state.url
+      if (this.#win.webContents.getURL() !== url) await this.#win.loadURL(url)
       this.#win.show()
     } catch (error) {
       this.showError('Unable to open his', error)
@@ -183,6 +185,10 @@ export class HisApp {
       if (!proc.kill('SIGTERM')) { clearTimeout(timer); resolve() }
     })
   }
+}
+
+function devUrl(): string {
+  return process.env.HIS_DEV_URL ?? 'http://localhost:5173/'
 }
 
 // The served WebUI is the only page the window may show.
