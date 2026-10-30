@@ -167,7 +167,7 @@ export const github: ViewPlugin = {
     <h2><iconify-icon icon="mdi:puzzle-plus-outline" width="24"></iconify-icon>Plugin roadmap</h2>
     <p class="section-desc">
       Frontend first — GitHub is the canary. Then the backend half joins the same module.<br>
-      Status: Phase 1–4 done · <code>plugins/</code> imports <code>@his/core</code> + <code>components/*</code> + <code>lib</code> · shared UI at <code>components/view</code> · Phase 5 (backend) remains.
+      Status: Phase 1–4 done · Phase 5 handler registry done (<code>server/src/plugins/*</code>, merged in <code>handlers.ts</code>) · package promotion deferred.
     </p>
 
     <div class="timeline">
@@ -336,31 +336,31 @@ export const github: ViewPlugin = {
               <iconify-icon icon="mdi:server-outline" style="color:var(--purple)"></iconify-icon>
               Phase 5 — Backend entry
             </span>
-            <span class="step-meta">P3 · node</span>
+            <span class="step-meta">P3 · node · partial</span>
           </div>
           <div class="step-body">
             The other half of the plugin — RPC handlers beside their view. The server stops hardcoding domains.
           </div>
           <div class="tasks">
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:file-code-outline"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">plugin node.ts</div>
-                <div class="task-desc">each plugin exports its handler map <code>{ 'github.stats': … }</code></div>
+                <div class="task-desc"><code>server/src/plugins/*</code> exports <code>ServerPlugin { name, handlers }</code></div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:call-merge"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">server/handlers.ts</div>
-                <div class="task-desc">merge plugin maps (PLAN.insights Phase 3) — remove the hardcoded pair</div>
+                <div class="task-desc"><code>PLUGINS</code> (<code>ServerPlugin[]</code>) merged — the hardcoded github/youtube pair is gone</div>
               </div>
             </div>
             <div class="task">
               <iconify-icon icon="mdi:package-variant-plus"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Promote to package</div>
-                <div class="task-desc">plugin becomes a workspace package with <code>.</code> (browser) + <code>./node</code> entries — mirrors core's split</div>
+                <div class="task-desc">deferred — plugin becomes a workspace package with <code>.</code> + <code>./node</code> once the webui UI kit is packaged</div>
               </div>
             </div>
           </div>
