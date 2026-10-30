@@ -1,5 +1,5 @@
 import { historyDbPath, initDb } from '@his/core/node'
-import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
+import { clearState, writeState, type InstanceState } from '@his/core/state'
 import { randomBytes } from 'node:crypto'
 import http from 'node:http'
 import { createApp } from './app.ts'
@@ -19,16 +19,13 @@ export interface ServeOptions {
   dist: string | null
 }
 
-export type ServeResult =
-  | { kind: 'started'; instance: InstanceState; done: Promise<void> }
-  | { kind: 'already-running'; instance: InstanceState }
+export interface HisServer {
+  instance: InstanceState
+  close(): Promise<void>
+}
 
-export async function serve(options: ServeOptions): Promise<ServeResult> {
+export async function createServer(options: ServeOptions): Promise<HisServer> {
   const { home } = options
-  const running = readState(home)
-  if (running !== null)
-    return { kind: 'already-running', instance: running }
-
   const db = await initDb(historyDbPath(home))
 
   // Fresh token per start, injected into the WebUI
@@ -58,50 +55,35 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     token,
   })
 
-  const { promise: done, resolve: finish } = Promise.withResolvers<void>()
+  // startup catch-up
+  runner.trigger()
+  const stopSchedule = runner.schedule()
 
-  let closing = false
-  let published = false
-  const shutdown = (): void => {
-    if (closing) return
-    closing = true
-    process.removeListener('SIGINT', shutdown)
-    process.removeListener('SIGTERM', shutdown)
+  let closed: Promise<void> | null = null
+  const close = (): Promise<void> => {
+    if (closed !== null) return closed
+    const { promise, resolve } = Promise.withResolvers<void>()
+    closed = promise
     stopSchedule()
     rpc.stop()
     server.closeAllConnections()
     server.close(() => {
       db.destroy().finally(() => {
-        if (published) clearState(home)
-        finish()
+        clearState(home)
+        resolve()
       })
     })
+    return promise
   }
-  process.on('SIGINT', shutdown)
-  process.on('SIGTERM', shutdown)
-  // exit when the app that started us goes away.
-  // Opt-in, because stdin may already be closed (`stdio: 'ignore'` and `< /dev/null` read EOF immediately).
-  if (process.env.HIS_EXIT_ON_STDIN_CLOSE === '1') {
-    process.stdin.once('end', shutdown)
-    process.stdin.once('close', shutdown)
-    process.stdin.resume()
-  }
-
-  // Startup catch-up — async so serve returns early; the 6h interval
-  // retries failures (which land on lastSummary).
-  runner.trigger()
-  const stopSchedule = runner.schedule()
 
   try {
     writeState(home, instance)
-    published = true
   } catch (error) {
-    shutdown()
-    await done
+    await close()
     throw error
   }
 
-  return { kind: 'started', instance, done }
+  return { instance, close }
 }
 
 // --- networking ---
