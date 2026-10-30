@@ -1,7 +1,7 @@
 import type { KyselyDb } from '../../db/db.ts'
 import type { SyncOptions } from '../../types.ts'
-import type { ApplyVisitsResult } from './applyVisits.ts'
-import { applyVisits } from './applyVisits.ts'
+import type { MergeVisitsResult } from './mergeVisits.ts'
+import { mergeVisits } from './mergeVisits.ts'
 import { snapshot } from './snapshot.ts'
 import type { SyncTarget } from '../sources/types.ts'
 import { browserOf } from '../sources/browsers.ts'
@@ -44,8 +44,8 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
     const snap = snapshot(target, home)
     const visits = engine.parse(snap.path)
 
-    // upsert visits
-    const result: ApplyVisitsResult = await applyVisits({
+    // merge visits
+    const result: MergeVisitsResult = await mergeVisits({
       db,
       profile: {
         browser: target.browser,

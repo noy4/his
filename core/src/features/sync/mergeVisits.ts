@@ -13,28 +13,28 @@ export interface SourceProfileRef {
   idMode: IdMode
 }
 
-export interface ApplyVisitsOptions {
+export interface MergeVisitsOptions {
   rescan?: boolean
 }
 
-export interface ApplyVisitsResult {
+export interface MergeVisitsResult {
   sourceProfileId: number
   cleared: boolean
   insertedVisits: number
   touchedUrls: number
 }
 
-export interface ApplyVisitsParams {
+export interface MergeVisitsParams {
   db: KyselyDb
   profile: SourceProfileRef
   visits: NormalizedVisit[]
-  options: ApplyVisitsOptions
+  options: MergeVisitsOptions
 }
 
 // merge one profile's visits into the archive. All writes are set-based
 // (chunked multi-row inserts + one aggregate UPDATE per batch) so a large
 // first import does not compile one query per visit.
-export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisitsResult> {
+export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisitsResult> {
   const { db, profile, visits, options } = params
   const now = Date.now()
   const sourceProfileId = await ensureSourceProfile(db, profile) // find-or-create the profile row
