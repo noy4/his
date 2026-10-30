@@ -5,7 +5,9 @@ import { sandboxDev } from './dev.ts'
 // separate the unpackaged app from the installed one
 sandboxDev()
 
-if (!app.requestSingleInstanceLock()) app.exit(0)
+// single instance lock (skipped in dev for auto reload)
+if (app.isPackaged && !app.requestSingleInstanceLock())
+  app.exit(0)
 
 const hisApp = new HisApp(app)
 
