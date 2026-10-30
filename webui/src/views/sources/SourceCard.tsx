@@ -115,7 +115,8 @@ function SourceCardStatusDot({ label, warn }: { label: string; warn?: boolean })
 // SourceCardStats
 
 function SourceCardStats({ entry }: { entry: SourceEntry }) {
-  if (!entry.registered || entry.visits === 0) {
+  if (!entry.registered || entry.lastRunAt === null) return null
+  if (entry.visits === 0) {
     return <span className="font-mono text-xs text-muted">no visits</span>
   }
   return (

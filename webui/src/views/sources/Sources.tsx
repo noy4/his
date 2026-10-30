@@ -22,7 +22,7 @@ export function Sources({ app }: { app: AppModel }) {
       <SourcesHeader>
         <SourcesDescription text="Pick sources to sync automatically." />
         <SourcesStatus>
-          <LastSync lastSync={model.lastSync.value} />
+          {enabledCount > 0 && <LastSync lastSync={model.lastSync.value} />}
           {notice !== null && <SourcesNotice text={notice} />}
         </SourcesStatus>
         <SyncButton
