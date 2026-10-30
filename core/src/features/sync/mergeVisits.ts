@@ -3,7 +3,7 @@ import { getSettings } from '../settings/settings.ts'
 import { getCheckpoint, setCheckpoint } from './checkpoints.ts'
 import { planIngest } from './skip.ts'
 import type { KyselyDb } from '../../db/db.ts'
-import { applyDeltas, flagHidden, insertVisits, resolveUrlIds } from './writes.ts'
+import { applyUrlDeltas, ensureUrlIds, insertVisits, markHidden } from './writes.ts'
 
 export interface SourceProfileRef {
   browser: string
@@ -54,13 +54,13 @@ export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisit
 
   const { insertedVisits, touchedUrls } = await db.transaction().execute(async (tx) => {
     const urlIds = new Map<string, number>()
-    await resolveUrlIds(tx, candidates, urlIds)
+    await ensureUrlIds(tx, candidates, urlIds)
     if (hidden_patterns.length > 0)
-      await flagHidden(tx, urlIds, hidden_patterns)
+      await markHidden(tx, urlIds, hidden_patterns)
 
     const deltas = await insertVisits(tx, sourceProfileId, sourceIdOffset, candidates, urlIds)
-    const insertedVisits = [...deltas.values()].reduce((sum, delta) => sum + delta.count, 0)
-    await applyDeltas(tx, deltas)
+    const insertedVisits = [...deltas.values()].reduce((sum, delta) => sum + delta.visitCount, 0)
+    await applyUrlDeltas(tx, deltas)
 
     await setCheckpoint(tx, sourceProfileId, {
       lastSourceVisitId: sourceMaxVisitId,
