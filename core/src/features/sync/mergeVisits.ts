@@ -45,8 +45,8 @@ export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisit
       touchedUrls: 0,
     }
 
-  // plan the batch: max id -> flow policy (cleared / offset) -> candidates
-  const { cleared, offset, sourceMaxVisitId, candidates } = planIngest({
+  // plan the batch: max id -> flow policy (cleared / sourceIdOffset) -> candidates
+  const { cleared, sourceIdOffset, sourceMaxVisitId, candidates } = planIngest({
     visits,
     checkpoint,
     idMode: profile.idMode,
@@ -63,13 +63,13 @@ export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisit
     if (hidden_patterns.length > 0)
       await flagHidden(tx, urlIds, hidden_patterns)
 
-    const deltas = await insertVisits(tx, sourceProfileId, offset, candidates, urlIds)
+    const deltas = await insertVisits(tx, sourceProfileId, sourceIdOffset, candidates, urlIds)
     const insertedVisits = [...deltas.values()].reduce((sum, delta) => sum + delta.count, 0)
     await applyDeltas(tx, deltas)
 
     await setCheckpoint(tx, sourceProfileId, {
       lastSourceVisitId: sourceMaxVisitId,
-      sourceIdOffset: offset,
+      sourceIdOffset,
       lastRunAt: now,
     })
 

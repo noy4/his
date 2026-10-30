@@ -102,13 +102,13 @@ export interface UrlDelta {
 export async function insertVisits(
   tx: Transaction<DB>,
   sourceProfileId: number,
-  offset: number,
+  sourceIdOffset: number,
   visits: NormalizedVisit[],
   urlIds: Map<string, number>,
 ): Promise<Map<number, UrlDelta>> {
   const bySourceId = new Map<number, NormalizedVisit>()
   for (const visit of visits)
-    bySourceId.set(visit.sourceVisitId + offset, visit)
+    bySourceId.set(visit.sourceVisitId + sourceIdOffset, visit)
 
   const deltas = new Map<number, UrlDelta>()
   for (const chunk of chunks(visits)) {
@@ -119,7 +119,7 @@ export async function insertVisits(
         visit_time: visit.visitTime,
         transition: visit.transition,
         source_profile_id: sourceProfileId,
-        source_visit_id: visit.sourceVisitId + offset,
+        source_visit_id: visit.sourceVisitId + sourceIdOffset,
       })))
       .onConflict((oc) => oc.columns(['source_profile_id', 'source_visit_id']).doNothing())
       .returning(['url_id', 'visit_time', 'transition', 'source_visit_id'])

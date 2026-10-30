@@ -28,7 +28,7 @@ export function planIngest({ visits, checkpoint, idMode, rescan }: PlanIngestPar
 export interface SkipState {
   cleared: boolean
   processAll: boolean
-  offset: number
+  sourceIdOffset: number
   skipBelow: number
 }
 
@@ -39,7 +39,7 @@ export interface ComputeSkipParams {
   rescan?: boolean
 }
 
-// decide cleared / offset / skipBelow from the checkpoint and this ingest's ids
+// decide cleared / sourceIdOffset / skipBelow from the checkpoint and this ingest's ids
 export function computeSkip({ checkpoint, sourceMaxVisitId, idMode, rescan }: ComputeSkipParams): SkipState {
   const hashIds = idMode === 'hash' // hash ids carry no order, skip checkpoint logic
   const cleared = !hashIds && detectCleared(checkpoint, sourceMaxVisitId)
@@ -47,7 +47,7 @@ export function computeSkip({ checkpoint, sourceMaxVisitId, idMode, rescan }: Co
   return {
     cleared,
     processAll,
-    offset: cleared ? resetOffset(checkpoint) : checkpoint.sourceIdOffset,
+    sourceIdOffset: cleared ? rebaseOffset(checkpoint) : checkpoint.sourceIdOffset,
     skipBelow: processAll ? -1 : checkpoint.lastSourceVisitId,
   }
 }
@@ -56,6 +56,6 @@ export function detectCleared(checkpoint: SyncCheckpoint, sourceMaxVisitId: numb
   return checkpoint.lastSourceVisitId > 0 && sourceMaxVisitId < checkpoint.lastSourceVisitId
 }
 
-export function resetOffset(checkpoint: SyncCheckpoint): number {
+export function rebaseOffset(checkpoint: SyncCheckpoint): number {
   return checkpoint.sourceIdOffset + checkpoint.lastSourceVisitId
 }
