@@ -1,13 +1,15 @@
 import { signal } from '@preact/signals-react'
-import type { GithubStats, GithubVisitKind, HisApi, HistoryItem } from '@/app/api'
+import type { GithubStats, GithubVisitKind, HistoryItem } from '@his/core'
+import type { RpcCall } from '@/lib/rpc-transport'
 import { PeriodModel } from '@/lib/period/period.model'
+import { githubApi } from './api'
 
 export type GithubFilter = { owner: string; repo?: string } | null
 
 const PAGE = 30
 
 export class GithubModel {
-  readonly api: HisApi
+  readonly api: ReturnType<typeof githubApi>
   readonly period: PeriodModel
   readonly stats = signal<GithubStats | null>(null)
   readonly filter = signal<GithubFilter>(null)
@@ -19,8 +21,8 @@ export class GithubModel {
   #visitsReq = 0
   #started = false
 
-  constructor(api: HisApi) {
-    this.api = api
+  constructor(rpc: RpcCall) {
+    this.api = githubApi(rpc)
     this.period = new PeriodModel({ onChange: () => this.reload() })
   }
 
@@ -54,7 +56,7 @@ export class GithubModel {
   async reload(): Promise<void> {
     const id = ++this.#statsReq
     const visits = this.loadVisits()
-    const result = await this.api.github.stats({ month: this.period.month })
+    const result = await this.api.stats({ month: this.period.month })
     if (id === this.#statsReq) this.stats.value = result
     await visits
   }
@@ -64,7 +66,7 @@ export class GithubModel {
     const cursor = append ? this.nextCursor.value ?? undefined : undefined
     if (append && !cursor) return
     const f = this.filter.value
-    const page = await this.api.github.search({
+    const page = await this.api.search({
       month: this.period.month,
       owner: f?.owner,
       repo: f?.repo,

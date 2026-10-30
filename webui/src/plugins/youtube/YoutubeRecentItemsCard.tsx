@@ -1,4 +1,4 @@
-import type { HistoryItem, YoutubeVisitKind } from '@/app/api'
+import type { HistoryItem, YoutubeVisitKind } from '@his/core'
 import { Card, CardTitle } from '@/components/ui/card'
 import { ToggleChip } from '@/components/ui/toggle-chip'
 import { parseYoutubeTitle, parseYoutubeUrl } from '@his/core'

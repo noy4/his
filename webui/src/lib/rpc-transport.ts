@@ -34,6 +34,8 @@ interface RpcMessage {
   error?: { code: number; message: string }
 }
 
+export type RpcCall = <R>(method: string, params?: unknown) => Promise<R>
+
 export class RpcTransport<T extends RpcEventsMap = RpcEventsMap> {
   #ws: WebSocket | null = null
   #open: Promise<WebSocket> = new Promise<WebSocket>(() => { })

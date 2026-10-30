@@ -6,35 +6,36 @@ export function createApi(): HisApi {
   if (import.meta.env.VITE_USE_MOCK_API === 'true') return mockApi
 
   const transport = new RpcTransport<HisEvents>(rpcUrl())
-  function rpc<T>(method: string) {
-    return (params?: unknown) => transport.call<T>(method, params)
+  function method<T>(name: string) {
+    return (params?: unknown) => transport.call<T>(name, params)
   }
 
   return {
     history: {
-      stats: rpc('history.stats'),
-      search: rpc('history.search'),
-      searchVisits: rpc('history.searchVisits'),
+      stats: method('history.stats'),
+      search: method('history.search'),
+      searchVisits: method('history.searchVisits'),
     },
     github: {
-      stats: rpc('github.stats'),
-      search: rpc('github.search'),
+      stats: method('github.stats'),
+      search: method('github.search'),
     },
     youtube: {
-      stats: rpc('youtube.stats'),
-      search: rpc('youtube.search'),
+      stats: method('youtube.stats'),
+      search: method('youtube.search'),
     },
     sources: {
-      list: rpc('sources.list'),
+      list: method('sources.list'),
     },
     sync: {
-      run: rpc('sync.run'),
-      status: rpc('sync.status'),
+      run: method('sync.run'),
+      status: method('sync.status'),
     },
     settings: {
-      get: rpc('settings.get'),
-      set: rpc('settings.set'),
+      get: method('settings.get'),
+      set: method('settings.set'),
     },
+    rpc: <R>(name: string, params?: unknown) => transport.call<R>(name, params),
     on: (event, handler) => transport.on(event, handler),
   }
 }

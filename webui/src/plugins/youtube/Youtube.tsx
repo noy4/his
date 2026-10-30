@@ -20,7 +20,7 @@ import { YoutubeSkeleton } from './YoutubeSkeleton'
 import { YoutubeModel } from './youtube.model'
 
 export function Youtube({ app }: { app: ViewContext }) {
-  const yt = useModel(() => new YoutubeModel(app.api))
+  const yt = useModel(() => new YoutubeModel(app.rpc))
   const stats = yt.stats.value
   if (!stats) return <YoutubeSkeleton />
   const monthly = yt.period.monthly.value

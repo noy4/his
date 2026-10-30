@@ -1,4 +1,4 @@
-import type { HistoryItem } from '@/app/api'
+import type { HistoryItem } from '@his/core'
 import { parseGithubTitle, parseGithubUrl } from '@his/core'
 import { cn } from 'cn'
 import type { ComponentProps, ReactNode } from 'react'

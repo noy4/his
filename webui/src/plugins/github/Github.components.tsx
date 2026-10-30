@@ -1,4 +1,4 @@
-import type { GithubKind } from '@/app/api'
+import type { GithubKind } from '@his/core'
 import { cn } from 'cn'
 import type { ComponentProps, ReactNode } from 'react'
 import CloseIcon from '~icons/mdi/close'

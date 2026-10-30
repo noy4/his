@@ -1,9 +1,9 @@
 import type { IconComponent } from '@/components/icons'
-import type { HisApi } from '@/app/api'
+import type { RpcCall } from '@/lib/rpc-transport'
 import type { ReactNode } from 'react'
 
 export interface ViewContext {
-  api: HisApi
+  rpc: RpcCall
 }
 
 export interface ViewPlugin {

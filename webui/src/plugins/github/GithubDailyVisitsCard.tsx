@@ -1,4 +1,4 @@
-import type { GithubVisitKind } from '@/app/api'
+import type { GithubVisitKind } from '@his/core'
 import { Card, CardTitle } from '@/components/ui/card'
 import { ToggleChip } from '@/components/ui/toggle-chip'
 import dayjs from 'dayjs'

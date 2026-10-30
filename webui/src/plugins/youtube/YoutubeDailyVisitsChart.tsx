@@ -1,4 +1,4 @@
-import type { YoutubeStats } from '@/app/api'
+import type { YoutubeStats } from '@his/core'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { Bar, BarChart, LabelList, ReferenceArea, ResponsiveContainer, Tooltip, XAxis } from 'recharts'

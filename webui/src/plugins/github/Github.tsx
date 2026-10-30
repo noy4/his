@@ -26,7 +26,7 @@ import { GithubSkeleton } from './GithubSkeleton'
 const rowCls = '-mx-1 flex items-center gap-2 rounded px-1 hover:bg-bg-3'
 
 export function Github({ app }: { app: ViewContext }) {
-  const gh = useModel(() => new GithubModel(app.api))
+  const gh = useModel(() => new GithubModel(app.rpc))
   const stats = gh.stats.value
   if (!stats) return <GithubSkeleton />
 

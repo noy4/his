@@ -1,4 +1,5 @@
 import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
+import type { RpcCall } from '@/lib/rpc-transport'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
@@ -528,7 +529,7 @@ function searchVisits(params: SearchParams): SearchVisitsPage {
   }
 }
 
-export const mockApi: HisApi = {
+const impl: Omit<HisApi, 'rpc' | 'on'> = {
   history: {
     async stats({ month } = {}): Promise<Stats> {
       return month === undefined ? computeStats() : computeMonthlyStats(month)
@@ -585,6 +586,20 @@ export const mockApi: HisApi = {
       }
     },
   },
+}
 
+export const mockApi: HisApi = {
+  ...impl,
+  rpc: rpcFrom(impl),
   on: () => () => { },
+}
+
+function rpcFrom(api: Omit<HisApi, 'rpc' | 'on'>): RpcCall {
+  return <R>(method: string, params?: unknown): Promise<R> => {
+    const [namespace, fn] = method.split('.')
+    const group = (api as unknown as Record<string, Record<string, (p?: unknown) => Promise<unknown>>>)[namespace]
+    const call = group?.[fn]
+    if (call === undefined) return Promise.reject(new Error(`unknown rpc method: ${method}`))
+    return call(params) as Promise<R>
+  }
 }

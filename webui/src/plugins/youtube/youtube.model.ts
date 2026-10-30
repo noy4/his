@@ -1,11 +1,13 @@
 import { signal } from '@preact/signals-react'
-import type { HisApi, HistoryItem, YoutubeStats, YoutubeVisitKind } from '@/app/api'
+import type { HistoryItem, YoutubeStats, YoutubeVisitKind } from '@his/core'
+import type { RpcCall } from '@/lib/rpc-transport'
 import { PeriodModel } from '@/lib/period/period.model'
+import { youtubeApi } from './api'
 
 const PAGE = 30
 
 export class YoutubeModel {
-  readonly api: HisApi
+  readonly api: ReturnType<typeof youtubeApi>
   readonly period: PeriodModel
   readonly stats = signal<YoutubeStats | null>(null)
   readonly kind = signal<YoutubeVisitKind>('video')
@@ -16,8 +18,8 @@ export class YoutubeModel {
   #visitsReq = 0
   #started = false
 
-  constructor(api: HisApi) {
-    this.api = api
+  constructor(rpc: RpcCall) {
+    this.api = youtubeApi(rpc)
     this.period = new PeriodModel({ onChange: () => this.reload() })
   }
 
@@ -46,7 +48,7 @@ export class YoutubeModel {
   async reload(): Promise<void> {
     const id = ++this.#statsReq
     const visits = this.loadVisits()
-    const result = await this.api.youtube.stats({ month: this.period.month })
+    const result = await this.api.stats({ month: this.period.month })
     if (id === this.#statsReq) this.stats.value = result
     await visits
   }
@@ -55,7 +57,7 @@ export class YoutubeModel {
     const id = ++this.#visitsReq
     const cursor = append ? this.nextCursor.value ?? undefined : undefined
     if (append && !cursor) return
-    const page = await this.api.youtube.search({
+    const page = await this.api.search({
       month: this.period.month,
       kind: this.kind.value,
       cursor,

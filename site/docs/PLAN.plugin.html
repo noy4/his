@@ -167,7 +167,7 @@ export const github: ViewPlugin = {
     <h2><iconify-icon icon="mdi:puzzle-plus-outline" width="24"></iconify-icon>Plugin roadmap</h2>
     <p class="section-desc">
       Frontend first — GitHub is the canary. Then the backend half joins the same module.<br>
-      Status: Phase 1–2 done · views co-located under <code>plugins/</code> · Phase 3 (API ownership) and Phase 5 (backend) remain.
+      Status: Phase 1–3 done · <code>plugins/</code> no longer imports app code (only <code>@his/core</code> + shared UI) · Phase 4 (SDK) and Phase 5 (backend) remain.
     </p>
 
     <div class="timeline">
@@ -258,38 +258,38 @@ export const github: ViewPlugin = {
       </div>
 
       <div class="timeline-step">
-        <iconify-icon class="step-check" icon="mdi:circle-outline"></iconify-icon>
+        <iconify-icon class="step-check" icon="mdi:check-circle"></iconify-icon>
         <div class="step-content">
           <div class="step-head">
             <span class="step-title">
               <iconify-icon icon="mdi:swap-horizontal" style="color:var(--accent)"></iconify-icon>
               Phase 3 — API slice ownership
             </span>
-            <span class="step-meta">P2 · webui</span>
+            <span class="step-meta">P2 · webui · done</span>
           </div>
           <div class="step-body">
             The plugin declares the API it calls, so a new view no longer edits <code>api/types.ts</code> or <code>api/client.ts</code>.
           </div>
           <div class="tasks">
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:lan-connect"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">AppModel.rpc</div>
-                <div class="task-desc">expose a generic <code>rpc(method, params)</code> handle instead of typed slices</div>
+                <div class="task-desc"><code>HisApi.rpc</code> + <code>AppModel.rpc</code> · plugins use <code>app.rpc</code></div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:code-json"></iconify-icon>
               <div class="task-text">
                 <div class="task-title">Plugin api</div>
-                <div class="task-desc">github types + thin client wrapper live inside the plugin</div>
+                <div class="task-desc"><code>plugins/*/api.ts</code> wraps <code>rpc</code> with <code>@his/core</code> types</div>
               </div>
             </div>
-            <div class="task">
+            <div class="task done">
               <iconify-icon icon="mdi:flask-outline"></iconify-icon>
               <div class="task-text">
-                <div class="task-title">Plugin mock</div>
-                <div class="task-desc">plugin-owned mock · <code>VITE_USE_MOCK_API</code> contract kept · generic <code>insights.*</code> pair from PLAN.insights</div>
+                <div class="task-title">Mock routing</div>
+                <div class="task-desc">central <code>impl</code> + <code>rpcFrom(impl)</code> · <code>VITE_USE_MOCK_API</code> kept</div>
               </div>
             </div>
           </div>

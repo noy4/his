@@ -1,4 +1,4 @@
-import type { GithubVisitKind, HistoryItem } from '@/app/api'
+import type { GithubVisitKind, HistoryItem } from '@his/core'
 import { Card, CardTitle } from '@/components/ui/card'
 import { ToggleChip } from '@/components/ui/toggle-chip'
 import { parseGithubTitle, parseGithubUrl } from '@his/core'

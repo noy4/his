@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubVisitKind } from '@/app/api'
+import type { GithubDayItem, GithubDayKind, GithubVisitKind } from '@his/core'
 import dayjs from 'dayjs'
 import { useState } from 'react'
 import { Bar, BarChart, LabelList, ReferenceArea, ResponsiveContainer, Tooltip, XAxis } from 'recharts'

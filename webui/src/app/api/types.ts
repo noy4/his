@@ -1,4 +1,5 @@
 import type { GithubSearchParams, GithubStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncOptions, SyncSummary, YoutubeSearchParams, YoutubeStats } from '@his/core'
+import type { RpcCall } from '@/lib/rpc-transport'
 
 export type {
   GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource, Stats, StatsParams, StatTotals, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
@@ -36,5 +37,6 @@ export interface HisApi {
     get(): Promise<SettingsInfo>
     set(params: SettingsPatch): Promise<SettingsInfo>
   }
+  rpc: RpcCall
   on<K extends keyof HisEvents & string>(event: K, handler: HisEvents[K]): () => void
 }

@@ -1,4 +1,4 @@
-import type { HistoryItem } from '@/app/api'
+import type { HistoryItem } from '@his/core'
 import { parseYoutubeTitle, parseYoutubeUrl } from '@his/core'
 import { cn } from 'cn'
 import type { ReactNode } from 'react'
