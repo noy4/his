@@ -1,4 +1,4 @@
-import type { EpochMs, IdMode, NormalizedVisit, SourceKind } from '../../types.ts'
+import type { IdMode, NormalizedVisit, SourceKind } from '../../types.ts'
 import { getSettings } from '../settings/settings.ts'
 import { getCheckpoint, setCheckpoint } from './checkpoints.ts'
 import { planIngest } from './skip.ts'
@@ -15,7 +15,6 @@ export interface SourceProfileRef {
 
 export interface ApplyVisitsOptions {
   rescan?: boolean
-  now?: EpochMs
 }
 
 export interface ApplyVisitsResult {
@@ -37,7 +36,7 @@ export interface ApplyVisitsParams {
 // first import does not compile one query per visit.
 export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisitsResult> {
   const { db, profile, visits, options } = params
-  const now = options.now ?? Date.now()
+  const now = Date.now()
   const sourceProfileId = await ensureSourceProfile(db, profile) // find-or-create the profile row
   const checkpoint = await getCheckpoint(db, sourceProfileId) // last ingested source id
 

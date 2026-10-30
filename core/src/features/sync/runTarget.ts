@@ -57,7 +57,6 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
       visits,
       options: {
         rescan: options.rescan,
-        now: Date.now(),
       },
     })
 
