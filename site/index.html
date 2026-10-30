@@ -161,14 +161,19 @@
     @media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 560px) { .grid-3 { grid-template-columns: 1fr; } }
 
-    /* Quickstart */
-    pre {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 18px 20px; overflow-x: auto; font-size: 0.82rem; line-height: 1.75; color: var(--text);
+    /* Closing CTA */
+    .cta-band {
+      text-align: center;
+      background: linear-gradient(180deg, var(--primary-soft), transparent 70%), var(--surface);
+      border: 1px solid var(--border-strong); border-radius: var(--radius);
+      padding: 48px 28px;
     }
-    pre .c { color: var(--muted); }
-    pre code { background: none; border: 0; padding: 0; font-size: inherit; }
-    .quick-note { margin-top: 14px; color: var(--muted); font-size: 0.86rem; text-align: center; }
+    .cta-band h2 {
+      font-size: clamp(22px, 3.4vw, 30px); letter-spacing: -0.02em;
+      color: var(--text-strong); margin: 0 0 10px;
+    }
+    .cta-band p { color: var(--muted); margin: 0 auto; max-width: 560px; }
+    .cta-band .cta { margin-bottom: 0; }
 
     /* Footer */
     footer {
@@ -209,13 +214,13 @@
         <strong>one local archive</strong>, and shows your browsing stats.
       </p>
       <div class="cta">
-        <a class="btn btn-primary" href="https://github.com/noy4/his" target="_blank" rel="noopener">
+        <a class="btn btn-primary js-dmg" href="https://github.com/noy4/his/releases/latest" target="_blank" rel="noopener">
+          <iconify-icon icon="mdi:tray-arrow-down" width="18" noobserver></iconify-icon>
+          Download for macOS
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/noy4/his" target="_blank" rel="noopener">
           <iconify-icon icon="mdi:github" width="18" noobserver></iconify-icon>
           View on GitHub
-        </a>
-        <a class="btn btn-ghost" href="#quickstart">
-          <iconify-icon icon="mdi:lightning-bolt-outline" width="18" noobserver></iconify-icon>
-          Quickstart
         </a>
       </div>
       <div class="badges">
@@ -258,24 +263,21 @@
       </div>
     </section>
 
-    <section id="quickstart">
-      <div class="section-head">
-        <h2>Quickstart</h2>
-        <p>Clone the repo, build the UI, and launch the menu bar app.</p>
+    <section>
+      <div class="cta-band">
+        <h2>Keep your history. See what it says.</h2>
+        <p>One local archive for every browser. Free and open source.</p>
+        <div class="cta">
+          <a class="btn btn-primary js-dmg" href="https://github.com/noy4/his/releases/latest" target="_blank" rel="noopener">
+            <iconify-icon icon="mdi:tray-arrow-down" width="18" noobserver></iconify-icon>
+            Download for macOS
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/noy4/his" target="_blank" rel="noopener">
+            <iconify-icon icon="mdi:github" width="18" noobserver></iconify-icon>
+            View on GitHub
+          </a>
+        </div>
       </div>
-      <pre><span class="c"># clone &amp; install</span>
-git clone https://github.com/noy4/his
-cd his
-pnpm install
-
-<span class="c"># build the web UI</span>
-pnpm -C webui run build
-
-<span class="c"># launch the menu bar app</span>
-pnpm -C desktop run dev</pre>
-      <p class="quick-note">
-        The app starts the server for you. Your archive lives in <code>~/.his</code>.
-      </p>
     </section>
   </div>
 
@@ -292,5 +294,40 @@ pnpm -C desktop run dev</pre>
       </div>
     </div>
   </footer>
+
+  <script>
+    async function detectArch() {
+      try {
+        if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+          const ua = await navigator.userAgentData.getHighEntropyValues(['architecture']);
+          if (ua.architecture === 'x86') return 'x64';
+        }
+      } catch (e) {}
+      return 'arm64';
+    }
+
+    async function downloadDmg(e) {
+      const fallback = e.currentTarget.href;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      e.preventDefault();
+      try {
+        const res = await fetch('https://api.github.com/repos/noy4/his/releases/latest', {
+          headers: { Accept: 'application/vnd.github+json' }
+        });
+        if (!res.ok) throw new Error(res.status);
+        const release = await res.json();
+        const dmgs = release.assets.filter(a => a.name.endsWith('.dmg'));
+        const arch = await detectArch();
+        const asset = arch === 'arm64'
+          ? dmgs.find(a => a.name.includes('arm64'))
+          : dmgs.find(a => !a.name.includes('arm64'));
+        window.location.href = asset ? asset.browser_download_url : fallback;
+      } catch (err) {
+        window.location.href = fallback;
+      }
+    }
+
+    document.querySelectorAll('.js-dmg').forEach(el => el.addEventListener('click', downloadDmg));
+  </script>
 </body>
 </html>
