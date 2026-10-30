@@ -1,7 +1,7 @@
 import type { EpochMs, IdMode, NormalizedVisit, SourceKind } from '../../types.ts'
 import { getSettings } from '../settings/settings.ts'
 import { getCheckpoint, setCheckpoint } from './checkpoints.ts'
-import { planBatch } from './skip.ts'
+import { planIngest } from './skip.ts'
 import type { KyselyDb } from '../../db/db.ts'
 import { applyDeltas, flagHidden, insertVisits, resolveUrlIds } from './writes.ts'
 
@@ -20,14 +20,9 @@ export interface ApplyVisitsOptions {
 
 export interface ApplyVisitsResult {
   sourceProfileId: number
-  seenVisits: number
-  processedVisits: number
+  cleared: boolean
   insertedVisits: number
   touchedUrls: number
-  cleared: boolean
-  lastSourceVisitId: number
-  sourceIdOffset: number
-  lastRunAt: EpochMs
 }
 
 export interface ApplyVisitsParams {
@@ -50,18 +45,13 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
   if (visits.length === 0)
     return {
       sourceProfileId,
-      seenVisits: 0,
-      processedVisits: 0,
+      cleared: false,
       insertedVisits: 0,
       touchedUrls: 0,
-      cleared: false,
-      lastSourceVisitId: checkpoint.lastSourceVisitId,
-      sourceIdOffset: checkpoint.sourceIdOffset,
-      lastRunAt: now,
     }
 
   // plan the batch: max id -> flow policy (cleared / offset) -> candidates
-  const { cleared, offset, maxSeen, candidates } = planBatch({
+  const { cleared, offset, sourceMaxVisitId, candidates } = planIngest({
     visits,
     checkpoint,
     idMode: profile.idMode,
@@ -83,7 +73,7 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
     await applyDeltas(tx, deltas)
 
     await setCheckpoint(tx, sourceProfileId, {
-      lastSourceVisitId: maxSeen,
+      lastSourceVisitId: sourceMaxVisitId,
       sourceIdOffset: offset,
       lastRunAt: now,
     })
@@ -96,14 +86,9 @@ export async function applyVisits(params: ApplyVisitsParams): Promise<ApplyVisit
 
   return {
     sourceProfileId,
-    seenVisits: visits.length,
-    processedVisits: candidates.length,
+    cleared,
     insertedVisits,
     touchedUrls,
-    cleared,
-    lastSourceVisitId: maxSeen,
-    sourceIdOffset: offset,
-    lastRunAt: now,
   }
 }
 
