@@ -27,16 +27,13 @@ export interface MergeVisitsResult {
   touchedUrls: number
 }
 
-// merge one profile's visits into the archive. All writes are set-based
-// (chunked multi-row inserts + one aggregate UPDATE per batch) so a large
-// first import does not compile one query per visit.
+// merge one profile's visits into the archive
 export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisitsResult> {
   const { db, profile, visits, rescan } = params
   const now = Date.now()
-  const sourceProfileId = await ensureSourceProfile(db, profile) // find-or-create the profile row
-  const checkpoint = await getCheckpoint(db, sourceProfileId) // last ingested source id
+  const sourceProfileId = await ensureSourceProfile(db, profile)
+  const checkpoint = await getCheckpoint(db, sourceProfileId)
 
-  // empty batch: don't touch the checkpoint, a real clear shows on the next batch
   if (visits.length === 0)
     return {
       sourceProfileId,
@@ -45,7 +42,6 @@ export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisit
       touchedUrls: 0,
     }
 
-  // plan the batch: max id -> flow policy (cleared / sourceIdOffset) -> candidates
   const { cleared, sourceIdOffset, sourceMaxVisitId, candidates } = planIngest({
     visits,
     checkpoint,
@@ -53,10 +49,9 @@ export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisit
     rescan,
   })
 
-  // new URLs are flagged hidden at insert time, so sync needs no full recompute
+  // hidden are applied at insert time
   const { hidden_patterns = [] } = await getSettings(db)
 
-  // all-or-nothing: the checkpoint advances with the commit
   const { insertedVisits, touchedUrls } = await db.transaction().execute(async (tx) => {
     const urlIds = new Map<string, number>()
     await resolveUrlIds(tx, candidates, urlIds)

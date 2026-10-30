@@ -7,7 +7,7 @@ import type { SyncTarget } from '../sources/types.ts'
 export interface SnapshotResult {
   path: string
   bytes: number
-  via: 'vacuum-into' | 'copy-trio' | 'file-copy'
+  method: 'vacuum-into' | 'copy-trio' | 'file-copy'
 }
 
 const SQLITE_SIDECARS = ['-wal', '-shm', '-journal']
@@ -19,11 +19,11 @@ export function snapshot(target: SyncTarget, home: string): SnapshotResult {
 
   if (isJson(target.sourcePath)) {
     fs.copyFileSync(target.sourcePath, snapshotPath)
-    return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via: 'file-copy' }
+    return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, method: 'file-copy' }
   }
 
-  const via = vacuumInto(target.sourcePath, snapshotPath) ?? copyTrio(target.sourcePath, snapshotPath)
-  return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, via }
+  const method = vacuumInto(target.sourcePath, snapshotPath) ?? copyTrio(target.sourcePath, snapshotPath)
+  return { path: snapshotPath, bytes: fs.statSync(snapshotPath).size, method }
 }
 
 function isJson(sourcePath: string): boolean {
@@ -34,7 +34,7 @@ function isJson(sourcePath: string): boolean {
 // current content — used pages only, WAL folded, no torn copy. Null means
 // "fall back to the file trio" (missing file, permissions, version skew,
 // read-only shm init failing on a hot WAL).
-function vacuumInto(source: string, dest: string): SnapshotResult['via'] | null {
+function vacuumInto(source: string, dest: string): SnapshotResult['method'] | null {
   if (!fs.existsSync(source)) return null
   const tmp = dest + '.vacuum-tmp'
   try {
@@ -54,7 +54,7 @@ function vacuumInto(source: string, dest: string): SnapshotResult['via'] | null 
   return 'vacuum-into'
 }
 
-function copyTrio(source: string, dest: string): SnapshotResult['via'] {
+function copyTrio(source: string, dest: string): SnapshotResult['method'] {
   for (const ext of SQLITE_SIDECARS) {
     const sidecar = source + ext
     if (fs.existsSync(sidecar)) fs.copyFileSync(sidecar, dest + ext)
