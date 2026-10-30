@@ -2,6 +2,7 @@ import { Favicon } from '@/components/Favicon'
 import { Card, CardTitle } from '@/components/ui/card'
 import { cn } from 'cn'
 import dayjs from 'dayjs'
+import { Fragment } from 'react'
 import { dateLabel, daySpan, isoDay } from '@/lib/date'
 import { ALL_TIME_DAYS, dailySeries } from '@/lib/time-series'
 import { isLocalDomain } from '@/lib/domain'
@@ -124,35 +125,35 @@ export function Dashboard({ app }: { app: AppModel }) {
               const top = i < 3
               const Medal = RANK_MEDALS[i]
               return (
-                <li
-                  key={d.domain}
-                  className={cn('relative -mx-1 overflow-hidden rounded', i === 3 && 'mt-1 border-t border-border-2')}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
-                    style={{ width: `${(d.visits / maxDomainVisits) * 100}%` }}
-                  />
-                  <div className={cn('relative flex items-center gap-2 px-1', top ? 'py-1' : 'py-0.5')}>
-                    <span className="flex w-5 shrink-0 items-center justify-center">
-                      {top && Medal ? (
-                        <Medal className={cn('size-5', RANK_MEDAL_COLORS[i])} />
-                      ) : (
-                        <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
-                      )}
-                    </span>
-                    <Favicon host={d.domain} size={top ? 20 : 18} />
-                    <span className={cn('min-w-0 flex-1 truncate', top ? 'font-medium text-text' : 'text-text-2')}>
-                      {d.domain}
-                    </span>
-                    {isLocalDomain(d.domain) && (
-                      <span className="shrink-0 rounded-full bg-primary-soft px-1.5 py-px text-[9px] font-medium tracking-wide text-primary uppercase">
-                        local
+                <Fragment key={d.domain}>
+                  {i === 3 && <li aria-hidden="true" className="-mx-1 h-px bg-border-2" />}
+                  <li className="relative -mx-1 overflow-hidden rounded">
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                      style={{ width: `${(d.visits / maxDomainVisits) * 100}%` }}
+                    />
+                    <div className={cn('relative flex items-center gap-2 px-1', top ? 'py-1' : 'py-0.5')}>
+                      <span className="flex w-5 shrink-0 items-center justify-center">
+                        {top && Medal ? (
+                          <Medal className={cn('size-5', RANK_MEDAL_COLORS[i])} />
+                        ) : (
+                          <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
+                        )}
                       </span>
-                    )}
-                    <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
-                  </div>
-                </li>
+                      <Favicon host={d.domain} size={top ? 20 : 18} />
+                      <span className={cn('min-w-0 flex-1 truncate', top ? 'font-medium text-text' : 'text-text-2')}>
+                        {d.domain}
+                      </span>
+                      {isLocalDomain(d.domain) && (
+                        <span className="shrink-0 rounded-full bg-primary-soft px-1.5 py-px text-[9px] font-medium tracking-wide text-primary uppercase">
+                          local
+                        </span>
+                      )}
+                      <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
+                    </div>
+                  </li>
+                </Fragment>
               )
             })}
           </ol>
@@ -166,29 +167,29 @@ export function Dashboard({ app }: { app: AppModel }) {
                 const top = i < 3
                 const Medal = RANK_MEDALS[i]
                 return (
-                  <li
-                    key={d.day}
-                    className={cn('relative -mx-1 overflow-hidden rounded', i === 3 && 'mt-1 border-t border-border-2')}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
-                      style={{ width: `${(d.visits / maxBusiestVisits) * 100}%` }}
-                    />
-                    <div className={cn('relative flex items-center gap-2 px-1', top ? 'py-1' : 'py-0.5')}>
-                      <span className="flex w-5 shrink-0 items-center justify-center">
-                        {top && Medal ? (
-                          <Medal className={cn('size-5', RANK_MEDAL_COLORS[i])} />
-                        ) : (
-                          <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
-                        )}
-                      </span>
-                      <span className={cn('min-w-0 flex-1 truncate', top ? 'font-medium text-text' : 'text-text-2')}>
-                        {d.day} ({dayjs(d.day).format('ddd')})
-                      </span>
-                      <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
-                    </div>
-                  </li>
+                  <Fragment key={d.day}>
+                    {i === 3 && <li aria-hidden="true" className="-mx-1 h-px bg-border-2" />}
+                    <li className="relative -mx-1 overflow-hidden rounded">
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                        style={{ width: `${(d.visits / maxBusiestVisits) * 100}%` }}
+                      />
+                      <div className={cn('relative flex items-center gap-2 px-1', top ? 'py-1' : 'py-0.5')}>
+                        <span className="flex w-5 shrink-0 items-center justify-center">
+                          {top && Medal ? (
+                            <Medal className={cn('size-5', RANK_MEDAL_COLORS[i])} />
+                          ) : (
+                            <span className="font-mono text-xs text-muted tabular-nums">{i + 1}</span>
+                          )}
+                        </span>
+                        <span className={cn('min-w-0 flex-1 truncate', top ? 'font-medium text-text' : 'text-text-2')}>
+                          {d.day} ({dayjs(d.day).format('ddd')})
+                        </span>
+                        <span className="shrink-0 font-mono text-xs text-muted tabular-nums">{fmtNum(d.visits)}</span>
+                      </div>
+                    </li>
+                  </Fragment>
                 )
               })}
             </ol>
