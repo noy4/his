@@ -1,6 +1,5 @@
 import { historyDbPath, initDb } from '@his/core/node'
 import { clearState, readState, writeState, type InstanceState } from '@his/core/state'
-import { spawn } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import http from 'node:http'
 import { createApp } from './app.ts'
@@ -8,7 +7,8 @@ import { createHandlers } from './handlers.ts'
 import { createNodeHandler } from './node.ts'
 import { RpcServer } from './rpc.ts'
 import { SyncRunner } from './sync-runner.ts'
-import { resolveDistRoot } from './static.ts'
+
+export { resolveDistRoot } from './static.ts'
 
 const HOST = '127.0.0.1'
 const PORT_ATTEMPTS = 20
@@ -16,8 +16,7 @@ const PORT_ATTEMPTS = 20
 export interface ServeOptions {
   home: string
   port: number
-  open?: boolean
-  dist?: string
+  dist: string | null
 }
 
 export type ServeResult =
@@ -31,13 +30,10 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     return { kind: 'already-running', instance: running }
 
   const db = await initDb(historyDbPath(home))
-  const distRoot = resolveDistRoot(options.dist ?? process.env.HIS_DIST)
-  if (distRoot === null)
-    console.error('his: webui dist not found — static routes will 503 (build webui or set HIS_DIST)')
 
   // Fresh token per start, injected into the WebUI
   const token = randomBytes(32).toString('base64url')
-  const app = createApp({ dist: distRoot, token })
+  const app = createApp({ dist: options.dist, token })
   const server = http.createServer(createNodeHandler(app.fetch))
   const runner = new SyncRunner({ home })
 
@@ -105,8 +101,6 @@ export async function serve(options: ServeOptions): Promise<ServeResult> {
     throw error
   }
 
-  if (options.open === true) openUrl(instance.url)
-
   return { kind: 'started', instance, done }
 }
 
@@ -147,16 +141,4 @@ function tryListen(server: http.Server, port: number): Promise<boolean> {
     server.once('listening', onListening)
     server.listen(port, HOST)
   })
-}
-
-// --- browser ---
-
-function openUrl(url: string): void {
-  // Best effort — a missing opener falls back to printing the URL.
-  const [cmd, args] = process.platform === 'win32'
-    ? ['cmd', ['/c', 'start', '', url]]
-    : [process.platform === 'darwin' ? 'open' : 'xdg-open', [url]]
-  spawn(cmd, args, { detached: true, stdio: 'ignore' })
-    .on('error', () => console.error(`his: could not open a browser — visit ${url}`))
-    .unref()
 }
