@@ -1,5 +1,5 @@
 import type { ViewPlugin } from '../types'
-import { Youtube } from '@/views/youtube/Youtube'
+import { Youtube } from './Youtube'
 import YoutubeIcon from '~icons/mdi/youtube'
 
 export const youtube: ViewPlugin = {
