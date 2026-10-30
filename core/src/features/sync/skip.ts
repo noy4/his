@@ -1,6 +1,32 @@
 import type { IdMode, NormalizedVisit, SyncCheckpoint } from '../../types.ts'
 
-export type IngestPlan = SkipState & {
+// flow policy for one ingest, decided before touching any rows
+export interface SkipDecision {
+  cleared: boolean
+  sourceIdOffset: number
+  skipBelow: number
+}
+
+export interface ComputeSkipParams {
+  checkpoint: SyncCheckpoint
+  sourceMaxVisitId: number
+  idMode: IdMode
+  rescan?: boolean
+}
+
+// decide cleared / sourceIdOffset / skipBelow from the checkpoint and this ingest's ids
+export function computeSkip({ checkpoint, sourceMaxVisitId, idMode, rescan }: ComputeSkipParams): SkipDecision {
+  const hashIds = idMode === 'hash' // hash ids carry no order, skip checkpoint logic
+  const cleared = !hashIds && detectCleared(checkpoint, sourceMaxVisitId)
+  const processAll = hashIds || rescan || cleared
+  return {
+    cleared,
+    sourceIdOffset: cleared ? rebaseOffset(checkpoint) : checkpoint.sourceIdOffset,
+    skipBelow: processAll ? -1 : checkpoint.lastSourceVisitId,
+  }
+}
+
+export type IngestPlan = Omit<SkipDecision, 'skipBelow'> & {
   sourceMaxVisitId: number
   candidates: NormalizedVisit[]
 }
@@ -16,39 +42,17 @@ export function planIngest({ visits, checkpoint, idMode, rescan }: PlanIngestPar
     if (visit.sourceVisitId > sourceMaxVisitId)
       sourceMaxVisitId = visit.sourceVisitId
   }
-  const skip = computeSkip({ checkpoint, sourceMaxVisitId, idMode, rescan })
-  return {
-    ...skip,
+  const { cleared, sourceIdOffset, skipBelow } = computeSkip({
+    checkpoint,
     sourceMaxVisitId,
-    candidates: visits.filter((visit) => visit.sourceVisitId > skip.skipBelow),
-  }
-}
-
-// flow policy for one ingest, decided before touching any rows
-export interface SkipState {
-  cleared: boolean
-  processAll: boolean
-  sourceIdOffset: number
-  skipBelow: number
-}
-
-export interface ComputeSkipParams {
-  checkpoint: SyncCheckpoint
-  sourceMaxVisitId: number
-  idMode: IdMode
-  rescan?: boolean
-}
-
-// decide cleared / sourceIdOffset / skipBelow from the checkpoint and this ingest's ids
-export function computeSkip({ checkpoint, sourceMaxVisitId, idMode, rescan }: ComputeSkipParams): SkipState {
-  const hashIds = idMode === 'hash' // hash ids carry no order, skip checkpoint logic
-  const cleared = !hashIds && detectCleared(checkpoint, sourceMaxVisitId)
-  const processAll = hashIds || rescan || cleared
+    idMode,
+    rescan,
+  })
   return {
     cleared,
-    processAll,
-    sourceIdOffset: cleared ? rebaseOffset(checkpoint) : checkpoint.sourceIdOffset,
-    skipBelow: processAll ? -1 : checkpoint.lastSourceVisitId,
+    sourceIdOffset,
+    sourceMaxVisitId,
+    candidates: visits.filter((visit) => visit.sourceVisitId > skipBelow),
   }
 }
 

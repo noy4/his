@@ -13,18 +13,18 @@ export interface SourceProfileRef {
   idMode: IdMode
 }
 
-export interface MergeVisitsResult {
-  sourceProfileId: number
-  cleared: boolean
-  insertedVisits: number
-  touchedUrls: number
-}
-
 export interface MergeVisitsParams {
   db: KyselyDb
   profile: SourceProfileRef
   visits: NormalizedVisit[]
   rescan?: boolean
+}
+
+export interface MergeVisitsResult {
+  sourceProfileId: number
+  cleared: boolean
+  insertedVisits: number
+  touchedUrls: number
 }
 
 // merge one profile's visits into the archive. All writes are set-based
