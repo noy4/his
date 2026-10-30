@@ -94,7 +94,7 @@ function DailyVisitsTooltip({
   if (active !== true || row === undefined) return null
   const total = row[dataKey]
   return (
-    <div className="min-w-[200px] max-w-[280px] rounded-md border border-border-2 bg-bg-2 px-2.5 py-2 text-xs shadow-lg">
+    <div className="min-w-50 max-w-70 rounded-md border border-border-2 bg-bg-2 px-2.5 py-2 text-xs shadow-lg">
       <div className="mb-1 flex items-baseline justify-between gap-3">
         <span className="text-muted">{dayjs(row.day).format('ddd, M/D')}</span>
         <span className="font-mono tabular-nums">{fmtNum(total)}</span>
