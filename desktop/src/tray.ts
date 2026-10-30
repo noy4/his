@@ -1,9 +1,10 @@
-import { Menu, Tray, nativeImage } from 'electron'
+import { Menu, Tray, nativeImage, shell, app, type MenuItemConstructorOptions } from 'electron'
 import path from 'node:path'
 import type { SyncSummary } from '@his/core'
 import type { HisApp } from './app.ts'
 import { dev } from './dev.ts'
 import { callRpc } from './rpc.ts'
+import { isNewer, latestRelease, type Release } from './update.ts'
 
 // Menubar tray
 export function createTray(host: HisApp): Tray {
@@ -14,6 +15,7 @@ class TrayController {
   readonly tray: Tray
   readonly #host: HisApp
   #syncing = false
+  #updateAvailable: Release | null = null
 
   constructor(host: HisApp) {
     this.#host = host
@@ -22,14 +24,39 @@ class TrayController {
     this.tray = new Tray(icon)
     this.tray.setToolTip('his')
 
-    const menu = Menu.buildFromTemplate([
+    this.#refresh()
+    this.#checkForUpdate()
+  }
+
+  // Rebuild the menu; the update item only appears once a newer release is found.
+  #refresh(): void {
+    const items: MenuItemConstructorOptions[] = [
       { label: 'Open', click: () => this.#host.openWindow() },
       { label: 'Open in Browser', click: () => this.#host.openInBrowser() },
       { label: 'Sync Now', click: () => this.#syncNow() },
       { type: 'separator' },
-      { label: 'Quit his', click: () => this.#host.quit() },
-    ])
-    this.tray.setContextMenu(menu)
+    ]
+    if (this.#updateAvailable) {
+      const { version, url } = this.#updateAvailable
+      items.push(
+        { label: `New version available — v${version}`, click: () => { shell.openExternal(url) } },
+      )
+    }
+    items.push({ label: 'Quit his', click: () => this.#host.quit() })
+    this.tray.setContextMenu(Menu.buildFromTemplate(items))
+  }
+
+  // Checked at launch and every 12 h.
+  #checkForUpdate(): void {
+    const check = async (): Promise<void> => {
+      const release = await latestRelease()
+      if (!release || !isNewer(release.version, app.getVersion())) return
+      if (this.#updateAvailable?.version === release.version) return
+      this.#updateAvailable = release
+      this.#refresh()
+    }
+    check()
+    setInterval(check, 12 * 60 * 60 * 1000).unref()
   }
 
   async #syncNow(): Promise<void> {

@@ -16,6 +16,7 @@ mock.module('electron', {
   namedExports: {
     app: {
       isPackaged: false,
+      getVersion: () => '0.0.0',
       getPath: (name: string) => appPaths[name]!,
       setPath: (name: string, value: string) => { appPaths[name] = value },
     },
