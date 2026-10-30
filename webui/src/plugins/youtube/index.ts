@@ -3,7 +3,7 @@ import { Youtube } from './Youtube'
 import YoutubeIcon from '~icons/mdi/youtube'
 
 export const youtube: ViewPlugin = {
-  id: 'youtube',
+  name: 'youtube',
   label: 'YouTube',
   icon: YoutubeIcon,
   View: Youtube,

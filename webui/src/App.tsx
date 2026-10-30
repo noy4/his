@@ -29,7 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'visits', label: 'Visits', icon: History, content: Visits },
   { id: 'urls', label: 'URLs', icon: LinkVariant, content: Urls },
   ...VIEW_PLUGINS.map((plugin): ViewDef => ({
-    id: plugin.id,
+    id: plugin.name,
     label: plugin.label,
     icon: plugin.icon,
     content: plugin.View,

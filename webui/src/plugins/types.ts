@@ -7,7 +7,7 @@ export interface ViewContext {
 }
 
 export interface ViewPlugin {
-  id: string
+  name: string
   label: string
   icon: IconComponent
   View: (props: { app: ViewContext }) => ReactNode

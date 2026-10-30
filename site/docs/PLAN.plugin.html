@@ -85,7 +85,7 @@ export interface ViewContext {
 }
 
 export interface ViewPlugin {
-  id: string                        <span class="c">// 'github' | 'youtube'</span>
+  name: string                      <span class="c">// 'github' | 'youtube'</span>
   label: string
   icon: IconComponent
   View: (props: { app: ViewContext }) =&gt; ReactNode
@@ -96,7 +96,7 @@ export const VIEW_PLUGINS: ViewPlugin[] = [github, youtube]
 
 <span class="c">// webui/src/plugins/github/index.ts — a plugin manifest</span>
 export const github: ViewPlugin = {
-  id: 'github',
+  name: 'github',
   label: 'GitHub',
   icon: GithubIcon,
   View: Github,

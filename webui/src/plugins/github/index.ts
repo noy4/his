@@ -3,7 +3,7 @@ import { Github } from './Github'
 import GithubIcon from '~icons/mdi/github'
 
 export const github: ViewPlugin = {
-  id: 'github',
+  name: 'github',
   label: 'GitHub',
   icon: GithubIcon,
   View: Github,
