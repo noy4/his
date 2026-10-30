@@ -23,8 +23,10 @@ export class HisApp {
   start(): void {
     this.app.dock?.hide()
     this.#tray = createTray(this)
-    // this.openWindow()
-    // spawn serve at boot
+    if (!dev) {
+      this.openWindow()
+      return
+    }
     this.ensureServe().catch((error) => this.showError('Unable to start his', error))
   }
 
@@ -106,7 +108,7 @@ export class HisApp {
     return window
   }
 
-  // --- host surface for the tray ---
+  // --- serve ---
 
   // Tray actions respawn serve when it is down (spec).
   async ensureServe(timeoutMs = 10_000): Promise<InstanceState> {
@@ -172,8 +174,6 @@ export class HisApp {
     })
   }
 
-  // --- serve controller ---
-
   #spawnServe(): ChildProcess {
     const packaged = this.app.isPackaged
     const cliEntry = process.env.HIS_CLI ?? (packaged
@@ -205,6 +205,8 @@ export class HisApp {
     })
   }
 }
+
+// --- helpers ---
 
 function devUrl(): string {
   return process.env.HIS_DEV_URL ?? 'http://localhost:5173/'
