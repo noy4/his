@@ -127,7 +127,7 @@ export const PLUGINS: ServerPlugin[] = [github, youtube]</pre>
           <tr><td>4</td><td><code>app/api/client.ts</code></td><td>fixed <code>github.*</code> rpc</td><td>plugin wrapper · <code>HisApi</code> slice remains</td></tr>
           <tr><td>5</td><td><code>app/api/mock/*</code></td><td>fixed github mock</td><td>central mock via <code>rpcFrom(impl)</code></td></tr>
           <tr><td>6</td><td><code>~icons/*</code></td><td>inlined at build</td><td>plugin-local — fine</td></tr>
-          <tr><td>7</td><td><code>server/handlers.ts</code></td><td>github RPCs</td><td>plugin node entry <span class="c">(see PLAN.insights)</span></td></tr>
+          <tr><td>7</td><td><code>server/handlers.ts</code></td><td>github RPCs</td><td><code>server/src/plugins/*</code> · <code>ServerPlugin</code></td></tr>
         </tbody>
       </table>
     </div>
