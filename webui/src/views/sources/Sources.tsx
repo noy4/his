@@ -1,13 +1,14 @@
 import { SourceCard } from './SourceCard'
 import { useModel } from '@/lib/useModel'
 import { AppModel } from '@/app/app'
-import { SourcesModel } from './sources.model'
+import { SourcesModel, type SourceEntry } from './sources.model'
 import type { SyncSummary } from '@/app/api'
 import { sourceKey } from '@his/core'
 import { cn } from 'cn'
 import { buttonPrimary } from '@/components/ui/button'
 import { dateLabel, relativeAgo, timeLabel } from '@/lib/date'
 import { type ComponentProps, type ReactNode } from 'react'
+import SelectIcon from '~icons/mdi/checkbox-multiple-blank-outline'
 
 export function Sources({ app }: { app: AppModel }) {
   const model = useModel(() => new SourcesModel(app.api))
@@ -15,7 +16,9 @@ export function Sources({ app }: { app: AppModel }) {
   const enabled = model.enabled.value
   const enabledCount = enabled.size
   const running = model.running.value
-  const notice = entries.length > 0 && enabledCount === 0 ? 'no sync targets selected' : null
+
+  const selected = entries.filter((entry) => enabled.has(sourceKey(entry)))
+  const available = entries.filter((entry) => !enabled.has(sourceKey(entry)))
 
   return (
     <SourcesRoot>
@@ -23,7 +26,6 @@ export function Sources({ app }: { app: AppModel }) {
         <SourcesDescription text="Pick sources to sync automatically." />
         <SourcesStatus>
           {enabledCount > 0 && <LastSync lastSync={model.lastSync.value} />}
-          {notice !== null && <SourcesNotice text={notice} />}
         </SourcesStatus>
         <SyncButton
           onClick={() => model.syncSelected()}
@@ -40,19 +42,17 @@ export function Sources({ app }: { app: AppModel }) {
           : entries.length === 0
             ? <SourcesEmpty />
             : (
-              <SourcesGrid>
-                {entries.map((entry) => {
-                  const key = sourceKey(entry)
-                  return (
-                    <SourceCard
-                      key={key}
-                      entry={entry}
-                      enabled={enabled.has(key)}
-                      onToggle={() => model.toggle(key)}
-                    />
-                  )
-                })}
-              </SourcesGrid>
+              <div className="space-y-4">
+                {selected.length > 0
+                  ? <SourceCardList entries={selected} enabled={enabled} onToggle={model.toggle} />
+                  : <SourcesGrid><SourcesSelectedEmpty /></SourcesGrid>}
+                {available.length > 0 && (
+                  <>
+                    <div className="h-px bg-border-2" />
+                    <SourceCardList entries={available} enabled={enabled} onToggle={model.toggle} />
+                  </>
+                )}
+              </div>
             )}
       </SourcesBody>
     </SourcesRoot>
@@ -77,10 +77,6 @@ function SourcesDescription({ text }: { text: string }) {
 
 function SourcesStatus({ children }: { children: ReactNode }) {
   return <div className="ml-auto flex min-w-0 items-center gap-3">{children}</div>
-}
-
-function SourcesNotice({ text }: { text: string }) {
-  return <span title={text} className="min-w-0 truncate font-mono text-xs text-warn">{text}</span>
 }
 
 function SyncButton(props: ComponentProps<'button'>) {
@@ -127,6 +123,33 @@ function SourcesBody({ children }: { children: ReactNode }) {
 
 function SourcesGrid({ children }: { children: ReactNode }) {
   return <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3">{children}</div>
+}
+
+function SourceCardList({ entries, enabled, onToggle }: { entries: SourceEntry[]; enabled: Set<string>; onToggle: (key: string) => void }) {
+  return (
+    <SourcesGrid>
+      {entries.map((entry) => {
+        const key = sourceKey(entry)
+        return (
+          <SourceCard
+            key={key}
+            entry={entry}
+            enabled={enabled.has(key)}
+            onToggle={() => onToggle(key)}
+          />
+        )
+      })}
+    </SourcesGrid>
+  )
+}
+
+function SourcesSelectedEmpty() {
+  return (
+    <div className="flex min-h-36 flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center">
+      <SelectIcon className="size-6 text-muted/60" />
+      <span className="text-sm text-muted">No sources selected</span>
+    </div>
+  )
 }
 
 function SourcesEmpty() {
