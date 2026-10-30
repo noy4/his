@@ -50,6 +50,16 @@ export class HisApp {
     }
   }
 
+  // Open the WebUI in the user's default browser
+  async openInBrowser(): Promise<void> {
+    try {
+      const state = await this.ensureServe()
+      shell.openExternal(dev ? devUrl() : state.url)
+    } catch (error) {
+      this.showError('Unable to open his', error)
+    }
+  }
+
   showError(title: string, error: unknown): void {
     if (!this.#quitting)
       dialog.showErrorBox(title, error instanceof Error ? error.message : String(error))

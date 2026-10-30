@@ -176,6 +176,21 @@ test('openWindow reports a failed window load', async () => {
   loadError = undefined
 })
 
+test('Open in Browser hands the WebUI to the OS browser', async () => {
+  fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({
+    pid: process.pid, port: 4477, url: 'http://127.0.0.1:4477', db: 'test.db',
+  }))
+  const app = new HisApp({} as App)
+  openedUrls.length = 0
+  process.env.HIS_DEV_URL = 'http://dev.local/'
+  try {
+    await app.openInBrowser()
+  } finally {
+    delete process.env.HIS_DEV_URL
+  }
+  assert.deepEqual(openedUrls, ['http://dev.local/'])
+})
+
 test('window shows only the local UI and hands external links to the OS browser', async () => {
   fs.writeFileSync(path.join(dir, 'state.json'), JSON.stringify({
     pid: process.pid, port: 4477, url: 'http://127.0.0.1:4477', db: 'test.db',

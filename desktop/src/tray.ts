@@ -25,6 +25,7 @@ class TrayController {
     const menu = Menu.buildFromTemplate([
       { label: 'Sync Now', click: () => this.#syncNow() },
       { label: 'Open', click: () => this.#host.openWindow() },
+      { label: 'Open in Browser', click: () => this.#host.openInBrowser() },
       { type: 'separator' },
       { label: 'Quit his', click: () => this.#host.quit() },
     ])
