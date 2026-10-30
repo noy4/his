@@ -6,7 +6,7 @@ import { SYNC_TARGETS_KEY } from '../settings/sync-targets.ts'
 import { readSettingJson } from '../settings/store.ts'
 
 // keep only the discovered targets the tokens select
-export function applyTargetFilter(tokens: string[], discovered: SyncTarget[]): SyncTarget[] {
+export function filterTargets(tokens: string[], discovered: SyncTarget[]): SyncTarget[] {
   if (tokens.length === 0) return []
   const wanted = new Set(tokens)
   return discovered.filter((target) => wanted.has(target.browser) || wanted.has(sourceKey(target)))
@@ -15,5 +15,5 @@ export function applyTargetFilter(tokens: string[], discovered: SyncTarget[]): S
 // configured targets resolved against this machine
 export async function resolveConfiguredTargets(db: KyselyDb, home: string): Promise<SyncTarget[]> {
   const tokens = (await readSettingJson(db, SYNC_TARGETS_KEY) ?? []) as string[]
-  return applyTargetFilter(tokens, discoverAllTargets(home))
+  return filterTargets(tokens, discoverAllTargets(home))
 }
