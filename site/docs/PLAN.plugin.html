@@ -74,19 +74,24 @@
     <h3><iconify-icon icon="mdi:code-braces"></iconify-icon>Frontend contract</h3>
 
     <p class="section-desc">
-      A plugin owns its view, its model, and (from Phase 3) its API slice. The app only knows the registry.
+      A plugin owns its view, its model, and its API wrapper (built from <code>app.rpc</code>). The app only knows the registry.
     </p>
 
     <pre><span class="c">// webui/src/plugins/types.ts — the contract</span>
+import type { RpcCall } from '@/lib/rpc-transport'
+
+export interface ViewContext {
+  rpc: RpcCall
+}
+
 export interface ViewPlugin {
   id: string                        <span class="c">// 'github' | 'youtube'</span>
   label: string
   icon: IconComponent
-  nav?: { after?: string; group?: 'insights' }   <span class="c">// placement</span>
-  View: ComponentType&lt;{ app: AppModel }&gt;
+  View: (props: { app: ViewContext }) =&gt; ReactNode
 }
 
-<span class="c">// webui/src/plugins/registry.ts — the one place to add a view</span>
+<span class="c">// webui/src/plugins/registry.ts — fixed order = nav order</span>
 export const VIEW_PLUGINS: ViewPlugin[] = [github, youtube]
 
 <span class="c">// webui/src/plugins/github/index.ts — a plugin manifest</span>
@@ -94,9 +99,19 @@ export const github: ViewPlugin = {
   id: 'github',
   label: 'GitHub',
   icon: GithubIcon,
-  nav: { after: 'urls' },
-  View: GithubView,
+  View: Github,
 }</pre>
+
+    <h3><iconify-icon icon="mdi:server-outline"></iconify-icon>Backend contract</h3>
+
+    <pre><span class="c">// server/src/plugins/types.ts — the node half</span>
+export interface ServerPlugin {
+  name: string                      <span class="c">// 'github' | 'youtube'</span>
+  handlers: (ctx: { db }) =&gt; Record&lt;string, Handler&gt;
+}
+
+<span class="c">// server/src/plugins/index.ts</span>
+export const PLUGINS: ServerPlugin[] = [github, youtube]</pre>
 
     <h3><iconify-icon icon="mdi:vector-polyline"></iconify-icon>What moves</h3>
 
@@ -108,9 +123,9 @@ export const github: ViewPlugin = {
         <tbody>
           <tr><td>1</td><td><code>App.tsx</code> NAV_ITEMS</td><td>hand-written entry</td><td>registry</td></tr>
           <tr><td>2</td><td><code>views/github/*</code></td><td>top-level view</td><td><code>plugins/github/*</code></td></tr>
-          <tr><td>3</td><td><code>app/api/types.ts</code></td><td>fixed <code>github</code> slice</td><td>plugin-owned</td></tr>
-          <tr><td>4</td><td><code>app/api/client.ts</code></td><td>fixed <code>github.*</code> rpc</td><td>plugin-owned</td></tr>
-          <tr><td>5</td><td><code>app/api/mock/*</code></td><td>fixed github mock</td><td>plugin mock</td></tr>
+          <tr><td>3</td><td><code>app/api/types.ts</code></td><td>fixed <code>github</code> slice</td><td>plugin wrapper · <code>HisApi</code> slice remains</td></tr>
+          <tr><td>4</td><td><code>app/api/client.ts</code></td><td>fixed <code>github.*</code> rpc</td><td>plugin wrapper · <code>HisApi</code> slice remains</td></tr>
+          <tr><td>5</td><td><code>app/api/mock/*</code></td><td>fixed github mock</td><td>central mock via <code>rpcFrom(impl)</code></td></tr>
           <tr><td>6</td><td><code>~icons/*</code></td><td>inlined at build</td><td>plugin-local — fine</td></tr>
           <tr><td>7</td><td><code>server/handlers.ts</code></td><td>github RPCs</td><td>plugin node entry <span class="c">(see PLAN.insights)</span></td></tr>
         </tbody>
