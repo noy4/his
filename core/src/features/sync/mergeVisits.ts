@@ -13,10 +13,6 @@ export interface SourceProfileRef {
   idMode: IdMode
 }
 
-export interface MergeVisitsOptions {
-  rescan?: boolean
-}
-
 export interface MergeVisitsResult {
   sourceProfileId: number
   cleared: boolean
@@ -28,14 +24,14 @@ export interface MergeVisitsParams {
   db: KyselyDb
   profile: SourceProfileRef
   visits: NormalizedVisit[]
-  options: MergeVisitsOptions
+  rescan?: boolean
 }
 
 // merge one profile's visits into the archive. All writes are set-based
 // (chunked multi-row inserts + one aggregate UPDATE per batch) so a large
 // first import does not compile one query per visit.
 export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisitsResult> {
-  const { db, profile, visits, options } = params
+  const { db, profile, visits, rescan } = params
   const now = Date.now()
   const sourceProfileId = await ensureSourceProfile(db, profile) // find-or-create the profile row
   const checkpoint = await getCheckpoint(db, sourceProfileId) // last ingested source id
@@ -54,7 +50,7 @@ export async function mergeVisits(params: MergeVisitsParams): Promise<MergeVisit
     visits,
     checkpoint,
     idMode: profile.idMode,
-    rescan: options.rescan,
+    rescan,
   })
 
   // new URLs are flagged hidden at insert time, so sync needs no full recompute

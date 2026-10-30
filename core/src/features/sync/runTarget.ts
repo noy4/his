@@ -55,9 +55,7 @@ export async function runTarget(params: RunTargetParams): Promise<RunTargetResul
         sourcePath: target.sourcePath,
       },
       visits,
-      options: {
-        rescan: options.rescan,
-      },
+      rescan: options.rescan,
     })
 
     // save fingerprint
