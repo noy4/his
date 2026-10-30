@@ -69,3 +69,14 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+.app-drag {
+  -webkit-app-region: drag;
+}
+
+.app-drag button,
+.app-drag a,
+.app-drag input,
+.app-drag nav {
+  -webkit-app-region: no-drag;
+}

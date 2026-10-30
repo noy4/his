@@ -67,9 +67,17 @@ function Root({ children }: { children: ReactNode }) {
 
 // Header
 
+const IS_MAC_ELECTRON = navigator.userAgent.includes('Electron')
+  && navigator.userAgent.includes('Mac')
+
 function HeaderRoot({ children }: { children: ReactNode }) {
   return (
-    <header className="flex shrink-0 items-center gap-4 border-b px-4 py-2.5">
+    <header
+      className={cn(
+        'app-drag flex shrink-0 items-center gap-4 border-b px-4 py-2.5',
+        IS_MAC_ELECTRON && 'pl-22',
+      )}
+    >
       {children}
     </header>
   )

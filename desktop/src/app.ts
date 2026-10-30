@@ -71,6 +71,12 @@ export class HisApp {
       height: 680,
       show: false,
       title: 'his',
+      ...(process.platform === 'darwin'
+        ? {
+          titleBarStyle: 'hiddenInset',
+          trafficLightPosition: { x: 14, y: 20 },
+        }
+        : {}),
       webPreferences: {
         contextIsolation: true,
         nodeIntegration: false,
