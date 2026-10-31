@@ -1,6 +1,6 @@
 import type { KyselyDb } from '@his/core/node'
 import { history, settings, sources } from '@his/core/node'
-import { PLUGINS } from './plugins/index.ts'
+import { PLUGINS } from './plugins.ts'
 import type { Handler } from './rpc.ts'
 import type { SyncRunner } from './sync-runner.ts'
 
