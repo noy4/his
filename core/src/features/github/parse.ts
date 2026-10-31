@@ -29,8 +29,10 @@ export function parseGithubUrl(url: string): GithubUrlInfo | null {
   }
   if (u.hostname !== 'github.com' && u.hostname !== 'www.github.com')
     return null
-  const [owner, repo, type, num] = u.pathname.toLowerCase().split('/').filter(Boolean)
+  const [owner, segment, type, num] = u.pathname.toLowerCase().split('/').filter(Boolean)
   if (!owner || RESERVED.has(owner)) return null
+  // clone URLs end in '.git' (e.g. /foo/bar.git); treat it as the same repo
+  const repo = segment?.replace(/\.git$/, '')
   if (!repo) return { owner }
   if (!type) return { owner, repo, root: true }
   if (num === undefined || !/^\d+$/.test(num))
@@ -91,10 +93,10 @@ export function mergeRepoRoots<T extends VisitLike>(rows: { item: T; urlInfo: Gi
   return [...out, ...roots.values()]
 }
 
-// 'https://github.com/Foo/Bar/?tab=x#y' → 'https://github.com/Foo/Bar'
+// 'https://github.com/Foo/Bar.git/?tab=x#y' → 'https://github.com/Foo/Bar'
 function stripUrl(url: string): string {
   const u = new URL(url)
-  return `${u.origin}${u.pathname.replace(/\/+$/, '')}`
+  return `${u.origin}${u.pathname.replace(/\/+$/, '').replace(/\.git$/, '')}`
 }
 
 export function matchesKind(urlInfo: GithubUrlInfo, kind: GithubVisitKind): boolean {

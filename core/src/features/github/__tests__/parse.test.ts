@@ -9,6 +9,10 @@ describe('parseGithubUrl', () => {
     ['https://github.com/Foo/Bar', { owner: 'foo', repo: 'bar', root: true }],
     ['https://github.com/Foo/Bar/?tab=readme#x', { owner: 'foo', repo: 'bar', root: true }],
     ['https://www.github.com/foo/bar', { owner: 'foo', repo: 'bar', root: true }],
+    ['https://github.com/foo/bar.git', { owner: 'foo', repo: 'bar', root: true }],
+    ['https://github.com/foo/bar.git/', { owner: 'foo', repo: 'bar', root: true }],
+    ['https://github.com/foo/bar.git/tree/main/src', { owner: 'foo', repo: 'bar' }],
+    ['https://github.com/foo/bar.git/pull/12', { owner: 'foo', repo: 'bar', kind: 'pull', number: 12 }],
     ['https://github.com/foo/bar/tree/main/src', { owner: 'foo', repo: 'bar' }],
     ['https://github.com/foo/bar/pulls', { owner: 'foo', repo: 'bar' }],
     ['https://github.com/foo/bar/issues', { owner: 'foo', repo: 'bar' }],
@@ -45,10 +49,11 @@ describe('mergeRepoRoots', () => {
       row(2, 'https://github.com/foo/bar?tab=MIT-1-ov-file', 30),
       row(3, 'https://github.com/foo/bar#readme', 20),
       row(4, 'https://github.com/foo/bar/issues/1', 40),
+      row(5, 'https://github.com/foo/bar.git', 25),
     ])
     assert.deepEqual(out.map((r) => r.item), [
       { id: 4, url: 'https://github.com/foo/bar/issues/1', title: 't4', visitCount: 1, typedCount: 0, firstVisit: 40, lastVisit: 40 },
-      { id: 2, url: 'https://github.com/foo/bar', title: 't2', visitCount: 3, typedCount: 0, firstVisit: 10, lastVisit: 30 },
+      { id: 2, url: 'https://github.com/foo/bar', title: 't2', visitCount: 4, typedCount: 0, firstVisit: 10, lastVisit: 30 },
     ])
   })
 })
