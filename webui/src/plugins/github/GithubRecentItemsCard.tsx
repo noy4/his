@@ -27,7 +27,7 @@ export function GithubRecentItemsCard({ gh }: { gh: GithubModel }) {
         />
       </ItemsToolbarRoot>
 
-      {groups.length === 0 && <EmptyMessage text="No items" />}
+      {groups.length === 0 && <EmptyMessage />}
 
       {groups.map((group) => (
         <GithubItemsGroup

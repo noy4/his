@@ -43,7 +43,7 @@ export function ItemsViewToggle({ value, onChange }: { value: string; onChange: 
   )
 }
 
-export function EmptyMessage({ text, className, ...props }: Omit<ComponentProps<'p'>, 'children'> & { text: string }) {
+export function EmptyMessage({ text = 'No items', className, ...props }: Omit<ComponentProps<'p'>, 'children'> & { text?: string }) {
   return (
     <p
       {...props}
