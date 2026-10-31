@@ -1,5 +1,6 @@
 import type { ViewPlugin } from '../types'
 import { Keywords } from './Keywords'
+import { keywordsMock } from './mock'
 import MagnifyIcon from '~icons/mdi/magnify'
 
 export const keywords: ViewPlugin = {
@@ -7,4 +8,5 @@ export const keywords: ViewPlugin = {
   label: 'Keywords',
   icon: MagnifyIcon,
   View: Keywords,
+  mock: keywordsMock,
 }

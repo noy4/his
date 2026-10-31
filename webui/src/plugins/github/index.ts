@@ -1,5 +1,6 @@
 import type { ViewPlugin } from '../types'
 import { Github } from './Github'
+import { githubMock } from './mock'
 import GithubIcon from '~icons/mdi/github'
 
 export const github: ViewPlugin = {
@@ -7,4 +8,5 @@ export const github: ViewPlugin = {
   label: 'GitHub',
   icon: GithubIcon,
   View: Github,
+  mock: githubMock,
 }

@@ -1,5 +1,6 @@
 import type { ViewPlugin } from '../types'
 import { Youtube } from './Youtube'
+import { youtubeMock } from './mock'
 import YoutubeIcon from '~icons/mdi/youtube'
 
 export const youtube: ViewPlugin = {
@@ -7,4 +8,5 @@ export const youtube: ViewPlugin = {
   label: 'YouTube',
   icon: YoutubeIcon,
   View: Youtube,
+  mock: youtubeMock,
 }

@@ -1,42 +1,21 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, KeywordSearchParams, KeywordStats, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
+import type { HisApi, HistoryItem, HistoryVisit, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncRunParams, SyncSummary } from '../types'
 import type { RpcCall } from '@/lib/rpc-transport'
+import { hostWithoutWww, sourceKey } from '@his/core'
 import { isoDay } from '@/lib/date'
-import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseSearchQuery, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
-import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
+import { VIEW_PLUGINS } from '@/plugins/registry'
+import {
+  DEFAULT_LIMIT, MOCK_DISCOVERED, MOCK_SOURCES, MOCK_VISITS,
+  byLastVisitDesc, decodeCursor, encodeCursor, getHiddenPatterns, hiddenUrlCount,
+  paginate, setHiddenPatterns, sortByDay, visibleItems,
+} from './kit'
 
-const DEFAULT_LIMIT = 50
 const SYNC_DELAY_MS = 600
-
-function byLastVisitDesc(a: HistoryItem, b: HistoryItem): number {
-  return b.lastVisit - a.lastVisit || b.id - a.id
-}
 
 function topN(map: Map<string, number>, n: number): { key: string; visits: number }[] {
   return [...map]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, n)
     .map(([key, visits]) => ({ key, visits }))
-}
-
-// 'YYYY-MM-DD' → ascending daily series
-function sortByDay(byDay: Map<string, number>): { day: string; visits: number }[] {
-  return [...byDay]
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([day, visits]) => ({ day, visits }))
-}
-
-// --- hide patterns (settings) ---
-
-let hiddenPatterns: string[] = []
-
-function visibleItems(): HistoryItem[] {
-  if (hiddenPatterns.length === 0) return [...MOCK_ITEMS]
-  return MOCK_ITEMS.filter((item) => !matchesHidden(item.url, hiddenPatterns))
-}
-
-function hiddenUrlCount(patterns: string[]): number {
-  if (patterns.length === 0) return 0
-  return MOCK_ITEMS.filter((item) => matchesHidden(item.url, patterns)).length
 }
 
 function computeStats(): Stats {
@@ -116,355 +95,11 @@ function computeMonthlyStats(month: string): Stats {
   }
 }
 
-// --- github ---
-
-const GITHUB_TOP = 20
-
-function githubItems(): { item: HistoryItem; urlInfo: GithubUrlInfo }[] {
-  return visibleItems().flatMap((item) => {
-    const urlInfo = parseGithubUrl(item.url)
-    return urlInfo ? [{ item, urlInfo }] : []
-  })
-}
-
-// month → item narrowed to that month's visits (counts / first / last), or null if unvisited
-function inPeriod(item: HistoryItem, month?: string): HistoryItem | null {
-  if (month === undefined) return item
-  const visits = (MOCK_VISITS.get(item.id) ?? []).filter((visit) => isoDay(visit.visitTime).slice(0, 7) === month)
-  if (visits.length === 0) return null
-  const times = visits.map((visit) => visit.visitTime)
-  return {
-    ...item,
-    visitCount: visits.length,
-    typedCount: visits.filter((visit) => visit.transition === 'typed').length,
-    firstVisit: Math.min(...times),
-    lastVisit: Math.max(...times),
-  }
-}
-
-function githubPeriod(month?: string): { item: HistoryItem; urlInfo: GithubUrlInfo }[] {
-  return githubItems().flatMap(({ item, urlInfo }) => {
-    const it = inPeriod(item, month)
-    return it ? [{ item: it, urlInfo }] : []
-  })
-}
-
-// 'Fix foo by bar · Pull Request #12 · o/r' → 'Fix foo by bar'
-function cleanTitle(title: string): string {
-  return title.split(' · ')[0]
-}
-
-function computeGithubStats(month?: string): GithubStats {
-  const repos = new Map<string, { owner: string; repo: string; visits: number }>()
-  const owners = new Map<string, { visits: number; repos: Set<string> }>()
-  const items = new Map<string, GithubStats['topItems'][number] & { last: number }>()
-  let visits = 0
-  let firstVisit = Number.POSITIVE_INFINITY
-  let lastVisit = 0
-
-  for (const { item, urlInfo } of githubPeriod(month)) {
-    const n = item.visitCount
-    visits += n
-    firstVisit = Math.min(firstVisit, item.firstVisit)
-    lastVisit = Math.max(lastVisit, item.lastVisit)
-    const o = owners.get(urlInfo.owner) ?? { visits: 0, repos: new Set<string>() }
-    o.visits += n
-    owners.set(urlInfo.owner, o)
-    if (!urlInfo.repo) continue
-    o.repos.add(urlInfo.repo)
-    const rk = `${urlInfo.owner}/${urlInfo.repo}`
-    const r = repos.get(rk) ?? { owner: urlInfo.owner, repo: urlInfo.repo, visits: 0 }
-    r.visits += n
-    repos.set(rk, r)
-    if (!urlInfo.kind || urlInfo.number === undefined) continue
-    const ik = `${rk}/${urlInfo.kind}/${urlInfo.number}`
-    const cur = items.get(ik)
-    if (cur) {
-      cur.visits += n
-      if (item.lastVisit > cur.last) Object.assign(cur, { title: cleanTitle(item.title), url: item.url, last: item.lastVisit })
-    } else {
-      items.set(ik, { owner: urlInfo.owner, repo: urlInfo.repo, kind: urlInfo.kind, number: urlInfo.number, title: cleanTitle(item.title), url: item.url, visits: n, last: item.lastVisit })
-    }
-  }
-
-  const byVisits = <T extends { visits: number }>(a: T, b: T) => b.visits - a.visits
-  return {
-    totals: {
-      visits,
-      repos: repos.size,
-      owners: owners.size,
-      items: items.size,
-      firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
-      lastVisit,
-    },
-    byDay: computeGithubByDay(month),
-    byDayTop: computeGithubByDayTop(month),
-    topRepos: [...repos.values()].sort(byVisits).slice(0, GITHUB_TOP),
-    topOwners: [...owners]
-      .map(([owner, o]) => ({ owner, repos: o.repos.size, visits: o.visits }))
-      .sort(byVisits)
-      .slice(0, GITHUB_TOP),
-    topItems: [...items.values()]
-      .sort(byVisits)
-      .slice(0, GITHUB_TOP)
-      .map(({ last: _, ...it }) => it),
-  }
-}
-
-// per-day visit counts split by github URL kind; 'all' is the row total
-function computeGithubByDay(month?: string): { day: string; all: number; repo: number; issue_pr: number; other: number }[] {
-  const map = new Map<string, { day: string; all: number; repo: number; issue_pr: number; other: number }>()
-  for (const item of visibleItems()) {
-    const urlInfo = parseGithubUrl(item.url)
-    if (!urlInfo) continue
-    const kind = urlInfo.root ? 'repo' : urlInfo.kind ? 'issue_pr' : 'other'
-    for (const visit of MOCK_VISITS.get(item.id) ?? []) {
-      const day = isoDay(visit.visitTime)
-      if (month !== undefined && day.slice(0, 7) !== month) continue
-      const row = map.get(day) ?? { day, all: 0, repo: 0, issue_pr: 0, other: 0 }
-      row.all += 1
-      row[kind] += 1
-      map.set(day, row)
-    }
-  }
-  return [...map.values()].sort((a, b) => a.day.localeCompare(b.day))
-}
-
-// per-day top items (most recently visited first) per kind, for chart tooltips
-function computeGithubByDayTop(month?: string): GithubStats['byDayTop'] {
-  const days = new Map<string, Record<GithubDayKind, Map<string, GithubDayItem>>>()
-  for (const item of visibleItems()) {
-    const urlInfo = parseGithubUrl(item.url)
-    if (!urlInfo) continue
-    const classified = classifyDayItem(urlInfo)
-    const perDay = new Map<string, { visits: number; lastVisit: number }>()
-    for (const visit of MOCK_VISITS.get(item.id) ?? []) {
-      const day = isoDay(visit.visitTime)
-      if (month !== undefined && day.slice(0, 7) !== month) continue
-      const agg = perDay.get(day) ?? { visits: 0, lastVisit: 0 }
-      agg.visits += 1
-      agg.lastVisit = Math.max(agg.lastVisit, visit.visitTime)
-      perDay.set(day, agg)
-    }
-    for (const [day, agg] of perDay) {
-      const byKind = days.get(day) ?? { repo: new Map(), issue_pr: new Map(), other: new Map() }
-      const bucket = byKind[classified.kind]
-      const cur = bucket.get(classified.key) ?? { ...classified, visits: 0, lastVisit: 0 }
-      cur.visits += agg.visits
-      cur.lastVisit = Math.max(cur.lastVisit, agg.lastVisit)
-      bucket.set(classified.key, cur)
-      days.set(day, byKind)
-    }
-  }
-  return [...days.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([day, byKind]) => ({
-      day,
-      repo: topRecent([...byKind.repo.values()]),
-      issue_pr: topRecent([...byKind.issue_pr.values()]),
-      other: topRecent([...byKind.other.values()]),
-    }))
-}
-
-// display entity (repo / issue-pr / other) a github URL belongs to
-function classifyDayItem(urlInfo: GithubUrlInfo): Omit<GithubDayItem, 'visits' | 'lastVisit'> {
-  if (urlInfo.root === true && urlInfo.repo !== undefined) {
-    return { key: `repo:${urlInfo.owner}/${urlInfo.repo}`, kind: 'repo', owner: urlInfo.owner, repo: urlInfo.repo }
-  }
-  if (urlInfo.kind !== undefined && urlInfo.number !== undefined && urlInfo.repo !== undefined) {
-    return {
-      key: `issue:${urlInfo.owner}/${urlInfo.repo}/${urlInfo.kind}/${urlInfo.number}`,
-      kind: 'issue_pr',
-      owner: urlInfo.owner,
-      repo: urlInfo.repo,
-      number: urlInfo.number,
-      pullKind: urlInfo.kind,
-    }
-  }
-  return {
-    key: `other:${urlInfo.owner}${urlInfo.repo === undefined ? '' : `/${urlInfo.repo}`}`,
-    kind: 'other',
-    owner: urlInfo.owner,
-    repo: urlInfo.repo,
-  }
-}
-
-const DAY_TOP = 3
-
-// most recently visited first; ties by visits then key
-function topRecent(items: GithubDayItem[]): GithubDayItem[] {
-  return items
-    .sort((a, b) => b.lastVisit - a.lastVisit || b.visits - a.visits || a.key.localeCompare(b.key))
-    .slice(0, DAY_TOP)
-}
-
-function mockGithubSearch(params: GithubSearchParams): SearchPage {
-  const owner = params.owner?.toLowerCase()
-  const repo = params.repo?.toLowerCase()
-  const kind = params.kind ?? 'all'
-  const rows = mergeRepoRoots(githubPeriod(params.month))
-    .filter(({ urlInfo }) => (!owner || urlInfo.owner === owner) && (!repo || urlInfo.repo === repo) && matchesKind(urlInfo, kind))
-    .map(({ item }) => item)
-    .sort(byLastVisitDesc)
-  return paginate(rows, params.cursor, params.limit)
-}
-
-// --- youtube ---
-
-export function mockYoutubeSearch(params: YoutubeSearchParams): SearchPage {
-  const kind = params.kind ?? 'all'
-  const rows = visibleItems()
-    .flatMap((item) => {
-      const info = parseYoutubeUrl(item.url)
-      if (info === null || !matchesYoutubeKind(info, kind)) return []
-      const it = inPeriod(item, params.month)
-      return it === null ? [] : [it]
-    })
-    .sort(byLastVisitDesc)
-  return paginate(rows, params.cursor, params.limit)
-}
-
-export function mockYoutubeStats(month?: string): YoutubeStats {
-  const videos = new Set<string>()
-  const shorts = new Set<string>()
-  const top = new Map<string, { id: string; shorts: boolean; title: string; url: string; visits: number }>()
-  let visits = 0
-  let firstVisit = Number.POSITIVE_INFINITY
-  let lastVisit = 0
-  for (const item of visibleItems()) {
-    const info = parseYoutubeUrl(item.url)
-    if (info === null) continue
-    const it = inPeriod(item, month)
-    if (it === null) continue
-    visits += it.visitCount
-    firstVisit = Math.min(firstVisit, it.firstVisit)
-    lastVisit = Math.max(lastVisit, it.lastVisit)
-    if (info.kind !== 'video' || info.id === undefined) continue
-    const isShort = info.shorts === true
-    if (isShort) shorts.add(info.id)
-    else videos.add(info.id)
-    const prev = top.get(info.id)
-    if (prev === undefined) {
-      top.set(info.id, { id: info.id, shorts: isShort, title: it.title ?? it.url, url: it.url, visits: it.visitCount })
-    } else {
-      prev.visits += it.visitCount
-      prev.shorts ||= isShort
-    }
-  }
-  return {
-    totals: {
-      visits,
-      videos: videos.size,
-      shorts: shorts.size,
-      firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
-      lastVisit,
-    },
-    byDay: computeYoutubeByDay(month),
-    topVideos: [...top.values()].sort((a, b) => b.visits - a.visits).slice(0, 5),
-  }
-}
-
-function computeYoutubeByDay(month?: string): YoutubeStats['byDay'] {
-  const map = new Map<string, YoutubeStats['byDay'][number]>()
-  for (const item of visibleItems()) {
-    const info = parseYoutubeUrl(item.url)
-    if (info === null) continue
-    const kind = info.kind !== 'video' ? 'other' : info.shorts === true ? 'shorts' : 'video'
-    for (const visit of MOCK_VISITS.get(item.id) ?? []) {
-      const day = isoDay(visit.visitTime)
-      if (month !== undefined && day.slice(0, 7) !== month) continue
-      const row = map.get(day) ?? { day, all: 0, video: 0, shorts: 0, other: 0 }
-      row.all += 1
-      row[kind] += 1
-      map.set(day, row)
-    }
-  }
-  return [...map.values()].sort((a, b) => a.day.localeCompare(b.day))
-}
-
-// --- keywords ---
-
-function keywordItems(): { item: HistoryItem; term: string }[] {
-  return visibleItems().flatMap((item) => {
-    const info = parseSearchQuery(item.url)
-    return info === null ? [] : [{ item, term: info.term }]
-  })
-}
-
-export function mockKeywordSearch(params: KeywordSearchParams): SearchPage {
-  const rows = collapseKeywordTerms(
-    keywordItems().flatMap(({ item, term }) => {
-      const it = inPeriod(item, params.month)
-      return it === null ? [] : [{ item: it, term }]
-    }),
-  )
-  return paginate(rows, params.cursor, params.limit)
-}
-
-// one HistoryItem per term; id/url/title/lastVisit come from the latest visit
-function collapseKeywordTerms(rows: { item: HistoryItem; term: string }[]): HistoryItem[] {
-  const byTerm = new Map<string, HistoryItem>()
-  for (const { item, term } of rows) {
-    const key = term.toLowerCase()
-    const prev = byTerm.get(key)
-    if (prev === undefined) {
-      byTerm.set(key, item)
-      continue
-    }
-    prev.visitCount += item.visitCount
-    prev.typedCount += item.typedCount
-    prev.firstVisit = Math.min(prev.firstVisit, item.firstVisit)
-    if (item.lastVisit > prev.lastVisit) {
-      prev.id = item.id
-      prev.url = item.url
-      prev.title = item.title
-      prev.lastVisit = item.lastVisit
-    }
-  }
-  return [...byTerm.values()].sort(byLastVisitDesc)
-}
-
-export function mockKeywordStats(month?: string): KeywordStats {
-  const terms = new Set<string>()
-  let searches = 0
-  let firstVisit = Number.POSITIVE_INFINITY
-  let lastVisit = 0
-  for (const { item, term } of keywordItems()) {
-    const it = inPeriod(item, month)
-    if (it === null) continue
-    searches += it.visitCount
-    terms.add(term.toLowerCase())
-    firstVisit = Math.min(firstVisit, it.firstVisit)
-    lastVisit = Math.max(lastVisit, it.lastVisit)
-  }
-  return {
-    totals: {
-      searches,
-      keywords: terms.size,
-      firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
-      lastVisit,
-    },
-    byDay: keywordByDay(month),
-  }
-}
-
-function keywordByDay(month?: string): KeywordStats['byDay'] {
-  const byDay = new Map<string, number>()
-  for (const { item } of keywordItems()) {
-    for (const visit of MOCK_VISITS.get(item.id) ?? []) {
-      const day = isoDay(visit.visitTime)
-      if (month !== undefined && day.slice(0, 7) !== month) continue
-      byDay.set(day, (byDay.get(day) ?? 0) + 1)
-    }
-  }
-  return sortByDay(byDay)
-}
-
-// --- sources ---
+// --- sources / sync ---
 
 // configured sync targets; empty means nothing syncs (explicit targets override)
 let syncTargets: string[] = []
-let sources: RegisteredSource[] = MOCK_SOURCES.map((s) => ({ ...s }))
+const sources: RegisteredSource[] = MOCK_SOURCES.map((s) => ({ ...s }))
 let inRun = false
 let lastRunRecord: SyncSummary | null = null
 
@@ -535,19 +170,7 @@ async function syncRun(params: SyncRunParams): Promise<SyncSummary> {
   }
 }
 
-function encodeCursor(time: number, id: number): string {
-  return btoa(`v1.${time}.${id}`)
-}
-
-function decodeCursor(cursor: string): { time: number; id: number } | null {
-  try {
-    const m = /^v1\.(\d+)\.(\d+)$/.exec(atob(cursor))
-    if (m === null) return null
-    return { time: Number(m[1]), id: Number(m[2]) }
-  } catch {
-    return null
-  }
-}
+// --- history ---
 
 function findVisible(params: SearchParams): HistoryItem[] {
   const q = params.query?.trim().toLowerCase() ?? ''
@@ -561,20 +184,6 @@ function findVisible(params: SearchParams): HistoryItem[] {
   )
   rows.sort(byLastVisitDesc)
   return rows
-}
-
-// rows must be sorted by byLastVisitDesc; keyset on (lastVisit, id)
-function paginate(rows: HistoryItem[], cursorText?: string, limit = DEFAULT_LIMIT): SearchPage {
-  const cursor = cursorText ? decodeCursor(cursorText) : null
-  const keyed = cursor
-    ? rows.filter((it) => it.lastVisit < cursor.time || (it.lastVisit === cursor.time && it.id < cursor.id))
-    : rows
-  const page = keyed.slice(0, limit)
-  const last = page.at(-1)
-  const nextCursor = keyed.length > limit && last
-    ? encodeCursor(last.lastVisit, last.id)
-    : null
-  return { items: page, nextCursor }
 }
 
 function searchVisits(params: SearchParams): SearchVisitsPage {
@@ -607,6 +216,8 @@ function searchVisits(params: SearchParams): SearchVisitsPage {
   }
 }
 
+// --- api ---
+
 const coreApi: Omit<HisApi, 'rpc' | 'on'> = {
   history: {
     async stats({ month } = {}): Promise<Stats> {
@@ -632,52 +243,28 @@ const coreApi: Omit<HisApi, 'rpc' | 'on'> = {
   },
   settings: {
     async get(): Promise<SettingsInfo> {
+      const hidden = getHiddenPatterns()
       return {
-        hidden_patterns: [...hiddenPatterns],
-        hidden_url_count: hiddenUrlCount(hiddenPatterns),
+        hidden_patterns: [...hidden],
+        hidden_url_count: hiddenUrlCount(hidden),
         sync_targets: [...syncTargets],
       }
     },
     async set(params: SettingsPatch): Promise<SettingsInfo> {
-      if (params.hidden_patterns !== undefined) hiddenPatterns = params.hidden_patterns
+      if (params.hidden_patterns !== undefined) setHiddenPatterns(params.hidden_patterns)
       if (params.sync_targets !== undefined) syncTargets = params.sync_targets
+      const hidden = getHiddenPatterns()
       return {
-        hidden_patterns: [...hiddenPatterns],
-        hidden_url_count: hiddenUrlCount(hiddenPatterns),
+        hidden_patterns: [...hidden],
+        hidden_url_count: hiddenUrlCount(hidden),
         sync_targets: [...syncTargets],
       }
     },
   },
 }
 
-// plugin RPC namespaces — reached over rpc(), not part of HisApi
-const pluginApi = {
-  github: {
-    async stats({ month }: StatsParams = {}): Promise<GithubStats> {
-      return computeGithubStats(month)
-    },
-    async search(params: GithubSearchParams): Promise<SearchPage> {
-      return mockGithubSearch(params)
-    },
-  },
-  youtube: {
-    async stats({ month }: StatsParams = {}): Promise<YoutubeStats> {
-      return mockYoutubeStats(month)
-    },
-    async search(params: YoutubeSearchParams): Promise<SearchPage> {
-      return mockYoutubeSearch(params)
-    },
-  },
-  keywords: {
-    async stats({ month }: StatsParams = {}): Promise<KeywordStats> {
-      return mockKeywordStats(month)
-    },
-    async search(params: KeywordSearchParams): Promise<SearchPage> {
-      return mockKeywordSearch(params)
-    },
-  },
-}
-
+// plugin RPC namespaces, contributed by each ViewPlugin
+const pluginApi = Object.assign({}, ...VIEW_PLUGINS.map((plugin) => plugin.mock ?? {}))
 const impl = { ...coreApi, ...pluginApi }
 
 export const mockApi: HisApi = {
