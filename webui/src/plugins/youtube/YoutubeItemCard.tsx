@@ -3,11 +3,10 @@ import { parseYoutubeTitle, parseYoutubeUrl } from '@his/core'
 import { cn } from 'cn'
 import type { ReactNode } from 'react'
 import { VisitCount } from '@/components/view/RecentItems'
-import { YoutubeItemAvatar } from './Youtube.components'
-import { youtubeItemLabel } from './youtube.labels'
+import { YoutubeItemThumb } from './Youtube.components'
 
 export function YoutubeItemCardGrid({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-2">{children}</div>
+  return <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">{children}</div>
 }
 
 export function YoutubeItemCard({ item }: { item: HistoryItem }) {
@@ -20,16 +19,15 @@ export function YoutubeItemCard({ item }: { item: HistoryItem }) {
       target="_blank"
       rel="noreferrer"
       className={cn(
-        'flex min-w-0 items-start gap-2.5 rounded-lg border border-border p-3 text-inherit no-underline',
+        'flex min-w-0 flex-col gap-2 rounded-lg border border-border p-2 text-inherit no-underline',
         'transition-colors hover:bg-bg-3',
       )}
     >
-      <YoutubeItemAvatar info={info} size={36} />
-      <div className="grid min-w-0 flex-1 gap-0.5 leading-snug">
-        <span className="line-clamp-2 text-sm font-semibold text-text">{name}</span>
-        <span className="truncate font-mono text-[11px] text-muted">{youtubeItemLabel(info)}</span>
+      <YoutubeItemThumb info={info} />
+      <div className="flex min-w-0 items-start gap-2">
+        <span className="line-clamp-2 min-w-0 flex-1 text-sm font-semibold text-text">{name}</span>
+        {item.visitCount > 1 && <VisitCount n={item.visitCount} />}
       </div>
-      <VisitCount n={item.visitCount} />
     </a>
   )
 }

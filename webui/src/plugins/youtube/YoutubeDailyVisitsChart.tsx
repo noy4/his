@@ -20,12 +20,16 @@ export function YoutubeDailyVisitsChart({ data, dataKey }: { data: YoutubeDailyR
   const peakValue = data.reduce((max, d) => Math.max(max, Number(d[dataKey])), 0)
   return (
     <ResponsiveContainer width="100%" height={160} onResize={(w) => setWidth(w)}>
-      <BarChart data={data} margin={{ top: 16, right: 4, bottom: 0, left: 4 }} barCategoryGap={1}>
+      <BarChart
+        data={data}
+        margin={{ top: 16, right: 4, bottom: 0, left: 4 }}
+        barCategoryGap={1}
+      >
         <XAxis
           dataKey="day"
           tickFormatter={(v: string) => dayjs(v).format('M/D')}
           interval="preserveStartEnd"
-          minTickGap={24}
+          minTickGap={44}
           tickLine={false}
           axisLine={false}
           tick={{ fontSize: 10, fill: 'var(--color-muted)' }}

@@ -65,6 +65,37 @@ export function PlaylistBadge({ size = 32, className }: { size?: number; classNa
   )
 }
 
+// full-width 16:9 preview for card layouts
+export function YoutubeItemThumb({ info, className }: { info: YoutubeUrlInfo; className?: string }) {
+  if (info.kind === 'video') {
+    return (
+      <span className={cn('relative block aspect-video w-full overflow-hidden rounded bg-bg-3', className)}>
+        <img
+          src={`https://i.ytimg.com/vi/${info.id}/mqdefault.jpg`}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+        {info.shorts && (
+          <span className="absolute bottom-1 left-1 rounded bg-black/70 px-1 text-[10px] font-semibold text-white">
+            Shorts
+          </span>
+        )}
+      </span>
+    )
+  }
+  const size = 48
+  return (
+    <span className={cn('flex aspect-video w-full items-center justify-center rounded bg-bg-3 text-muted', className)}>
+      {info.kind === 'channel'
+        ? <ChannelAvatar id={info.id ?? ''} size={size} />
+        : info.kind === 'playlist'
+          ? <PlaylistBadge size={size} />
+          : <YoutubeIcon width={size} height={size} />}
+    </span>
+  )
+}
+
 export function YoutubeItemAvatar({ info, size = 32, className }: { info: YoutubeUrlInfo; size?: number; className?: string }) {
   if (info.kind === 'video')
     return <YoutubeThumb id={info.id} shorts={info.shorts} width={Math.round(size * 1.6)} className={className} />
