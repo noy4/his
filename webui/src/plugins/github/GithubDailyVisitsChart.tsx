@@ -34,7 +34,7 @@ export function GithubDailyVisitsChart({ data, dataKey }: { data: GithubDailyVis
           dataKey="day"
           tickFormatter={(v: string) => dayjs(v).format('M/D')}
           interval="preserveStartEnd"
-          minTickGap={24}
+          minTickGap={44}
           tickLine={false}
           axisLine={false}
           tick={{ fontSize: 10, fill: 'var(--color-muted)' }}
