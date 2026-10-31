@@ -1,4 +1,4 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, KeywordSearchParams, KeywordStats, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, KeywordSearchParams, KeywordStats, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
 import type { RpcCall } from '@/lib/rpc-transport'
 import { isoDay } from '@/lib/date'
 import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseSearchQuery, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
@@ -607,7 +607,7 @@ function searchVisits(params: SearchParams): SearchVisitsPage {
   }
 }
 
-const impl: Omit<HisApi, 'rpc' | 'on'> = {
+const coreApi: Omit<HisApi, 'rpc' | 'on'> = {
   history: {
     async stats({ month } = {}): Promise<Stats> {
       return month === undefined ? computeStats() : computeMonthlyStats(month)
@@ -617,30 +617,6 @@ const impl: Omit<HisApi, 'rpc' | 'on'> = {
     },
     async searchVisits(params: SearchParams): Promise<SearchVisitsPage> {
       return searchVisits(params)
-    },
-  },
-  github: {
-    async stats({ month } = {}): Promise<GithubStats> {
-      return computeGithubStats(month)
-    },
-    async search(params: GithubSearchParams): Promise<SearchPage> {
-      return mockGithubSearch(params)
-    },
-  },
-  youtube: {
-    async stats({ month } = {}): Promise<YoutubeStats> {
-      return mockYoutubeStats(month)
-    },
-    async search(params: YoutubeSearchParams): Promise<SearchPage> {
-      return mockYoutubeSearch(params)
-    },
-  },
-  keywords: {
-    async stats({ month } = {}): Promise<KeywordStats> {
-      return mockKeywordStats(month)
-    },
-    async search(params: KeywordSearchParams): Promise<SearchPage> {
-      return mockKeywordSearch(params)
     },
   },
   sources: {
@@ -674,16 +650,46 @@ const impl: Omit<HisApi, 'rpc' | 'on'> = {
   },
 }
 
+// plugin RPC namespaces — reached over rpc(), not part of HisApi
+const pluginApi = {
+  github: {
+    async stats({ month }: StatsParams = {}): Promise<GithubStats> {
+      return computeGithubStats(month)
+    },
+    async search(params: GithubSearchParams): Promise<SearchPage> {
+      return mockGithubSearch(params)
+    },
+  },
+  youtube: {
+    async stats({ month }: StatsParams = {}): Promise<YoutubeStats> {
+      return mockYoutubeStats(month)
+    },
+    async search(params: YoutubeSearchParams): Promise<SearchPage> {
+      return mockYoutubeSearch(params)
+    },
+  },
+  keywords: {
+    async stats({ month }: StatsParams = {}): Promise<KeywordStats> {
+      return mockKeywordStats(month)
+    },
+    async search(params: KeywordSearchParams): Promise<SearchPage> {
+      return mockKeywordSearch(params)
+    },
+  },
+}
+
+const impl = { ...coreApi, ...pluginApi }
+
 export const mockApi: HisApi = {
-  ...impl,
+  ...coreApi,
   rpc: rpcFrom(impl),
   on: () => () => { },
 }
 
-function rpcFrom(api: Omit<HisApi, 'rpc' | 'on'>): RpcCall {
+function rpcFrom(api: object): RpcCall {
   return <R>(method: string, params?: unknown): Promise<R> => {
     const [namespace, fn] = method.split('.')
-    const group = (api as unknown as Record<string, Record<string, (p?: unknown) => Promise<unknown>>>)[namespace]
+    const group = (api as Record<string, Record<string, (p?: unknown) => Promise<unknown>> | undefined>)[namespace]
     const call = group?.[fn]
     if (call === undefined) return Promise.reject(new Error(`unknown rpc method: ${method}`))
     return call(params) as Promise<R>

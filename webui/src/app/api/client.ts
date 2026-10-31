@@ -16,18 +16,6 @@ export function createApi(): HisApi {
       search: method('history.search'),
       searchVisits: method('history.searchVisits'),
     },
-    github: {
-      stats: method('github.stats'),
-      search: method('github.search'),
-    },
-    youtube: {
-      stats: method('youtube.stats'),
-      search: method('youtube.search'),
-    },
-    keywords: {
-      stats: method('keywords.stats'),
-      search: method('keywords.search'),
-    },
     sources: {
       list: method('sources.list'),
     },

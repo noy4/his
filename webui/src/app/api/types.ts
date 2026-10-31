@@ -1,4 +1,4 @@
-import type { GithubSearchParams, GithubStats, KeywordSearchParams, KeywordStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncOptions, SyncSummary, YoutubeSearchParams, YoutubeStats } from '@his/core'
+import type { SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncOptions, SyncSummary } from '@his/core'
 import type { RpcCall } from '@/lib/rpc-transport'
 
 export type {
@@ -17,18 +17,6 @@ export interface HisApi {
     stats(params?: StatsParams): Promise<Stats>
     search(params: SearchParams): Promise<SearchPage>
     searchVisits(params: SearchParams): Promise<SearchVisitsPage>
-  }
-  github: {
-    stats(params?: StatsParams): Promise<GithubStats>
-    search(params: GithubSearchParams): Promise<SearchPage>
-  }
-  youtube: {
-    stats(params?: StatsParams): Promise<YoutubeStats>
-    search(params: YoutubeSearchParams): Promise<SearchPage>
-  }
-  keywords: {
-    stats(params?: StatsParams): Promise<KeywordStats>
-    search(params: KeywordSearchParams): Promise<SearchPage>
   }
   sources: {
     list(): Promise<SourceEntry[]>
