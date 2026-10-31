@@ -9,18 +9,13 @@ export class KeywordsModel {
   readonly stats = signal<KeywordStats | null>(null)
   readonly recent = signal<KeywordEvent[]>([])
   readonly nextOffset = signal<number | null>(null)
-  #started = false
 
   constructor() {
     this.period = new PeriodModel({ onChange: () => this.reload() })
   }
 
-  subscribe(): () => void {
-    if (!this.#started) {
-      this.#started = true
-      this.reload()
-    }
-    return () => { }
+  subscribe(): void {
+    this.reload()
   }
 
   loadMore(): void {

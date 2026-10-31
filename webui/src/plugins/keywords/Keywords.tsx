@@ -1,7 +1,7 @@
 import type { ViewContext } from '../types'
 import { Card, CardTitle } from '@/components/ui/card'
 import dayjs from 'dayjs'
-import { dateLabel, daySpan, isoDay, relativeDateLabel, timeLabel } from '@/lib/date'
+import { dateLabel, daySpan, isoDay, timeLabel } from '@/lib/date'
 import { fmtNum } from '@/lib/format'
 import { ALL_TIME_DAYS, dailySeries } from '@/lib/time-series'
 import { MonthNav, PeriodToggle } from '@/lib/period/Period'
@@ -9,6 +9,7 @@ import { useModel } from '@/lib/useModel'
 import { DailyBars, Stat, StatsContentRoot, StatsHeaderRoot } from '@/components/view/Stats'
 import { ViewRoot } from '@/components/view/ViewRoot'
 import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, LoadMoreButton } from '@/components/view/RecentItems'
+import { groupByDate } from '@/components/view/group-items'
 import MagnifyIcon from '~icons/mdi/magnify'
 import TagIcon from '~icons/mdi/tag-outline'
 import EngineIcon from '~icons/mdi/search-web'
@@ -22,30 +23,30 @@ import { KeywordsModel } from './keywords.model'
 import { KeywordsSkeleton } from './KeywordsSkeleton'
 
 export function Keywords(_props: { app: ViewContext }) {
-  const kw = useModel(() => new KeywordsModel())
-  const stats = kw.stats.value
+  const ctx = useModel(() => new KeywordsModel())
+  const stats = ctx.stats.value
   if (!stats) return <KeywordsSkeleton />
-  const monthly = kw.period.monthly.value
+  const monthly = ctx.period.monthly.value
 
   return (
     <ViewRoot>
       <StatsHeaderRoot>
-        {monthly ? <MonthNav period={kw.period} /> : <div />}
-        <PeriodToggle period={kw.period} />
+        {monthly ? <MonthNav period={ctx.period} /> : <div />}
+        <PeriodToggle period={ctx.period} />
       </StatsHeaderRoot>
       <StatsContentRoot>
-        <OverviewCard kw={kw} />
-        <DailyCard kw={kw} />
+        <OverviewCard ctx={ctx} />
+        <DailyCard ctx={ctx} />
       </StatsContentRoot>
-      <RecentCard kw={kw} />
+      <RecentCard ctx={ctx} />
     </ViewRoot>
   )
 }
 
 // --- components ---
 
-function OverviewCard({ kw }: { kw: KeywordsModel }) {
-  const stats = kw.stats.value
+function OverviewCard({ ctx }: { ctx: KeywordsModel }) {
+  const stats = ctx.stats.value
   if (!stats) return null
   const totals = stats.totals
   const days = daySpan(totals.firstVisit, totals.lastVisit)
@@ -56,7 +57,7 @@ function OverviewCard({ kw }: { kw: KeywordsModel }) {
         <Stat label="searches" value={fmtNum(totals.searches)} icon={MagnifyIcon} />
         <Stat label="keywords" value={fmtNum(totals.keywords)} icon={TagIcon} />
       </div>
-      {!kw.period.monthly.value && (
+      {!ctx.period.monthly.value && (
         <div className="mt-4 flex items-center justify-between gap-2 border-t pt-3">
           <span className="text-xs text-muted">Period</span>
           <span className="flex items-center gap-1.5 text-xs text-muted">
@@ -71,12 +72,12 @@ function OverviewCard({ kw }: { kw: KeywordsModel }) {
   )
 }
 
-function DailyCard({ kw }: { kw: KeywordsModel }) {
-  const stats = kw.stats.value
+function DailyCard({ ctx }: { ctx: KeywordsModel }) {
+  const stats = ctx.stats.value
   if (!stats) return null
   const daily = (() => {
-    if (kw.period.monthly.value) {
-      const start = `${kw.period.monthKey.value}-01`
+    if (ctx.period.monthly.value) {
+      const start = `${ctx.period.monthKey.value}-01`
       return dailySeries(stats.byDay, start, dayjs(start).endOf('month').format('YYYY-MM-DD'), { visits: 0 })
     }
     const { firstVisit, lastVisit } = stats.totals
@@ -96,9 +97,9 @@ function DailyCard({ kw }: { kw: KeywordsModel }) {
   )
 }
 
-function RecentCard({ kw }: { kw: KeywordsModel }) {
-  const groups = groupByDay(kw.recent.value)
-  const hasMore = kw.nextOffset.value !== null
+function RecentCard({ ctx }: { ctx: KeywordsModel }) {
+  const groups = groupByDate(ctx.recent.value, (e) => e.time)
+  const hasMore = ctx.nextOffset.value !== null
   return (
     <Card className="mt-4">
       <CardTitle>Recent Searches</CardTitle>
@@ -109,7 +110,7 @@ function RecentCard({ kw }: { kw: KeywordsModel }) {
           {group.items.map((event) => <RecentRow key={event.id} event={event} />)}
         </ItemsGroupRoot>
       ))}
-      {hasMore && <LoadMoreButton onClick={() => kw.loadMore()} />}
+      {hasMore && <LoadMoreButton onClick={() => ctx.loadMore()} />}
     </Card>
   )
 }
@@ -144,20 +145,4 @@ const ENGINE_ICONS: Partial<Record<string, IconComponent>> = {
   bing: BingIcon,
   duckduckgo: DuckDuckGoIcon,
   brave: BraveIcon,
-}
-
-interface DayGroup {
-  label: string
-  items: KeywordEvent[]
-}
-
-function groupByDay(events: KeywordEvent[]): DayGroup[] {
-  const groups: DayGroup[] = []
-  for (const event of events) {
-    const label = relativeDateLabel(event.time)
-    const last = groups.at(-1)
-    if (last?.label === label) last.items.push(event)
-    else groups.push({ label, items: [event] })
-  }
-  return groups
 }
