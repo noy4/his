@@ -1,6 +1,6 @@
-import { matchesYoutubeKind, parseYoutubeUrl } from './parse.ts'
+import { matchesYoutubeKind, parseYoutubeUrl, youtubeItemKey, type YoutubeUrlInfo } from './parse.ts'
 import { getYoutubeRows, getYoutubeVisitDays } from './youtubeRows.ts'
-import type { YoutubeStats, YoutubeSearchParams } from './types.ts'
+import type { YoutubeDayItem, YoutubeDayItemKind, YoutubeDayKind, YoutubeStats, YoutubeSearchParams } from './types.ts'
 import type { StatsParams } from '../history/types.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
@@ -11,6 +11,7 @@ import type { KyselyDb } from '../../db/db.ts'
 // YouTube Insights read API: youtubeStats (aggregate) + youtubeSearch (paged list).
 
 const TOP = 5
+const DAY_TOP = 3
 
 /** YouTube totals + top videos (month-scoped when given). */
 export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): Promise<YoutubeStats> {
@@ -71,6 +72,7 @@ export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): P
       lastVisit,
     },
     byDay: await youtubeByDay(db, month),
+    byDayTop: await youtubeDayTop(db, month),
     topVideos: topBy([...top.values()].map((e) => e.value), {
       limit: TOP,
       score: (v) => v.visits,
@@ -79,23 +81,74 @@ export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): P
   }
 }
 
+// display kind for a charted day: a video (watch/embed/youtu.be), a short, or other
+function dayKindOf(urlInfo: YoutubeUrlInfo): YoutubeDayKind {
+  return urlInfo.kind !== 'video' ? 'other' : urlInfo.shorts ? 'shorts' : 'video'
+}
+
+// entity kind of a day item, used to pick the right thumbnail / avatar
+function dayItemKindOf(urlInfo: YoutubeUrlInfo): YoutubeDayItemKind {
+  if (urlInfo.kind === 'video') return urlInfo.shorts ? 'shorts' : 'video'
+  return urlInfo.kind ?? 'other'
+}
+
 // daily visit counts split by video kind; 'all' is the day total
 async function youtubeByDay(db: KyselyDb, month?: string): Promise<YoutubeStats['byDay']> {
   const byDay = new Map<string, YoutubeStats['byDay'][number]>()
   for (const row of await getYoutubeVisitDays(db, month)) {
     const urlInfo = parseYoutubeUrl(row.url)
     if (urlInfo === null) continue
-    const kind = urlInfo.kind !== 'video'
-      ? 'other'
-      : urlInfo.shorts === true
-        ? 'shorts'
-        : 'video'
     const bucket = byDay.get(row.day) ?? { day: row.day, all: 0, video: 0, shorts: 0, other: 0 }
     bucket.all += row.visits
-    bucket[kind] += row.visits
+    bucket[dayKindOf(urlInfo)] += row.visits
     byDay.set(row.day, bucket)
   }
   return [...byDay.values()].sort((a, b) => a.day.localeCompare(b.day))
+}
+
+// per-day top items (most recently visited first) per kind, for chart tooltips
+async function youtubeDayTop(db: KyselyDb, month?: string): Promise<YoutubeStats['byDayTop']> {
+  const days = new Map<string, Record<YoutubeDayKind, Map<string, YoutubeDayItem>>>()
+  for (const row of await getYoutubeVisitDays(db, month)) {
+    const urlInfo = parseYoutubeUrl(row.url)
+    if (urlInfo === null) continue
+    const kind = dayItemKindOf(urlInfo)
+    const byKind = days.get(row.day) ?? { video: new Map(), shorts: new Map(), other: new Map() }
+    const bucket = byKind[dayKindOf(urlInfo)]
+    const key = youtubeItemKey(urlInfo, row.url)
+    const item = bucket.get(key) ?? {
+      key,
+      kind,
+      id: urlInfo.id,
+      title: '',
+      url: row.url,
+      visits: 0,
+      lastVisit: 0,
+    }
+    item.visits += row.visits
+    if (row.lastVisit >= item.lastVisit) {
+      item.title = row.title ?? ''
+      item.url = row.url
+    }
+    item.lastVisit = Math.max(item.lastVisit, row.lastVisit)
+    bucket.set(key, item)
+    days.set(row.day, byKind)
+  }
+  return [...days.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, byKind]) => ({
+      day,
+      video: topRecent([...byKind.video.values()]),
+      shorts: topRecent([...byKind.shorts.values()]),
+      other: topRecent([...byKind.other.values()]),
+    }))
+}
+
+// most recently visited first; ties by visits then key
+function topRecent(items: YoutubeDayItem[]): YoutubeDayItem[] {
+  return items
+    .sort((a, b) => b.lastVisit - a.lastVisit || b.visits - a.visits || a.key.localeCompare(b.key))
+    .slice(0, DAY_TOP)
 }
 
 /** Paged YouTube history items with a kind filter (month optional). */

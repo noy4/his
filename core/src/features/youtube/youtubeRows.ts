@@ -86,6 +86,7 @@ function youtubeMonthRows(db: KyselyDb, month: string): Promise<YoutubeRow[]> {
 export interface YoutubeDayRow {
   day: string
   url: string
+  title: string | null
   visits: number
   lastVisit: EpochMs
 }
@@ -97,6 +98,7 @@ export async function getYoutubeVisitDays(db: KyselyDb, month?: string): Promise
     .select([
       sql<string>`DATE(visits.visit_time / 1000, 'unixepoch', 'localtime')`.as('day'),
       'urls.url as url',
+      'urls.title as title',
       sql<number>`COUNT(*)`.as('visits'),
       sql<number>`MAX(visits.visit_time)`.as('lastVisit'),
     ])
@@ -110,6 +112,7 @@ export async function getYoutubeVisitDays(db: KyselyDb, month?: string): Promise
   return builder
     .groupBy(sql`day`)
     .groupBy('urls.url')
+    .groupBy('urls.title')
     .orderBy(sql`day`)
     .execute()
 }

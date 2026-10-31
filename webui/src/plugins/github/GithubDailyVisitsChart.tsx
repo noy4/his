@@ -140,7 +140,6 @@ function DayItemRow({ item }: { item: GithubDayItem }) {
     : item.repo === undefined ? item.owner : `${item.owner}/${item.repo}`
   return (
     <div className="flex items-center gap-1.5">
-      <span className="w-9 shrink-0 font-mono text-muted tabular-nums">{dayjs(item.lastVisit).format('HH:mm')}</span>
       {item.kind === 'repo' && <GithubAvatar owner={item.owner} size={14} />}
       {item.kind === 'issue_pr' && <GithubKindAvatar owner={item.owner} kind={item.pullKind ?? 'pull'} size={14} />}
       {item.kind === 'other' && <WebIcon aria-hidden="true" className="size-3.5 shrink-0 text-muted" />}

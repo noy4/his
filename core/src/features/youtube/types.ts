@@ -4,6 +4,21 @@ export type YoutubeUrlKind = 'video' | 'channel' | 'playlist'
 // filter axis — 'video' excludes 'shorts'; 'other' = no entity
 export type YoutubeVisitKind = 'all' | YoutubeUrlKind | 'shorts' | 'other'
 
+/** kinds that can be charted per day ('all' is the row total) */
+export type YoutubeDayKind = 'video' | 'shorts' | 'other'
+/** entity kind of a charted day item */
+export type YoutubeDayItemKind = Exclude<YoutubeVisitKind, 'all'>
+
+export interface YoutubeDayItem {
+  key: string
+  kind: YoutubeDayItemKind
+  id?: string
+  title: string
+  url: string
+  visits: number
+  lastVisit: EpochMs
+}
+
 export interface YoutubeStats {
   totals: {
     visits: number
@@ -18,6 +33,12 @@ export interface YoutubeStats {
     video: number
     shorts: number
     other: number
+  }[]
+  byDayTop: {
+    day: string
+    video: YoutubeDayItem[]
+    shorts: YoutubeDayItem[]
+    other: YoutubeDayItem[]
   }[]
   topVideos: {
     id: string
