@@ -1,4 +1,4 @@
-import { matchesYoutubeKind, parseYoutubeUrl, youtubeItemKey, type YoutubeUrlInfo } from './parse.ts'
+import { matchesYoutubeKind, parseYoutubeUrl, visitKindOf, youtubeItemKey, type YoutubeUrlInfo } from './parse.ts'
 import { getYoutubeRows, getYoutubeVisitDays } from './youtubeRows.ts'
 import type { YoutubeDayItem, YoutubeDayKind, YoutubeStats, YoutubeSearchParams, YoutubeVisitKind } from './types.ts'
 import type { StatsParams } from '../history/types.ts'
@@ -96,13 +96,6 @@ export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): P
 // display kind for a charted day: a video (watch/embed/youtu.be), a short, or other
 function dayKindOf(urlInfo: YoutubeUrlInfo): YoutubeDayKind {
   return urlInfo.kind !== 'video' ? 'other' : urlInfo.shorts ? 'shorts' : 'video'
-}
-
-// the exact filter bucket a URL belongs to (every row lands in one of these)
-function visitKindOf(urlInfo: YoutubeUrlInfo): Exclude<YoutubeVisitKind, 'all'> {
-  if (urlInfo.kind === 'video') return urlInfo.shorts ? 'shorts' : 'video'
-  if (urlInfo.kind !== undefined) return urlInfo.kind
-  return urlInfo.search ? 'search' : 'other'
 }
 
 // daily visit counts split by video kind; 'all' is the day total

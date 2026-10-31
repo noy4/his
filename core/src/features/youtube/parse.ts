@@ -63,14 +63,14 @@ export function parseYoutubeUrl(url: string): YoutubeUrlInfo | null {
 }
 
 export function matchesYoutubeKind(urlInfo: YoutubeUrlInfo, kind: YoutubeVisitKind): boolean {
-  if (kind === 'all') return true
-  if (kind === 'search') return urlInfo.search !== undefined
-  if (kind === 'other') return urlInfo.kind === undefined && urlInfo.search === undefined
-  if (kind === 'shorts')
-    return urlInfo.kind === 'video' && urlInfo.shorts !== undefined
-  if (kind === 'video')
-    return urlInfo.kind === 'video' && urlInfo.shorts === undefined
-  return urlInfo.kind === kind
+  return kind === 'all' || visitKindOf(urlInfo) === kind
+}
+
+export function visitKindOf(urlInfo: YoutubeUrlInfo): Exclude<YoutubeVisitKind, 'all'> {
+  if (urlInfo.kind === 'video')
+    return urlInfo.shorts !== undefined ? 'shorts' : 'video'
+  if (urlInfo.kind !== undefined) return urlInfo.kind
+  return urlInfo.search !== undefined ? 'search' : 'other'
 }
 
 // 'Title - YouTube' → 'Title'
