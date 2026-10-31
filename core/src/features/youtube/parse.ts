@@ -1,6 +1,7 @@
 // youtube.com / youtu.be URL → video / channel / playlist
 
 import type { YoutubeUrlKind, YoutubeVisitKind } from './types.ts'
+import type { HistoryItem } from '../../types.ts'
 
 export interface YoutubeUrlInfo {
   kind?: YoutubeUrlKind // undefined = other (home, search, feed, …)
@@ -72,4 +73,69 @@ export function matchesYoutubeKind(urlInfo: YoutubeUrlInfo, kind: YoutubeVisitKi
 export function parseYoutubeTitle(title: string, urlInfo: YoutubeUrlInfo): { name: string } {
   const t = title.replace(/\s*-\s*YouTube\s*$/i, '').trim()
   return { name: t || (urlInfo.id ?? urlInfo.kind ?? title) }
+}
+
+// params injected by extensions/clients that never identify a page
+const NOISE_PARAMS = new Set(['themeRefresh'])
+
+// entity key: URL variants (?themeRefresh=1 …) → same key; entity-less pages → normalized url
+export function youtubeItemKey(urlInfo: YoutubeUrlInfo, url: string): string {
+  return urlInfo.kind !== undefined && urlInfo.id !== undefined
+    ? `${urlInfo.kind}:${urlInfo.id}`
+    : `url:${normalizeYoutubeUrl(url)}`
+}
+
+// drop noise params, hash, and trailing slashes so they don't split a page
+function normalizeYoutubeUrl(url: string): string {
+  let u: URL
+  try {
+    u = new URL(url)
+  } catch {
+    return url
+  }
+  for (const p of NOISE_PARAMS) u.searchParams.delete(p)
+  const search = u.searchParams.toString()
+  const path = u.pathname.replace(/\/+$/, '')
+  return `${u.origin}${path}${search === '' ? '' : `?${search}`}`
+}
+
+export interface YoutubeRowLike<T extends VisitLike = HistoryItem> {
+  item: T
+  urlInfo: YoutubeUrlInfo
+}
+
+interface VisitLike {
+  id: number
+  url: string
+  title: string
+  visitCount: number
+  typedCount: number
+  firstVisit: number
+  lastVisit: number
+}
+
+// collapse same-entity URL variants into one row; newest wins url/title, counts summed
+export function mergeYoutubeRows<T extends VisitLike>(rows: YoutubeRowLike<T>[]): YoutubeRowLike<T>[] {
+  const merged = new Map<string, YoutubeRowLike<T>>()
+  for (const row of rows) {
+    const key = youtubeItemKey(row.urlInfo, row.item.url)
+    const prev = merged.get(key)
+    if (prev === undefined) {
+      merged.set(key, { item: { ...row.item }, urlInfo: { ...row.urlInfo } })
+      continue
+    }
+    const a = prev.item
+    const b = row.item
+    const newer = b.lastVisit > a.lastVisit || (b.lastVisit === a.lastVisit && b.id > a.id) ? b : a
+    prev.item = {
+      ...newer,
+      visitCount: a.visitCount + b.visitCount,
+      typedCount: a.typedCount + b.typedCount,
+      firstVisit: Math.min(a.firstVisit, b.firstVisit),
+      lastVisit: Math.max(a.lastVisit, b.lastVisit),
+    }
+    if (row.urlInfo.shorts)
+      prev.urlInfo = { ...prev.urlInfo, shorts: true }
+  }
+  return [...merged.values()]
 }

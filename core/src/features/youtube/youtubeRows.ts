@@ -1,5 +1,5 @@
 import { sql, type Expression, type ExpressionBuilder, type SqlBool } from 'kysely'
-import { parseYoutubeUrl, type YoutubeUrlInfo } from './parse.ts'
+import { parseYoutubeUrl, mergeYoutubeRows, type YoutubeUrlInfo } from './parse.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { hiddenExcluded, monthRange, monthWindow } from '../../db/query/filters.ts'
 import type { KyselyDb } from '../../db/db.ts'
@@ -31,7 +31,7 @@ export async function getYoutubeRows(db: KyselyDb, month?: string): Promise<{ it
   const rows: YoutubeRow[] = month === undefined
     ? await youtubeAllRows(db)
     : await youtubeMonthRows(db, month)
-  return rows.flatMap((row) => {
+  return mergeYoutubeRows(rows.flatMap((row) => {
     const urlInfo = parseYoutubeUrl(row.url)
     if (urlInfo === null) return []
     const item: HistoryItem = {
@@ -44,7 +44,7 @@ export async function getYoutubeRows(db: KyselyDb, month?: string): Promise<{ it
       lastVisit: row.last_visit_time,
     }
     return [{ item, urlInfo }]
-  })
+  }))
 }
 
 // all-time rows: stored urls aggregates, no visits join

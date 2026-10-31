@@ -1,5 +1,5 @@
 import {
-  matchesYoutubeKind, parseYoutubeUrl,
+  matchesYoutubeKind, mergeYoutubeRows, parseYoutubeUrl,
   type SearchPage, type StatsParams, type YoutubeSearchParams, type YoutubeStats,
 } from '@his/core'
 import { isoDay } from '@/lib/date'
@@ -7,13 +7,16 @@ import { MOCK_VISITS, byLastVisitDesc, inPeriod, paginate, visibleItems } from '
 
 function mockYoutubeSearch(params: YoutubeSearchParams): SearchPage {
   const kind = params.kind ?? 'all'
-  const rows = visibleItems()
-    .flatMap((item) => {
+  const rows = mergeYoutubeRows(
+    visibleItems().flatMap((item) => {
       const info = parseYoutubeUrl(item.url)
-      if (info === null || !matchesYoutubeKind(info, kind)) return []
+      if (info === null) return []
       const it = inPeriod(item, params.month)
-      return it === null ? [] : [it]
-    })
+      return it === null ? [] : [{ item: it, urlInfo: info }]
+    }),
+  )
+    .filter(({ urlInfo }) => matchesYoutubeKind(urlInfo, kind))
+    .map(({ item }) => item)
     .sort(byLastVisitDesc)
   return paginate(rows, params.cursor, params.limit)
 }
