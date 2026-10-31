@@ -54,16 +54,9 @@ export function EmptyMessage({ text = 'No items', className, ...props }: Omit<Co
   )
 }
 
-export function LoadMoreButton({ children = 'Show more', className, ...props }: ComponentProps<'button'>) {
-  return (
-    <button
-      type="button"
-      {...props}
-      className={cn('mt-2 w-full rounded py-1.5 text-sm text-muted hover:bg-bg-3 hover:text-text', className)}
-    >
-      {children}
-    </button>
-  )
+// observed by SentinelModel to auto-load more
+export function LoadMoreSentinel({ className, ...props }: ComponentProps<'div'>) {
+  return <div {...props} aria-hidden="true" className={cn('h-px', className)} />
 }
 
 export function VisitCount({ n }: { n: number }) {

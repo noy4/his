@@ -21,10 +21,11 @@ export function Visits({ app }: { app: AppModel }) {
     filters,
     loading,
     done,
-    setSentinel,
+    sentinel,
     view,
     setView,
   } = useModel(() => new VisitsModel(app.api))
+  const { attach } = sentinel
   const groups = groupByDay(items.value)
   const isCardView = view.value === 'card'
   const initialLoading = loading.value && items.value.length === 0
@@ -61,7 +62,7 @@ export function Visits({ app }: { app: AppModel }) {
         )}
         {!initialLoading && loading.value && <VisitsLoading />}
         {done.value && items.value.length === 0 && <VisitsEmpty />}
-        <VisitsLoadMoreSentinel ref={setSentinel} />
+        <VisitsLoadMoreSentinel ref={attach} />
       </Card>
     </ViewRoot>
   )

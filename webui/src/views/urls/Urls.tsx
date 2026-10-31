@@ -21,10 +21,11 @@ export function Urls({ app }: { app: AppModel }) {
     filters,
     loading,
     done,
-    setSentinel,
+    sentinel,
     view,
     setView,
   } = useModel(() => new UrlsModel(app.api))
+  const { attach } = sentinel
 
   const groups = groupByDay(items.value)
   const isCardView = view.value === 'card'
@@ -62,7 +63,7 @@ export function Urls({ app }: { app: AppModel }) {
         )}
         {!initialLoading && loading.value && <UrlsLoading />}
         {done.value && items.value.length === 0 && <UrlsEmpty />}
-        <UrlsLoadMoreSentinel ref={setSentinel} />
+        <UrlsLoadMoreSentinel ref={attach} />
       </Card>
     </ViewRoot>
   )

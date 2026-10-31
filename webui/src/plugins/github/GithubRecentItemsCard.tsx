@@ -3,7 +3,7 @@ import { Card, CardTitle } from '@/components/ui/card'
 import { ToggleChip } from '@/components/ui/toggle-chip'
 import { parseGithubTitle, parseGithubUrl } from '@his/core'
 import { HistoryItemRow } from '@/components/view/HistoryRow'
-import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreButton } from '@/components/view/RecentItems'
+import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreSentinel } from '@/components/view/RecentItems'
 import { groupItemsByDate } from '@/components/view/group-items'
 import { fmtNum } from '@/lib/format'
 import { GithubItemCard, GithubItemCardGrid } from './GithubItemCard'
@@ -11,6 +11,7 @@ import { GithubItemAvatar, RemovableChip } from './Github.components'
 import type { GithubModel } from './github.model'
 
 export function GithubRecentItemsCard({ gh }: { gh: GithubModel }) {
+  const { attach } = gh.sentinel
   const hasMore = gh.nextCursor.value !== null
   const isCardView = gh.view.value === 'card'
   const groups = groupItemsByDate(gh.visits.value)
@@ -38,7 +39,7 @@ export function GithubRecentItemsCard({ gh }: { gh: GithubModel }) {
           isCardView={isCardView}
         />
       ))}
-      {hasMore && <LoadMoreButton onClick={() => gh.loadMore()} />}
+      {hasMore && <LoadMoreSentinel ref={attach} />}
     </Card>
   )
 }

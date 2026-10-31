@@ -2,6 +2,7 @@ import { signal } from '@preact/signals-react'
 import type { HistoryItem, KeywordStats } from '@his/core'
 import type { RpcCall } from '@/lib/rpc-transport'
 import { PeriodModel } from '@/lib/period/period.model'
+import { SentinelModel } from '@/lib/sentinel/sentinel.model'
 import { keywordsApi } from './api'
 
 const PAGE = 30
@@ -12,16 +13,23 @@ export class KeywordsModel {
   readonly stats = signal<KeywordStats | null>(null)
   readonly visits = signal<HistoryItem[]>([])
   readonly nextCursor = signal<string | null>(null)
+  readonly sentinel: SentinelModel
   #statsReq = 0
   #visitsReq = 0
 
   constructor(rpc: RpcCall) {
     this.api = keywordsApi(rpc)
     this.period = new PeriodModel({ onChange: () => this.reload() })
+    this.sentinel = new SentinelModel({
+      onLoad: () => this.loadMore(),
+      ready: () => this.nextCursor.value !== null
+        && this.visits.value.length > 0,
+    })
   }
 
-  subscribe(): void {
+  subscribe(): () => void {
     this.reload()
+    return this.sentinel.subscribe()
   }
 
   loadMore(): void {

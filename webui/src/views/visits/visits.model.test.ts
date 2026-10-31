@@ -174,7 +174,7 @@ describe('VisitsModel', () => {
         },
       },
     })
-    model.setSentinel({} as Element)
+    model.sentinel.attach({} as Element)
     const unsubscribe = model.subscribe()
     try {
       await Promise.resolve()

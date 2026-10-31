@@ -2,6 +2,7 @@ import { signal } from '@preact/signals-react'
 import type { GithubStats, GithubVisitKind, HistoryItem } from '@his/core'
 import type { RpcCall } from '@/lib/rpc-transport'
 import { PeriodModel } from '@/lib/period/period.model'
+import { SentinelModel } from '@/lib/sentinel/sentinel.model'
 import { githubApi } from './api'
 
 export type GithubFilter = { owner: string; repo?: string } | null
@@ -16,21 +17,24 @@ export class GithubModel {
   readonly kind = signal<GithubVisitKind>('repo')
   readonly visits = signal<HistoryItem[]>([])
   readonly nextCursor = signal<string | null>(null)
+  readonly sentinel: SentinelModel
   readonly view = signal('card')
   #statsReq = 0
   #visitsReq = 0
-  #started = false
 
   constructor(rpc: RpcCall) {
     this.api = githubApi(rpc)
     this.period = new PeriodModel({ onChange: () => this.reload() })
+    this.sentinel = new SentinelModel({
+      onLoad: () => this.loadMore(),
+      ready: () => this.nextCursor.value !== null
+        && this.visits.value.length > 0,
+    })
   }
 
-  subscribe(): void {
-    if (!this.#started) {
-      this.#started = true
-      this.reload()
-    }
+  subscribe(): () => void {
+    this.reload()
+    return this.sentinel.subscribe()
   }
 
   setFilter(next: GithubFilter): void {

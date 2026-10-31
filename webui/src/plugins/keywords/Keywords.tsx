@@ -9,7 +9,7 @@ import { MonthNav, PeriodToggle } from '@/lib/period/Period'
 import { useModel } from '@/lib/useModel'
 import { DailyBars, Stat, StatsContentRoot, StatsHeaderRoot } from '@/components/view/Stats'
 import { ViewRoot } from '@/components/view/ViewRoot'
-import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, LoadMoreButton } from '@/components/view/RecentItems'
+import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, LoadMoreSentinel } from '@/components/view/RecentItems'
 import { groupItemsByDate } from '@/components/view/group-items'
 import MagnifyIcon from '~icons/mdi/magnify'
 import TagIcon from '~icons/mdi/tag-outline'
@@ -98,6 +98,7 @@ function DailyCard({ ctx }: { ctx: KeywordsModel }) {
 }
 
 function RecentCard({ ctx }: { ctx: KeywordsModel }) {
+  const { attach } = ctx.sentinel
   const groups = groupItemsByDate(ctx.visits.value)
   const hasMore = ctx.nextCursor.value !== null
   return (
@@ -110,7 +111,7 @@ function RecentCard({ ctx }: { ctx: KeywordsModel }) {
           {group.items.map((item) => <RecentRow key={item.id} item={item} />)}
         </ItemsGroupRoot>
       ))}
-      {hasMore && <LoadMoreButton onClick={() => ctx.loadMore()} />}
+      {hasMore && <LoadMoreSentinel ref={attach} />}
     </Card>
   )
 }

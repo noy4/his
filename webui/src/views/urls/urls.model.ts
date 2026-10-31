@@ -1,6 +1,7 @@
-import { effect, signal } from '@preact/signals-react'
+import { signal } from '@preact/signals-react'
 import type { HisApi, HistoryItem, Stats } from '@/app/api'
 import { FilterModel } from '@/lib/signal/filter'
+import { SentinelModel } from '@/lib/sentinel/sentinel.model'
 
 const PAGE_SIZE = 60
 
@@ -11,16 +12,16 @@ export class UrlsModel {
   readonly cursor = signal<string | null>(null)
   readonly loading = signal(false)
   readonly done = signal(false)
-  readonly sentinel = signal<Element | null>(null)
+  readonly sentinel: SentinelModel
   readonly view = signal('list')
   #pending: Promise<void> = Promise.resolve()
 
   constructor(api: HisApi) {
     this.api = api
-  }
-
-  setSentinel = (el: Element | null): void => {
-    this.sentinel.value = el
+    this.sentinel = new SentinelModel({
+      onLoad: () => this.loadMore(),
+      ready: () => !this.done.value && this.items.value.length > 0,
+    })
   }
 
   setView = (next: string): void => {
@@ -30,7 +31,7 @@ export class UrlsModel {
   subscribe(): () => void {
     const unsubs: (() => void)[] = [
       this.filters.subscribe(() => this.reload()),
-      this.watchSentinel(),
+      this.sentinel.subscribe(),
     ]
     return () => {
       unsubs.forEach((fn) => fn())
@@ -83,20 +84,5 @@ export class UrlsModel {
     } finally {
       this.loading.value = false
     }
-  }
-
-  private watchSentinel(): () => void {
-    return effect(() => {
-      const el = this.sentinel.value
-      if (!el) return
-      const io = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((e) => e.isIntersecting)) void this.loadMore()
-        },
-        { rootMargin: '240px 0px' },
-      )
-      io.observe(el)
-      return () => io.disconnect()
-    })
   }
 }

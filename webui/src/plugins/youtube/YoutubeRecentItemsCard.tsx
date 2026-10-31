@@ -3,7 +3,7 @@ import { Card, CardTitle } from '@/components/ui/card'
 import { ToggleChip } from '@/components/ui/toggle-chip'
 import { parseYoutubeTitle, parseYoutubeUrl } from '@his/core'
 import { HistoryItemRow } from '@/components/view/HistoryRow'
-import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreButton } from '@/components/view/RecentItems'
+import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreSentinel } from '@/components/view/RecentItems'
 import { groupItemsByDate } from '@/components/view/group-items'
 import { fmtNum } from '@/lib/format'
 import { YoutubeItemCard, YoutubeItemCardGrid } from './YoutubeItemCard'
@@ -12,6 +12,7 @@ import { YOUTUBE_KIND_LABELS } from './youtube.labels'
 import type { YoutubeModel } from './youtube.model'
 
 export function YoutubeRecentItemsCard({ yt }: { yt: YoutubeModel }) {
+  const { attach } = yt.sentinel
   const hasMore = yt.nextCursor.value !== null
   const isCardView = yt.view.value === 'card'
   const groups = groupItemsByDate(yt.visits.value)
@@ -38,7 +39,7 @@ export function YoutubeRecentItemsCard({ yt }: { yt: YoutubeModel }) {
           isCardView={isCardView}
         />
       ))}
-      {hasMore && <LoadMoreButton onClick={() => yt.loadMore()} />}
+      {hasMore && <LoadMoreSentinel ref={attach} />}
     </Card>
   )
 }

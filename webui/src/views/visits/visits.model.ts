@@ -1,6 +1,7 @@
 import type { HisApi, HistoryVisit } from '@/app/api'
 import { FilterModel } from '@/lib/signal/filter'
-import { batch, effect, signal } from '@preact/signals-react'
+import { SentinelModel } from '@/lib/sentinel/sentinel.model'
+import { batch, signal } from '@preact/signals-react'
 
 const PAGE_SIZE = 60
 
@@ -10,17 +11,17 @@ export class VisitsModel {
   readonly cursor = signal<string | null>(null)
   readonly loading = signal(false)
   readonly done = signal(false)
-  readonly sentinel = signal<Element | null>(null)
+  readonly sentinel: SentinelModel
   readonly view = signal('list')
   #api: { history: Pick<HisApi['history'], 'searchVisits'> }
   #requestId = 0
 
   constructor(api: { history: Pick<HisApi['history'], 'searchVisits'> }) {
     this.#api = api
-  }
-
-  setSentinel = (el: Element | null): void => {
-    this.sentinel.value = el
+    this.sentinel = new SentinelModel({
+      onLoad: () => this.loadMore(),
+      ready: () => !this.done.value && this.items.value.length > 0,
+    })
   }
 
   setView = (next: string): void => {
@@ -29,8 +30,8 @@ export class VisitsModel {
 
   subscribe(): () => void {
     const unsubs = [
-      this.filters.subscribe(() => void this.reload()),
-      this.watchSentinel(),
+      this.filters.subscribe(() => this.reload()),
+      this.sentinel.subscribe(),
     ]
     return () => unsubs.forEach((unsub) => unsub())
   }
@@ -68,20 +69,5 @@ export class VisitsModel {
     } finally {
       if (requestId === this.#requestId) this.loading.value = false
     }
-  }
-
-  private watchSentinel(): () => void {
-    return effect(() => {
-      const el = this.sentinel.value
-      if (!el || this.done.value || this.items.value.length === 0) return
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) void this.loadMore()
-        },
-        { rootMargin: '240px 0px' },
-      )
-      observer.observe(el)
-      return () => observer.disconnect()
-    })
   }
 }
