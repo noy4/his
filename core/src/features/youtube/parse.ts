@@ -4,9 +4,10 @@ import type { YoutubeUrlKind, YoutubeVisitKind } from './types.ts'
 import type { HistoryItem } from '../../types.ts'
 
 export interface YoutubeUrlInfo {
-  kind?: YoutubeUrlKind // undefined = other (home, search, feed, …)
+  kind?: YoutubeUrlKind // undefined = other (home, feed, …)
   id?: string // video id / playlist id / channel handle or id
   shorts?: true
+  search?: true // a search results page
 }
 
 const HOSTS = new Set([
@@ -56,16 +57,19 @@ export function parseYoutubeUrl(url: string): YoutubeUrlInfo | null {
   if ((seg0 === 'channel' || seg0 === 'c' || seg0 === 'user') && seg1 !== undefined)
     return { kind: 'channel', id: seg1 }
 
+  if (seg0 === 'results') return { search: true }
+
   return {}
 }
 
 export function matchesYoutubeKind(urlInfo: YoutubeUrlInfo, kind: YoutubeVisitKind): boolean {
   if (kind === 'all') return true
-  if (kind === 'other') return urlInfo.kind === undefined
+  if (kind === 'search') return urlInfo.search !== undefined
+  if (kind === 'other') return urlInfo.kind === undefined && urlInfo.search === undefined
   if (kind === 'shorts')
-    return urlInfo.kind === 'video' && urlInfo.shorts === true
+    return urlInfo.kind === 'video' && urlInfo.shorts !== undefined
   if (kind === 'video')
-    return urlInfo.kind === 'video' && urlInfo.shorts !== true
+    return urlInfo.kind === 'video' && urlInfo.shorts === undefined
   return urlInfo.kind === kind
 }
 

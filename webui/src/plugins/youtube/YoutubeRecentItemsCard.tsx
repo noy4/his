@@ -52,6 +52,7 @@ const KIND_OPTIONS: { value: YoutubeVisitKind; label: string }[] = [
   { value: 'shorts', label: YOUTUBE_KIND_LABELS.shorts },
   { value: 'channel', label: YOUTUBE_KIND_LABELS.channel },
   { value: 'playlist', label: YOUTUBE_KIND_LABELS.playlist },
+  { value: 'search', label: YOUTUBE_KIND_LABELS.search },
   { value: 'other', label: YOUTUBE_KIND_LABELS.other },
 ]
 

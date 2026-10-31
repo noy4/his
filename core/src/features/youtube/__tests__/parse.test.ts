@@ -14,7 +14,7 @@ describe('parseYoutubeUrl', () => {
     ['https://www.youtube.com/playlist?list=PL123', { kind: 'playlist', id: 'PL123' }],
     ['https://www.youtube.com/@channel', { kind: 'channel', id: '@channel' }],
     ['https://www.youtube.com/channel/UC123', { kind: 'channel', id: 'UC123' }],
-    ['https://www.youtube.com/results?search_query=x', {}],
+    ['https://www.youtube.com/results?search_query=x', { search: true }],
     ['https://www.youtube.com/', {}],
     ['https://example.com/watch?v=abc', null],
     ['not a url', null],

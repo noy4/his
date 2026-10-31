@@ -101,7 +101,7 @@ function stripUrl(url: string): string {
 
 export function matchesKind(urlInfo: GithubUrlInfo, kind: GithubVisitKind): boolean {
   if (kind === 'all') return true
-  if (kind === 'repo') return urlInfo.root === true
+  if (kind === 'repo') return urlInfo.root !== undefined
   if (kind === 'other') return !urlInfo.root && !urlInfo.kind
   return urlInfo.kind !== undefined
 }

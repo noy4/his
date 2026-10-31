@@ -1,8 +1,8 @@
 import type { EpochMs } from '../../types.ts'
 
 export type YoutubeUrlKind = 'video' | 'channel' | 'playlist'
-// filter axis — 'video' excludes 'shorts'; 'other' = no entity
-export type YoutubeVisitKind = 'all' | YoutubeUrlKind | 'shorts' | 'other'
+// filter axis — 'video' excludes 'shorts'; 'search' = results pages; 'other' = no entity, not a search
+export type YoutubeVisitKind = 'all' | YoutubeUrlKind | 'shorts' | 'search' | 'other'
 
 /** kinds that can be charted per day ('all' is the row total) */
 export type YoutubeDayKind = 'video' | 'shorts' | 'other'

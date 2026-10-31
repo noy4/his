@@ -24,7 +24,7 @@ before(async () => {
 describe('youtubeStats.byDayTop', () => {
   it('counts distinct items per kind', async () => {
     const { kindCounts } = await youtubeStats(db)
-    assert.deepEqual(kindCounts, { all: 5, video: 1, shorts: 1, channel: 2, playlist: 0, other: 1 })
+    assert.deepEqual(kindCounts, { all: 5, video: 1, shorts: 1, channel: 2, playlist: 0, search: 1, other: 0 })
   })
 
   it('splits video / shorts / other and merges URL variants per day', async () => {
@@ -43,7 +43,7 @@ describe('youtubeStats.byDayTop', () => {
     }])
     assert.deepEqual(day?.shorts.map((i) => `${i.kind}:${i.id}:${i.visits}`), ['shorts:b:1'])
     // other: most recently visited first (channel before the search page)
-    assert.deepEqual(day?.other.map((i) => i.kind), ['channel', 'other'])
+    assert.deepEqual(day?.other.map((i) => i.kind), ['channel', 'search'])
     assert.equal(day?.other[0]?.key, 'channel:@chan')
   })
 

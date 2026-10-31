@@ -105,7 +105,7 @@ function YoutubeDailyTooltip({
   dataKey: YoutubeDayKey
 }) {
   const row = payload?.[0]?.payload
-  if (active !== true || row === undefined) return null
+  if (!active || row === undefined) return null
   const total = row[dataKey]
   return (
     <div className="min-w-50 max-w-70 rounded-md border border-border-2 bg-bg-2 px-2.5 py-2 text-xs shadow-lg">

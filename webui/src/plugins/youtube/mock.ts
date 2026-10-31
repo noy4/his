@@ -45,7 +45,7 @@ function mockYoutubeStats(month?: string): YoutubeStats {
     firstVisit = Math.min(firstVisit, it.firstVisit)
     lastVisit = Math.max(lastVisit, it.lastVisit)
     if (info.kind !== 'video' || info.id === undefined) continue
-    const isShort = info.shorts === true
+    const isShort = info.shorts !== undefined
     if (isShort) shorts.add(info.id)
     else videos.add(info.id)
     const prev = top.get(info.id)
@@ -72,7 +72,7 @@ function mockYoutubeStats(month?: string): YoutubeStats {
 }
 
 function computeYoutubeKindCounts(month?: string): YoutubeStats['kindCounts'] {
-  const counts: YoutubeStats['kindCounts'] = { all: 0, video: 0, shorts: 0, channel: 0, playlist: 0, other: 0 }
+  const counts: YoutubeStats['kindCounts'] = { all: 0, video: 0, shorts: 0, channel: 0, playlist: 0, search: 0, other: 0 }
   for (const { urlInfo } of mergedPeriodRows(month)) {
     counts.all += 1
     counts[visitKindOf(urlInfo)] += 1
@@ -81,12 +81,13 @@ function computeYoutubeKindCounts(month?: string): YoutubeStats['kindCounts'] {
 }
 
 function dayKindOf(info: YoutubeUrlInfo): YoutubeDayKind {
-  return info.kind !== 'video' ? 'other' : info.shorts === true ? 'shorts' : 'video'
+  return info.kind !== 'video' ? 'other' : info.shorts ? 'shorts' : 'video'
 }
 
 function visitKindOf(info: YoutubeUrlInfo): YoutubeDayItemKind {
-  if (info.kind === 'video') return info.shorts === true ? 'shorts' : 'video'
-  return info.kind ?? 'other'
+  if (info.kind === 'video') return info.shorts ? 'shorts' : 'video'
+  if (info.kind !== undefined) return info.kind
+  return info.search ? 'search' : 'other'
 }
 
 function computeYoutubeByDay(month?: string): YoutubeStats['byDay'] {

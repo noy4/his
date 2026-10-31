@@ -27,6 +27,7 @@ export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): P
     shorts: 0,
     channel: 0,
     playlist: 0,
+    search: 0,
     other: 0,
   }
   let visits = 0
@@ -45,7 +46,7 @@ export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): P
 
     // only videos (watch / embed / youtu.be / shorts) become top entries
     if (urlInfo.kind !== 'video' || urlInfo.id === undefined) continue
-    const isShort = urlInfo.shorts === true
+    const isShort = urlInfo.shorts !== undefined
     if (isShort) shortIds.add(urlInfo.id)
     else videoIds.add(urlInfo.id)
 
@@ -100,7 +101,8 @@ function dayKindOf(urlInfo: YoutubeUrlInfo): YoutubeDayKind {
 // the exact filter bucket a URL belongs to (every row lands in one of these)
 function visitKindOf(urlInfo: YoutubeUrlInfo): Exclude<YoutubeVisitKind, 'all'> {
   if (urlInfo.kind === 'video') return urlInfo.shorts ? 'shorts' : 'video'
-  return urlInfo.kind ?? 'other'
+  if (urlInfo.kind !== undefined) return urlInfo.kind
+  return urlInfo.search ? 'search' : 'other'
 }
 
 // daily visit counts split by video kind; 'all' is the day total

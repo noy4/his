@@ -29,7 +29,7 @@ export function YoutubeThumb({ id, shorts, width = 64, className }: { id?: strin
         loading="lazy"
         className="h-full w-full object-cover"
       />
-      {shorts === true && (
+      {shorts && (
         <span className="absolute bottom-0.5 left-0.5 rounded bg-black/70 px-1 text-[9px] font-semibold text-white">
           Shorts
         </span>

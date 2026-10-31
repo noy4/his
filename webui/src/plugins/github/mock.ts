@@ -153,7 +153,7 @@ function computeGithubKindCounts(month?: string): GithubStats['kindCounts'] {
 
 // display entity (repo / issue-pr / other) a github URL belongs to
 function classifyDayItem(urlInfo: GithubUrlInfo): Omit<GithubDayItem, 'visits' | 'lastVisit'> {
-  if (urlInfo.root === true && urlInfo.repo !== undefined) {
+  if (urlInfo.root && urlInfo.repo !== undefined) {
     return { key: `repo:${urlInfo.owner}/${urlInfo.repo}`, kind: 'repo', owner: urlInfo.owner, repo: urlInfo.repo }
   }
   if (urlInfo.kind !== undefined && urlInfo.number !== undefined && urlInfo.repo !== undefined) {
