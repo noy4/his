@@ -1,5 +1,6 @@
 import type { YoutubeUrlInfo } from '@his/core'
 import { cn } from 'cn'
+import SearchIcon from '~icons/mdi/magnify'
 import PlayIcon from '~icons/mdi/play-circle-outline'
 import PlaylistIcon from '~icons/mdi/playlist-play'
 import YoutubeIcon from '~icons/mdi/youtube'
@@ -54,13 +55,14 @@ export function ChannelAvatar({ id, size = 32, className }: { id: string; size?:
 }
 
 export function PlaylistBadge({ size = 32, className }: { size?: number; className?: string }) {
+  const iconSize = Math.round(size * 0.6)
   return (
     <span
       aria-hidden="true"
       className={cn('flex shrink-0 items-center justify-center rounded bg-bg-3 text-muted', className)}
       style={{ width: size, height: size }}
     >
-      <PlaylistIcon width={Math.round(size * 0.6)} height={Math.round(size * 0.6)} />
+      <PlaylistIcon width={iconSize} height={iconSize} />
     </span>
   )
 }
@@ -91,7 +93,9 @@ export function YoutubeItemThumb({ info, className }: { info: YoutubeUrlInfo; cl
         ? <ChannelAvatar id={info.id ?? ''} size={size} />
         : info.kind === 'playlist'
           ? <PlaylistBadge size={size} />
-          : <YoutubeIcon width={size} height={size} />}
+          : info.search
+            ? <SearchIcon width={size} height={size} />
+            : <YoutubeIcon width={size} height={size} />}
     </span>
   )
 }
@@ -103,13 +107,16 @@ export function YoutubeItemAvatar({ info, size = 32, className }: { info: Youtub
     return <ChannelAvatar id={info.id ?? ''} size={size} className={className} />
   if (info.kind === 'playlist')
     return <PlaylistBadge size={size} className={className} />
+  const iconSize = Math.round(size * 0.6)
   return (
     <span
       aria-hidden="true"
       className={cn('flex shrink-0 items-center justify-center rounded bg-bg-3 text-muted', className)}
       style={{ width: size, height: size }}
     >
-      <YoutubeIcon width={Math.round(size * 0.6)} height={Math.round(size * 0.6)} />
+      {info.search
+        ? <SearchIcon width={iconSize} height={iconSize} />
+        : <YoutubeIcon width={iconSize} height={iconSize} />}
     </span>
   )
 }

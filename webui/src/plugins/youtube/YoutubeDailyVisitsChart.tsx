@@ -165,5 +165,6 @@ function infoOf(item: YoutubeDayItem): YoutubeUrlInfo {
   if (item.kind === 'video' || item.kind === 'shorts') return { kind: 'video', id: item.id }
   if (item.kind === 'channel') return { kind: 'channel', id: item.id }
   if (item.kind === 'playlist') return { kind: 'playlist', id: item.id }
+  if (item.kind === 'search') return { search: true }
   return {}
 }
