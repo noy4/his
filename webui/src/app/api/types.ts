@@ -2,12 +2,12 @@ import type { SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, Settings
 import type { RpcCall } from '@/lib/rpc-transport'
 
 export type {
-  GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, KeywordSearchParams, KeywordStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource, Stats, StatsParams, StatTotals, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
+  HistoryItem, HistoryVisit, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncSummary, Transition, VisitItem
 } from '@his/core'
 
 export type SyncRunParams = SyncOptions
 
-// notifications — not implemented (db.changed / sync.progress)
+// notifications — not implemented
 export interface HisEvents {
   [event: string]: (...args: any[]) => void
 }
