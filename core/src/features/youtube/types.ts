@@ -27,6 +27,8 @@ export interface YoutubeStats {
     firstVisit: EpochMs
     lastVisit: EpochMs
   }
+  /** distinct items per kind, as the recent-items list would show them */
+  kindCounts: Record<YoutubeVisitKind, number>
   byDay: {
     day: string
     all: number

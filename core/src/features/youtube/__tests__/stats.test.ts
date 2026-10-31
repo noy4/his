@@ -22,6 +22,11 @@ before(async () => {
 })
 
 describe('youtubeStats.byDayTop', () => {
+  it('counts distinct items per kind', async () => {
+    const { kindCounts } = await youtubeStats(db)
+    assert.deepEqual(kindCounts, { all: 5, video: 1, shorts: 1, channel: 2, playlist: 0, other: 1 })
+  })
+
   it('splits video / shorts / other and merges URL variants per day', async () => {
     const { byDay, byDayTop } = await youtubeStats(db)
     assert.deepEqual(byDay.find((d) => d.day === '2026-10-10'), { day: '2026-10-10', all: 5, video: 2, shorts: 1, other: 2 })

@@ -5,6 +5,7 @@ import { parseYoutubeTitle, parseYoutubeUrl } from '@his/core'
 import { HistoryItemRow } from '@/components/view/HistoryRow'
 import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreButton } from '@/components/view/RecentItems'
 import { groupItemsByDate } from '@/components/view/group-items'
+import { fmtNum } from '@/lib/format'
 import { YoutubeItemCard, YoutubeItemCardGrid } from './YoutubeItemCard'
 import { YoutubeItemAvatar } from './Youtube.components'
 import { YOUTUBE_KIND_LABELS } from './youtube.labels'
@@ -55,6 +56,7 @@ const KIND_OPTIONS: { value: YoutubeVisitKind; label: string }[] = [
 
 function YoutubeItemsKindFilter({ yt }: { yt: YoutubeModel }) {
   const kind = yt.kind.value
+  const counts = yt.stats.value?.kindCounts
   return (
     <>
       {KIND_OPTIONS.map(({ value, label }) => (
@@ -64,6 +66,7 @@ function YoutubeItemsKindFilter({ yt }: { yt: YoutubeModel }) {
           onClick={() => yt.setKind(value)}
         >
           {label}
+          {counts && <span className="ml-1 tabular-nums opacity-60">{fmtNum(counts[value])}</span>}
         </ToggleChip>
       ))}
     </>

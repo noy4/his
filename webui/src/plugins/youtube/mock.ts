@@ -8,16 +8,21 @@ import { MOCK_VISITS, byLastVisitDesc, inPeriod, paginate, visibleItems } from '
 
 const DAY_TOP = 3
 
-function mockYoutubeSearch(params: YoutubeSearchParams): SearchPage {
-  const kind = params.kind ?? 'all'
-  const rows = mergeYoutubeRows(
+// visible items narrowed to the period, URL variants collapsed (matches the real API)
+function mergedPeriodRows(month?: string) {
+  return mergeYoutubeRows(
     visibleItems().flatMap((item) => {
       const info = parseYoutubeUrl(item.url)
       if (info === null) return []
-      const it = inPeriod(item, params.month)
+      const it = inPeriod(item, month)
       return it === null ? [] : [{ item: it, urlInfo: info }]
     }),
   )
+}
+
+function mockYoutubeSearch(params: YoutubeSearchParams): SearchPage {
+  const kind = params.kind ?? 'all'
+  const rows = mergedPeriodRows(params.month)
     .filter(({ urlInfo }) => matchesYoutubeKind(urlInfo, kind))
     .map(({ item }) => item)
     .sort(byLastVisitDesc)
@@ -61,15 +66,25 @@ function mockYoutubeStats(month?: string): YoutubeStats {
     },
     byDay: computeYoutubeByDay(month),
     byDayTop: computeYoutubeByDayTop(month),
+    kindCounts: computeYoutubeKindCounts(month),
     topVideos: [...top.values()].sort((a, b) => b.visits - a.visits).slice(0, 5),
   }
+}
+
+function computeYoutubeKindCounts(month?: string): YoutubeStats['kindCounts'] {
+  const counts: YoutubeStats['kindCounts'] = { all: 0, video: 0, shorts: 0, channel: 0, playlist: 0, other: 0 }
+  for (const { urlInfo } of mergedPeriodRows(month)) {
+    counts.all += 1
+    counts[visitKindOf(urlInfo)] += 1
+  }
+  return counts
 }
 
 function dayKindOf(info: YoutubeUrlInfo): YoutubeDayKind {
   return info.kind !== 'video' ? 'other' : info.shorts === true ? 'shorts' : 'video'
 }
 
-function dayItemKindOf(info: YoutubeUrlInfo): YoutubeDayItemKind {
+function visitKindOf(info: YoutubeUrlInfo): YoutubeDayItemKind {
   if (info.kind === 'video') return info.shorts === true ? 'shorts' : 'video'
   return info.kind ?? 'other'
 }
@@ -104,7 +119,7 @@ function computeYoutubeByDayTop(month?: string): YoutubeStats['byDayTop'] {
       const bucket = byKind[dayKindOf(info)]
       const dayItem = bucket.get(key) ?? {
         key,
-        kind: dayItemKindOf(info),
+        kind: visitKindOf(info),
         id: info.id,
         title: item.title,
         url: item.url,

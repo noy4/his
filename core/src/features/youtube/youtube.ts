@@ -1,6 +1,6 @@
 import { matchesYoutubeKind, parseYoutubeUrl, youtubeItemKey, type YoutubeUrlInfo } from './parse.ts'
 import { getYoutubeRows, getYoutubeVisitDays } from './youtubeRows.ts'
-import type { YoutubeDayItem, YoutubeDayItemKind, YoutubeDayKind, YoutubeStats, YoutubeSearchParams } from './types.ts'
+import type { YoutubeDayItem, YoutubeDayKind, YoutubeStats, YoutubeSearchParams, YoutubeVisitKind } from './types.ts'
 import type { StatsParams } from '../history/types.ts'
 import type { EpochMs, HistoryItem } from '../../types.ts'
 import { clampLimit, decodeCursor, paginate } from '../../db/query/paging.ts'
@@ -21,6 +21,14 @@ export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): P
     value: YoutubeStats['topVideos'][number]
     last: EpochMs
   }>()
+  const kindCounts: Record<YoutubeVisitKind, number> = {
+    all: 0,
+    video: 0,
+    shorts: 0,
+    channel: 0,
+    playlist: 0,
+    other: 0,
+  }
   let visits = 0
   let firstVisit = 0
   let lastVisit = 0
@@ -32,6 +40,8 @@ export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): P
       ? item.firstVisit
       : firstVisit
     lastVisit = Math.max(lastVisit, item.lastVisit)
+    kindCounts.all += 1
+    kindCounts[visitKindOf(urlInfo)] += 1
 
     // only videos (watch / embed / youtu.be / shorts) become top entries
     if (urlInfo.kind !== 'video' || urlInfo.id === undefined) continue
@@ -71,6 +81,7 @@ export async function youtubeStats(db: KyselyDb, { month }: StatsParams = {}): P
       firstVisit,
       lastVisit,
     },
+    kindCounts,
     byDay: await youtubeByDay(db, month),
     byDayTop: await youtubeDayTop(db, month),
     topVideos: topBy([...top.values()].map((e) => e.value), {
@@ -86,8 +97,8 @@ function dayKindOf(urlInfo: YoutubeUrlInfo): YoutubeDayKind {
   return urlInfo.kind !== 'video' ? 'other' : urlInfo.shorts ? 'shorts' : 'video'
 }
 
-// entity kind of a day item, used to pick the right thumbnail / avatar
-function dayItemKindOf(urlInfo: YoutubeUrlInfo): YoutubeDayItemKind {
+// the exact filter bucket a URL belongs to (every row lands in one of these)
+function visitKindOf(urlInfo: YoutubeUrlInfo): Exclude<YoutubeVisitKind, 'all'> {
   if (urlInfo.kind === 'video') return urlInfo.shorts ? 'shorts' : 'video'
   return urlInfo.kind ?? 'other'
 }
@@ -112,7 +123,7 @@ async function youtubeDayTop(db: KyselyDb, month?: string): Promise<YoutubeStats
   for (const row of await getYoutubeVisitDays(db, month)) {
     const urlInfo = parseYoutubeUrl(row.url)
     if (urlInfo === null) continue
-    const kind = dayItemKindOf(urlInfo)
+    const kind = visitKindOf(urlInfo)
     const byKind = days.get(row.day) ?? { video: new Map(), shorts: new Map(), other: new Map() }
     const bucket = byKind[dayKindOf(urlInfo)]
     const key = youtubeItemKey(urlInfo, row.url)
