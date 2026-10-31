@@ -25,7 +25,8 @@ export async function githubStats(db: KyselyDb, { month }: StatsParams = {}): Pr
   let firstVisit = 0
   let lastVisit = 0
 
-  for (const { item, urlInfo } of await getGithubRows(db, month)) {
+  const rows = await getGithubRows(db, month)
+  for (const { item, urlInfo } of rows) {
     visits += item.visitCount
     firstVisit = firstVisit === 0 || item.firstVisit < firstVisit
       ? item.firstVisit
@@ -91,6 +92,7 @@ export async function githubStats(db: KyselyDb, { month }: StatsParams = {}): Pr
     },
     byDay: await githubByDay(db, month),
     byDayTop: await githubDayTop(db, month),
+    kindCounts: githubKindCounts(rows),
     topRepos: topVisited([...repos.values()], (s) => `${s.owner}/${s.repo}`),
     topOwners: topVisited([...owners].map(([owner, ownerStats]) => ({
       owner,
@@ -143,6 +145,16 @@ async function githubDayTop(db: KyselyDb, month?: string): Promise<GithubStats['
       issue_pr: topRecent([...byKind.issue_pr.values()]),
       other: topRecent([...byKind.other.values()]),
     }))
+}
+
+// distinct items per kind, counted the way githubSearch lists them (repo roots merged)
+function githubKindCounts(rows: { item: HistoryItem; urlInfo: GithubUrlInfo }[]): GithubStats['kindCounts'] {
+  const counts: GithubStats['kindCounts'] = { all: 0, repo: 0, issue_pr: 0, other: 0 }
+  for (const { urlInfo } of mergeRepoRoots(rows)) {
+    counts.all += 1
+    counts[classifyDayItem(urlInfo).kind] += 1
+  }
+  return counts
 }
 
 // display entity (repo / issue-pr / other) a github URL belongs to

@@ -31,6 +31,7 @@ export interface GithubStats {
     firstVisit: EpochMs
     lastVisit: EpochMs
   }
+  kindCounts: Record<GithubVisitKind, number>
   byDay: {
     day: string
     all: number

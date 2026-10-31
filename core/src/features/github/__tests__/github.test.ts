@@ -40,6 +40,7 @@ describe('githubStats', () => {
       { owner: 'foo', repo: 'bar', visits: 6 },
       { owner: 'foo', repo: 'baz', visits: 1 },
     ])
+    assert.deepEqual(s.kindCounts, { all: 5, repo: 1, issue_pr: 3, other: 1 })
     assert.deepEqual(s.topOwners, [
       { owner: 'foo', repos: 2, visits: 7 },
       { owner: 'qux', repos: 0, visits: 1 },

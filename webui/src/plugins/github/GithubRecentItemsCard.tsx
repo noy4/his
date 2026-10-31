@@ -5,6 +5,7 @@ import { parseGithubTitle, parseGithubUrl } from '@his/core'
 import { HistoryItemRow } from '@/components/view/HistoryRow'
 import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, ItemsToolbarRoot, ItemsViewToggle, LoadMoreButton } from '@/components/view/RecentItems'
 import { groupItemsByDate } from '@/components/view/group-items'
+import { fmtNum } from '@/lib/format'
 import { GithubItemCard, GithubItemCardGrid } from './GithubItemCard'
 import { GithubItemAvatar, RemovableChip } from './Github.components'
 import type { GithubModel } from './github.model'
@@ -53,6 +54,7 @@ const KIND_OPTIONS: { value: GithubVisitKind; label: string }[] = [
 
 function GithubItemsKindFilter({ gh }: { gh: GithubModel }) {
   const kind = gh.kind.value
+  const counts = gh.stats.value?.kindCounts
   return (
     <>
       {KIND_OPTIONS.map(({ value, label }) => (
@@ -62,6 +64,7 @@ function GithubItemsKindFilter({ gh }: { gh: GithubModel }) {
           onClick={() => gh.setKind(value)}
         >
           {label}
+          {counts && <span className="ml-1 tabular-nums opacity-60">{fmtNum(counts[value])}</span>}
         </ToggleChip>
       ))}
     </>

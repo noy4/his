@@ -73,6 +73,7 @@ function computeGithubStats(month?: string): GithubStats {
     },
     byDay: computeGithubByDay(month),
     byDayTop: computeGithubByDayTop(month),
+    kindCounts: computeGithubKindCounts(month),
     topRepos: [...repos.values()].sort(byVisits).slice(0, GITHUB_TOP),
     topOwners: [...owners]
       .map(([owner, o]) => ({ owner, repos: o.repos.size, visits: o.visits }))
@@ -138,6 +139,16 @@ function computeGithubByDayTop(month?: string): GithubStats['byDayTop'] {
       issue_pr: topRecent([...byKind.issue_pr.values()]),
       other: topRecent([...byKind.other.values()]),
     }))
+}
+
+// distinct items per kind, counted the way mockGithubSearch lists them (repo roots merged)
+function computeGithubKindCounts(month?: string): GithubStats['kindCounts'] {
+  const counts: GithubStats['kindCounts'] = { all: 0, repo: 0, issue_pr: 0, other: 0 }
+  for (const { urlInfo } of mergeRepoRoots(githubPeriod(month))) {
+    counts.all += 1
+    counts[classifyDayItem(urlInfo).kind] += 1
+  }
+  return counts
 }
 
 // display entity (repo / issue-pr / other) a github URL belongs to
