@@ -17,7 +17,7 @@ const KINDS: { value: YoutubeDayKey; label: string }[] = [
 const ZERO = { all: 0, video: 0, shorts: 0, other: 0 }
 
 export function YoutubeDailyVisitsCard({ yt }: { yt: YoutubeModel }) {
-  const [kind, setKind] = useState<YoutubeDayKey>('all')
+  const [kind, setKind] = useState<YoutubeDayKey>('video')
   const stats = yt.stats.value
   if (!stats) return null
 

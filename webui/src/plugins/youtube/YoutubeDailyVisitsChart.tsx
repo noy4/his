@@ -1,7 +1,7 @@
 import type { YoutubeStats } from '@his/core'
 import dayjs from 'dayjs'
 import { useState } from 'react'
-import { Bar, BarChart, LabelList, ReferenceArea, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
+import { Bar, BarChart, LabelList, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
 import { fmtNum } from '@/lib/format'
 
 type YoutubeDailyRow = YoutubeStats['byDay'][number]
@@ -18,6 +18,10 @@ export function YoutubeDailyVisitsChart({ data, dataKey }: { data: YoutubeDailyR
   const today = dayjs().format('YYYY-MM-DD')
   const [width, setWidth] = useState(0)
   const peakValue = data.reduce((max, d) => Math.max(max, Number(d[dataKey])), 0)
+  const elapsed = data.filter((d) => d.day <= today)
+  const avg = elapsed.length === 0
+    ? 0
+    : elapsed.reduce((sum, d) => sum + Number(d[dataKey]), 0) / elapsed.length
   return (
     <ResponsiveContainer width="100%" height={160} onResize={(w) => setWidth(w)}>
       <BarChart
@@ -37,6 +41,14 @@ export function YoutubeDailyVisitsChart({ data, dataKey }: { data: YoutubeDailyR
         <Tooltip cursor={{ fill: 'var(--color-primary-soft)' }} content={<YoutubeDailyTooltip dataKey={dataKey} />} />
         {data.some((d) => d.day === today) && (
           <ReferenceArea x1={today} x2={today} fill="var(--color-warn-soft)" strokeOpacity={0} />
+        )}
+        {avg > 0 && (
+          <ReferenceLine
+            y={avg}
+            stroke="var(--color-muted)"
+            strokeDasharray="3 3"
+            label={{ value: fmtNum(Math.round(avg)), position: 'insideBottomRight', fill: 'var(--color-muted)', fontSize: 10, fontStyle: 'italic' }}
+          />
         )}
         <Bar dataKey={dataKey} fill="var(--color-primary)" radius={[2, 2, 0, 0]} isAnimationActive={false}>
           <LabelList
