@@ -4,6 +4,7 @@ import pkg from './package.json' with { type: 'json' }
 import { withCtx } from './src/context.ts'
 import { query } from './src/query.ts'
 import { serveCommand } from './src/serve.ts'
+import { sourcesCommand } from './src/sources.ts'
 import { status } from './src/status.ts'
 import { sync } from './src/sync.ts'
 
@@ -19,6 +20,10 @@ cli
     targets: opts.target === undefined ? undefined : [].concat(opts.target),
     rescan: opts.rescan
   })))
+
+cli
+  .command('sources [...args]', 'list sources, or add/remove sync targets (list | add <target...> | remove <target...>)')
+  .action(withCtx((ctx, args: string[], _opts) => sourcesCommand(ctx, args)))
 
 cli
   .command('query [...text]', 'read-only search against history.db, prints JSON')

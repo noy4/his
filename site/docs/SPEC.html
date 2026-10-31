@@ -120,6 +120,7 @@
     └── src/
         ├── context.ts            <span class="c"># context for commands (home path)</span>
         ├── sync.ts               <span class="c"># sync command</span>
+        ├── sources.ts            <span class="c"># sources command · list / add / remove targets</span>
         ├── query.ts              <span class="c"># query command</span>
         ├── serve.ts              <span class="c"># serve command · delegates to @his/server</span>
         └── status.ts             <span class="c"># status command</span>
@@ -187,7 +188,7 @@
         <rect class="node node-primary" x="258" y="20" width="250" height="44" rx="6"/>
         <image href="https://api.iconify.design/mdi/console.svg?height=18&color=%237E8A9E" x="272" y="33" height="18"/>
         <text class="tt" x="296" y="38" style="font-family: var(--mono);">his &lt;command&gt;</text>
-        <text class="tm" x="296" y="54">bin.ts · sync · serve · query</text>
+        <text class="tm" x="296" y="54">bin.ts · sync · sources · serve · query</text>
 
         <!-- Inside the process -->
         <rect class="node" x="68" y="140" width="190" height="56" rx="6"/>
@@ -345,6 +346,7 @@ Quit his                       <span class="c"># stop serve · quit</span></pre>
         </thead>
         <tbody>
           <tr><td><code>sync</code></td><td>One sync, writes <code>history.db</code>. <code>--target &lt;browser[:profile]&gt;</code> (repeatable; default: configured targets) · <code>--rescan</code> (bypass the change gate; dedup, no deletions)</td></tr>
+          <tr><td><code>sources [action] [target...]</code></td><td>List discovered ∪ registered sources (enabled marked <code>*</code>). <code>add &lt;target...&gt;</code> / <code>remove</code> persist <code>sync_targets</code>; both idempotent. Target is <code>browser</code> or <code>browser:profile</code></td></tr>
           <tr><td><code>serve</code></td><td>Foreground: HTTP + RPC + 6h sync. <code>--port &lt;n&gt;</code> (default 4477) · <code>--open</code></td></tr>
           <tr><td><code>query [text]</code></td><td>Read-only search → JSON. <code>--url</code> · <code>--from</code> · <code>--to</code> · <code>--limit</code></td></tr>
           <tr><td><code>status</code></td><td>Print running instance (exit 1 if none)</td></tr>
@@ -566,7 +568,7 @@ END;</pre>
 
     <p><code>targets → gate → snapshot → parse → upsert → checkpoint</code></p>
 
-    <p>Targets come from <code>settings.sync_targets</code>; an empty list syncs nothing. <code>his sync --target</code> overrides them once.</p>
+    <p>Targets come from <code>settings.sync_targets</code>; an empty list syncs nothing. <code>his sync --target</code> overrides them once. Edit the set in the WebUI Sources page or with <code>his sources add</code> / <code>remove</code>.</p>
 
     <div class="grid-2">
       <div class="card">

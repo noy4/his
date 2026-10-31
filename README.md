@@ -28,10 +28,11 @@ npx @noy4/his --version           # try it without installing
 npm install -g @noy4/his          # or install it globally
 ```
 
-Choose sync targets in the WebUI's **Sources** page, or specify a browser for a one-time sync:
-
 ```bash
-his serve --open                  # open the WebUI and select sources
+his serve --open                  # open the WebUI
+his sources                       # list sources
+his sources add chrome firefox    # enable targets (browser or browser:profile)
+his sources remove chrome         # disable targets
 his sync --target chrome          # sync Chrome once
 his sync                          # sync selected sources
 his query "sqlite"                # search the archive as JSON
