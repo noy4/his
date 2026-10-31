@@ -1,4 +1,5 @@
 import type { ViewContext } from '../types'
+import { parseSearchQuery, type HistoryItem } from '@his/core'
 import { Card, CardTitle } from '@/components/ui/card'
 import dayjs from 'dayjs'
 import { dateLabel, daySpan, isoDay, timeLabel } from '@/lib/date'
@@ -9,7 +10,7 @@ import { useModel } from '@/lib/useModel'
 import { DailyBars, Stat, StatsContentRoot, StatsHeaderRoot } from '@/components/view/Stats'
 import { ViewRoot } from '@/components/view/ViewRoot'
 import { EmptyMessage, ItemsGroupRoot, ItemsGroupTitle, LoadMoreButton } from '@/components/view/RecentItems'
-import { groupByDate } from '@/components/view/group-items'
+import { groupItemsByDate } from '@/components/view/group-items'
 import MagnifyIcon from '~icons/mdi/magnify'
 import TagIcon from '~icons/mdi/tag-outline'
 import EngineIcon from '~icons/mdi/search-web'
@@ -18,12 +19,11 @@ import BingIcon from '~icons/logos/bing'
 import DuckDuckGoIcon from '~icons/logos/duckduckgo'
 import BraveIcon from '~icons/logos/brave'
 import type { IconComponent } from '@/components/icons'
-import type { KeywordEvent } from './keywords.data'
 import { KeywordsModel } from './keywords.model'
 import { KeywordsSkeleton } from './KeywordsSkeleton'
 
-export function Keywords(_props: { app: ViewContext }) {
-  const ctx = useModel(() => new KeywordsModel())
+export function Keywords({ app }: { app: ViewContext }) {
+  const ctx = useModel(() => new KeywordsModel(app.rpc))
   const stats = ctx.stats.value
   if (!stats) return <KeywordsSkeleton />
   const monthly = ctx.period.monthly.value
@@ -98,8 +98,8 @@ function DailyCard({ ctx }: { ctx: KeywordsModel }) {
 }
 
 function RecentCard({ ctx }: { ctx: KeywordsModel }) {
-  const groups = groupByDate(ctx.recent.value, (e) => e.time)
-  const hasMore = ctx.nextOffset.value !== null
+  const groups = groupItemsByDate(ctx.visits.value)
+  const hasMore = ctx.nextCursor.value !== null
   return (
     <Card className="mt-4">
       <CardTitle>Recent Searches</CardTitle>
@@ -107,7 +107,7 @@ function RecentCard({ ctx }: { ctx: KeywordsModel }) {
       {groups.map((group) => (
         <ItemsGroupRoot key={group.label}>
           <ItemsGroupTitle>{group.label}</ItemsGroupTitle>
-          {group.items.map((event) => <RecentRow key={event.id} event={event} />)}
+          {group.items.map((item) => <RecentRow key={item.id} item={item} />)}
         </ItemsGroupRoot>
       ))}
       {hasMore && <LoadMoreButton onClick={() => ctx.loadMore()} />}
@@ -115,26 +115,28 @@ function RecentCard({ ctx }: { ctx: KeywordsModel }) {
   )
 }
 
-function RecentRow({ event }: { event: KeywordEvent }) {
-  const title = `${dateLabel(event.time)} ${timeLabel(event.time)}`
-  const Icon = ENGINE_ICONS[event.engine] ?? EngineIcon
+function RecentRow({ item }: { item: HistoryItem }) {
+  const info = parseSearchQuery(item.url)
+  if (info === null) return null
+  const Icon = ENGINE_ICONS[info.engine] ?? EngineIcon
+  const title = `${dateLabel(item.lastVisit)} ${timeLabel(item.lastVisit)}`
   return (
     <a
       className="flex min-w-0 items-center gap-2.5 rounded-lg px-2 py-2 text-inherit no-underline hover:bg-bg-3"
-      href={event.url}
+      href={item.url}
       target="_blank"
       rel="noreferrer"
     >
       <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-bg-3">
         <Icon width={16} height={16} />
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm font-medium">{event.term}</span>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium">{info.term}</span>
       <time
-        dateTime={new Date(event.time).toISOString()}
+        dateTime={new Date(item.lastVisit).toISOString()}
         title={title}
         className="shrink-0 font-mono text-xs text-muted"
       >
-        {timeLabel(event.time)}
+        {timeLabel(item.lastVisit)}
       </time>
     </a>
   )

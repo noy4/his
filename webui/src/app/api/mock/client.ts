@@ -1,7 +1,7 @@
-import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
+import type { GithubDayItem, GithubDayKind, GithubSearchParams, GithubStats, HisApi, HistoryItem, HistoryVisit, KeywordSearchParams, KeywordStats, RegisteredSource, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, SyncRunParams, SyncSummary, YoutubeSearchParams, YoutubeStats } from '../types'
 import type { RpcCall } from '@/lib/rpc-transport'
 import { isoDay } from '@/lib/date'
-import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
+import { hostWithoutWww, matchesHidden, matchesKind, matchesYoutubeKind, mergeRepoRoots, parseGithubUrl, parseSearchQuery, parseYoutubeUrl, sourceKey, type GithubUrlInfo } from '@his/core'
 import { MOCK_DISCOVERED, MOCK_ITEMS, MOCK_SOURCES, MOCK_VISITS } from './data'
 
 const DEFAULT_LIMIT = 50
@@ -382,6 +382,61 @@ function computeYoutubeByDay(month?: string): YoutubeStats['byDay'] {
   return [...map.values()].sort((a, b) => a.day.localeCompare(b.day))
 }
 
+// --- keywords ---
+
+function keywordItems(): { item: HistoryItem; term: string }[] {
+  return visibleItems().flatMap((item) => {
+    const info = parseSearchQuery(item.url)
+    return info === null ? [] : [{ item, term: info.term }]
+  })
+}
+
+export function mockKeywordSearch(params: KeywordSearchParams): SearchPage {
+  const rows = keywordItems()
+    .flatMap(({ item }) => {
+      const it = inPeriod(item, params.month)
+      return it === null ? [] : [it]
+    })
+    .sort(byLastVisitDesc)
+  return paginate(rows, params.cursor, params.limit)
+}
+
+export function mockKeywordStats(month?: string): KeywordStats {
+  const terms = new Set<string>()
+  let searches = 0
+  let firstVisit = Number.POSITIVE_INFINITY
+  let lastVisit = 0
+  for (const { item, term } of keywordItems()) {
+    const it = inPeriod(item, month)
+    if (it === null) continue
+    searches += it.visitCount
+    terms.add(term.toLowerCase())
+    firstVisit = Math.min(firstVisit, it.firstVisit)
+    lastVisit = Math.max(lastVisit, it.lastVisit)
+  }
+  return {
+    totals: {
+      searches,
+      keywords: terms.size,
+      firstVisit: Number.isFinite(firstVisit) ? firstVisit : 0,
+      lastVisit,
+    },
+    byDay: keywordByDay(month),
+  }
+}
+
+function keywordByDay(month?: string): KeywordStats['byDay'] {
+  const byDay = new Map<string, number>()
+  for (const { item } of keywordItems()) {
+    for (const visit of MOCK_VISITS.get(item.id) ?? []) {
+      const day = isoDay(visit.visitTime)
+      if (month !== undefined && day.slice(0, 7) !== month) continue
+      byDay.set(day, (byDay.get(day) ?? 0) + 1)
+    }
+  }
+  return sortByDay(byDay)
+}
+
 // --- sources ---
 
 // configured sync targets; empty means nothing syncs (explicit targets override)
@@ -555,6 +610,14 @@ const impl: Omit<HisApi, 'rpc' | 'on'> = {
     },
     async search(params: YoutubeSearchParams): Promise<SearchPage> {
       return mockYoutubeSearch(params)
+    },
+  },
+  keywords: {
+    async stats({ month } = {}): Promise<KeywordStats> {
+      return mockKeywordStats(month)
+    },
+    async search(params: KeywordSearchParams): Promise<SearchPage> {
+      return mockKeywordSearch(params)
     },
   },
   sources: {

@@ -24,6 +24,10 @@ export function createApi(): HisApi {
       stats: method('youtube.stats'),
       search: method('youtube.search'),
     },
+    keywords: {
+      stats: method('keywords.stats'),
+      search: method('keywords.search'),
+    },
     sources: {
       list: method('sources.list'),
     },

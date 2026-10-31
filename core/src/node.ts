@@ -13,6 +13,8 @@ export * as settings from './features/settings/index.ts'
 export * as sources from './features/sources/index.ts'
 export * as youtube from './features/youtube/index.ts'
 export type { YoutubeSearchParams, YoutubeStats, YoutubeUrlKind, YoutubeVisitKind } from './features/youtube/index.ts'
+export * as keywords from './features/keywords/index.ts'
+export type { KeywordSearchParams, KeywordStats } from './features/keywords/index.ts'
 export * from './features/sync/index.ts'
 
 export * from './paths.ts'

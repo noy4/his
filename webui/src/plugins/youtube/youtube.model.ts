@@ -23,12 +23,11 @@ export class YoutubeModel {
     this.period = new PeriodModel({ onChange: () => this.reload() })
   }
 
-  subscribe(): () => void {
+  subscribe(): void {
     if (!this.#started) {
       this.#started = true
       this.reload()
     }
-    return () => { }
   }
 
   setKind(next: YoutubeVisitKind): void {

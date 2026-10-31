@@ -1,8 +1,8 @@
-import type { GithubSearchParams, GithubStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncOptions, SyncSummary, YoutubeSearchParams, YoutubeStats } from '@his/core'
+import type { GithubSearchParams, GithubStats, KeywordSearchParams, KeywordStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, Stats, StatsParams, SyncOptions, SyncSummary, YoutubeSearchParams, YoutubeStats } from '@his/core'
 import type { RpcCall } from '@/lib/rpc-transport'
 
 export type {
-  GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource, Stats, StatsParams, StatTotals, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
+  GithubDayItem, GithubDayKind, GithubKind, GithubSearchParams, GithubStats, GithubVisitKind, HistoryItem, HistoryVisit, KeywordSearchParams, KeywordStats, SearchPage, SearchParams, SearchVisitsPage, SettingsInfo, SettingsPatch, SourceEntry, RegisteredSource, Stats, StatsParams, StatTotals, SyncSummary, Transition, VisitItem, YoutubeSearchParams, YoutubeStats, YoutubeVisitKind
 } from '@his/core'
 
 export type SyncRunParams = SyncOptions
@@ -25,6 +25,10 @@ export interface HisApi {
   youtube: {
     stats(params?: StatsParams): Promise<YoutubeStats>
     search(params: YoutubeSearchParams): Promise<SearchPage>
+  }
+  keywords: {
+    stats(params?: StatsParams): Promise<KeywordStats>
+    search(params: KeywordSearchParams): Promise<SearchPage>
   }
   sources: {
     list(): Promise<SourceEntry[]>

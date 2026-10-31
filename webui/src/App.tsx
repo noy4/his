@@ -28,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: ChartBoxOutline, content: Dashboard },
   { id: 'visits', label: 'Visits', icon: History, content: Visits },
   { id: 'urls', label: 'URLs', icon: LinkVariant, content: Urls },
+  { type: 'divider' },
   ...VIEW_PLUGINS.map((plugin): ViewDef => ({
     id: plugin.name,
     label: plugin.label,

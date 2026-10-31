@@ -1,16 +1,22 @@
 import { signal } from '@preact/signals-react'
+import type { HistoryItem, KeywordStats } from '@his/core'
+import type { RpcCall } from '@/lib/rpc-transport'
 import { PeriodModel } from '@/lib/period/period.model'
-import { dummyKeywordStats, dummyRecentKeywords, type KeywordEvent, type KeywordStats } from './keywords.data'
+import { keywordsApi } from './api'
 
 const PAGE = 30
 
 export class KeywordsModel {
+  readonly api: ReturnType<typeof keywordsApi>
   readonly period: PeriodModel
   readonly stats = signal<KeywordStats | null>(null)
-  readonly recent = signal<KeywordEvent[]>([])
-  readonly nextOffset = signal<number | null>(null)
+  readonly visits = signal<HistoryItem[]>([])
+  readonly nextCursor = signal<string | null>(null)
+  #statsReq = 0
+  #visitsReq = 0
 
-  constructor() {
+  constructor(rpc: RpcCall) {
+    this.api = keywordsApi(rpc)
     this.period = new PeriodModel({ onChange: () => this.reload() })
   }
 
@@ -19,17 +25,24 @@ export class KeywordsModel {
   }
 
   loadMore(): void {
-    const offset = this.nextOffset.value
-    if (offset === null) return
-    const page = dummyRecentKeywords(this.period.month, offset, PAGE)
-    this.recent.value = [...this.recent.value, ...page.items]
-    this.nextOffset.value = page.nextOffset
+    this.loadVisits({ append: true })
   }
 
-  reload(): void {
-    this.stats.value = dummyKeywordStats(this.period.month)
-    const page = dummyRecentKeywords(this.period.month, 0, PAGE)
-    this.recent.value = page.items
-    this.nextOffset.value = page.nextOffset
+  async reload(): Promise<void> {
+    const id = ++this.#statsReq
+    const visits = this.loadVisits()
+    const result = await this.api.stats({ month: this.period.month })
+    if (id === this.#statsReq) this.stats.value = result
+    await visits
+  }
+
+  async loadVisits({ append = false }: { append?: boolean } = {}): Promise<void> {
+    const id = ++this.#visitsReq
+    const cursor = append ? this.nextCursor.value ?? undefined : undefined
+    if (append && !cursor) return
+    const page = await this.api.search({ month: this.period.month, cursor, limit: PAGE })
+    if (id !== this.#visitsReq) return
+    this.visits.value = append ? [...this.visits.value, ...page.items] : page.items
+    this.nextCursor.value = page.nextCursor
   }
 }

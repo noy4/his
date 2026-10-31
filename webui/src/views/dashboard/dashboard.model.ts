@@ -14,12 +14,11 @@ export class DashboardModel {
     this.period = new PeriodModel({ onChange: () => this.reload() })
   }
 
-  subscribe(): () => void {
+  subscribe(): void {
     if (!this.#started) {
       this.#started = true
       this.reload()
     }
-    return () => { }
   }
 
   async reload(): Promise<void> {

@@ -181,6 +181,22 @@ const SITES: Site[] = [
       return { path: `/${user}/status/${int(r, 1e18, 1.9e18)}`, title: `${user} / X` }
     },
   },
+  {
+    domain: 'www.google.com',
+    make: (_r, topic) => ({ path: `/search?q=${encodeURIComponent(topic)}`, title: `${topic} - Google Search` }),
+  },
+  {
+    domain: 'www.bing.com',
+    make: (_r, topic) => ({ path: `/search?q=${encodeURIComponent(topic)}`, title: `${topic} - Bing` }),
+  },
+  {
+    domain: 'duckduckgo.com',
+    make: (_r, topic) => ({ path: `/?q=${encodeURIComponent(topic)}`, title: `${topic} at DuckDuckGo` }),
+  },
+  {
+    domain: 'search.brave.com',
+    make: (_r, topic) => ({ path: `/search?q=${encodeURIComponent(topic)}`, title: `${topic} - Brave Search` }),
+  },
 ]
 
 const NOW = Date.now()
