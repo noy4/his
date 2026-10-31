@@ -392,13 +392,36 @@ function keywordItems(): { item: HistoryItem; term: string }[] {
 }
 
 export function mockKeywordSearch(params: KeywordSearchParams): SearchPage {
-  const rows = keywordItems()
-    .flatMap(({ item }) => {
+  const rows = collapseKeywordTerms(
+    keywordItems().flatMap(({ item, term }) => {
       const it = inPeriod(item, params.month)
-      return it === null ? [] : [it]
-    })
-    .sort(byLastVisitDesc)
+      return it === null ? [] : [{ item: it, term }]
+    }),
+  )
   return paginate(rows, params.cursor, params.limit)
+}
+
+// one HistoryItem per term; id/url/title/lastVisit come from the latest visit
+function collapseKeywordTerms(rows: { item: HistoryItem; term: string }[]): HistoryItem[] {
+  const byTerm = new Map<string, HistoryItem>()
+  for (const { item, term } of rows) {
+    const key = term.toLowerCase()
+    const prev = byTerm.get(key)
+    if (prev === undefined) {
+      byTerm.set(key, item)
+      continue
+    }
+    prev.visitCount += item.visitCount
+    prev.typedCount += item.typedCount
+    prev.firstVisit = Math.min(prev.firstVisit, item.firstVisit)
+    if (item.lastVisit > prev.lastVisit) {
+      prev.id = item.id
+      prev.url = item.url
+      prev.title = item.title
+      prev.lastVisit = item.lastVisit
+    }
+  }
+  return [...byTerm.values()].sort(byLastVisitDesc)
 }
 
 export function mockKeywordStats(month?: string): KeywordStats {

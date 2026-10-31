@@ -46,14 +46,14 @@ async function keywordsByDay(db: KyselyDb, month?: string): Promise<KeywordStats
     .sort((a, b) => a.day.localeCompare(b.day))
 }
 
-/** Paged search-engine history items, newest first (month optional). */
+/** Paged search terms as HistoryItems, one per term (newest first, month optional). */
 export async function keywordsSearch(db: KyselyDb, params: KeywordSearchParams = {}): Promise<Page<HistoryItem>> {
   const limit = clampLimit(params.limit)
   const cursor = params.cursor === undefined
     ? null
     : decodeCursor(params.cursor)
 
-  const rows = (await getKeywordRows(db, params.month)).map(({ item }) => item)
+  const rows = collapseTerms(await getKeywordRows(db, params.month))
   const rowsAfterCursor = cursor === null
     ? rows
     : rows.filter((it) =>
@@ -62,4 +62,27 @@ export async function keywordsSearch(db: KyselyDb, params: KeywordSearchParams =
     )
   rowsAfterCursor.sort((a, b) => b.lastVisit - a.lastVisit || b.id - a.id)
   return paginate(rowsAfterCursor, limit, (item) => [item.lastVisit, item.id])
+}
+
+// fold URL rows into one HistoryItem per term; id/url/title/lastVisit come from the latest visit
+function collapseTerms(rows: { item: HistoryItem; info: { term: string } }[]): HistoryItem[] {
+  const byTerm = new Map<string, HistoryItem>()
+  for (const { item, info } of rows) {
+    const key = info.term.toLowerCase()
+    const prev = byTerm.get(key)
+    if (prev === undefined) {
+      byTerm.set(key, item)
+      continue
+    }
+    prev.visitCount += item.visitCount
+    prev.typedCount += item.typedCount
+    prev.firstVisit = Math.min(prev.firstVisit, item.firstVisit)
+    if (item.lastVisit > prev.lastVisit) {
+      prev.id = item.id
+      prev.url = item.url
+      prev.title = item.title
+      prev.lastVisit = item.lastVisit
+    }
+  }
+  return [...byTerm.values()]
 }

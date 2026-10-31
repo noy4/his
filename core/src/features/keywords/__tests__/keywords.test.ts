@@ -89,6 +89,25 @@ describe('keywordsSearch', () => {
     })
   })
 
+  it('collapses URL variants of the same term into one item', async () => {
+    await seedUrl(db, { id: 1, url: 'https://www.google.com/search?q=react&udm=2', title: 'react images', times: [t1] })
+    await seedUrl(db, { id: 2, url: 'https://www.google.com/search?q=react&hl=en', title: 'react', times: [t3] })
+    await seedUrl(db, { id: 3, url: 'https://www.bing.com/search?q=react', title: 'react bing', times: [t2] })
+
+    const page = await keywordsSearch(db)
+    assert.equal(page.items.length, 1)
+    assert.deepEqual(page.items[0], {
+      id: 2,
+      url: 'https://www.google.com/search?q=react&hl=en',
+      title: 'react',
+      visitCount: 3,
+      typedCount: 0,
+      firstVisit: t1,
+      lastVisit: t3,
+    })
+    assert.equal(page.nextCursor, null)
+  })
+
   it('pages with a cursor', async () => {
     await seedUrl(db, { id: 1, url: 'https://www.google.com/search?q=a', title: 'a', times: [t1] })
     await seedUrl(db, { id: 2, url: 'https://www.google.com/search?q=b', title: 'b', times: [t3] })
