@@ -1,6 +1,6 @@
 <img src="site/icon.png" width="72" alt="his icon">
 
-# his (WIP)
+# his
 
 Browser history archive & viewer.
 
