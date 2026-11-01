@@ -98,7 +98,8 @@ function computeMonthlyStats(month: string): Stats {
 // --- sources / sync ---
 
 // configured sync targets; empty means nothing syncs (explicit targets override)
-let syncTargets: string[] = []
+// demo preselects one source so the sources view never renders empty
+let syncTargets: string[] = [sourceKey(MOCK_SOURCES[0])]
 const sources: RegisteredSource[] = MOCK_SOURCES.map((s) => ({ ...s }))
 let inRun = false
 let lastRunRecord: SyncSummary | null = null
