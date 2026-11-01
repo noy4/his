@@ -118,7 +118,7 @@ function ViewNav({ app }: { app: AppModel }) {
 function ViewNavRoot({ children }: { children: ReactNode }) {
   return (
     <nav
-      className="flex gap-1 rounded-sm bg-bg-3 p-0.5 text-sm"
+      className="flex min-w-0 gap-1 overflow-x-auto rounded-sm bg-bg-3 p-0.5 text-sm scrollbar-none"
       aria-label="View"
     >
       {children}
@@ -127,7 +127,7 @@ function ViewNavRoot({ children }: { children: ReactNode }) {
 }
 
 function ViewNavDivider() {
-  return <span aria-hidden="true" className="mx-1 h-4 w-px self-center bg-border" />
+  return <span aria-hidden="true" className="mx-1 h-4 w-px shrink-0 self-center bg-border" />
 }
 
 function ViewNavItem({
@@ -143,7 +143,7 @@ function ViewNavItem({
     <button
       type="button"
       className={cn(
-        'inline-flex items-center gap-1.5 rounded px-3 pl-2.5 py-1 font-medium transition-colors',
+        'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded px-3 pl-2.5 py-1 font-medium transition-colors',
         active ? 'bg-bg-2 text-text' : 'text-muted hover:text-text',
       )}
       aria-pressed={active}
