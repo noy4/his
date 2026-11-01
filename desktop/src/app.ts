@@ -100,11 +100,10 @@ export class HisApp {
         // Menubar behavior: closing the window hides it, quitting goes through the tray.
         event.preventDefault()
         window.hide()
+        this.app.dock?.hide()
       }
     })
-    // Dock icon exists only while the window is on screen.
     window.on('show', () => this.app.dock?.show())
-    window.on('hide', () => this.app.dock?.hide())
     return window
   }
 
