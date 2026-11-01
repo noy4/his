@@ -52,7 +52,10 @@ pnpm dev           # WebUI dev server + desktop app
 
 ## 🔗 Related projects
 
-[joshuatownsend/chrome-history-explorer](https://github.com/joshuatownsend/chrome-history-explorer) — prior art: a browser history explorer (TypeScript). his skips some of those features (**AI interest maps**, **rabbit-hole detection**, **liveness checks**, etc.) and adds **continuous background sync** and a **macOS menu bar app**.
+[joshuatownsend/chrome-history-explorer](https://github.com/joshuatownsend/chrome-history-explorer) — prior art: a browser history explorer (TypeScript). his omits some features and adds others. (omits: **AI interest maps**, **rabbit-hole detection**, **liveness checks**; adds: **continuous background sync**, **macOS menu bar app**, **YouTube view**, **GitHub view**)
+
+[TheSkyC/HistorySync](https://github.com/TheSkyC/HistorySync) — python
+[t41372/PathKeep](https://github.com/t41372/PathKeep) — rust, typescript
 
 ## ⚖️ License
 
