@@ -59,6 +59,13 @@ const REPO_PAIRS = [
 
 const USERS = ['noy', 'hiro', 'anna', 'kenji', 'sana']
 const YT_CHANNELS = ['Fireship', 'Theo - t3.gg', 'Web Dev Simplified', 'ByteByteGo', 'Hussein Nasser', 'freeCodeCamp.org']
+// real video ids so i.ytimg.com thumbnails resolve (mock data has no live YouTube API)
+const YT_VIDEO_IDS = [
+  '-uleG_Vecis', 'Tn6-PIqc4UM', 'zQnBQ4tB3ZA', 'hwP7WQkmECE', 'W6NZfCO5SIk', 'PkZNo7MFNFg', '8jLOx1hD3_o',
+  'dQw4w9WgXcQ', '9bZkp7q19f0', 'kJQP7kiw5Fk', 'JGwWNGJdvx8', 'OPf0YbXqDm0', 'RgKAFK5djSk', 'fJ9rUzIMcZQ',
+  'CevxZvSJLk8', 'hT_nvWreIhg', 'YQHsXMglC9A', '09R8_2nJtjg', '60ItHLz5WEA', 'pRpeEdMmmQ0', 'e-ORhEE9VVg',
+  '7wtfhZwyrcc', '2Vv-BfVoq4g', 'lp-EO5I60KA', 'ktvTqknDobU',
+]
 const SUBREDDITS = ['typescript', 'reactjs', 'webdev', 'sqlite', 'commandline']
 const MDN_APIS = ['IntersectionObserver', 'WebSocket', 'crypto.randomUUID', 'structuredClone', 'Intl.DateTimeFormat']
 
@@ -106,8 +113,8 @@ const SITES: Site[] = [
     domain: 'www.youtube.com',
     make: (r, topic, slug) => {
       const roll = r()
-      if (roll < 0.55) return { path: `/watch?v=${base62(r, 11)}`, title: `${topic} - YouTube` }
-      if (roll < 0.68) return { path: `/shorts/${base62(r, 11)}`, title: `${topic} #shorts - YouTube` }
+      if (roll < 0.55) return { path: `/watch?v=${pick(r, YT_VIDEO_IDS)}`, title: `${topic} - YouTube` }
+      if (roll < 0.68) return { path: `/shorts/${pick(r, YT_VIDEO_IDS)}`, title: `${topic} #shorts - YouTube` }
       if (roll < 0.8) return { path: `/playlist?list=PL${base62(r, 16)}`, title: `${topic} playlist - YouTube` }
       if (roll < 0.92) {
         const channel = pick(r, YT_CHANNELS)
@@ -118,7 +125,7 @@ const SITES: Site[] = [
   },
   {
     domain: 'youtu.be',
-    make: (r, topic) => ({ path: `/${base62(r, 11)}`, title: `${topic} - YouTube` }),
+    make: (r, topic) => ({ path: `/${pick(r, YT_VIDEO_IDS)}`, title: `${topic} - YouTube` }),
   },
   {
     domain: 'zenn.dev',
