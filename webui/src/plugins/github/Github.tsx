@@ -101,7 +101,7 @@ function TopReposCard({ gh }: { gh: GithubModel }) {
               <li key={`${r.owner}/${r.repo}`} className="relative -mx-1 overflow-hidden rounded">
                 <span
                   aria-hidden="true"
-                  className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                  className="absolute inset-y-0 left-0 rounded-r bg-primary-soft"
                   style={{ width: `${(r.visits / maxVisits) * 100}%` }}
                 />
                 <button
@@ -149,7 +149,7 @@ function TopOwnersCard({ gh }: { gh: GithubModel }) {
             <li key={o.owner} className="relative -mx-1 overflow-hidden rounded">
               <span
                 aria-hidden="true"
-                className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                className="absolute inset-y-0 left-0 rounded-r bg-primary-soft"
                 style={{ width: `${(o.visits / maxVisits) * 100}%` }}
               />
               <button

@@ -130,7 +130,7 @@ export function Dashboard({ app }: { app: AppModel }) {
                   <li className="relative -mx-1 overflow-hidden rounded">
                     <span
                       aria-hidden="true"
-                      className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                      className="absolute inset-y-0 left-0 rounded-r bg-primary-soft"
                       style={{ width: `${(d.visits / maxDomainVisits) * 100}%` }}
                     />
                     <div className={cn('relative flex items-center gap-2 px-1', top ? 'py-1' : 'py-0.5')}>
@@ -172,7 +172,7 @@ export function Dashboard({ app }: { app: AppModel }) {
                     <li className="relative -mx-1 overflow-hidden rounded">
                       <span
                         aria-hidden="true"
-                        className="absolute inset-y-0 left-0 rounded-r bg-primary/10"
+                        className="absolute inset-y-0 left-0 rounded-r bg-primary-soft"
                         style={{ width: `${(d.visits / maxBusiestVisits) * 100}%` }}
                       />
                       <div className={cn('relative flex items-center gap-2 px-1', top ? 'py-1' : 'py-0.5')}>
