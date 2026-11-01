@@ -2,6 +2,8 @@
 
 # his
 
+<img src="site/dashboard.webp" alt="his dashboard" width="600">
+
 Browser history archive & viewer.
 
 [Website](https://noy4.github.io/his/)
