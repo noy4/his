@@ -1,0 +1,13 @@
+# HyperFrames generated state / artifacts
+.hyperframes/
+.thumbnails/
+.waveform-cache/
+.media/
+renders/
+out/
+
+# deps
+node_modules/
+
+# macOS
+.DS_Store

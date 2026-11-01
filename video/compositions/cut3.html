@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>cut3</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: #0b0e14;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          perspective: 2400px;
+          perspective-origin: 50% 50%;
+        }
+        .cut3-glow {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 1500px;
+          height: 940px;
+          margin: -470px 0 0 -750px;
+          background: radial-gradient(closest-side, rgba(68, 101, 219, 0.2), rgba(68, 101, 219, 0) 72%);
+        }
+        .cut3-bgico {
+          position: absolute;
+          top: 540px;
+          width: 520px;
+          height: 520px;
+          margin-top: -260px;
+          opacity: 0;
+          color: #cbd5e8;
+        }
+        .cut3-bgico svg {
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+        .cut3-bg-l {
+          left: -100px;
+        }
+        .cut3-bg-r {
+          right: -100px;
+        }
+        .cut3-spin {
+          position: absolute;
+          inset: 0;
+          backface-visibility: hidden;
+          transform-style: preserve-3d;
+          perspective: 2400px;
+          perspective-origin: 50% 50%;
+        }
+        .cut3-win {
+          position: absolute;
+          backface-visibility: hidden;
+          left: 50%;
+          top: 50%;
+          width: 1280px;
+          height: 720px;
+          margin: -360px 0 0 -640px;
+          border-radius: 14px;
+          overflow: hidden;
+          background: #0f141d;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow:
+            0 60px 150px rgba(0, 0, 0, 0.62),
+            0 0 0 1px rgba(68, 101, 219, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+        .cut3-inner {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          border-radius: 14px;
+        }
+        .cut3-shot {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+        }
+        .cut3-shot video {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        #cut3-s2,
+        #cut3-s3,
+        #cut3-s4 {
+          opacity: 0;
+        }
+        .cut3-sweep {
+          position: absolute;
+          top: -25%;
+          bottom: -25%;
+          left: -25%;
+          width: 150%;
+          background: linear-gradient(
+            105deg,
+            rgba(255, 255, 255, 0) 44%,
+            rgba(184, 208, 255, 0.2) 50%,
+            rgba(255, 255, 255, 0) 56%
+          );
+          opacity: 0;
+          pointer-events: none;
+        }
+      </style>
+
+      <div data-hf-id="hf-wemi" id="root" data-composition-id="cut3" data-width="1920" data-height="1080">
+        <audio data-hf-id="hf-9e4p" id="cut3-vo-a" src="audio/vo/cut3/a-charts_and_totals.mp3" data-start="0.35" data-duration="1.49" data-volume="1"></audio>
+        <audio data-hf-id="hf-gv16" id="cut3-vo-b" src="audio/vo/cut3/b-every_visit_in_order.mp3" data-start="2.40" data-duration="1.64" data-volume="1"></audio>
+        <audio data-hf-id="hf-e0mi" id="cut3-vo-c" src="audio/vo/cut3/c-rich_detail_youtube_github.mp3" data-start="4.05" data-duration="2.62" data-volume="1"></audio>
+
+        <div data-hf-id="hf-o1l2" class="cut3-glow" data-layout-allow-overflow></div>
+
+        <div data-hf-id="hf-ftm2" class="cut3-bgico cut3-bg-l" id="cut3-bg1"><svg data-hf-id="hf-wgi3" xmlns="http://www.w3.org/2000/svg"   viewBox="0 0 24 24"><path data-hf-id="hf-72ev" fill="currentColor" d="M22 21H2V3h2v16h2v-9h4v9h2V6h4v13h2v-5h4z"/></svg></div>
+        <div data-hf-id="hf-8dk7" class="cut3-bgico cut3-bg-r" id="cut3-bg2"><svg data-hf-id="hf-s357" xmlns="http://www.w3.org/2000/svg"   viewBox="0 0 24 24"><path data-hf-id="hf-bdye" fill="currentColor" d="M12 20a8 8 0 0 0 8-8a8 8 0 0 0-8-8a8 8 0 0 0-8 8a8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10a10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67l-.75 1.23L11 13V7z"/></svg></div>
+        <div data-hf-id="hf-4fg6" class="cut3-bgico cut3-bg-r" id="cut3-bg3"><svg data-hf-id="hf-rou6" xmlns="http://www.w3.org/2000/svg"   viewBox="0 0 24 24"><path data-hf-id="hf-it23" fill="currentColor" d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg></div>
+        <div data-hf-id="hf-4y4f" class="cut3-bgico cut3-bg-l" id="cut3-bg4"><svg data-hf-id="hf-cofh" xmlns="http://www.w3.org/2000/svg"   viewBox="0 0 256 180"><path data-hf-id="hf-5lvh" fill="red" d="M250.346 28.075A32.18 32.18 0 0 0 227.69 5.418C207.824 0 127.87 0 127.87 0S47.912.164 28.046 5.582A32.18 32.18 0 0 0 5.39 28.24c-6.009 35.298-8.34 89.084.165 122.97a32.18 32.18 0 0 0 22.656 22.657c19.866 5.418 99.822 5.418 99.822 5.418s79.955 0 99.82-5.418a32.18 32.18 0 0 0 22.657-22.657c6.338-35.348 8.291-89.1-.164-123.134"/><path data-hf-id="hf-z5v6" fill="#fff" d="m102.421 128.06l66.328-38.418l-66.328-38.418z"/></svg></div>
+
+        <div data-hf-id="hf-u54h" class="cut3-spin" id="cut3-spin" data-layout-allow-overflow>
+        <div data-hf-id="hf-1ueb" class="cut3-win" id="cut3-win" data-layout-allow-overflow>
+          <div data-hf-id="hf-ea8s" class="cut3-inner">
+            <div data-hf-id="hf-1lae" class="cut3-shot" id="cut3-s1">
+              <video data-hf-id="hf-uyxt"
+                id="cut3-v1"
+                class="clip"
+                src="assets/webui/dashboard.mp4"
+                data-start="0"
+                data-duration="2.4"
+                data-track-index="0"
+                muted
+                playsinline
+              ></video>
+            </div>
+            <div data-hf-id="hf-xn6d" class="cut3-shot" id="cut3-s2">
+              <video data-hf-id="hf-aecg"
+                id="cut3-v2"
+                class="clip"
+                src="assets/webui/visits.mp4"
+                data-start="2.2"
+                data-duration="2.1"
+                data-track-index="1"
+                muted
+                playsinline
+              ></video>
+            </div>
+            <div data-hf-id="hf-wvik" class="cut3-shot" id="cut3-s3">
+              <video data-hf-id="hf-qfiz"
+                id="cut3-v3"
+                class="clip"
+                src="assets/webui/youtube.mp4"
+                data-start="3.95"
+                data-duration="1.5"
+                data-track-index="2"
+                muted
+                playsinline
+              ></video>
+            </div>
+            <div data-hf-id="hf-kd03" class="cut3-shot" id="cut3-s4">
+              <video data-hf-id="hf-auye"
+                id="cut3-v4"
+                class="clip"
+                src="assets/webui/github.mp4"
+                data-start="5.3"
+                data-duration="1.5"
+                data-track-index="3"
+                muted
+                playsinline
+              ></video>
+            </div>
+
+            <div data-hf-id="hf-sm9y" class="cut3-sweep" id="cut3-sweep"></div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+
+        tl.set("#cut3-win", { rotateY: -7, rotateX: 2 }, 0);
+        for (const [a, b] of [[0, 1.95], [2.22, 3.85], [4.1, 6.8]]) {
+          tl.set("#cut3-win", { rotateY: -7 }, a);
+          tl.to("#cut3-win", { rotateY: 7, duration: b - a, ease: "none" }, a);
+        }
+        for (const t of [1.95, 3.85]) {
+          tl.to("#cut3-spin", { rotateY: "+=360", duration: 0.55, ease: "sine.inOut" }, t);
+        }
+
+        tl.to("#cut3-s1", { opacity: 0, duration: 0.3, ease: "power2.inOut" }, 2.2);
+        tl.to("#cut3-s2", { opacity: 1, duration: 0.3, ease: "power2.inOut" }, 2.2);
+        tl.to("#cut3-s2", { opacity: 0, duration: 0.3, ease: "power2.inOut" }, 3.95);
+        tl.to("#cut3-s3", { opacity: 1, duration: 0.3, ease: "power2.inOut" }, 3.95);
+        tl.to("#cut3-s3", { opacity: 0, duration: 0.3, ease: "power2.inOut" }, 5.3);
+        tl.to("#cut3-s4", { opacity: 1, duration: 0.3, ease: "power2.inOut" }, 5.3);
+
+        for (const t of [2.0, 3.85, 5.1]) {
+          tl.set("#cut3-sweep", { x: -980, opacity: 0 }, t);
+          tl.to("#cut3-sweep", { x: 980, duration: 1.0, ease: "power1.inOut" }, t);
+          tl.to("#cut3-sweep", { opacity: 0.8, duration: 0.4, ease: "sine.out" }, t);
+          tl.to("#cut3-sweep", { opacity: 0, duration: 0.4, ease: "sine.in" }, t + 0.6);
+        }
+
+        const icons = [
+          ["#cut3-bg1", 0.5, 1.9, -120, 0.12],
+          ["#cut3-bg2", 2.45, 4.0, 120, 0.12],
+          ["#cut3-bg3", 4.2, 6.5, 120, 0.16],
+          ["#cut3-bg4", 4.35, 6.5, -120, 0.16],
+        ];
+        for (const [sel, inn, out, fromX, op] of icons) {
+          tl.fromTo(sel, { opacity: 0, x: fromX }, { opacity: op, x: 0, duration: 0.7, ease: "power3.out" }, inn);
+          tl.to(sel, { opacity: 0, x: fromX * -0.6, duration: 0.4, ease: "power2.in" }, out);
+        }
+
+        window.__timelines["cut3"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

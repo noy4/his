@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>his — promo</title>
+    <script src="vendor/gsap.min.js"></script>
+    <style>
+      :root {
+        --bg: #0b0e14;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--bg);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--bg);
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-kgqb"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-width="1920"
+      data-height="1080"
+      data-duration="30.0"
+    >
+      <div data-hf-id="hf-phht"
+        id="cut1"
+        data-composition-id="cut1"
+        data-composition-src="compositions/cut1.html"
+        data-start="0"
+        data-duration="7.0"
+        data-track-index="0"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+      <div data-hf-id="hf-ry9g"
+        id="cut2"
+        data-composition-id="cut2"
+        data-composition-src="compositions/cut2.html"
+        data-start="7.0"
+        data-duration="5.7"
+        data-track-index="0"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+      <div data-hf-id="hf-made"
+        id="cut3"
+        data-composition-id="cut3"
+        data-composition-src="compositions/cut3.html"
+        data-start="12.7"
+        data-duration="6.8"
+        data-track-index="0"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+      <div
+        id="cut4"
+        data-composition-id="cut4"
+        data-composition-src="compositions/cut4.html"
+        data-start="19.5"
+        data-duration="5.0"
+        data-track-index="0"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+      <div
+        id="cut5"
+        data-composition-id="cut5"
+        data-composition-src="compositions/cut5.html"
+        data-start="24.5"
+        data-duration="5.5"
+        data-track-index="0"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+      <audio
+        id="bgm"
+        src="assets/bgm/bgm_001.mp3"
+        data-start="0"
+        data-duration="30.0"
+        data-volume="0.22"
+      ></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

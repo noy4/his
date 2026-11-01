@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>cut1</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          background: #0b0e14;
+          color: #f7f9fc;
+        }
+        .glow {
+          position: absolute;
+          left: 50%;
+          top: -18%;
+          width: 1500px;
+          height: 900px;
+          margin-left: -750px;
+          background: radial-gradient(closest-side, rgba(68, 101, 219, 0.2), rgba(68, 101, 219, 0) 72%);
+        }
+        .grid {
+          position: absolute;
+          inset: 0;
+          background-image:
+            linear-gradient(rgba(56, 63, 80, 0.18) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56, 63, 80, 0.18) 1px, transparent 1px);
+          background-size: 64px 64px;
+          -webkit-mask-image: radial-gradient(closest-side at 50% 46%, #000 18%, transparent 76%);
+          mask-image: radial-gradient(closest-side at 50% 46%, #000 18%, transparent 76%);
+        }
+        .card {
+          position: absolute;
+          left: 50%;
+          top: 236px;
+          width: 840px;
+          height: 608px;
+          margin-left: -420px;
+          background: #151a23;
+          border: 1px solid #2c313f;
+          border-radius: 18px;
+          overflow: hidden;
+          box-shadow: 0 44px 130px rgba(0, 0, 0, 0.55);
+        }
+        .head {
+          height: 66px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 0 24px;
+          border-bottom: 1px solid #2c313f;
+        }
+        .dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #333a49;
+        }
+        .urlbar {
+          flex: 1;
+          height: 30px;
+          margin-left: 12px;
+          border-radius: 15px;
+          background: #1b2130;
+          border: 1px solid #262c38;
+        }
+        .rows {
+          position: absolute;
+          left: 26px;
+          right: 26px;
+          top: 96px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        .row {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          height: 36px;
+          transform-origin: left center;
+        }
+        .fav {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: #21252f;
+          border: 1px solid #2c313f;
+          flex: 0 0 auto;
+        }
+        .lines {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .l1 {
+          height: 10px;
+          border-radius: 5px;
+          background: #333a49;
+        }
+        .l2 {
+          height: 9px;
+          border-radius: 5px;
+          background: #262c38;
+        }
+        .row:nth-child(1) .l1 { width: 62%; }
+        .row:nth-child(2) .l1 { width: 74%; }
+        .row:nth-child(3) .l1 { width: 55%; }
+        .row:nth-child(4) .l1 { width: 68%; }
+        .row:nth-child(5) .l1 { width: 80%; }
+        .row:nth-child(6) .l1 { width: 50%; }
+        .row:nth-child(7) .l1 { width: 71%; }
+        .row:nth-child(1) .l2 { width: 34%; }
+        .row:nth-child(2) .l2 { width: 44%; }
+        .row:nth-child(3) .l2 { width: 30%; }
+        .row:nth-child(4) .l2 { width: 39%; }
+        .row:nth-child(5) .l2 { width: 48%; }
+        .row:nth-child(6) .l2 { width: 28%; }
+        .row:nth-child(7) .l2 { width: 41%; }
+        .words {
+          position: absolute;
+          inset: 0;
+        }
+        .word {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 80px;
+          font-weight: 600;
+          letter-spacing: -0.02em;
+          color: #f7f9fc;
+          opacity: 0;
+        }
+        #w3 {
+          color: #7e8a9e;
+          font-size: 92px;
+        }
+      </style>
+
+      <div data-hf-id="hf-b4vc" id="root" data-composition-id="cut1" data-width="1920" data-height="1080">
+        <audio data-hf-id="hf-74ut" id="cut1-vo-a" src="audio/vo/cut1/a-your_history_disappears.mp3" data-start="0.10" data-duration="1.64" data-volume="1"></audio>
+        <audio data-hf-id="hf-zmek" id="cut1-vo-b" src="audio/vo/cut1/b-cleared_caches.mp3" data-start="2.05" data-duration="1.30" data-volume="1"></audio>
+        <audio data-hf-id="hf-pja7" id="cut1-vo-c" src="audio/vo/cut1/c-switched_browsers.mp3" data-start="3.65" data-duration="1.41" data-volume="1"></audio>
+        <audio data-hf-id="hf-7ld9" id="cut1-vo-d" src="audio/vo/cut1/d-gone.mp3" data-start="5.40" data-duration="0.81" data-volume="1"></audio>
+        <div data-hf-id="hf-5mei" class="glow" data-layout-allow-overflow></div>
+        <div data-hf-id="hf-kxq8" class="grid"></div>
+        <div data-hf-id="hf-4zky" class="card" id="card">
+          <div data-hf-id="hf-z992" class="head">
+            <span data-hf-id="hf-9gry" class="dot"></span><span data-hf-id="hf-zcc2" class="dot"></span><span data-hf-id="hf-zqn3" class="dot"></span>
+            <span data-hf-id="hf-zcun" class="urlbar"></span>
+          </div>
+          <div data-hf-id="hf-jiiy" class="rows" id="rows">
+            <div data-hf-id="hf-thy4" class="row"><span data-hf-id="hf-aatc" class="fav"></span><span data-hf-id="hf-kbha" class="lines"><span data-hf-id="hf-ibq8" class="l1"></span><span data-hf-id="hf-t77v" class="l2"></span></span></div>
+            <div data-hf-id="hf-lt04" class="row"><span data-hf-id="hf-z514" class="fav"></span><span data-hf-id="hf-w936" class="lines"><span data-hf-id="hf-9vbs" class="l1"></span><span data-hf-id="hf-xnhn" class="l2"></span></span></div>
+            <div data-hf-id="hf-km31" class="row"><span data-hf-id="hf-xy41" class="fav"></span><span data-hf-id="hf-wne7" class="lines"><span data-hf-id="hf-8oep" class="l1"></span><span data-hf-id="hf-x96m" class="l2"></span></span></div>
+            <div data-hf-id="hf-l0e2" class="row"><span data-hf-id="hf-ycf2" class="fav"></span><span data-hf-id="hf-x1p8" class="lines"><span data-hf-id="hf-92pq" class="l1"></span><span data-hf-id="hf-wuvl" class="l2"></span></span></div>
+            <div data-hf-id="hf-mzx7" class="row"><span data-hf-id="hf-x5hz" class="fav"></span><span data-hf-id="hf-xg09" class="lines"><span data-hf-id="hf-7vsn" class="l1"></span><span data-hf-id="hf-wgkk" class="l2"></span></span></div>
+            <div data-hf-id="hf-ne88" class="row"><span data-hf-id="hf-xjt0" class="fav"></span><span data-hf-id="hf-xuba" class="lines"><span data-hf-id="hf-8a3o" class="l1"></span><span data-hf-id="hf-w29j" class="l2"></span></span></div>
+            <div data-hf-id="hf-m7b5" class="row"><span data-hf-id="hf-wcvx" class="fav"></span><span data-hf-id="hf-y8mb" class="lines"><span data-hf-id="hf-736l" class="l1"></span><span data-hf-id="hf-vnyi" class="l2"></span></span></div>
+          </div>
+        </div>
+        <div data-hf-id="hf-2vjz" class="words" data-layout-allow-overlap>
+          <div data-hf-id="hf-zkh9" class="word" id="w1">Cleared caches.</div>
+          <div data-hf-id="hf-hn19" class="word" id="w2">Switched browsers.</div>
+          <div data-hf-id="hf-dyyf" class="word" id="w3">Gone.</div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+        const rows = gsap.utils.toArray("#rows .row");
+
+        tl.fromTo("#card", { scale: 0.985 }, { scale: 1, duration: 0.8, ease: "power3.out" }, 0);
+        tl.fromTo(rows, { y: 12 }, { y: 0, duration: 0.45, stagger: 0.05, ease: "power3.out" }, 0.05);
+
+        tl.fromTo("#w1", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.36, ease: "power3.out" }, 1.75);
+        tl.to("#w1", { opacity: 0, y: -14, duration: 0.3, ease: "power2.in" }, 2.95);
+
+        tl.to("#card", { opacity: 0.32, duration: 0.5, ease: "power2.inOut" }, 2.5);
+        tl.to(
+          rows,
+          { opacity: 0, filter: "blur(9px)", scaleX: 0.965, duration: 0.38, stagger: 0.08, ease: "power2.in" },
+          2.15,
+        );
+
+        tl.fromTo("#w2", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.36, ease: "power3.out" }, 3.35);
+        tl.to("#w2", { opacity: 0, y: -14, duration: 0.3, ease: "power2.in" }, 4.55);
+
+        tl.to("#card", { opacity: 0, duration: 0.6, ease: "power2.inOut" }, 3.5);
+        tl.to(".grid", { opacity: 0, duration: 0.7, ease: "power2.inOut" }, 3.75);
+        tl.to(".glow", { opacity: 0, duration: 1.1, ease: "power2.inOut" }, 3.75);
+
+        tl.fromTo("#w3", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 5.05);
+        tl.to("#w3", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 6.5);
+
+        window.__timelines["cut1"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

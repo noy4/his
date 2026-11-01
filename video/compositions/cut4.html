@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>cut4</title>
+  </head>
+  <body>
+    <template>
+      <style>
+        #root {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: #0b0e14;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          color: #f7f9fc;
+        }
+        .cut4-glow {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 1500px;
+          height: 940px;
+          margin: -470px 0 0 -750px;
+          background: radial-gradient(closest-side, rgba(68, 101, 219, 0.22), rgba(68, 101, 219, 0) 72%);
+        }
+        .cut4-badge {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 322px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 18px;
+        }
+        .cut4-lock {
+          width: 46px;
+          height: 46px;
+          color: #7fa0ff;
+        }
+        .cut4-lock svg {
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+        .cut4-badge-text {
+          font-size: 44px;
+          font-weight: 600;
+          letter-spacing: 0.24em;
+          text-indent: 0.24em;
+          color: #eef3ff;
+        }
+        .cut4-ring {
+          position: absolute;
+          left: 50%;
+          top: 400px;
+          width: 340px;
+          height: 340px;
+          margin-left: -170px;
+        }
+        .cut4-ring > svg {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+        .cut4-mark {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 128px;
+          height: 128px;
+          margin: -64px 0 0 -64px;
+          color: #eef3ff;
+          filter: drop-shadow(0 0 26px rgba(68, 101, 219, 0.55));
+        }
+        .cut4-mark svg {
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+        .cut4-cap {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 786px;
+          text-align: center;
+          font-size: 28px;
+          font-weight: 600;
+          letter-spacing: 0.34em;
+          text-indent: 0.34em;
+          color: #9aa6ba;
+        }
+      </style>
+
+      <div id="root" data-composition-id="cut4" data-width="1920" data-height="1080">
+        <audio id="cut4-vo-a" src="audio/vo/cut4/a-runs_on_your_mac.mp3" data-start="0.30" data-duration="1.47" data-volume="1"></audio>
+        <audio id="cut4-vo-b" src="audio/vo/cut4/b-syncing_automatically.mp3" data-start="2.00" data-duration="2.43" data-volume="1"></audio>
+
+        <div class="cut4-glow" data-layout-allow-overflow></div>
+
+        <div class="cut4-badge" id="cut4-badge">
+          <div class="cut4-lock"><svg xmlns="http://www.w3.org/2000/svg"   viewBox="0 0 24 24"><path fill="currentColor" d="M12 17a2 2 0 0 1-2-2c0-1.11.89-2 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2m6 3V10H6v10zm0-12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10c0-1.11.89-2 2-2h1V6a5 5 0 0 1 5-5a5 5 0 0 1 5 5v2zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3"/></svg></div>
+          <div class="cut4-badge-text">LOCAL-FIRST</div>
+        </div>
+
+        <div class="cut4-ring" id="cut4-ring">
+          <svg viewBox="0 0 340 340" aria-hidden="true">
+            <circle cx="170" cy="170" r="152" fill="none" stroke="#2c313f" stroke-width="2" />
+            <g class="cut4-rot" data-layout-allow-overflow>
+              <circle
+                cx="170"
+                cy="170"
+                r="152"
+                fill="none"
+                stroke="#4465db"
+                stroke-width="4"
+                stroke-linecap="round"
+                stroke-dasharray="200 755"
+              />
+            </g>
+          </svg>
+          <div class="cut4-mark">
+            <svg viewBox="211 211 602 602" aria-label="his">
+              <circle cx="512" cy="512" r="248" fill="none" stroke="currentColor" stroke-width="86" />
+              <g stroke="currentColor" stroke-linecap="round" fill="none">
+                <path d="M512 512 L512 353" stroke-width="38" />
+                <path d="M512 512 L613 570" stroke-width="42" />
+              </g>
+              <circle cx="512" cy="512" r="36" fill="currentColor" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="cut4-cap" id="cut4-cap">AUTO-SYNC</div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+
+        tl.fromTo(
+          "#cut4-badge",
+          { opacity: 0, y: 16, scale: 0.96 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" },
+          0.15,
+        );
+        tl.fromTo(
+          "#cut4-ring",
+          { opacity: 0, scale: 0.88 },
+          { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" },
+          1.0,
+        );
+        tl.fromTo("#cut4-cap", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 2.2);
+
+        tl.set(".cut4-rot", { opacity: 0 }, 0);
+        tl.to(".cut4-rot", { opacity: 1, duration: 0.9, ease: "power2.out" }, 1.5);
+        tl.fromTo(".cut4-rot", { rotate: 0, svgOrigin: "170 170" }, { rotate: 540, duration: 3.6, ease: "none" }, 1.6);
+
+        window.__timelines["cut4"] = tl;
+      </script>
+    </template>
+  </body>
+</html>
