@@ -1,4 +1,4 @@
-<img src="webui/public/favicon.svg" width="72" alt="his icon">
+<img src="site/icon.png" width="72" alt="his icon">
 
 # his (WIP)
 
