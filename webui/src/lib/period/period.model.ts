@@ -4,10 +4,12 @@ import dayjs from 'dayjs'
 export type PeriodMode = 'month' | 'all'
 
 const MONTH_FORMAT = 'YYYY-MM'
+// mock: open on the previous month so early-month views aren't empty
+const DEFAULT_MONTH_OFFSET = import.meta.env.VITE_USE_MOCK_API === 'true' ? 1 : 0
 
 export class PeriodModel {
   readonly mode = signal<PeriodMode>('month')
-  readonly monthKey = signal(dayjs().format(MONTH_FORMAT))
+  readonly monthKey = signal(dayjs().subtract(DEFAULT_MONTH_OFFSET, 'month').format(MONTH_FORMAT))
   readonly monthly = computed(() => this.mode.value === 'month')
   #onChange: () => void
 

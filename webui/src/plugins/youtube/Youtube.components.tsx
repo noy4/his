@@ -1,9 +1,21 @@
 import type { YoutubeUrlInfo } from '@his/core'
+import type { SyntheticEvent } from 'react'
 import { cn } from 'cn'
 import SearchIcon from '~icons/mdi/magnify'
 import PlayIcon from '~icons/mdi/play-circle-outline'
 import PlaylistIcon from '~icons/mdi/playlist-play'
 import YoutubeIcon from '~icons/mdi/youtube'
+
+// Shorts expose a vertical thumbnail; regular videos use the 16:9 one
+function thumbSrc(id: string, shorts?: boolean): string {
+  return `https://i.ytimg.com/vi/${id}/${shorts ? 'oardefault' : 'mqdefault'}.jpg`
+}
+
+function onThumbError(e: SyntheticEvent<HTMLImageElement>): void {
+  const img = e.currentTarget
+  if (!img.src.includes('/oardefault.jpg')) return
+  img.src = img.src.replace('/oardefault.jpg', '/mqdefault.jpg')
+}
 
 // 16:9 preview frame — real thumbnail when we have a video id, else a kind placeholder
 export function YoutubeThumb({ id, shorts, width = 64, className }: { id?: string; shorts?: boolean; width?: number; className?: string }) {
@@ -25,9 +37,10 @@ export function YoutubeThumb({ id, shorts, width = 64, className }: { id?: strin
       style={{ width, height }}
     >
       <img
-        src={`https://i.ytimg.com/vi/${id}/mqdefault.jpg`}
+        src={thumbSrc(id, shorts)}
         alt=""
         loading="lazy"
+        onError={shorts ? onThumbError : undefined}
         className="h-full w-full object-cover"
       />
       {shorts && (
@@ -73,9 +86,10 @@ export function YoutubeItemThumb({ info, className }: { info: YoutubeUrlInfo; cl
     return (
       <span className={cn('relative block aspect-video w-full overflow-hidden rounded bg-bg-3', className)}>
         <img
-          src={`https://i.ytimg.com/vi/${info.id}/mqdefault.jpg`}
+          src={thumbSrc(info.id ?? '', info.shorts)}
           alt=""
           loading="lazy"
+          onError={info.shorts ? onThumbError : undefined}
           className="h-full w-full object-cover"
         />
         {info.shorts && (

@@ -6,7 +6,7 @@ import {
 import { isoDay } from '@/lib/date'
 import { MOCK_VISITS, byLastVisitDesc, inPeriod, paginate, visibleItems } from '@/app/api/mock/kit'
 
-const GITHUB_TOP = 20
+const GITHUB_TOP = 5
 const DAY_TOP = 3
 
 function githubItems(): { item: HistoryItem; urlInfo: GithubUrlInfo }[] {

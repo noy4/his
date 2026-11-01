@@ -55,6 +55,9 @@ const TOPICS = [
 const REPO_PAIRS = [
   ['facebook', 'react'], ['vitejs', 'vite'], ['preactjs', 'signals'],
   ['microsoft', 'TypeScript'], ['oven-sh', 'bun'], ['evanw', 'esbuild'],
+  ['tailwindlabs', 'tailwindcss'], ['vercel', 'next.js'], ['denoland', 'deno'],
+  ['oxc-project', 'oxc'], ['sveltejs', 'svelte'], ['vuejs', 'core'],
+  ['withastro', 'astro'], ['biomejs', 'biome'], ['remix-run', 'react-router'],
 ] as const
 
 const USERS = ['noy', 'hiro', 'anna', 'kenji', 'sana']
@@ -65,6 +68,12 @@ const YT_VIDEO_IDS = [
   'dQw4w9WgXcQ', '9bZkp7q19f0', 'kJQP7kiw5Fk', 'JGwWNGJdvx8', 'OPf0YbXqDm0', 'RgKAFK5djSk', 'fJ9rUzIMcZQ',
   'CevxZvSJLk8', 'hT_nvWreIhg', 'YQHsXMglC9A', '09R8_2nJtjg', '60ItHLz5WEA', 'pRpeEdMmmQ0', 'e-ORhEE9VVg',
   '7wtfhZwyrcc', '2Vv-BfVoq4g', 'lp-EO5I60KA', 'ktvTqknDobU',
+]
+// real Shorts ids (vertical oardefault.jpg thumbnails resolve)
+const YT_SHORTS_IDS = [
+  'qC-Yadx3O4A', '1y8dgh95cMc', 'zO6CHvTErxE', 'N3V0VeRagb8', 'I5_Gx3JNho8', 'v4oMxYxqOqs', 'nNnppQF1Yss',
+  'XA-5tXaWTPc', 'Hesz1mjEjvs', 'L7I27nY2V5E', 'b4TpO9pYpqk', 'vUvME1qDFzU', 'jZRy5kPlRKM', 's8M1WVulZTQ',
+  '5uwsQlo36Zc', 'w9HpoUcwBT8', 'KymG4KtkthI', 'bvdEv_oOnhc', 'NQFweStkdwQ', 'hHt3F5mL7Tc', 'zNMurTpL-4s',
 ]
 const SUBREDDITS = ['typescript', 'reactjs', 'webdev', 'sqlite', 'commandline']
 const MDN_APIS = ['IntersectionObserver', 'WebSocket', 'crypto.randomUUID', 'structuredClone', 'Intl.DateTimeFormat']
@@ -92,6 +101,16 @@ const SITES: Site[] = [
     },
   },
   {
+    domain: 'github.com',
+    make: (r, topic) => {
+      const [owner, repo] = pick(r, REPO_PAIRS)
+      const n = int(r, 100, 9000)
+      const user = pick(r, USERS)
+      if (r() < 0.5) return { path: `/${owner}/${repo}/issues/${n}`, title: `${topic} · Issue #${n} · ${owner}/${repo}` }
+      return { path: `/${owner}/${repo}/pull/${n}`, title: `${topic} by ${user} · Pull Request #${n} · ${owner}/${repo}` }
+    },
+  },
+  {
     domain: 'stackoverflow.com',
     make: (r, topic, slug) => ({
       path: `/questions/${int(r, 1000, 9999999)}/${slug}`,
@@ -114,7 +133,7 @@ const SITES: Site[] = [
     make: (r, topic, slug) => {
       const roll = r()
       if (roll < 0.55) return { path: `/watch?v=${pick(r, YT_VIDEO_IDS)}`, title: `${topic} - YouTube` }
-      if (roll < 0.68) return { path: `/shorts/${pick(r, YT_VIDEO_IDS)}`, title: `${topic} #shorts - YouTube` }
+      if (roll < 0.68) return { path: `/shorts/${pick(r, YT_SHORTS_IDS)}`, title: `${topic} #shorts - YouTube` }
       if (roll < 0.8) return { path: `/playlist?list=PL${base62(r, 16)}`, title: `${topic} playlist - YouTube` }
       if (roll < 0.92) {
         const channel = pick(r, YT_CHANNELS)
@@ -208,7 +227,17 @@ const SITES: Site[] = [
 
 const NOW = Date.now()
 const SPAN = 90 * DAY
-const COUNT = 420
+const COUNT = 560
+
+// recency-biased age so the demo's default 'this month' view always has plenty,
+// even on day 1 of a month (a flat 90-day spread leaves month-start nearly empty)
+function pickAge(r: Rand): number {
+  const roll = r()
+  if (roll < 0.3) return Math.floor(Math.pow(r(), 1.5) * 2 * DAY)
+  if (roll < 0.6) return Math.floor((2 + Math.pow(r(), 1.6) * 12) * DAY)
+  if (roll < 0.85) return Math.floor((14 + Math.pow(r(), 1.6) * 16) * DAY)
+  return Math.floor((30 + Math.pow(r(), 1.6) * (SPAN / DAY - 30)) * DAY)
+}
 
 function build(): { items: HistoryItem[]; visits: Map<number, VisitItem[]> } {
   const r = mulberry32(0xc0ffee)
@@ -226,7 +255,7 @@ function build(): { items: HistoryItem[]; visits: Map<number, VisitItem[]> } {
     if (used.has(url)) continue
     used.add(url)
 
-    const age = Math.floor(Math.pow(r(), 2.2) * SPAN)
+    const age = pickAge(r)
     const lastVisit = NOW - age
     const visitCount = 1 + Math.floor(Math.pow(r(), 2) * 7)
     const id = nextId++
