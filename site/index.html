@@ -137,6 +137,14 @@
       .mock-frame { height: 460px; }
     }
 
+    /* Video */
+    .video {
+      margin: 80px auto 0; max-width: 760px; border: 1px solid var(--border-strong);
+      border-radius: var(--radius); overflow: hidden; background: var(--surface);
+      aspect-ratio: 16 / 9; box-shadow: 0 30px 80px -32px rgba(0, 0, 0, 0.6);
+    }
+    .video iframe { width: 100%; height: 100%; border: 0; display: block; }
+
     /* Sections */
     section { padding: 48px 0; }
     .section-head { text-align: center; margin-bottom: 32px; }
@@ -231,6 +239,15 @@
           <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
         </div>
         <iframe class="mock-frame" src="./demo/" title="his demo" loading="lazy"></iframe>
+      </div>
+
+      <div class="video">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/WFJW7l23lW4"
+          title="his demo video"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen></iframe>
       </div>
     </header>
   </div>
